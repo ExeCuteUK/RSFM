@@ -169,11 +169,12 @@ export default function ImportShipments() {
 
   const getDeliveryBookedStatusColor = (status: number | null) => {
     switch (status) {
-      case 1: return "text-orange-600 dark:text-orange-400"
+      case 1:
+      case null:
+      default: return "text-orange-600 dark:text-orange-400"
       case 2: return "text-yellow-600 dark:text-yellow-400"
       case 3: return "text-green-600 dark:text-green-400"
       case 4: return "text-red-600 dark:text-red-400"
-      default: return "text-muted-foreground"
     }
   }
 
