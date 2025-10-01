@@ -251,17 +251,17 @@ export default function ImportShipments() {
                 </div>
                 <div className="space-y-1 text-sm">
                   {shipment.containerShipment && (
-                    <p className="underline" data-testid={`text-container-shipment-${shipment.id}`}>
-                      Container Shipment
+                    <p className="underline" data-testid={`text-shipment-type-${shipment.id}`}>
+                      {shipment.containerShipment}
                     </p>
                   )}
                   {shipment.trailerOrContainerNumber && (
                     <p data-testid={`text-truck-container-${shipment.id}`}>
                       {shipment.trailerOrContainerNumber}
-                      {shipment.containerShipment && shipment.shippingLine && ` / ${shipment.shippingLine}`}
+                      {shipment.containerShipment === "Container Shipment" && shipment.shippingLine && ` / ${shipment.shippingLine}`}
                     </p>
                   )}
-                  {shipment.containerShipment && shipment.vesselName && (
+                  {shipment.containerShipment === "Container Shipment" && shipment.vesselName && (
                     <p data-testid={`text-vessel-name-${shipment.id}`}>
                       {shipment.vesselName}
                     </p>
