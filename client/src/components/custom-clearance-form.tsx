@@ -79,6 +79,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   })
 
   const jobType = form.watch("jobType")
+  const containerShipment = form.watch("containerShipment")
 
   return (
     <Form {...form}>
@@ -364,20 +365,6 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
                 <FormField
                   control={form.control}
-                  name="vesselName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Vessel Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="containerShipment"
                   render={({ field }) => (
                     <FormItem className="flex items-center space-x-2 space-y-0">
@@ -392,6 +379,22 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     </FormItem>
                   )}
                 />
+
+                {containerShipment && (
+                  <FormField
+                    control={form.control}
+                    name="vesselName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vessel Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             </CardContent>
           </Card>
