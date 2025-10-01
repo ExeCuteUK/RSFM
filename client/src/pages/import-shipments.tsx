@@ -370,12 +370,14 @@ export default function ImportShipments() {
                           />
                         </div>
                       </div>
-                      <p className="text-sm mt-1" data-testid={`text-delivery-booked-${shipment.id}`}>
-                        <span className="font-medium">Delivery Booked:</span>{' '}
-                        {formatDate(shipment.bookingDate) || "N/A"}
-                      </p>
                     </div>
                   )}
+                  <div className={shipment.rsToClear ? "mt-1" : "pt-2 mt-2 border-t"}>
+                    <p className="text-sm" data-testid={`text-delivery-booked-${shipment.id}`}>
+                      <span className="font-medium">Delivery Booked:</span>{' '}
+                      {formatDate(shipment.bookingDate) || "N/A"}
+                    </p>
+                  </div>
                   {(() => {
                     const files = parseAttachments(shipment.attachments)
                     if (files.length > 0) {
