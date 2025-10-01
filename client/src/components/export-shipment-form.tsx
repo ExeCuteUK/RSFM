@@ -395,14 +395,14 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                               data-testid="button-delivery-date"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                              {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
                           <Calendar
                             mode="single"
-                            selected={field.value ? new Date(field.value) : undefined}
+                            selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
                             onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                             initialFocus
                           />
