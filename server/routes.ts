@@ -4,7 +4,10 @@ import { storage } from "./storage";
 import { 
   insertImportCustomerSchema,
   insertExportCustomerSchema,
-  insertExportReceiverSchema
+  insertExportReceiverSchema,
+  insertImportShipmentSchema,
+  insertExportShipmentSchema,
+  insertCustomClearanceSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -203,6 +206,204 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete export receiver" });
+    }
+  });
+
+  // ========== Import Shipments Routes ==========
+  
+  // Get all import shipments
+  app.get("/api/import-shipments", async (_req, res) => {
+    try {
+      const shipments = await storage.getAllImportShipments();
+      res.json(shipments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch import shipments" });
+    }
+  });
+
+  // Get single import shipment
+  app.get("/api/import-shipments/:id", async (req, res) => {
+    try {
+      const shipment = await storage.getImportShipment(req.params.id);
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch import shipment" });
+    }
+  });
+
+  // Create import shipment
+  app.post("/api/import-shipments", async (req, res) => {
+    try {
+      const validatedData = insertImportShipmentSchema.parse(req.body);
+      const shipment = await storage.createImportShipment(validatedData);
+      res.status(201).json(shipment);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid import shipment data" });
+    }
+  });
+
+  // Update import shipment
+  app.patch("/api/import-shipments/:id", async (req, res) => {
+    try {
+      const validatedData = insertImportShipmentSchema.partial().parse(req.body);
+      const shipment = await storage.updateImportShipment(req.params.id, validatedData);
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid import shipment data" });
+      }
+      res.status(500).json({ error: "Failed to update import shipment" });
+    }
+  });
+
+  // Delete import shipment
+  app.delete("/api/import-shipments/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteImportShipment(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete import shipment" });
+    }
+  });
+
+  // ========== Export Shipments Routes ==========
+  
+  // Get all export shipments
+  app.get("/api/export-shipments", async (_req, res) => {
+    try {
+      const shipments = await storage.getAllExportShipments();
+      res.json(shipments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch export shipments" });
+    }
+  });
+
+  // Get single export shipment
+  app.get("/api/export-shipments/:id", async (req, res) => {
+    try {
+      const shipment = await storage.getExportShipment(req.params.id);
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch export shipment" });
+    }
+  });
+
+  // Create export shipment
+  app.post("/api/export-shipments", async (req, res) => {
+    try {
+      const validatedData = insertExportShipmentSchema.parse(req.body);
+      const shipment = await storage.createExportShipment(validatedData);
+      res.status(201).json(shipment);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid export shipment data" });
+    }
+  });
+
+  // Update export shipment
+  app.patch("/api/export-shipments/:id", async (req, res) => {
+    try {
+      const validatedData = insertExportShipmentSchema.partial().parse(req.body);
+      const shipment = await storage.updateExportShipment(req.params.id, validatedData);
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid export shipment data" });
+      }
+      res.status(500).json({ error: "Failed to update export shipment" });
+    }
+  });
+
+  // Delete export shipment
+  app.delete("/api/export-shipments/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteExportShipment(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete export shipment" });
+    }
+  });
+
+  // ========== Custom Clearances Routes ==========
+  
+  // Get all custom clearances
+  app.get("/api/custom-clearances", async (_req, res) => {
+    try {
+      const clearances = await storage.getAllCustomClearances();
+      res.json(clearances);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch custom clearances" });
+    }
+  });
+
+  // Get single custom clearance
+  app.get("/api/custom-clearances/:id", async (req, res) => {
+    try {
+      const clearance = await storage.getCustomClearance(req.params.id);
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch custom clearance" });
+    }
+  });
+
+  // Create custom clearance
+  app.post("/api/custom-clearances", async (req, res) => {
+    try {
+      const validatedData = insertCustomClearanceSchema.parse(req.body);
+      const clearance = await storage.createCustomClearance(validatedData);
+      res.status(201).json(clearance);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid custom clearance data" });
+    }
+  });
+
+  // Update custom clearance
+  app.patch("/api/custom-clearances/:id", async (req, res) => {
+    try {
+      const validatedData = insertCustomClearanceSchema.partial().parse(req.body);
+      const clearance = await storage.updateCustomClearance(req.params.id, validatedData);
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid custom clearance data" });
+      }
+      res.status(500).json({ error: "Failed to update custom clearance" });
+    }
+  });
+
+  // Delete custom clearance
+  app.delete("/api/custom-clearances/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteCustomClearance(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete custom clearance" });
     }
   });
 
