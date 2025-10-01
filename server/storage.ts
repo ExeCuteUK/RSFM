@@ -122,7 +122,41 @@ export class MemStorage implements IStorage {
     const existing = this.importCustomers.get(id);
     if (!existing) return undefined;
     
-    const updated: ImportCustomer = { ...existing, ...updates };
+    const normalized = {
+      ...updates,
+      contactName: updates.contactName !== undefined ? updates.contactName ?? null : existing.contactName,
+      vatNumber: updates.vatNumber !== undefined ? updates.vatNumber ?? null : existing.vatNumber,
+      telephone: updates.telephone !== undefined ? updates.telephone ?? null : existing.telephone,
+      fax: updates.fax !== undefined ? updates.fax ?? null : existing.fax,
+      email: updates.email !== undefined ? updates.email ?? null : existing.email,
+      addressLine1: updates.addressLine1 !== undefined ? updates.addressLine1 ?? null : existing.addressLine1,
+      addressLine2: updates.addressLine2 !== undefined ? updates.addressLine2 ?? null : existing.addressLine2,
+      town: updates.town !== undefined ? updates.town ?? null : existing.town,
+      county: updates.county !== undefined ? updates.county ?? null : existing.county,
+      postcode: updates.postcode !== undefined ? updates.postcode ?? null : existing.postcode,
+      country: updates.country !== undefined ? updates.country ?? null : existing.country,
+      agentName: updates.agentName !== undefined ? updates.agentName ?? null : existing.agentName,
+      agentContactName: updates.agentContactName !== undefined ? updates.agentContactName ?? null : existing.agentContactName,
+      agentTelephone: updates.agentTelephone !== undefined ? updates.agentTelephone ?? null : existing.agentTelephone,
+      agentFax: updates.agentFax !== undefined ? updates.agentFax ?? null : existing.agentFax,
+      agentEmail: updates.agentEmail !== undefined ? updates.agentEmail ?? null : existing.agentEmail,
+      agentAddressLine1: updates.agentAddressLine1 !== undefined ? updates.agentAddressLine1 ?? null : existing.agentAddressLine1,
+      agentAddressLine2: updates.agentAddressLine2 !== undefined ? updates.agentAddressLine2 ?? null : existing.agentAddressLine2,
+      agentTown: updates.agentTown !== undefined ? updates.agentTown ?? null : existing.agentTown,
+      agentCounty: updates.agentCounty !== undefined ? updates.agentCounty ?? null : existing.agentCounty,
+      agentPostcode: updates.agentPostcode !== undefined ? updates.agentPostcode ?? null : existing.agentPostcode,
+      agentCountry: updates.agentCountry !== undefined ? updates.agentCountry ?? null : existing.agentCountry,
+      rsProcessCustomsClearance: updates.rsProcessCustomsClearance !== undefined ? updates.rsProcessCustomsClearance ?? false : existing.rsProcessCustomsClearance,
+      agentInDover: updates.agentInDover !== undefined ? updates.agentInDover ?? null : existing.agentInDover,
+      vatDanAuthority: updates.vatDanAuthority !== undefined ? updates.vatDanAuthority ?? false : existing.vatDanAuthority,
+      postponeVatPayment: updates.postponeVatPayment !== undefined ? updates.postponeVatPayment ?? false : existing.postponeVatPayment,
+      clearanceAgentDetails: updates.clearanceAgentDetails !== undefined ? updates.clearanceAgentDetails ?? null : existing.clearanceAgentDetails,
+      defaultDeliveryAddress: updates.defaultDeliveryAddress !== undefined ? updates.defaultDeliveryAddress ?? null : existing.defaultDeliveryAddress,
+      defaultSuppliersName: updates.defaultSuppliersName !== undefined ? updates.defaultSuppliersName ?? null : existing.defaultSuppliersName,
+      bookingInDetails: updates.bookingInDetails !== undefined ? updates.bookingInDetails ?? null : existing.bookingInDetails,
+    };
+    
+    const updated: ImportCustomer = { ...existing, ...normalized };
     this.importCustomers.set(id, updated);
     return updated;
   }
@@ -176,7 +210,33 @@ export class MemStorage implements IStorage {
     const existing = this.exportCustomers.get(id);
     if (!existing) return undefined;
     
-    const updated: ExportCustomer = { ...existing, ...updates };
+    const normalized = {
+      ...updates,
+      contactName: updates.contactName !== undefined ? updates.contactName ?? null : existing.contactName,
+      vatNumber: updates.vatNumber !== undefined ? updates.vatNumber ?? null : existing.vatNumber,
+      telephone: updates.telephone !== undefined ? updates.telephone ?? null : existing.telephone,
+      fax: updates.fax !== undefined ? updates.fax ?? null : existing.fax,
+      email: updates.email !== undefined ? updates.email ?? null : existing.email,
+      addressLine1: updates.addressLine1 !== undefined ? updates.addressLine1 ?? null : existing.addressLine1,
+      addressLine2: updates.addressLine2 !== undefined ? updates.addressLine2 ?? null : existing.addressLine2,
+      town: updates.town !== undefined ? updates.town ?? null : existing.town,
+      county: updates.county !== undefined ? updates.county ?? null : existing.county,
+      postcode: updates.postcode !== undefined ? updates.postcode ?? null : existing.postcode,
+      country: updates.country !== undefined ? updates.country ?? null : existing.country,
+      agentName: updates.agentName !== undefined ? updates.agentName ?? null : existing.agentName,
+      agentContactName: updates.agentContactName !== undefined ? updates.agentContactName ?? null : existing.agentContactName,
+      agentTelephone: updates.agentTelephone !== undefined ? updates.agentTelephone ?? null : existing.agentTelephone,
+      agentFax: updates.agentFax !== undefined ? updates.agentFax ?? null : existing.agentFax,
+      agentEmail: updates.agentEmail !== undefined ? updates.agentEmail ?? null : existing.agentEmail,
+      agentAddressLine1: updates.agentAddressLine1 !== undefined ? updates.agentAddressLine1 ?? null : existing.agentAddressLine1,
+      agentAddressLine2: updates.agentAddressLine2 !== undefined ? updates.agentAddressLine2 ?? null : existing.agentAddressLine2,
+      agentTown: updates.agentTown !== undefined ? updates.agentTown ?? null : existing.agentTown,
+      agentCounty: updates.agentCounty !== undefined ? updates.agentCounty ?? null : existing.agentCounty,
+      agentPostcode: updates.agentPostcode !== undefined ? updates.agentPostcode ?? null : existing.agentPostcode,
+      agentCountry: updates.agentCountry !== undefined ? updates.agentCountry ?? null : existing.agentCountry,
+    };
+    
+    const updated: ExportCustomer = { ...existing, ...normalized };
     this.exportCustomers.set(id, updated);
     return updated;
   }
@@ -214,7 +274,17 @@ export class MemStorage implements IStorage {
     const existing = this.exportReceivers.get(id);
     if (!existing) return undefined;
     
-    const updated: ExportReceiver = { ...existing, ...updates };
+    const normalized = {
+      ...updates,
+      addressLine1: updates.addressLine1 !== undefined ? updates.addressLine1 ?? null : existing.addressLine1,
+      addressLine2: updates.addressLine2 !== undefined ? updates.addressLine2 ?? null : existing.addressLine2,
+      town: updates.town !== undefined ? updates.town ?? null : existing.town,
+      county: updates.county !== undefined ? updates.county ?? null : existing.county,
+      postcode: updates.postcode !== undefined ? updates.postcode ?? null : existing.postcode,
+      country: updates.country !== undefined ? updates.country ?? null : existing.country,
+    };
+    
+    const updated: ExportReceiver = { ...existing, ...normalized };
     this.exportReceivers.set(id, updated);
     return updated;
   }

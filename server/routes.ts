@@ -47,13 +47,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update import customer
   app.patch("/api/import-customers/:id", async (req, res) => {
     try {
-      const customer = await storage.updateImportCustomer(req.params.id, req.body);
+      const validatedData = insertImportCustomerSchema.partial().parse(req.body);
+      const customer = await storage.updateImportCustomer(req.params.id, validatedData);
       if (!customer) {
         return res.status(404).json({ error: "Import customer not found" });
       }
       res.json(customer);
     } catch (error) {
-      res.status(400).json({ error: "Failed to update import customer" });
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid import customer data" });
+      }
+      res.status(500).json({ error: "Failed to update import customer" });
     }
   });
 
@@ -109,13 +113,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update export customer
   app.patch("/api/export-customers/:id", async (req, res) => {
     try {
-      const customer = await storage.updateExportCustomer(req.params.id, req.body);
+      const validatedData = insertExportCustomerSchema.partial().parse(req.body);
+      const customer = await storage.updateExportCustomer(req.params.id, validatedData);
       if (!customer) {
         return res.status(404).json({ error: "Export customer not found" });
       }
       res.json(customer);
     } catch (error) {
-      res.status(400).json({ error: "Failed to update export customer" });
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid export customer data" });
+      }
+      res.status(500).json({ error: "Failed to update export customer" });
     }
   });
 
@@ -171,13 +179,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update export receiver
   app.patch("/api/export-receivers/:id", async (req, res) => {
     try {
-      const receiver = await storage.updateExportReceiver(req.params.id, req.body);
+      const validatedData = insertExportReceiverSchema.partial().parse(req.body);
+      const receiver = await storage.updateExportReceiver(req.params.id, validatedData);
       if (!receiver) {
         return res.status(404).json({ error: "Export receiver not found" });
       }
       res.json(receiver);
     } catch (error) {
-      res.status(400).json({ error: "Failed to update export receiver" });
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid export receiver data" });
+      }
+      res.status(500).json({ error: "Failed to update export receiver" });
     }
   });
 
