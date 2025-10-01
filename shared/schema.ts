@@ -125,6 +125,29 @@ export const insertExportReceiverSchema = createInsertSchema(exportReceivers).om
 export type InsertExportReceiver = z.infer<typeof insertExportReceiverSchema>;
 export type ExportReceiver = typeof exportReceivers.$inferSelect;
 
+// Hauliers Database
+export const hauliers = pgTable("hauliers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Contact Information
+  haulierName: text("haulier_name").notNull(),
+  homeCountry: text("home_country"),
+  address: text("address"),
+  telephone: text("telephone"),
+  mobile: text("mobile"),
+  email: text("email"),
+  
+  // Service Information
+  destinationCountries: text("destination_countries").array(),
+});
+
+export const insertHaulierSchema = createInsertSchema(hauliers).omit({
+  id: true,
+});
+
+export type InsertHaulier = z.infer<typeof insertHaulierSchema>;
+export type Haulier = typeof hauliers.$inferSelect;
+
 // Import Shipments Database
 export const importShipments = pgTable("import_shipments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
