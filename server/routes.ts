@@ -10,6 +10,7 @@ import {
   insertExportShipmentSchema,
   insertCustomClearanceSchema
 } from "@shared/schema";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ========== Import Customers Routes ==========
@@ -489,6 +490,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete custom clearance" });
+    }
+  });
+
+  // ========== Object Storage Routes ==========
+
+  // Get presigned upload URL for file uploads
+  app.post("/api/objects/upload", async (_req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error generating upload URL:", error);
+      res.status(500).json({ error: "Failed to generate upload URL" });
+    }
+  });
+
+  // Download/serve uploaded files
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error downloading object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  // Normalize and set ACL policy for uploaded files
+  app.post("/api/objects/normalize", async (req, res) => {
+    try {
+      if (!req.body.uploadURL) {
+        return res.status(400).json({ error: "uploadURL is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.uploadURL,
+        {
+          owner: "system",
+          visibility: "public",
+        }
+      );
+
+      res.json({ objectPath });
+    } catch (error) {
+      console.error("Error normalizing object path:", error);
+      res.status(500).json({ error: "Failed to normalize object path" });
     }
   });
 
