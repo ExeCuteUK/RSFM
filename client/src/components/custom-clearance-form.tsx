@@ -519,19 +519,21 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="transportCosts"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Transport Costs</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-transport-costs" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {jobType === "import" && (
+                  <FormField
+                    control={form.control}
+                    name="transportCosts"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Transport Costs</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-transport-costs" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
