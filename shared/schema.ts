@@ -51,8 +51,7 @@ export const importCustomers = pgTable("import_customers", {
   // Import Information
   rsProcessCustomsClearance: boolean("rs_process_customs_clearance").default(false),
   agentInDover: text("agent_in_dover"),
-  vatDanAuthority: boolean("vat_dan_authority").default(false),
-  postponeVatPayment: boolean("postpone_vat_payment").default(false),
+  vatPaymentMethod: text("vat_payment_method"),
   clearanceAgentDetails: text("clearance_agent_details"),
   defaultDeliveryAddress: text("default_delivery_address"),
   defaultSuppliersName: text("default_suppliers_name"),

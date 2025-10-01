@@ -12,6 +12,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface ImportCustomerFormProps {
@@ -49,8 +56,7 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
       agentCountry: "",
       rsProcessCustomsClearance: false,
       agentInDover: "",
-      vatDanAuthority: false,
-      postponeVatPayment: false,
+      vatPaymentMethod: "",
       clearanceAgentDetails: "",
       defaultDeliveryAddress: "",
       defaultSuppliersName: "",
@@ -58,6 +64,8 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
       ...defaultValues
     },
   })
+
+  const rsToArrangeClearance = form.watch("rsProcessCustomsClearance")
 
   return (
     <Form {...form}>
@@ -421,73 +429,67 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
                         data-testid="checkbox-rs-process-customs-clearance"
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">RS process customs clearance?</FormLabel>
+                    <FormLabel className="font-normal">R.S. To Arrange Clearance</FormLabel>
                   </FormItem>
                 )}
               />
               
               <FormField
                 control={form.control}
-                name="vatDanAuthority"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value || false}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-vat-dan-authority"
-                      />
-                    </FormControl>
-                    <FormLabel className="font-normal">VAT DAN Authority?</FormLabel>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="postponeVatPayment"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value || false}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-postpone-vat-payment"
-                      />
-                    </FormControl>
-                    <FormLabel className="font-normal">Postpone VAT Payment?</FormLabel>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="agentInDover"
+                name="vatPaymentMethod"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>If No, then agent in Dover?</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-in-dover" />
-                    </FormControl>
+                    <FormLabel>VAT Payment Method</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-vat-payment-method">
+                          <SelectValue placeholder="Select VAT payment method" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="PVA">PVA</SelectItem>
+                        <SelectItem value="R.S DAN">R.S DAN</SelectItem>
+                        <SelectItem value="Customer DAN">Customer DAN</SelectItem>
+                        <SelectItem value="FAS">FAS</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="clearanceAgentDetails"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Clearance Agent Details</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value || ""} data-testid="input-clearance-agent-details" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!rsToArrangeClearance && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="agentInDover"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Clearance Agent</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-agent-in-dover" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="clearanceAgentDetails"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Clearance Agent Details</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-clearance-agent-details" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
             
             <FormField
               control={form.control}
