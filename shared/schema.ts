@@ -236,8 +236,14 @@ export const exportShipments = pgTable("export_shipments", {
   haulierName: text("haulier_name"),
   haulierContactName: text("haulier_contact_name"),
   
+  // Customs Details
+  rsToClear: boolean("rs_to_clear").default(false),
+  
   // File Attachments (stored as JSON array of {name, url, uploadedAt})
   attachments: text("attachments"),
+  
+  // Link to auto-created customs clearance
+  linkedClearanceId: varchar("linked_clearance_id"),
 });
 
 export const insertExportShipmentSchema = createInsertSchema(exportShipments).omit({
