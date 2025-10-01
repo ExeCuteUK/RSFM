@@ -466,6 +466,20 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="deliveryTimeNotes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Time/Notes</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -577,35 +591,19 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 )}
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="deliveryReference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Reference</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="deliveryTimeNotes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Time/Notes</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="deliveryReference"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Delivery Reference</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
