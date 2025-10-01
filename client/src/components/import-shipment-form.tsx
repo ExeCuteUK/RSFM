@@ -26,7 +26,7 @@ import { useEffect } from "react"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
+import { format, parseISO } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -163,7 +163,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                               data-testid="button-import-date"
                             >
                               {field.value ? (
-                                format(new Date(field.value), "dd/MM/yy")
+                                format(parseISO(field.value), "dd/MM/yy")
                               ) : (
                                 <span>Pick a date</span>
                               )}
@@ -174,8 +174,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            selected={field.value ? new Date(field.value) : undefined}
-                            onSelect={(date) => field.onChange(date ? format(date, "dd/MM/yy") : "")}
+                            selected={field.value ? parseISO(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                             initialFocus
                           />
                         </PopoverContent>

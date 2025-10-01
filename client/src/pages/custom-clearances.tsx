@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 export default function CustomClearances() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingClearance, setEditingClearance] = useState<CustomClearance | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>("All")
   const { toast } = useToast()
 
   const { data: clearances = [], isLoading } = useQuery<CustomClearance[]>({
@@ -102,6 +103,10 @@ export default function CustomClearances() {
     }
   }
 
+  const filteredClearances = statusFilter === "All" 
+    ? clearances 
+    : clearances.filter(c => c.status === statusFilter)
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -117,6 +122,37 @@ export default function CustomClearances() {
         </Button>
       </div>
 
+      <div className="flex gap-2 flex-wrap" data-testid="status-filters">
+        <Button
+          variant={statusFilter === "All" ? "default" : "outline"}
+          onClick={() => setStatusFilter("All")}
+          data-testid="filter-all"
+        >
+          All
+        </Button>
+        <Button
+          variant={statusFilter === "Waiting Entry" ? "default" : "outline"}
+          onClick={() => setStatusFilter("Waiting Entry")}
+          data-testid="filter-waiting-entry"
+        >
+          Waiting Entry
+        </Button>
+        <Button
+          variant={statusFilter === "Waiting Arrival" ? "default" : "outline"}
+          onClick={() => setStatusFilter("Waiting Arrival")}
+          data-testid="filter-waiting-arrival"
+        >
+          Waiting Arrival
+        </Button>
+        <Button
+          variant={statusFilter === "Fully Cleared" ? "default" : "outline"}
+          onClick={() => setStatusFilter("Fully Cleared")}
+          data-testid="filter-fully-cleared"
+        >
+          Fully Cleared
+        </Button>
+      </div>
+
       {isLoading ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading...</p>
@@ -129,9 +165,14 @@ export default function CustomClearances() {
             Create your first custom clearance
           </Button>
         </div>
+      ) : filteredClearances.length === 0 ? (
+        <div className="text-center py-12" data-testid="empty-filtered-state">
+          <FileCheck className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-lg text-muted-foreground">No clearances match the selected filter</p>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {clearances.map((clearance) => (
+          {filteredClearances.map((clearance) => (
             <Card key={clearance.id} data-testid={`card-clearance-${clearance.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
