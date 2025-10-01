@@ -163,7 +163,6 @@ export const importShipments = pgTable("import_shipments", {
   // Customs Details
   vatZeroRated: boolean("vat_zero_rated").default(false),
   clearanceType: text("clearance_type"),
-  deliveryOrder: text("delivery_order"),
   customsClearanceAgent: text("customs_clearance_agent"),
   rsToClear: boolean("rs_to_clear").default(false),
   
