@@ -12,9 +12,18 @@ import {
   type ExportShipment,
   type InsertExportShipment,
   type CustomClearance,
-  type InsertCustomClearance
+  type InsertCustomClearance,
+  importCustomers,
+  exportCustomers,
+  exportReceivers,
+  importShipments,
+  exportShipments,
+  customClearances,
+  users
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -681,4 +690,288 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database Storage Implementation using Drizzle ORM
+export class DatabaseStorage implements IStorage {
+  private jobRefCounter: number = 26001;
+  private initialized: boolean = false;
+
+  private async initialize() {
+    if (this.initialized) return;
+    
+    // Get the maximum job ref from all tables
+    const [maxImport] = await db.select({ max: sql<number>`MAX(${importShipments.jobRef})` }).from(importShipments);
+    const [maxExport] = await db.select({ max: sql<number>`MAX(${exportShipments.jobRef})` }).from(exportShipments);
+    const [maxClearance] = await db.select({ max: sql<number>`MAX(${customClearances.jobRef})` }).from(customClearances);
+    
+    const currentMax = Math.max(
+      maxImport.max || 26000,
+      maxExport.max || 26000,
+      maxClearance.max || 26000
+    );
+    
+    this.jobRefCounter = currentMax + 1;
+    this.initialized = true;
+  }
+
+  getNextJobRef(): number {
+    return this.jobRefCounter++;
+  }
+
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [created] = await db.insert(users).values(user).returning();
+    return created;
+  }
+
+  // Import Customer methods
+  async getAllImportCustomers(): Promise<ImportCustomer[]> {
+    return await db.select().from(importCustomers);
+  }
+
+  async getImportCustomer(id: string): Promise<ImportCustomer | undefined> {
+    const [customer] = await db.select().from(importCustomers).where(eq(importCustomers.id, id));
+    return customer;
+  }
+
+  async createImportCustomer(customer: InsertImportCustomer): Promise<ImportCustomer> {
+    const [created] = await db.insert(importCustomers).values(customer).returning();
+    return created;
+  }
+
+  async updateImportCustomer(id: string, customer: Partial<InsertImportCustomer>): Promise<ImportCustomer | undefined> {
+    const [updated] = await db.update(importCustomers).set(customer).where(eq(importCustomers.id, id)).returning();
+    return updated;
+  }
+
+  async deleteImportCustomer(id: string): Promise<boolean> {
+    const result = await db.delete(importCustomers).where(eq(importCustomers.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Export Customer methods
+  async getAllExportCustomers(): Promise<ExportCustomer[]> {
+    return await db.select().from(exportCustomers);
+  }
+
+  async getExportCustomer(id: string): Promise<ExportCustomer | undefined> {
+    const [customer] = await db.select().from(exportCustomers).where(eq(exportCustomers.id, id));
+    return customer;
+  }
+
+  async createExportCustomer(customer: InsertExportCustomer): Promise<ExportCustomer> {
+    const [created] = await db.insert(exportCustomers).values(customer).returning();
+    return created;
+  }
+
+  async updateExportCustomer(id: string, customer: Partial<InsertExportCustomer>): Promise<ExportCustomer | undefined> {
+    const [updated] = await db.update(exportCustomers).set(customer).where(eq(exportCustomers.id, id)).returning();
+    return updated;
+  }
+
+  async deleteExportCustomer(id: string): Promise<boolean> {
+    const result = await db.delete(exportCustomers).where(eq(exportCustomers.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Export Receiver methods
+  async getAllExportReceivers(): Promise<ExportReceiver[]> {
+    return await db.select().from(exportReceivers);
+  }
+
+  async getExportReceiver(id: string): Promise<ExportReceiver | undefined> {
+    const [receiver] = await db.select().from(exportReceivers).where(eq(exportReceivers.id, id));
+    return receiver;
+  }
+
+  async createExportReceiver(receiver: InsertExportReceiver): Promise<ExportReceiver> {
+    const [created] = await db.insert(exportReceivers).values(receiver).returning();
+    return created;
+  }
+
+  async updateExportReceiver(id: string, receiver: Partial<InsertExportReceiver>): Promise<ExportReceiver | undefined> {
+    const [updated] = await db.update(exportReceivers).set(receiver).where(eq(exportReceivers.id, id)).returning();
+    return updated;
+  }
+
+  async deleteExportReceiver(id: string): Promise<boolean> {
+    const result = await db.delete(exportReceivers).where(eq(exportReceivers.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Import Shipment methods
+  async getAllImportShipments(): Promise<ImportShipment[]> {
+    return await db.select().from(importShipments).orderBy(desc(importShipments.createdAt));
+  }
+
+  async getImportShipment(id: string): Promise<ImportShipment | undefined> {
+    const [shipment] = await db.select().from(importShipments).where(eq(importShipments.id, id));
+    return shipment;
+  }
+
+  async createImportShipment(insertShipment: InsertImportShipment): Promise<ImportShipment> {
+    await this.initialize();
+    const jobRef = this.getNextJobRef();
+    
+    const [shipment] = await db.insert(importShipments).values({
+      ...insertShipment,
+      jobRef: jobRef,
+      createdAt: new Date().toISOString(),
+    }).returning();
+
+    // Auto-create Custom Clearance if rsToClear is true
+    if (shipment.rsToClear) {
+      const [clearance] = await db.insert(customClearances).values({
+        jobRef: shipment.jobRef,
+        jobType: "import",
+        createdAt: new Date().toISOString(),
+        status: "Waiting Entry",
+        importCustomerId: shipment.importCustomerId,
+        exportCustomerId: null,
+        receiverId: null,
+        etaPort: shipment.importDateEtaPort,
+        portOfArrival: shipment.portOfArrival,
+        trailerOrContainerNumber: shipment.trailerOrContainerNumber,
+        departureFrom: shipment.departureCountry,
+        containerShipment: shipment.containerShipment,
+        vesselName: shipment.vesselName,
+        numberOfPieces: shipment.numberOfPieces,
+        packaging: shipment.packaging,
+        weight: shipment.weight,
+        cube: shipment.cube,
+        goodsDescription: shipment.goodsDescription,
+        invoiceValue: shipment.invoiceValue,
+        transportCosts: shipment.freightCharge,
+        clearanceCharge: shipment.clearanceCharge,
+        currency: shipment.currency,
+        additionalCommodityCodes: shipment.additionalCommodityCodes,
+        vatZeroRated: shipment.vatZeroRated,
+        clearanceType: shipment.clearanceType,
+        incoterms: null,
+        customerReferenceNumber: shipment.customerReferenceNumber,
+        supplierName: shipment.supplierName,
+        attachments: null,
+        createdFromType: "import",
+        createdFromId: shipment.id,
+      }).returning();
+
+      // Update shipment with linked clearance ID
+      const [updated] = await db.update(importShipments)
+        .set({ linkedClearanceId: clearance.id })
+        .where(eq(importShipments.id, shipment.id))
+        .returning();
+      
+      return updated;
+    }
+
+    return shipment;
+  }
+
+  async updateImportShipment(id: string, updates: Partial<InsertImportShipment>): Promise<ImportShipment | undefined> {
+    const existing = await this.getImportShipment(id);
+    if (!existing) return undefined;
+
+    // If rsToClear is being changed from true to false, delete the linked clearance
+    if (existing.rsToClear && updates.rsToClear === false && existing.linkedClearanceId) {
+      await db.delete(customClearances).where(eq(customClearances.id, existing.linkedClearanceId));
+      updates.linkedClearanceId = null;
+    }
+
+    const [updated] = await db.update(importShipments)
+      .set(updates)
+      .where(eq(importShipments.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async deleteImportShipment(id: string): Promise<boolean> {
+    const result = await db.delete(importShipments).where(eq(importShipments.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Export Shipment methods
+  async getAllExportShipments(): Promise<ExportShipment[]> {
+    return await db.select().from(exportShipments).orderBy(desc(exportShipments.createdAt));
+  }
+
+  async getExportShipment(id: string): Promise<ExportShipment | undefined> {
+    const [shipment] = await db.select().from(exportShipments).where(eq(exportShipments.id, id));
+    return shipment;
+  }
+
+  async createExportShipment(insertShipment: InsertExportShipment): Promise<ExportShipment> {
+    await this.initialize();
+    const jobRef = this.getNextJobRef();
+    
+    const [shipment] = await db.insert(exportShipments).values({
+      ...insertShipment,
+      jobRef: jobRef,
+      createdAt: new Date().toISOString(),
+    }).returning();
+
+    return shipment;
+  }
+
+  async updateExportShipment(id: string, updates: Partial<InsertExportShipment>): Promise<ExportShipment | undefined> {
+    const [updated] = await db.update(exportShipments)
+      .set(updates)
+      .where(eq(exportShipments.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async deleteExportShipment(id: string): Promise<boolean> {
+    const result = await db.delete(exportShipments).where(eq(exportShipments.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Custom Clearance methods
+  async getAllCustomClearances(): Promise<CustomClearance[]> {
+    return await db.select().from(customClearances).orderBy(desc(customClearances.createdAt));
+  }
+
+  async getCustomClearance(id: string): Promise<CustomClearance | undefined> {
+    const [clearance] = await db.select().from(customClearances).where(eq(customClearances.id, id));
+    return clearance;
+  }
+
+  async createCustomClearance(insertClearance: InsertCustomClearance): Promise<CustomClearance> {
+    await this.initialize();
+    const jobRef = this.getNextJobRef();
+    
+    const [clearance] = await db.insert(customClearances).values({
+      ...insertClearance,
+      jobRef: jobRef,
+      createdAt: new Date().toISOString(),
+    }).returning();
+
+    return clearance;
+  }
+
+  async updateCustomClearance(id: string, updates: Partial<InsertCustomClearance>): Promise<CustomClearance | undefined> {
+    const [updated] = await db.update(customClearances)
+      .set(updates)
+      .where(eq(customClearances.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async deleteCustomClearance(id: string): Promise<boolean> {
+    const result = await db.delete(customClearances).where(eq(customClearances.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+}
+
+export const storage = new DatabaseStorage();

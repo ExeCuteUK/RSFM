@@ -1,0 +1,1126 @@
+{
+  "id": "80b2fdc0-ce40-4207-811f-10e9876e7f58",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.custom_clearances": {
+      "name": "custom_clearances",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "job_ref": {
+          "name": "job_ref",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_type": {
+          "name": "job_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_DATE"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Waiting Entry'"
+        },
+        "import_customer_id": {
+          "name": "import_customer_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "export_customer_id": {
+          "name": "export_customer_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "receiver_id": {
+          "name": "receiver_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "eta_port": {
+          "name": "eta_port",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "port_of_arrival": {
+          "name": "port_of_arrival",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trailer_or_container_number": {
+          "name": "trailer_or_container_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "departure_from": {
+          "name": "departure_from",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "container_shipment": {
+          "name": "container_shipment",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "vessel_name": {
+          "name": "vessel_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "number_of_pieces": {
+          "name": "number_of_pieces",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "packaging": {
+          "name": "packaging",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cube": {
+          "name": "cube",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "goods_description": {
+          "name": "goods_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invoice_value": {
+          "name": "invoice_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transport_costs": {
+          "name": "transport_costs",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "clearance_charge": {
+          "name": "clearance_charge",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_commodity_codes": {
+          "name": "additional_commodity_codes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vat_zero_rated": {
+          "name": "vat_zero_rated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "clearance_type": {
+          "name": "clearance_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "incoterms": {
+          "name": "incoterms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_reference_number": {
+          "name": "customer_reference_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "supplier_name": {
+          "name": "supplier_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_from_type": {
+          "name": "created_from_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_from_id": {
+          "name": "created_from_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.export_customers": {
+      "name": "export_customers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact_name": {
+          "name": "contact_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vat_number": {
+          "name": "vat_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "telephone": {
+          "name": "telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fax": {
+          "name": "fax",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_line_1": {
+          "name": "address_line_1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_line_2": {
+          "name": "address_line_2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "town": {
+          "name": "town",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "county": {
+          "name": "county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "postcode": {
+          "name": "postcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_name": {
+          "name": "agent_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_contact_name": {
+          "name": "agent_contact_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_telephone": {
+          "name": "agent_telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_fax": {
+          "name": "agent_fax",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_email": {
+          "name": "agent_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_address_line_1": {
+          "name": "agent_address_line_1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_address_line_2": {
+          "name": "agent_address_line_2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_town": {
+          "name": "agent_town",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_county": {
+          "name": "agent_county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_postcode": {
+          "name": "agent_postcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_country": {
+          "name": "agent_country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.export_receivers": {
+      "name": "export_receivers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address_line_1": {
+          "name": "address_line_1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_line_2": {
+          "name": "address_line_2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "town": {
+          "name": "town",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "county": {
+          "name": "county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "postcode": {
+          "name": "postcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.export_shipments": {
+      "name": "export_shipments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "job_ref": {
+          "name": "job_ref",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_type": {
+          "name": "job_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'export'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_DATE"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Pending'"
+        },
+        "receiver_id": {
+          "name": "receiver_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "destination_customer_id": {
+          "name": "destination_customer_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_reference_number": {
+          "name": "customer_reference_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "load_date": {
+          "name": "load_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trailer_no": {
+          "name": "trailer_no",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "departure_from": {
+          "name": "departure_from",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "port_of_arrival": {
+          "name": "port_of_arrival",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "incoterms": {
+          "name": "incoterms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "container_shipment": {
+          "name": "container_shipment",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "vessel_name": {
+          "name": "vessel_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "export_clearance_agent": {
+          "name": "export_clearance_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "arrival_clearance_agent": {
+          "name": "arrival_clearance_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "supplier": {
+          "name": "supplier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "consignee": {
+          "name": "consignee",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "number_of_pieces": {
+          "name": "number_of_pieces",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "packaging": {
+          "name": "packaging",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "goods_description": {
+          "name": "goods_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cube": {
+          "name": "cube",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "freight_rate_out": {
+          "name": "freight_rate_out",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "clearance_charge": {
+          "name": "clearance_charge",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "arrival_clearance_cost": {
+          "name": "arrival_clearance_cost",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_commodity_codes": {
+          "name": "additional_commodity_codes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "haulier_name": {
+          "name": "haulier_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "haulier_contact_name": {
+          "name": "haulier_contact_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.import_customers": {
+      "name": "import_customers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact_name": {
+          "name": "contact_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vat_number": {
+          "name": "vat_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "telephone": {
+          "name": "telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fax": {
+          "name": "fax",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_line_1": {
+          "name": "address_line_1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_line_2": {
+          "name": "address_line_2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "town": {
+          "name": "town",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "county": {
+          "name": "county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "postcode": {
+          "name": "postcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_name": {
+          "name": "agent_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_contact_name": {
+          "name": "agent_contact_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_telephone": {
+          "name": "agent_telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_fax": {
+          "name": "agent_fax",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_email": {
+          "name": "agent_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_address_line_1": {
+          "name": "agent_address_line_1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_address_line_2": {
+          "name": "agent_address_line_2",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_town": {
+          "name": "agent_town",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_county": {
+          "name": "agent_county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_postcode": {
+          "name": "agent_postcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_country": {
+          "name": "agent_country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rs_process_customs_clearance": {
+          "name": "rs_process_customs_clearance",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "agent_in_dover": {
+          "name": "agent_in_dover",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vat_dan_authority": {
+          "name": "vat_dan_authority",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "postpone_vat_payment": {
+          "name": "postpone_vat_payment",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "clearance_agent_details": {
+          "name": "clearance_agent_details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "default_delivery_address": {
+          "name": "default_delivery_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "default_suppliers_name": {
+          "name": "default_suppliers_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "booking_in_details": {
+          "name": "booking_in_details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.import_shipments": {
+      "name": "import_shipments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "job_ref": {
+          "name": "job_ref",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_type": {
+          "name": "job_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'import'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_DATE"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Pending'"
+        },
+        "import_customer_id": {
+          "name": "import_customer_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "import_date_eta_port": {
+          "name": "import_date_eta_port",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "port_of_arrival": {
+          "name": "port_of_arrival",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trailer_or_container_number": {
+          "name": "trailer_or_container_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "departure_country": {
+          "name": "departure_country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "container_shipment": {
+          "name": "container_shipment",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "vessel_name": {
+          "name": "vessel_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "incoterms": {
+          "name": "incoterms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "number_of_pieces": {
+          "name": "number_of_pieces",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "packaging": {
+          "name": "packaging",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cube": {
+          "name": "cube",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "goods_description": {
+          "name": "goods_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invoice_value": {
+          "name": "invoice_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "freight_charge": {
+          "name": "freight_charge",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "clearance_charge": {
+          "name": "clearance_charge",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_commodity_codes": {
+          "name": "additional_commodity_codes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vat_zero_rated": {
+          "name": "vat_zero_rated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "clearance_type": {
+          "name": "clearance_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customs_clearance_agent": {
+          "name": "customs_clearance_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rs_to_clear": {
+          "name": "rs_to_clear",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "customer_reference_number": {
+          "name": "customer_reference_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delivery_address": {
+          "name": "delivery_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "supplier_name": {
+          "name": "supplier_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "linked_clearance_id": {
+          "name": "linked_clearance_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_username_unique": {
+          "name": "users_username_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "username"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
