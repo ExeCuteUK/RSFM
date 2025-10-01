@@ -424,6 +424,20 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
+                  name="deliveryReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="status"
                   render={({ field }) => (
                     <FormItem>
@@ -529,22 +543,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   />
                 )}
               </div>
-
-              {status === "Delivered" && (
-                <FormField
-                  control={form.control}
-                  name="deliveryReference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Reference</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
 
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField

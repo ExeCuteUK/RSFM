@@ -485,6 +485,20 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
+                  name="deliveryReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="status"
                   render={({ field }) => (
                     <FormItem>
@@ -590,20 +604,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   />
                 )}
               </div>
-
-              <FormField
-                control={form.control}
-                name="deliveryReference"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Delivery Reference</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
