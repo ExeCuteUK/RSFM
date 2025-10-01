@@ -209,7 +209,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
 
         <Card>
           <CardHeader>
-            <CardTitle>Service Information</CardTitle>
+            <CardTitle>Countries Serviced</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
