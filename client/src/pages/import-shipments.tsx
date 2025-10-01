@@ -260,23 +260,6 @@ export default function ImportShipments() {
                       <span className="font-medium">Port Of Arrival:</span> {shipment.portOfArrival}
                     </p>
                   )}
-                  {shipment.goodsDescription && (
-                    <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
-                      {shipment.goodsDescription}
-                    </p>
-                  )}
-                  {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
-                    <p className="text-muted-foreground" data-testid={`text-weight-pieces-${shipment.id}`}>
-                      {shipment.weight && <>Weight: {shipment.weight}</>}
-                      {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
-                      {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
-                    </p>
-                  )}
-                  {shipment.containerShipment && (
-                    <p className="underline" data-testid={`text-container-shipment-${shipment.id}`}>
-                      Container Shipment
-                    </p>
-                  )}
                   <p data-testid={`text-eta-port-${shipment.id}`}>
                     <span className="font-medium">ETA Port:</span>{' '}
                     {formatDate(shipment.importDateEtaPort) || (
@@ -289,6 +272,25 @@ export default function ImportShipments() {
                       <span className="text-red-700 dark:text-red-600">TBA</span>
                     )}
                   </p>
+                  <div className="pt-2 mt-2 border-t">
+                    {shipment.goodsDescription && (
+                      <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
+                        {shipment.goodsDescription}
+                      </p>
+                    )}
+                    {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
+                      <p className="text-muted-foreground" data-testid={`text-weight-pieces-${shipment.id}`}>
+                        {shipment.weight && <>Weight: {shipment.weight}</>}
+                        {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
+                        {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
+                      </p>
+                    )}
+                    {shipment.containerShipment && (
+                      <p className="underline" data-testid={`text-container-shipment-${shipment.id}`}>
+                        Container Shipment
+                      </p>
+                    )}
+                  </div>
                   {shipment.rsToClear && (
                     <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
                       R.S Processing Import Clearance
