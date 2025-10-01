@@ -105,14 +105,18 @@ export const insertExportCustomerSchema = createInsertSchema(exportCustomers).om
 export type InsertExportCustomer = z.infer<typeof insertExportCustomerSchema>;
 export type ExportCustomer = typeof exportCustomers.$inferSelect;
 
-// Export Receivers Database (placeholder - awaiting field specifications)
+// Export Receivers Database
 export const exportReceivers = pgTable("export_receivers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Contact Information
   companyName: text("company_name").notNull(),
-  contactName: text("contact_name"),
-  email: text("email"),
-  telephone: text("telephone"),
-  // Additional fields to be added based on user specifications
+  addressLine1: text("address_line_1"),
+  addressLine2: text("address_line_2"),
+  town: text("town"),
+  county: text("county"),
+  postcode: text("postcode"),
+  country: text("country"),
 });
 
 export const insertExportReceiverSchema = createInsertSchema(exportReceivers).omit({
