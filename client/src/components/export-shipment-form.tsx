@@ -164,6 +164,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const containerShipment = form.watch("containerShipment")
   const dispatchDate = form.watch("dispatchDate")
   const status = form.watch("status")
+  const receiverId = form.watch("receiverId")
 
   useEffect(() => {
     if (dispatchDate && status === "Pending") {
@@ -173,6 +174,25 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       }
     }
   }, [dispatchDate, status, form])
+
+  useEffect(() => {
+    if (receiverId && exportReceivers) {
+      const selectedReceiver = exportReceivers.find(r => r.id === receiverId)
+      if (selectedReceiver) {
+        const addressParts = [
+          selectedReceiver.addressLine1,
+          selectedReceiver.addressLine2,
+          selectedReceiver.town,
+          selectedReceiver.county,
+          selectedReceiver.postcode,
+          selectedReceiver.country
+        ].filter(part => part && part.trim() !== "")
+        
+        const fullAddress = addressParts.join(", ")
+        form.setValue("deliveryAddress", fullAddress)
+      }
+    }
+  }, [receiverId, exportReceivers, form])
 
   const handleFormSubmit = async (data: InsertExportShipment) => {
     const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
