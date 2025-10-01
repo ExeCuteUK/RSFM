@@ -154,8 +154,7 @@ export class MemStorage implements IStorage {
       agentCountry: insertCustomer.agentCountry ?? null,
       rsProcessCustomsClearance: insertCustomer.rsProcessCustomsClearance ?? false,
       agentInDover: insertCustomer.agentInDover ?? null,
-      vatDanAuthority: insertCustomer.vatDanAuthority ?? false,
-      postponeVatPayment: insertCustomer.postponeVatPayment ?? false,
+      vatPaymentMethod: insertCustomer.vatPaymentMethod ?? null,
       clearanceAgentDetails: insertCustomer.clearanceAgentDetails ?? null,
       defaultDeliveryAddress: insertCustomer.defaultDeliveryAddress ?? null,
       defaultSuppliersName: insertCustomer.defaultSuppliersName ?? null,
@@ -195,8 +194,7 @@ export class MemStorage implements IStorage {
       agentCountry: updates.agentCountry !== undefined ? updates.agentCountry ?? null : existing.agentCountry,
       rsProcessCustomsClearance: updates.rsProcessCustomsClearance !== undefined ? updates.rsProcessCustomsClearance ?? false : existing.rsProcessCustomsClearance,
       agentInDover: updates.agentInDover !== undefined ? updates.agentInDover ?? null : existing.agentInDover,
-      vatDanAuthority: updates.vatDanAuthority !== undefined ? updates.vatDanAuthority ?? false : existing.vatDanAuthority,
-      postponeVatPayment: updates.postponeVatPayment !== undefined ? updates.postponeVatPayment ?? false : existing.postponeVatPayment,
+      vatPaymentMethod: updates.vatPaymentMethod !== undefined ? updates.vatPaymentMethod ?? null : existing.vatPaymentMethod,
       clearanceAgentDetails: updates.clearanceAgentDetails !== undefined ? updates.clearanceAgentDetails ?? null : existing.clearanceAgentDetails,
       defaultDeliveryAddress: updates.defaultDeliveryAddress !== undefined ? updates.defaultDeliveryAddress ?? null : existing.defaultDeliveryAddress,
       defaultSuppliersName: updates.defaultSuppliersName !== undefined ? updates.defaultSuppliersName ?? null : existing.defaultSuppliersName,
@@ -540,6 +538,7 @@ export class MemStorage implements IStorage {
       haulierName: insertShipment.haulierName ?? null,
       haulierContactName: insertShipment.haulierContactName ?? null,
       attachments: insertShipment.attachments ?? null,
+      linkedClearanceId: insertShipment.linkedClearanceId ?? null,
     };
 
     this.exportShipments.set(id, shipment);
@@ -582,6 +581,7 @@ export class MemStorage implements IStorage {
       haulierName: updates.haulierName !== undefined ? updates.haulierName ?? null : existing.haulierName,
       haulierContactName: updates.haulierContactName !== undefined ? updates.haulierContactName ?? null : existing.haulierContactName,
       attachments: updates.attachments !== undefined ? updates.attachments ?? null : existing.attachments,
+      linkedClearanceId: updates.linkedClearanceId !== undefined ? updates.linkedClearanceId ?? null : existing.linkedClearanceId,
     };
     
     this.exportShipments.set(id, updated);
@@ -919,10 +919,64 @@ export class DatabaseStorage implements IStorage {
       createdAt: new Date().toISOString(),
     }).returning();
 
+    // Auto-create Custom Clearance if exportClearanceAgent is "R.S"
+    if (shipment.exportClearanceAgent === "R.S") {
+      const [clearance] = await db.insert(customClearances).values({
+        jobRef: shipment.jobRef,
+        jobType: "export",
+        createdAt: new Date().toISOString(),
+        status: "Waiting Entry",
+        importCustomerId: null,
+        exportCustomerId: shipment.destinationCustomerId,
+        receiverId: shipment.receiverId,
+        etaPort: shipment.loadDate,
+        portOfArrival: shipment.portOfArrival,
+        trailerOrContainerNumber: shipment.trailerNo,
+        departureFrom: shipment.departureFrom,
+        containerShipment: shipment.containerShipment,
+        vesselName: shipment.vesselName,
+        numberOfPieces: shipment.numberOfPieces,
+        packaging: shipment.packaging,
+        weight: shipment.weight,
+        cube: shipment.cube,
+        goodsDescription: shipment.goodsDescription,
+        invoiceValue: shipment.value,
+        transportCosts: shipment.freightRateOut,
+        clearanceCharge: shipment.clearanceCharge,
+        currency: shipment.currency,
+        additionalCommodityCodes: shipment.additionalCommodityCodes,
+        vatZeroRated: false,
+        clearanceType: null,
+        incoterms: shipment.incoterms,
+        customerReferenceNumber: shipment.customerReferenceNumber,
+        supplierName: shipment.supplier,
+        attachments: null,
+        createdFromType: "export",
+        createdFromId: shipment.id,
+      }).returning();
+
+      // Update shipment with linked clearance ID
+      const [updated] = await db.update(exportShipments)
+        .set({ linkedClearanceId: clearance.id })
+        .where(eq(exportShipments.id, shipment.id))
+        .returning();
+      
+      return updated;
+    }
+
     return shipment;
   }
 
   async updateExportShipment(id: string, updates: Partial<InsertExportShipment>): Promise<ExportShipment | undefined> {
+    const existing = await this.getExportShipment(id);
+    if (!existing) return undefined;
+
+    // If exportClearanceAgent is being changed from "R.S" to something else, delete the linked clearance
+    if (existing.exportClearanceAgent === "R.S" && updates.exportClearanceAgent && updates.exportClearanceAgent !== "R.S" && existing.linkedClearanceId) {
+      await db.delete(customClearances).where(eq(customClearances.id, existing.linkedClearanceId));
+      updates.linkedClearanceId = null;
+    }
+
     const [updated] = await db.update(exportShipments)
       .set(updates)
       .where(eq(exportShipments.id, id))
