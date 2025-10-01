@@ -55,7 +55,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       additionalCommodityCodes: undefined,
       vatZeroRated: false,
       clearanceType: "",
-      deliveryOrder: "",
       customsClearanceAgent: "",
       rsToClear: false,
       customerReferenceNumber: "",
@@ -548,20 +547,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
               )}
-
-              <FormField
-                control={form.control}
-                name="deliveryOrder"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Delivery Order</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-delivery-order" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}
