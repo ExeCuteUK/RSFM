@@ -302,9 +302,11 @@ export default function ImportShipments() {
                     )}
                   </div>
                   {shipment.rsToClear && (
-                    <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
-                      R.S Processing Import Clearance
-                    </p>
+                    <div className="pt-2 mt-2 border-t">
+                      <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
+                        R.S Processing Import Clearance
+                      </p>
+                    </div>
                   )}
                   {(() => {
                     const files = parseAttachments(shipment.attachments)
