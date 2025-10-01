@@ -60,7 +60,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <KPICard
           title="Active Shipments"
           value={147}
@@ -69,22 +69,15 @@ export default function Dashboard() {
           icon={Package}
         />
         <KPICard
-          title="Available Drivers"
-          value={23}
-          change="-2% from last month" 
-          changeType="decrease"
+          title="Pending Deliveries"
+          value={34}
+          change="+5% from last month"
+          changeType="increase"
           icon={Truck}
         />
         <KPICard
-          title="Total Customers"
-          value={542}
-          change="+8% from last month"
-          changeType="increase"
-          icon={Users}
-        />
-        <KPICard
           title="Monthly Revenue"
-          value="$45,230"
+          value="£45,230"
           change="+15% from last month"
           changeType="increase"
           icon={DollarSign}
@@ -134,14 +127,6 @@ export default function Dashboard() {
                 <div>
                   <div className="text-2xl font-bold" data-testid="text-shipments-today">12</div>
                   <div className="text-sm text-muted-foreground">Shipments today</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <Truck className="h-8 w-8 text-purple-600" />
-                <div>
-                  <div className="text-2xl font-bold" data-testid="text-drivers-active">18</div>
-                  <div className="text-sm text-muted-foreground">Drivers active</div>
                 </div>
               </div>
             </CardContent>
