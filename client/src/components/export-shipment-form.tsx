@@ -33,7 +33,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 import { ExportCustomerForm } from "./export-customer-form"
@@ -60,7 +60,9 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       receiverId: "",
       destinationCustomerId: "",
       customerReferenceNumber: "",
-      loadDate: "",
+      bookingDate: format(new Date(), "yyyy-MM-dd"),
+      approxLoadDate: "",
+      dispatchDate: "",
       trailerNo: "",
       departureFrom: "",
       portOfArrival: "",
@@ -146,6 +148,17 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const exportClearanceAgent = form.watch("exportClearanceAgent")
   const arrivalClearanceAgent = form.watch("arrivalClearanceAgent")
   const containerShipment = form.watch("containerShipment")
+  const dispatchDate = form.watch("dispatchDate")
+  const status = form.watch("status")
+
+  useEffect(() => {
+    if (dispatchDate && status === "Pending") {
+      const today = format(new Date(), "yyyy-MM-dd")
+      if (today > dispatchDate) {
+        form.setValue("status", "In Transit")
+      }
+    }
+  }, [dispatchDate, status, form])
 
   return (
     <Form {...form}>
@@ -252,10 +265,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="loadDate"
+                  name="bookingDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Load Date</FormLabel>
+                      <FormLabel>Booking Date</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -265,7 +278,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                                 "w-full justify-start text-left font-normal",
                                 !field.value && "text-muted-foreground"
                               )}
-                              data-testid="button-load-date"
+                              data-testid="button-booking-date"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
@@ -286,6 +299,105 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="approxLoadDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Approx Load Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-approx-load-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="dispatchDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dispatch Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-dispatch-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-job-status">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                          <SelectItem value="In Transit">In Transit</SelectItem>
+                          <SelectItem value="Delivered">Delivered</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="trailerNo"
