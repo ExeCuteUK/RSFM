@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
@@ -48,6 +49,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       departureFrom: "",
       portOfArrival: "",
       incoterms: "",
+      containerShipment: false,
+      vesselName: "",
       exportClearanceAgent: "",
       arrivalClearanceAgent: "",
       supplier: "",
@@ -79,6 +82,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   })
 
   const exportClearanceAgent = form.watch("exportClearanceAgent")
+  const arrivalClearanceAgent = form.watch("arrivalClearanceAgent")
+  const containerShipment = form.watch("containerShipment")
 
   return (
     <Form {...form}>
@@ -202,7 +207,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   name="trailerNo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Trailer No</FormLabel>
+                      <FormLabel>{containerShipment ? "Container Number" : "Trailer No"}</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-trailer-no" />
                       </FormControl>
@@ -269,6 +274,39 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="containerShipment"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value ?? false}
+                          onCheckedChange={field.onChange}
+                          data-testid="checkbox-container-shipment"
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0">Container Shipment</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                {containerShipment && (
+                  <FormField
+                    control={form.control}
+                    name="vesselName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vessel Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             </CardContent>
           </Card>
