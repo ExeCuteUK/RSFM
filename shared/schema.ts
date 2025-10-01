@@ -263,7 +263,9 @@ export const exportShipments = pgTable("export_shipments", {
   customerReferenceNumber: text("customer_reference_number"),
   
   // Shipment Details
-  loadDate: text("load_date"),
+  bookingDate: text("booking_date"),
+  approxLoadDate: text("approx_load_date"),
+  dispatchDate: text("dispatch_date"),
   trailerNo: text("trailer_no"),
   departureFrom: text("departure_from"),
   portOfArrival: text("port_of_arrival"),
@@ -315,9 +317,13 @@ export const insertExportShipmentSchema = createInsertSchema(exportShipments).om
     (val) => val !== null && val !== undefined && val.length > 0,
     { message: "Export Receiver is required" }
   ),
-  loadDate: z.string().nullable().refine(
+  bookingDate: z.string().nullable().refine(
     (val) => val !== null && val !== undefined && val.length > 0,
-    { message: "Load Date is required" }
+    { message: "Booking Date is required" }
+  ),
+  approxLoadDate: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Approx Load Date is required" }
   ),
   exportClearanceAgent: z.string().min(1, "Export Clearance Agent is required"),
   arrivalClearanceAgent: z.string().min(1, "Arrival Clearance Agent is required"),
