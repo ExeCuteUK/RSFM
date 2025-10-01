@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { insertExportCustomerSchema, type InsertExportCustomer } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
   Form,
   FormControl,
@@ -12,6 +13,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { X, Plus } from "lucide-react"
+import { useState } from "react"
 
 interface ExportCustomerFormProps {
   onSubmit: (data: InsertExportCustomer) => void
@@ -20,6 +23,9 @@ interface ExportCustomerFormProps {
 }
 
 export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: ExportCustomerFormProps) {
+  const [newEmail, setNewEmail] = useState("")
+  const [newAgentEmail, setNewAgentEmail] = useState("")
+  
   const form = useForm<InsertExportCustomer>({
     resolver: zodResolver(insertExportCustomerSchema),
     defaultValues: {
@@ -28,7 +34,7 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       vatNumber: "",
       telephone: "",
       fax: "",
-      email: "",
+      email: [],
       addressLine1: "",
       addressLine2: "",
       town: "",
@@ -39,7 +45,7 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       agentContactName: "",
       agentTelephone: "",
       agentFax: "",
-      agentEmail: "",
+      agentEmail: [],
       agentAddressLine1: "",
       agentAddressLine2: "",
       agentTown: "",
@@ -49,6 +55,37 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       ...defaultValues
     },
   })
+
+  const addEmail = () => {
+    if (!newEmail.trim()) return
+    const currentEmails = form.getValues("email") || []
+    if (!currentEmails.includes(newEmail.trim())) {
+      form.setValue("email", [...currentEmails, newEmail.trim()])
+      setNewEmail("")
+    }
+  }
+
+  const removeEmail = (email: string) => {
+    const currentEmails = form.getValues("email") || []
+    form.setValue("email", currentEmails.filter(e => e !== email))
+  }
+
+  const addAgentEmail = () => {
+    if (!newAgentEmail.trim()) return
+    const currentAgentEmails = form.getValues("agentEmail") || []
+    if (!currentAgentEmails.includes(newAgentEmail.trim())) {
+      form.setValue("agentEmail", [...currentAgentEmails, newAgentEmail.trim()])
+      setNewAgentEmail("")
+    }
+  }
+
+  const removeAgentEmail = (email: string) => {
+    const currentAgentEmails = form.getValues("agentEmail") || []
+    form.setValue("agentEmail", currentAgentEmails.filter(e => e !== email))
+  }
+
+  const emails = form.watch("email") || []
+  const agentEmails = form.watch("agentEmail") || []
 
   return (
     <Form {...form}>
@@ -133,12 +170,58 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
               <FormField
                 control={form.control}
                 name="email"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
-                    <FormLabel>E-Mail</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} value={field.value || ""} data-testid="input-email" />
-                    </FormControl>
+                    <FormLabel>Email</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter email address"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addEmail()
+                            }
+                          }}
+                          type="email"
+                          data-testid="input-new-email"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addEmail}
+                          data-testid="button-add-email"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {emails.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-emails">
+                          {emails.map((email) => (
+                            <Badge
+                              key={email}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-email-${email}`}
+                            >
+                              {email}
+                              <button
+                                type="button"
+                                onClick={() => removeEmail(email)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-email-${email}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -295,12 +378,58 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
               <FormField
                 control={form.control}
                 name="agentEmail"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
-                    <FormLabel>E-Mail</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} value={field.value || ""} data-testid="input-agent-email" />
-                    </FormControl>
+                    <FormLabel>Email</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter email address"
+                          value={newAgentEmail}
+                          onChange={(e) => setNewAgentEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addAgentEmail()
+                            }
+                          }}
+                          type="email"
+                          data-testid="input-new-agent-email"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addAgentEmail}
+                          data-testid="button-add-agent-email"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {agentEmails.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-agent-emails">
+                          {agentEmails.map((email) => (
+                            <Badge
+                              key={email}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-agent-email-${email}`}
+                            >
+                              {email}
+                              <button
+                                type="button"
+                                onClick={() => removeAgentEmail(email)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-agent-email-${email}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
