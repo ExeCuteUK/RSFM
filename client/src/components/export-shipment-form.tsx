@@ -124,7 +124,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 name="receiverId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Receiver</FormLabel>
+                    <FormLabel>Export Receiver</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger data-testid="select-receiver">
