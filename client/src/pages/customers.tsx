@@ -259,9 +259,9 @@ export default function Customers() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Customers</h1>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">Contacts</h1>
           <p className="text-muted-foreground">
-            Manage import customers, export customers, and export receivers
+            Manage import customers, export customers, export receivers and hauliers
           </p>
         </div>
         <Button data-testid="button-new-customer" onClick={handleCreateNew}>
@@ -322,12 +322,25 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {customer.email && <p data-testid={`text-email-${customer.id}`}>{customer.email}</p>}
+                      {!customer.agentName && customer.email && customer.email.length > 0 && (
+                        <p data-testid={`text-email-${customer.id}`}>{customer.email[0]}</p>
+                      )}
                       {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
                       {customer.addressLine1 && (
                         <p className="text-muted-foreground" data-testid={`text-address-${customer.id}`}>
                           {[customer.addressLine1, customer.town, customer.postcode].filter(Boolean).join(", ")}
                         </p>
+                      )}
+                      {customer.agentName && (
+                        <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
+                          <p className="font-semibold" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
+                          {customer.agentContactName && (
+                            <p className="text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
+                          )}
+                          {customer.agentEmail && customer.agentEmail.length > 0 && (
+                            <p data-testid={`text-agent-email-${customer.id}`}>{customer.agentEmail[0]}</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </CardContent>
@@ -381,12 +394,25 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {customer.email && <p data-testid={`text-email-${customer.id}`}>{customer.email}</p>}
+                      {!customer.agentName && customer.email && customer.email.length > 0 && (
+                        <p data-testid={`text-email-${customer.id}`}>{customer.email[0]}</p>
+                      )}
                       {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
                       {customer.addressLine1 && (
                         <p className="text-muted-foreground" data-testid={`text-address-${customer.id}`}>
                           {[customer.addressLine1, customer.town, customer.postcode].filter(Boolean).join(", ")}
                         </p>
+                      )}
+                      {customer.agentName && (
+                        <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
+                          <p className="font-semibold" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
+                          {customer.agentContactName && (
+                            <p className="text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
+                          )}
+                          {customer.agentEmail && customer.agentEmail.length > 0 && (
+                            <p data-testid={`text-agent-email-${customer.id}`}>{customer.agentEmail[0]}</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </CardContent>
