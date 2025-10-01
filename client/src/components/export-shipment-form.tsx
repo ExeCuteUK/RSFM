@@ -8,7 +8,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon, Plus, Download, X, FileText } from "lucide-react"
-import { ObjectUploader } from "@/components/ObjectUploader"
+import { InlineUploader } from "@/components/InlineUploader"
 import type { UploadResult } from "@uppy/core"
 import {
   Form,
@@ -500,7 +500,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                       <FormItem>
                         <FormLabel>Proof Of Delivery</FormLabel>
                         <div className="space-y-3">
-                          <ObjectUploader
+                          <InlineUploader
                             maxNumberOfFiles={5}
                             maxFileSize={20 * 1024 * 1024}
                             onGetUploadParameters={async () => {
@@ -512,10 +512,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                               const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
                               setPendingProofOfDelivery((prev) => [...prev, ...uploadedUrls]);
                             }}
-                            buttonVariant="outline"
-                          >
-                            Upload Files
-                          </ObjectUploader>
+                            note="Drag and drop proof of delivery files here (up to 5 files, 20MB each)"
+                          />
                           
                           {(pendingProofOfDelivery.length > 0 || (field.value && field.value.length > 0)) && (
                             <div className="space-y-2">
@@ -1022,7 +1020,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 render={({ field }) => (
                   <FormItem>
                     <div className="space-y-3">
-                      <ObjectUploader
+                      <InlineUploader
                         maxNumberOfFiles={5}
                         maxFileSize={20 * 1024 * 1024}
                         onGetUploadParameters={async () => {
@@ -1034,10 +1032,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
                           setPendingAttachments((prev) => [...prev, ...uploadedUrls]);
                         }}
-                        buttonVariant="outline"
-                      >
-                        Upload Files
-                      </ObjectUploader>
+                        note="Drag and drop attachment files here (up to 5 files, 20MB each)"
+                      />
                       
                       {(pendingAttachments.length > 0 || (field.value && field.value.length > 0)) && (
                         <div className="space-y-2">
