@@ -27,7 +27,7 @@ export const importCustomers = pgTable("import_customers", {
   vatNumber: text("vat_number"),
   telephone: text("telephone"),
   fax: text("fax"),
-  email: text("email"),
+  email: text("email").array(),
   addressLine1: text("address_line_1"),
   addressLine2: text("address_line_2"),
   town: text("town"),
@@ -40,7 +40,7 @@ export const importCustomers = pgTable("import_customers", {
   agentContactName: text("agent_contact_name"),
   agentTelephone: text("agent_telephone"),
   agentFax: text("agent_fax"),
-  agentEmail: text("agent_email"),
+  agentEmail: text("agent_email").array(),
   agentAddressLine1: text("agent_address_line_1"),
   agentAddressLine2: text("agent_address_line_2"),
   agentTown: text("agent_town"),
@@ -75,7 +75,7 @@ export const exportCustomers = pgTable("export_customers", {
   vatNumber: text("vat_number"),
   telephone: text("telephone"),
   fax: text("fax"),
-  email: text("email"),
+  email: text("email").array(),
   addressLine1: text("address_line_1"),
   addressLine2: text("address_line_2"),
   town: text("town"),
@@ -88,7 +88,7 @@ export const exportCustomers = pgTable("export_customers", {
   agentContactName: text("agent_contact_name"),
   agentTelephone: text("agent_telephone"),
   agentFax: text("agent_fax"),
-  agentEmail: text("agent_email"),
+  agentEmail: text("agent_email").array(),
   agentAddressLine1: text("agent_address_line_1"),
   agentAddressLine2: text("agent_address_line_2"),
   agentTown: text("agent_town"),
@@ -110,6 +110,7 @@ export const exportReceivers = pgTable("export_receivers", {
   
   // Contact Information
   companyName: text("company_name").notNull(),
+  email: text("email").array(),
   addressLine1: text("address_line_1"),
   addressLine2: text("address_line_2"),
   town: text("town"),
@@ -135,7 +136,7 @@ export const hauliers = pgTable("hauliers", {
   address: text("address"),
   telephone: text("telephone"),
   mobile: text("mobile"),
-  email: text("email"),
+  email: text("email").array(),
   
   // Service Information
   destinationCountries: text("destination_countries").array(),
