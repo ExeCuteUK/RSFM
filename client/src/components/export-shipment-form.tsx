@@ -1,13 +1,13 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertExportShipmentSchema, type InsertExportShipment, type ExportReceiver, type ExportCustomer } from "@shared/schema"
+import { insertExportShipmentSchema, type InsertExportShipment, type ExportReceiver, type ExportCustomer, type InsertExportCustomer, type InsertExportReceiver } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon, Plus } from "lucide-react"
 import {
   Form,
   FormControl,
@@ -23,11 +23,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
+import { ExportCustomerForm } from "./export-customer-form"
+import { ExportReceiverForm } from "./export-receiver-form"
+import { apiRequest, queryClient } from "@/lib/queryClient"
+import { useToast } from "@/hooks/use-toast"
 
 interface ExportShipmentFormProps {
   onSubmit: (data: InsertExportShipment) => void
@@ -36,6 +48,10 @@ interface ExportShipmentFormProps {
 }
 
 export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: ExportShipmentFormProps) {
+  const { toast } = useToast()
+  const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
+  const [isReceiverDialogOpen, setIsReceiverDialogOpen] = useState(false)
+
   const form = useForm<InsertExportShipment>({
     resolver: zodResolver(insertExportShipmentSchema),
     defaultValues: {
@@ -81,6 +97,52 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
     queryKey: ["/api/export-customers"],
   })
 
+  const createCustomerMutation = useMutation({
+    mutationFn: async (data: InsertExportCustomer) => {
+      const response = await apiRequest("POST", "/api/export-customers", data);
+      return response.json() as Promise<ExportCustomer>;
+    },
+    onSuccess: async (newCustomer: ExportCustomer) => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/export-customers"] })
+      form.setValue("destinationCustomerId", newCustomer.id)
+      setIsCustomerDialogOpen(false)
+      toast({
+        title: "Success",
+        description: "Export customer created successfully",
+      })
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create export customer",
+        variant: "destructive",
+      })
+    },
+  })
+
+  const createReceiverMutation = useMutation({
+    mutationFn: async (data: InsertExportReceiver) => {
+      const response = await apiRequest("POST", "/api/export-receivers", data);
+      return response.json() as Promise<ExportReceiver>;
+    },
+    onSuccess: async (newReceiver: ExportReceiver) => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/export-receivers"] })
+      form.setValue("receiverId", newReceiver.id)
+      setIsReceiverDialogOpen(false)
+      toast({
+        title: "Success",
+        description: "Export receiver created successfully",
+      })
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create export receiver",
+        variant: "destructive",
+      })
+    },
+  })
+
   const exportClearanceAgent = form.watch("exportClearanceAgent")
   const arrivalClearanceAgent = form.watch("arrivalClearanceAgent")
   const containerShipment = form.watch("containerShipment")
@@ -100,20 +162,31 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Export Customer</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-destination-customer">
-                          <SelectValue placeholder="Select export customer" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {exportCustomers?.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.companyName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-destination-customer" className="flex-1">
+                            <SelectValue placeholder="Select export customer" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {exportCustomers?.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                              {customer.companyName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setIsCustomerDialogOpen(true)}
+                        data-testid="button-create-export-customer"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -125,20 +198,31 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Export Receiver</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-receiver">
-                          <SelectValue placeholder="Select receiver" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {exportReceivers?.map((receiver) => (
-                          <SelectItem key={receiver.id} value={receiver.id}>
-                            {receiver.companyName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-receiver" className="flex-1">
+                            <SelectValue placeholder="Select receiver" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {exportReceivers?.map((receiver) => (
+                            <SelectItem key={receiver.id} value={receiver.id}>
+                              {receiver.companyName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setIsReceiverDialogOpen(true)}
+                        data-testid="button-create-export-receiver"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -668,6 +752,36 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
           </Button>
         </div>
       </form>
+
+      <Dialog open={isCustomerDialogOpen} onOpenChange={setIsCustomerDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Export Customer</DialogTitle>
+            <DialogDescription>
+              Add a new export customer to the system
+            </DialogDescription>
+          </DialogHeader>
+          <ExportCustomerForm
+            onSubmit={(data) => createCustomerMutation.mutate(data)}
+            onCancel={() => setIsCustomerDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isReceiverDialogOpen} onOpenChange={setIsReceiverDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Export Receiver</DialogTitle>
+            <DialogDescription>
+              Add a new export receiver to the system
+            </DialogDescription>
+          </DialogHeader>
+          <ExportReceiverForm
+            onSubmit={(data) => createReceiverMutation.mutate(data)}
+            onCancel={() => setIsReceiverDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </Form>
   )
 }
