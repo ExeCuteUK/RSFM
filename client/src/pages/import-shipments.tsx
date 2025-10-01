@@ -253,6 +253,12 @@ export default function ImportShipments() {
                   {shipment.trailerOrContainerNumber && (
                     <p data-testid={`text-truck-container-${shipment.id}`}>
                       {shipment.trailerOrContainerNumber}
+                      {shipment.containerShipment && shipment.shippingLine && ` / ${shipment.shippingLine}`}
+                    </p>
+                  )}
+                  {shipment.containerShipment && shipment.vesselName && (
+                    <p data-testid={`text-vessel-name-${shipment.id}`}>
+                      {shipment.vesselName}
                     </p>
                   )}
                   {shipment.portOfArrival && (
@@ -272,7 +278,7 @@ export default function ImportShipments() {
                       <span className="text-red-700 dark:text-red-600">TBA</span>
                     )}
                   </p>
-                  <div className="pt-2 mt-2 border-t">
+                  <div className="pt-2 mt-2 border-t space-y-1">
                     {shipment.goodsDescription && (
                       <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
                         {shipment.goodsDescription}
@@ -285,12 +291,14 @@ export default function ImportShipments() {
                         {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
                       </p>
                     )}
-                    {shipment.containerShipment && (
+                  </div>
+                  {shipment.containerShipment && (
+                    <div className="pt-2 mt-2 border-t">
                       <p className="underline" data-testid={`text-container-shipment-${shipment.id}`}>
                         Container Shipment
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   {shipment.rsToClear && (
                     <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
                       R.S Processing Import Clearance
