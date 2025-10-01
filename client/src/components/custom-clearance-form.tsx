@@ -555,6 +555,37 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="incoterms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Incoterms</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-incoterms">
+                            <SelectValue placeholder="Select incoterms" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="EXW">EXW - Ex Works</SelectItem>
+                          <SelectItem value="FCA">FCA - Free Carrier</SelectItem>
+                          <SelectItem value="CPT">CPT - Carriage Paid To</SelectItem>
+                          <SelectItem value="CIP">CIP - Carriage and Insurance Paid To</SelectItem>
+                          <SelectItem value="DAP">DAP - Delivered At Place</SelectItem>
+                          <SelectItem value="DPU">DPU - Delivered at Place Unloaded</SelectItem>
+                          <SelectItem value="DDP">DDP - Delivered Duty Paid</SelectItem>
+                          <SelectItem value="FAS">FAS - Free Alongside Ship</SelectItem>
+                          <SelectItem value="FOB">FOB - Free On Board</SelectItem>
+                          <SelectItem value="CFR">CFR - Cost and Freight</SelectItem>
+                          <SelectItem value="CIF">CIF - Cost, Insurance and Freight</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
