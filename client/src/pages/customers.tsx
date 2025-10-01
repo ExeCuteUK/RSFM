@@ -293,7 +293,7 @@ export default function Customers() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {importCustomers.map((customer) => (
-                <Card key={customer.id} data-testid={`card-customer-${customer.id}`}>
+                <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-blue-50/50 dark:bg-blue-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
@@ -323,7 +323,13 @@ export default function Customers() {
                     </div>
                     <div className="space-y-1 text-sm">
                       {!customer.agentName && customer.email && customer.email.length > 0 && (
-                        <p data-testid={`text-email-${customer.id}`}>{customer.email[0]}</p>
+                        <div className="space-y-0.5">
+                          {customer.email.map((email, idx) => (
+                            <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
+                              <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+                            </p>
+                          ))}
+                        </div>
                       )}
                       {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
                       {customer.addressLine1 && (
@@ -333,12 +339,18 @@ export default function Customers() {
                       )}
                       {customer.agentName && (
                         <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
-                          <p className="font-semibold" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
+                          <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
                           {customer.agentContactName && (
                             <p className="text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
                           )}
                           {customer.agentEmail && customer.agentEmail.length > 0 && (
-                            <p data-testid={`text-agent-email-${customer.id}`}>{customer.agentEmail[0]}</p>
+                            <div className="space-y-0.5">
+                              {customer.agentEmail.map((email, idx) => (
+                                <p key={idx} data-testid={`text-agent-email-${customer.id}-${idx}`}>
+                                  <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+                                </p>
+                              ))}
+                            </div>
                           )}
                         </div>
                       )}
@@ -365,7 +377,7 @@ export default function Customers() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {exportCustomers.map((customer) => (
-                <Card key={customer.id} data-testid={`card-customer-${customer.id}`}>
+                <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-green-50/50 dark:bg-green-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
@@ -395,7 +407,13 @@ export default function Customers() {
                     </div>
                     <div className="space-y-1 text-sm">
                       {!customer.agentName && customer.email && customer.email.length > 0 && (
-                        <p data-testid={`text-email-${customer.id}`}>{customer.email[0]}</p>
+                        <div className="space-y-0.5">
+                          {customer.email.map((email, idx) => (
+                            <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
+                              <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+                            </p>
+                          ))}
+                        </div>
                       )}
                       {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
                       {customer.addressLine1 && (
@@ -405,12 +423,18 @@ export default function Customers() {
                       )}
                       {customer.agentName && (
                         <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
-                          <p className="font-semibold" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
+                          <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
                           {customer.agentContactName && (
                             <p className="text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
                           )}
                           {customer.agentEmail && customer.agentEmail.length > 0 && (
-                            <p data-testid={`text-agent-email-${customer.id}`}>{customer.agentEmail[0]}</p>
+                            <div className="space-y-0.5">
+                              {customer.agentEmail.map((email, idx) => (
+                                <p key={idx} data-testid={`text-agent-email-${customer.id}-${idx}`}>
+                                  <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+                                </p>
+                              ))}
+                            </div>
                           )}
                         </div>
                       )}
@@ -491,7 +515,7 @@ export default function Customers() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {hauliers.map((haulier) => (
-                <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`}>
+                <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
@@ -520,7 +544,11 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {haulier.email && <p data-testid={`text-email-${haulier.id}`}>{haulier.email}</p>}
+                      {haulier.email && (
+                        <p data-testid={`text-email-${haulier.id}`}>
+                          <a href={`mailto:${haulier.email}`} className="hover:underline">{haulier.email}</a>
+                        </p>
+                      )}
                       {haulier.telephone && <p data-testid={`text-telephone-${haulier.id}`}>{haulier.telephone}</p>}
                       {haulier.mobile && <p data-testid={`text-mobile-${haulier.id}`}>{haulier.mobile}</p>}
                       {haulier.destinationCountries && haulier.destinationCountries.length > 0 && (
