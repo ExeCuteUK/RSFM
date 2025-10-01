@@ -48,7 +48,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       portOfArrival: "",
       trailerOrContainerNumber: "",
       departureFrom: "",
-      containerShipment: false,
+      containerShipment: "",
       vesselName: "",
       numberOfPieces: "",
       packaging: "",
@@ -389,20 +389,26 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   control={form.control}
                   name="containerShipment"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-container-shipment"
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">Container Shipment</FormLabel>
+                    <FormItem>
+                      <FormLabel>Shipment Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-shipment-type">
+                            <SelectValue placeholder="Select shipment type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Road Shipment">Road Shipment</SelectItem>
+                          <SelectItem value="Container Shipment">Container Shipment</SelectItem>
+                          <SelectItem value="Air Freight">Air Freight</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {containerShipment && (
+                {containerShipment === "Container Shipment" && (
                   <FormField
                     control={form.control}
                     name="vesselName"
