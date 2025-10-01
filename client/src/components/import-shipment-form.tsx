@@ -24,6 +24,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ImportShipmentFormProps {
   onSubmit: (data: InsertImportShipment) => void
@@ -144,16 +149,37 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   control={form.control}
                   name="importDateEtaPort"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Import Date / ETA Port</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          value={field.value || ""} 
-                          placeholder="DD/MM/YY"
-                          data-testid="input-import-date" 
-                        />
-                      </FormControl>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-import-date"
+                            >
+                              {field.value ? (
+                                format(new Date(field.value), "dd/MM/yy")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "dd/MM/yy") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
