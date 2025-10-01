@@ -499,22 +499,24 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="vatZeroRated"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-vat-zero-rated"
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">VAT Zero Rated</FormLabel>
-                    </FormItem>
-                  )}
-                />
+                {rsToClear && (
+                  <FormField
+                    control={form.control}
+                    name="vatZeroRated"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value ?? false}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-vat-zero-rated"
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0">VAT Zero Rated</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               {!rsToClear && (
