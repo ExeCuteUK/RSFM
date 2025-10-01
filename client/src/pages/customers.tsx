@@ -836,7 +836,7 @@ export default function Customers() {
             </div>
           )}
 
-          {viewingCustomer && 'contactName' in viewingCustomer && viewingCustomer.contactName !== undefined && (
+          {viewingCustomer && 'contactName' in viewingCustomer && viewingCustomer.contactName !== undefined && !('rsProcessCustomsClearance' in viewingCustomer) && (
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
