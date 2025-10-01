@@ -86,6 +86,15 @@ export default function ImportShipments() {
     },
   })
 
+  const updateClearanceStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/clearance-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingShipment(null)
     setIsFormOpen(true)
@@ -130,6 +139,10 @@ export default function ImportShipments() {
     updateStatus.mutate({ id, status: nextStatus })
   }
 
+  const handleClearanceStatusUpdate = (id: string, status: number) => {
+    updateClearanceStatus.mutate({ id, status })
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Pending": return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20"
@@ -139,13 +152,9 @@ export default function ImportShipments() {
     }
   }
 
-  const parseAttachments = (attachments: string | null) => {
-    if (!attachments) return []
-    try {
-      return JSON.parse(attachments)
-    } catch {
-      return []
-    }
+  const parseAttachments = (attachments: string[] | null) => {
+    if (!attachments || !Array.isArray(attachments)) return []
+    return attachments
   }
 
   const formatDate = (dateStr: string | null) => {
@@ -383,7 +392,10 @@ export default function ImportShipments() {
           <ImportShipmentForm
             onSubmit={handleFormSubmit}
             onCancel={() => setIsFormOpen(false)}
-            defaultValues={editingShipment || undefined}
+            defaultValues={editingShipment ? {
+              ...editingShipment,
+              importCustomerId: editingShipment.importCustomerId || "",
+            } : undefined}
           />
         </DialogContent>
       </Dialog>
