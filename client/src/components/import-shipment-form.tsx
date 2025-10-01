@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertImportShipmentSchema, type InsertImportShipment, type ImportCustomer, type InsertImportCustomer } from "@shared/schema"
+import { insertImportShipmentSchema, type InsertImportShipment, type ImportCustomer, type InsertImportCustomer, type Haulier } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -84,6 +84,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       clearanceCharge: "",
       currency: "",
       additionalCommodityCodes: 1,
+      haulierName: "",
+      haulierContactName: "",
       vatZeroRated: false,
       clearanceType: "",
       customsClearanceAgent: "",
@@ -98,6 +100,10 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
   const { data: importCustomers } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
+  })
+
+  const { data: hauliers } = useQuery<Haulier[]>({
+    queryKey: ["/api/hauliers"],
   })
 
   const createCustomerMutation = useMutation({
@@ -1057,6 +1063,54 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       <FormLabel>Freight Charge</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-freight-charge" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Haulier Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="haulierName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Haulier Name</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-haulier-name">
+                            <SelectValue placeholder="Select haulier" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {hauliers?.map((haulier) => (
+                            <SelectItem key={haulier.id} value={haulier.haulierName}>
+                              {haulier.haulierName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="haulierContactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Haulier Contact Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
