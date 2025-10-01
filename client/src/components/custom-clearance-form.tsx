@@ -66,7 +66,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       supplierName: "",
       createdFromType: "",
       createdFromId: "",
-      attachments: "",
+      attachments: [],
       ...defaultValues
     },
   })
