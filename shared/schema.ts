@@ -198,8 +198,8 @@ export const importShipments = pgTable("import_shipments", {
   deliveryAddress: text("delivery_address"),
   supplierName: text("supplier_name"),
   
-  // File Attachments (stored as JSON array of {name, url, uploadedAt})
-  attachments: text("attachments"),
+  // File Attachments (stored as array of file paths from object storage)
+  attachments: text("attachments").array(),
   
   // Link to auto-created customs clearance
   linkedClearanceId: varchar("linked_clearance_id"),
@@ -269,7 +269,7 @@ export const exportShipments = pgTable("export_shipments", {
   deliveryDate: text("delivery_date"),
   deliveryReference: text("delivery_reference"),
   deliveryTimeNotes: text("delivery_time_notes"),
-  proofOfDelivery: text("proof_of_delivery"),
+  proofOfDelivery: text("proof_of_delivery").array(),
   trailerNo: text("trailer_no"),
   departureFrom: text("departure_from"),
   portOfArrival: text("port_of_arrival"),
@@ -302,8 +302,8 @@ export const exportShipments = pgTable("export_shipments", {
   haulierName: text("haulier_name"),
   haulierContactName: text("haulier_contact_name"),
   
-  // File Attachments (stored as JSON array of {name, url, uploadedAt})
-  attachments: text("attachments"),
+  // File Attachments (stored as array of file paths from object storage)
+  attachments: text("attachments").array(),
   
   // Link to auto-created customs clearance
   linkedClearanceId: varchar("linked_clearance_id"),
@@ -380,8 +380,8 @@ export const customClearances = pgTable("custom_clearances", {
   customerReferenceNumber: text("customer_reference_number"),
   supplierName: text("supplier_name"),
   
-  // File Attachments (stored as JSON array of {name, url, uploadedAt})
-  attachments: text("attachments"),
+  // File Attachments (stored as array of file paths from object storage)
+  attachments: text("attachments").array(),
   
   // Link to source shipment
   createdFromType: text("created_from_type"),
