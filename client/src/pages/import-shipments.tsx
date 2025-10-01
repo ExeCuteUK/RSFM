@@ -2,10 +2,11 @@ import { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -63,6 +64,16 @@ export default function ImportShipments() {
     },
   })
 
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({ title: "Status updated successfully" })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingShipment(null)
     setIsFormOpen(true)
@@ -89,6 +100,25 @@ export default function ImportShipments() {
     if (!customerId) return "N/A"
     const customer = importCustomers.find(c => c.id === customerId)
     return customer?.companyName || "N/A"
+  }
+
+  const toggleStatus = (currentStatus: string, id: string) => {
+    const statusCycle: { [key: string]: string } = {
+      "Pending": "In Transit",
+      "In Transit": "Delivered",
+      "Delivered": "Pending"
+    }
+    const nextStatus = statusCycle[currentStatus] || "Pending"
+    updateStatus.mutate({ id, status: nextStatus })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Pending": return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20"
+      case "In Transit": return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
+      case "Delivered": return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
+      default: return "bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20"
+    }
   }
 
   return (
@@ -143,12 +173,24 @@ export default function ImportShipments() {
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
                         #{shipment.jobRef}
                       </h3>
+                      <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
+                        {shipment.status}
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid={`text-customer-${shipment.id}`}>
                       {getCustomerName(shipment.importCustomerId)}
                     </p>
                   </div>
                   <div className="flex gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => toggleStatus(shipment.status, shipment.id)}
+                      data-testid={`button-toggle-status-${shipment.id}`}
+                      title="Toggle status"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
                     <Button
                       size="icon"
                       variant="ghost"
