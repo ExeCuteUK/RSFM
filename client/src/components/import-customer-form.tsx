@@ -34,6 +34,7 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
   const [newEmail, setNewEmail] = useState("")
   const [newAccountsEmail, setNewAccountsEmail] = useState("")
   const [newAgentEmail, setNewAgentEmail] = useState("")
+  const [newAgentAccountsEmail, setNewAgentAccountsEmail] = useState("")
   
   const form = useForm<InsertImportCustomer>({
     resolver: zodResolver(insertImportCustomerSchema),
@@ -54,6 +55,7 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
       agentContactName: "",
       agentTelephone: "",
       agentEmail: [],
+      agentAccountsEmail: [],
       agentAddressLine1: "",
       agentAddressLine2: "",
       agentTown: "",
@@ -75,6 +77,7 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
   const emails = form.watch("email") || []
   const accountsEmails = form.watch("accountsEmail") || []
   const agentEmails = form.watch("agentEmail") || []
+  const agentAccountsEmails = form.watch("agentAccountsEmail") || []
 
   const addEmail = () => {
     if (!newEmail.trim()) return
@@ -116,6 +119,20 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
   const removeAgentEmail = (email: string) => {
     const currentEmails = form.getValues("agentEmail") || []
     form.setValue("agentEmail", currentEmails.filter(e => e !== email))
+  }
+
+  const addAgentAccountsEmail = () => {
+    if (!newAgentAccountsEmail.trim()) return
+    const currentEmails = form.getValues("agentAccountsEmail") || []
+    if (!currentEmails.includes(newAgentAccountsEmail.trim())) {
+      form.setValue("agentAccountsEmail", [...currentEmails, newAgentAccountsEmail.trim()])
+      setNewAgentAccountsEmail("")
+    }
+  }
+
+  const removeAgentAccountsEmail = (email: string) => {
+    const currentEmails = form.getValues("agentAccountsEmail") || []
+    form.setValue("agentAccountsEmail", currentEmails.filter(e => e !== email))
   }
 
   return (
@@ -485,6 +502,66 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
                                 onClick={() => removeAgentEmail(email)}
                                 className="hover:bg-destructive/20 rounded-sm"
                                 data-testid={`button-remove-agent-email-${email}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="agentAccountsEmail"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Agent Accounts Email</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter agent accounts email address"
+                          value={newAgentAccountsEmail}
+                          onChange={(e) => setNewAgentAccountsEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addAgentAccountsEmail()
+                            }
+                          }}
+                          type="email"
+                          data-testid="input-new-agent-accounts-email"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addAgentAccountsEmail}
+                          data-testid="button-add-agent-accounts-email"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {agentAccountsEmails.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-agent-accounts-emails">
+                          {agentAccountsEmails.map((email) => (
+                            <Badge
+                              key={email}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-agent-accounts-email-${email}`}
+                            >
+                              {email}
+                              <button
+                                type="button"
+                                onClick={() => removeAgentAccountsEmail(email)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-agent-accounts-email-${email}`}
                               >
                                 <X className="h-3 w-3" />
                               </button>
