@@ -142,7 +142,7 @@ export const importShipments = pgTable("import_shipments", {
   importDateEtaPort: text("import_date_eta_port"),
   portOfArrival: text("port_of_arrival"),
   trailerOrContainerNumber: text("trailer_or_container_number"),
-  departureFrom: text("departure_from"),
+  departureCountry: text("departure_country"),
   containerShipment: boolean("container_shipment").default(false),
   vesselName: text("vessel_name"),
   
@@ -158,10 +158,11 @@ export const importShipments = pgTable("import_shipments", {
   freightCharge: text("freight_charge"),
   clearanceCharge: text("clearance_charge"),
   currency: text("currency"),
+  additionalCommodityCodes: integer("additional_commodity_codes"),
   
   // Customs Details
   vatZeroRated: boolean("vat_zero_rated").default(false),
-  c21InvLink: boolean("c21_inv_link").default(false),
+  clearanceType: text("clearance_type"),
   deliveryOrder: text("delivery_order"),
   customsClearanceAgent: text("customs_clearance_agent"),
   rsToClear: boolean("rs_to_clear").default(false),
@@ -226,6 +227,7 @@ export const exportShipments = pgTable("export_shipments", {
   exportClearanceCost: text("export_clearance_cost"),
   arrivalClearanceCost: text("arrival_clearance_cost"),
   currency: text("currency"),
+  additionalCommodityCodes: integer("additional_commodity_codes"),
   
   // Haulier Information
   haulierName: text("haulier_name"),
@@ -249,15 +251,16 @@ export const customClearances = pgTable("custom_clearances", {
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull(),
   
-  // Status
-  status: text("status").notNull().default("Pending"),
+  // Status (Customs-specific)
+  status: text("status").notNull().default("Waiting Entry"),
   
   // Customer References
   importCustomerId: varchar("import_customer_id"),
+  exportCustomerId: varchar("export_customer_id"),
   receiverId: varchar("receiver_id"),
   
   // Shipment Details
-  importDateEtaPort: text("import_date_eta_port"),
+  etaPort: text("eta_port"),
   portOfArrival: text("port_of_arrival"),
   trailerOrContainerNumber: text("trailer_or_container_number"),
   departureFrom: text("departure_from"),
@@ -276,13 +279,11 @@ export const customClearances = pgTable("custom_clearances", {
   transportCosts: text("transport_costs"),
   clearanceCharge: text("clearance_charge"),
   currency: text("currency"),
+  additionalCommodityCodes: integer("additional_commodity_codes"),
   
-  // Customs Details
+  // Additional Details (renamed from Customs Details)
   vatZeroRated: boolean("vat_zero_rated").default(false),
-  c21InvLink: boolean("c21_inv_link").default(false),
-  deliveryOrder: text("delivery_order"),
-  
-  // Additional Details
+  clearanceType: text("clearance_type"),
   customerReferenceNumber: text("customer_reference_number"),
   supplierName: text("supplier_name"),
   

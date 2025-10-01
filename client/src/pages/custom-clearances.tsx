@@ -174,9 +174,9 @@ export default function CustomClearances() {
                       <span className="font-medium">Port:</span> {clearance.portOfArrival}
                     </p>
                   )}
-                  {clearance.importDateEtaPort && (
+                  {clearance.etaPort && (
                     <p data-testid={`text-date-${clearance.id}`}>
-                      <span className="font-medium">ETA:</span> {clearance.importDateEtaPort}
+                      <span className="font-medium">ETA:</span> {clearance.etaPort}
                     </p>
                   )}
                   {clearance.goodsDescription && (
