@@ -208,6 +208,8 @@ export const exportShipments = pgTable("export_shipments", {
   departureFrom: text("departure_from"),
   portOfArrival: text("port_of_arrival"),
   incoterms: text("incoterms"),
+  containerShipment: boolean("container_shipment").default(false),
+  vesselName: text("vessel_name"),
   
   // Clearance Agents
   exportClearanceAgent: text("export_clearance_agent").notNull(),
