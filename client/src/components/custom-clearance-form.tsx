@@ -215,19 +215,21 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                 </>
               )}
 
-              <FormField
-                control={form.control}
-                name="supplierName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Supplier Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-supplier-name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {jobType === "import" && (
+                <FormField
+                  control={form.control}
+                  name="supplierName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Supplier Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-supplier-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
@@ -270,47 +272,95 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="portOfArrival"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Port of Arrival</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-port-arrival" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {jobType === "export" ? (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="departureFrom"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Departure From</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="trailerOrContainerNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Trailer / Container Number</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="trailerOrContainerNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Trailer / Container Number</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="departureFrom"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Departure From</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="portOfArrival"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Port of Arrival</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-port-arrival" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="portOfArrival"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Port of Arrival</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-port-arrival" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="trailerOrContainerNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Trailer / Container Number</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="departureFrom"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Departure From</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
 
                 <FormField
                   control={form.control}
@@ -534,27 +584,29 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="clearanceType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Clearance Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-clearance-type">
-                            <SelectValue placeholder="Select clearance type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="GVMS">GVMS</SelectItem>
-                          <SelectItem value="Inventory Linked">Inventory Linked</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {jobType === "import" && (
+                  <FormField
+                    control={form.control}
+                    name="clearanceType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Clearance Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-clearance-type">
+                              <SelectValue placeholder="Select clearance type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="GVMS">GVMS</SelectItem>
+                            <SelectItem value="Inventory Linked">Inventory Linked</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
