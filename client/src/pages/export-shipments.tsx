@@ -50,6 +50,7 @@ export default function ExportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       setIsFormOpen(false)
       setEditingShipment(null)
       toast({ title: "Export shipment created successfully" })
@@ -74,6 +75,7 @@ export default function ExportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       toast({ title: "Export shipment deleted successfully" })
     },
   })

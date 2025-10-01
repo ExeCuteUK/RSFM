@@ -71,6 +71,7 @@ export default function ImportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       toast({ title: "Import shipment deleted successfully" })
     },
   })

@@ -895,6 +895,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteImportShipment(id: string): Promise<boolean> {
+    const existing = await this.getImportShipment(id);
+    
+    // If there's a linked clearance, delete it first
+    if (existing?.linkedClearanceId) {
+      await db.delete(customClearances).where(eq(customClearances.id, existing.linkedClearanceId));
+    }
+    
     const result = await db.delete(importShipments).where(eq(importShipments.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
@@ -986,6 +993,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteExportShipment(id: string): Promise<boolean> {
+    const existing = await this.getExportShipment(id);
+    
+    // If there's a linked clearance, delete it first
+    if (existing?.linkedClearanceId) {
+      await db.delete(customClearances).where(eq(customClearances.id, existing.linkedClearanceId));
+    }
+    
     const result = await db.delete(exportShipments).where(eq(exportShipments.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
