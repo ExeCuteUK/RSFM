@@ -95,6 +95,15 @@ export default function ImportShipments() {
     },
   })
 
+  const updateDeliveryBookedStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/delivery-booked-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingShipment(null)
     setIsFormOpen(true)
@@ -143,6 +152,10 @@ export default function ImportShipments() {
     updateClearanceStatus.mutate({ id, status })
   }
 
+  const handleDeliveryBookedStatusUpdate = (id: string, status: number) => {
+    updateDeliveryBookedStatus.mutate({ id, status })
+  }
+
   const getClearanceStatusColor = (status: number | null) => {
     switch (status) {
       case 2: return "text-orange-600 dark:text-orange-400"
@@ -151,6 +164,16 @@ export default function ImportShipments() {
       case 1:
       case null:
       default: return "text-yellow-600 dark:text-yellow-400"
+    }
+  }
+
+  const getDeliveryBookedStatusColor = (status: number | null) => {
+    switch (status) {
+      case 1: return "text-orange-600 dark:text-orange-400"
+      case 2: return "text-yellow-600 dark:text-yellow-400"
+      case 3: return "text-green-600 dark:text-green-400"
+      case 4: return "text-red-600 dark:text-red-400"
+      default: return "text-muted-foreground"
     }
   }
 
@@ -353,9 +376,53 @@ export default function ImportShipments() {
                     </div>
                   )}
                   <div className={shipment.rsToClear ? "mt-1" : "pt-2 mt-2 border-t"}>
-                    <p className={`text-sm font-medium ${shipment.bookingDate ? "text-green-600 dark:text-green-400" : "text-yellow-600 dark:text-yellow-400"}`} data-testid={`text-delivery-booked-${shipment.id}`}>
-                      Delivery Booked: {formatDate(shipment.bookingDate) || "N/A"}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className={`text-sm font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
+                        Delivery Booked: {formatDate(shipment.bookingDate) || "N/A"}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.deliveryBookedStatusIndicator === 2
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-delivery-status-yellow-${shipment.id}`}
+                          title="Yellow Status"
+                        />
+                        <button
+                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.deliveryBookedStatusIndicator === 1
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-delivery-status-orange-${shipment.id}`}
+                          title="Orange Status"
+                        />
+                        <button
+                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.deliveryBookedStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-delivery-status-green-${shipment.id}`}
+                          title="Green Status"
+                        />
+                        <button
+                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.deliveryBookedStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-delivery-status-red-${shipment.id}`}
+                          title="Red Status"
+                        />
+                      </div>
+                    </div>
                   </div>
                   {(() => {
                     const files = parseAttachments(shipment.attachments)
