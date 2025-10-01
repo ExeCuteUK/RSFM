@@ -143,6 +143,17 @@ export default function ImportShipments() {
     updateClearanceStatus.mutate({ id, status })
   }
 
+  const getClearanceStatusColor = (status: number | null) => {
+    switch (status) {
+      case 2: return "text-orange-600 dark:text-orange-400"
+      case 3: return "text-green-600 dark:text-green-400"
+      case 4: return "text-red-600 dark:text-red-400"
+      case 1:
+      case null:
+      default: return "text-yellow-600 dark:text-yellow-400"
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Pending": return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20"
@@ -313,7 +324,7 @@ export default function ImportShipments() {
                   {shipment.rsToClear && (
                     <div className="pt-2 mt-2 border-t">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
+                        <p className={`${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           R.S Processing Import Clearance
                         </p>
                         <div className="flex items-center gap-1">
