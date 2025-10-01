@@ -240,7 +240,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertImportShipmentSchema.parse(req.body);
       const shipment = await storage.createImportShipment(validatedData);
       res.status(201).json(shipment);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Invalid import shipment data",
+          details: error.errors 
+        });
+      }
       res.status(400).json({ error: "Invalid import shipment data" });
     }
   });
@@ -248,15 +254,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update import shipment
   app.patch("/api/import-shipments/:id", async (req, res) => {
     try {
-      const validatedData = insertImportShipmentSchema.partial().parse(req.body);
-      const shipment = await storage.updateImportShipment(req.params.id, validatedData);
+      // For updates, we make the validation less strict by not requiring all fields
+      const shipment = await storage.updateImportShipment(req.params.id, req.body);
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
       }
       res.json(shipment);
-    } catch (error) {
-      if (error instanceof Error && error.name === "ZodError") {
-        return res.status(400).json({ error: "Invalid import shipment data" });
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Invalid import shipment data",
+          details: error.errors 
+        });
       }
       res.status(500).json({ error: "Failed to update import shipment" });
     }

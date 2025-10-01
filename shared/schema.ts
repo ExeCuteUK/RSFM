@@ -182,6 +182,40 @@ export const importShipments = pgTable("import_shipments", {
 export const insertImportShipmentSchema = createInsertSchema(importShipments).omit({
   id: true,
   jobRef: true,
+}).extend({
+  importCustomerId: z.string().min(1, "Import Customer is required").nullable().transform((val) => {
+    if (!val || val.length === 0) {
+      throw new Error("Import Customer is required");
+    }
+    return val;
+  }),
+}).superRefine((data, ctx) => {
+  // Check if Import Customer is required
+  if (!data.importCustomerId || data.importCustomerId.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Import Customer is required",
+      path: ["importCustomerId"],
+    });
+  }
+  
+  // Check conditional requirements when R.S To Clear is enabled
+  if (data.rsToClear) {
+    if (!data.clearanceType || data.clearanceType.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Clearance Type is required when R.S To Clear is enabled",
+        path: ["clearanceType"],
+      });
+    }
+    if (data.additionalCommodityCodes === undefined || data.additionalCommodityCodes === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Total Commodity Codes is required when R.S To Clear is enabled",
+        path: ["additionalCommodityCodes"],
+      });
+    }
+  }
 });
 
 export type InsertImportShipment = z.infer<typeof insertImportShipmentSchema>;
