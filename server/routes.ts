@@ -396,6 +396,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update container release status indicator
+  app.patch("/api/import-shipments/:id/container-release-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateImportShipment(req.params.id, { 
+        containerReleaseStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update container release status" });
+    }
+  });
+
   // Delete import shipment
   app.delete("/api/import-shipments/:id", async (req, res) => {
     try {

@@ -208,6 +208,7 @@ export const importShipments = pgTable("import_shipments", {
   clearanceStatusIndicator: integer("clearance_status_indicator"),
   deliveryBookedStatusIndicator: integer("delivery_booked_status_indicator"),
   haulierBookingStatusIndicator: integer("haulier_booking_status_indicator"),
+  containerReleaseStatusIndicator: integer("container_release_status_indicator"),
   
   // Additional Details
   customerReferenceNumber: text("customer_reference_number"),

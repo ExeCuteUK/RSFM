@@ -113,6 +113,15 @@ export default function ImportShipments() {
     },
   })
 
+  const updateContainerReleaseStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/container-release-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingShipment(null)
     setIsFormOpen(true)
@@ -169,6 +178,10 @@ export default function ImportShipments() {
     updateHaulierBookingStatus.mutate({ id, status })
   }
 
+  const handleContainerReleaseStatusUpdate = (id: string, status: number) => {
+    updateContainerReleaseStatus.mutate({ id, status })
+  }
+
   const getClearanceStatusColor = (status: number | null) => {
     switch (status) {
       case 2: return "text-orange-600 dark:text-orange-400"
@@ -192,6 +205,17 @@ export default function ImportShipments() {
   }
 
   const getHaulierBookingStatusColor = (status: number | null) => {
+    switch (status) {
+      case 1: return "text-orange-600 dark:text-orange-400"
+      case 2:
+      case null:
+      default: return "text-yellow-600 dark:text-yellow-400"
+      case 3: return "text-green-600 dark:text-green-400"
+      case 4: return "text-red-600 dark:text-red-400"
+    }
+  }
+
+  const getContainerReleaseStatusColor = (status: number | null) => {
     switch (status) {
       case 1: return "text-orange-600 dark:text-orange-400"
       case 2:
@@ -493,6 +517,55 @@ export default function ImportShipments() {
                               : 'bg-red-200 border-red-300 hover-elevate'
                           }`}
                           data-testid={`button-haulier-status-red-${shipment.id}`}
+                          title="Red Status"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
+                        Release Container to : {shipment.deliveryRelease || "N/A"}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.containerReleaseStatusIndicator === 2
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-container-status-yellow-${shipment.id}`}
+                          title="Yellow Status"
+                        />
+                        <button
+                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.containerReleaseStatusIndicator === 1
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-container-status-orange-${shipment.id}`}
+                          title="Orange Status"
+                        />
+                        <button
+                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.containerReleaseStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-container-status-green-${shipment.id}`}
+                          title="Green Status"
+                        />
+                        <button
+                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.containerReleaseStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-container-status-red-${shipment.id}`}
                           title="Red Status"
                         />
                       </div>
