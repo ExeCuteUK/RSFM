@@ -207,8 +207,8 @@ export const exportShipments = pgTable("export_shipments", {
   incoterms: text("incoterms"),
   
   // Clearance Agents
-  exportClearanceAgent: text("export_clearance_agent"),
-  arrivalClearanceAgent: text("arrival_clearance_agent"),
+  exportClearanceAgent: text("export_clearance_agent").notNull(),
+  arrivalClearanceAgent: text("arrival_clearance_agent").notNull(),
   
   // Cargo Details
   supplier: text("supplier"),
@@ -239,6 +239,9 @@ export const exportShipments = pgTable("export_shipments", {
 export const insertExportShipmentSchema = createInsertSchema(exportShipments).omit({
   id: true,
   jobRef: true,
+}).extend({
+  exportClearanceAgent: z.string().min(1, "Export Clearance Agent is required"),
+  arrivalClearanceAgent: z.string().min(1, "Arrival Clearance Agent is required"),
 });
 
 export type InsertExportShipment = z.infer<typeof insertExportShipmentSchema>;

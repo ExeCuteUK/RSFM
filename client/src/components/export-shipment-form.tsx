@@ -92,6 +92,31 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
+                name="destinationCustomerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Export Customer</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-destination-customer">
+                          <SelectValue placeholder="Select export customer" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {exportCustomers?.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.companyName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="receiverId"
                 render={({ field }) => (
                   <FormItem>
@@ -106,31 +131,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         {exportReceivers?.map((receiver) => (
                           <SelectItem key={receiver.id} value={receiver.id}>
                             {receiver.companyName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="destinationCustomerId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Destination Customer</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-destination-customer">
-                          <SelectValue placeholder="Select destination customer" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {exportCustomers?.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.companyName}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -286,8 +286,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="Haulier">Haulier</SelectItem>
-                          <SelectItem value="R.S">R.S</SelectItem>
-                          <SelectItem value="N/A">N/A</SelectItem>
+                          <SelectItem value="Customer">Customer</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
