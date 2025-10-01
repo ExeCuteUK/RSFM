@@ -1,0 +1,32 @@
+Pasted-below-are-tweaks-additions-edits-to-fields-on-some-forms-and-database-tables-that-are-required--1759318128496_1759318128497.txt
+below are tweaks / additions / edits to fields on some forms and database tables that are required.
+
+
+Customs Clearance Database Table / Entry form amendments :-
+
+
+Customs clearance database table should also have the following 3 status options : Waiting Entry, Waiting Arrival or Fully Cleared. When a new clearance job is created the default status should be Waiting Entry.
+
+Customs clearance entry form should show Export Customer & Export Receiver pull down options when selecting Export as Job type.
+
+Customs clearance entry form should show Import Customer & Supplier Name field, which is currently incorrectly placed in the cargo details section of this form and needs to be moved.
+
+Customs clearance table & entry form should have an additional field added in the financial details section. The field should be named "Additional Commodity Codes" with a pulldown numbered 1-50. Please also add this field to the import and export job database table & entry forms in the same position.
+
+Remove delivery order field from Customs Details section in Customs clearance entry form
+
+Rename Customs Details title to Additional Details in Customs clearance entry form
+
+Edit the "C21 Inv Link field" in both customs clearance database table and import database table and both entry forms and replace it with "Clearance Type" field and a pull down option showing "GVMS" or "Inventory Linked"
+
+Edit the Import Date / ETA Port field in customs clearance entry and database table to be a date selection box with DD/MM/YY format. Also rename the field to "ETA Port"
+
+
+Import Job Database Table / Entry form amendments :-
+
+
+Move the "R.S To Clear" &  "VAT Zero Rated" tick box fields in the import shipments form above the Customs clearance agent field. Also Make the customs clearance agent field invisible if R.S To clear field is ticked. Also move delivery address field to Cargo details section of form under Supplier name.
+
+Edit the Import Data / ETA port field in Import Shipment entry and database table to be a date selection box with DD/MM/YY Format.
+
+Edit the departure from field in Import Job Database Table / Entry form to a pull down menu containing all countries. Rename the field to "Departure Country"
