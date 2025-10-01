@@ -136,13 +136,25 @@ export default function CustomClearances() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${clearance.id}`}>
                         #{clearance.jobRef}
                       </h3>
                       <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
                         {clearance.jobType}
+                      </span>
+                      <span 
+                        className={`text-xs px-2 py-0.5 rounded ${
+                          clearance.status === "Fully Cleared" 
+                            ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                            : clearance.status === "Waiting Arrival"
+                            ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
+                            : "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                        }`}
+                        data-testid={`text-status-${clearance.id}`}
+                      >
+                        {clearance.status}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>

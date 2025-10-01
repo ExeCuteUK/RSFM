@@ -62,6 +62,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       exportClearanceCost: "",
       arrivalClearanceCost: "",
       currency: "GBP",
+      additionalCommodityCodes: undefined,
       haulierName: "",
       haulierContactName: "",
       attachments: "",
@@ -507,6 +508,34 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     )}
                   />
                 )}
+
+                <FormField
+                  control={form.control}
+                  name="additionalCommodityCodes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Additional Commodity Codes</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(parseInt(value))} 
+                        value={field.value?.toString() || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-commodity-codes">
+                            <SelectValue placeholder="Select number" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                            <SelectItem key={num} value={num.toString()}>
+                              {num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>

@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertCustomClearanceSchema, type InsertCustomClearance, type ImportCustomer, type ExportReceiver } from "@shared/schema"
+import { insertCustomClearanceSchema, type InsertCustomClearance, type ImportCustomer, type ExportCustomer, type ExportReceiver } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -35,9 +35,11 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     resolver: zodResolver(insertCustomClearanceSchema),
     defaultValues: {
       jobType: "import",
+      status: "Waiting Entry",
       importCustomerId: "",
+      exportCustomerId: "",
       receiverId: "",
-      importDateEtaPort: "",
+      etaPort: "",
       portOfArrival: "",
       trailerOrContainerNumber: "",
       departureFrom: "",
@@ -52,9 +54,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       transportCosts: "",
       clearanceCharge: "",
       currency: "",
+      additionalCommodityCodes: undefined,
       vatZeroRated: false,
-      c21InvLink: false,
-      deliveryOrder: "",
+      clearanceType: "",
       customerReferenceNumber: "",
       supplierName: "",
       createdFromType: "",
@@ -66,6 +68,10 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
   const { data: importCustomers } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
+  })
+
+  const { data: exportCustomers } = useQuery<ExportCustomer[]>({
+    queryKey: ["/api/export-customers"],
   })
 
   const { data: exportReceivers } = useQuery<ExportReceiver[]>({
@@ -105,6 +111,29 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Waiting Entry">Waiting Entry</SelectItem>
+                        <SelectItem value="Waiting Arrival">Waiting Arrival</SelectItem>
+                        <SelectItem value="Fully Cleared">Fully Cleared</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {jobType === "import" && (
                 <FormField
                   control={form.control}
@@ -133,31 +162,72 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               )}
 
               {jobType === "export" && (
-                <FormField
-                  control={form.control}
-                  name="receiverId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Export Receiver</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-export-receiver">
-                            <SelectValue placeholder="Select export receiver" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {exportReceivers?.map((receiver) => (
-                            <SelectItem key={receiver.id} value={receiver.id}>
-                              {receiver.companyName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <>
+                  <FormField
+                    control={form.control}
+                    name="exportCustomerId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Export Customer</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-export-customer">
+                              <SelectValue placeholder="Select export customer" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {exportCustomers?.map((customer) => (
+                              <SelectItem key={customer.id} value={customer.id}>
+                                {customer.companyName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="receiverId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Export Receiver</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-export-receiver">
+                              <SelectValue placeholder="Select export receiver" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {exportReceivers?.map((receiver) => (
+                              <SelectItem key={receiver.id} value={receiver.id}>
+                                {receiver.companyName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
               )}
+
+              <FormField
+                control={form.control}
+                name="supplierName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Supplier Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-supplier-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -183,12 +253,17 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="importDateEtaPort"
+                  name="etaPort"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Import Date / ETA Port</FormLabel>
+                      <FormLabel>ETA Port</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-import-date" />
+                        <Input 
+                          {...field} 
+                          value={field.value || ""} 
+                          placeholder="DD/MM/YY"
+                          data-testid="input-eta-port" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -347,20 +422,6 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="supplierName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Supplier Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-supplier-name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </CardContent>
           </Card>
 
@@ -435,64 +496,83 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="additionalCommodityCodes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Additional Commodity Codes</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(parseInt(value))} 
+                        value={field.value?.toString() || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-commodity-codes">
+                            <SelectValue placeholder="Select number" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                            <SelectItem key={num} value={num.toString()}>
+                              {num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Customs Details</CardTitle>
+              <CardTitle>Additional Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="deliveryOrder"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Delivery Order</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-delivery-order" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex flex-wrap gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="vatZeroRated"
+                  name="clearanceType"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-vat-zero-rated"
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">VAT Zero Rated</FormLabel>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="c21InvLink"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-c21-inv-link"
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">C21 Inv Link</FormLabel>
+                    <FormItem>
+                      <FormLabel>Clearance Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-clearance-type">
+                            <SelectValue placeholder="Select clearance type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="GVMS">GVMS</SelectItem>
+                          <SelectItem value="Inventory Linked">Inventory Linked</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="vatZeroRated"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-vat-zero-rated"
+                      />
+                    </FormControl>
+                    <FormLabel className="!mt-0">VAT Zero Rated</FormLabel>
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 

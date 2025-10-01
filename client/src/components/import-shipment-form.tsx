@@ -40,7 +40,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       importDateEtaPort: "",
       portOfArrival: "",
       trailerOrContainerNumber: "",
-      departureFrom: "",
+      departureCountry: "",
       containerShipment: false,
       vesselName: "",
       numberOfPieces: "",
@@ -52,8 +52,9 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       freightCharge: "",
       clearanceCharge: "",
       currency: "",
+      additionalCommodityCodes: undefined,
       vatZeroRated: false,
-      c21InvLink: false,
+      clearanceType: "",
       deliveryOrder: "",
       customsClearanceAgent: "",
       rsToClear: false,
@@ -70,6 +71,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   })
 
   const selectedCustomerId = form.watch("importCustomerId")
+  const rsToClear = form.watch("rsToClear")
 
   useEffect(() => {
     if (selectedCustomerId && importCustomers) {
@@ -146,7 +148,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     <FormItem>
                       <FormLabel>Import Date / ETA Port</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-import-date" />
+                        <Input 
+                          {...field} 
+                          value={field.value || ""} 
+                          placeholder="DD/MM/YY"
+                          data-testid="input-import-date" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -183,13 +190,59 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
                 <FormField
                   control={form.control}
-                  name="departureFrom"
+                  name="departureCountry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Departure From</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
-                      </FormControl>
+                      <FormLabel>Departure Country</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-departure-country">
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Albania">Albania</SelectItem>
+                          <SelectItem value="Austria">Austria</SelectItem>
+                          <SelectItem value="Belgium">Belgium</SelectItem>
+                          <SelectItem value="Bosnia and Herzegovina">Bosnia and Herzegovina</SelectItem>
+                          <SelectItem value="Bulgaria">Bulgaria</SelectItem>
+                          <SelectItem value="Croatia">Croatia</SelectItem>
+                          <SelectItem value="Cyprus">Cyprus</SelectItem>
+                          <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                          <SelectItem value="Denmark">Denmark</SelectItem>
+                          <SelectItem value="Estonia">Estonia</SelectItem>
+                          <SelectItem value="Finland">Finland</SelectItem>
+                          <SelectItem value="France">France</SelectItem>
+                          <SelectItem value="Germany">Germany</SelectItem>
+                          <SelectItem value="Greece">Greece</SelectItem>
+                          <SelectItem value="Hungary">Hungary</SelectItem>
+                          <SelectItem value="Iceland">Iceland</SelectItem>
+                          <SelectItem value="Ireland">Ireland</SelectItem>
+                          <SelectItem value="Italy">Italy</SelectItem>
+                          <SelectItem value="Kosovo">Kosovo</SelectItem>
+                          <SelectItem value="Latvia">Latvia</SelectItem>
+                          <SelectItem value="Lithuania">Lithuania</SelectItem>
+                          <SelectItem value="Luxembourg">Luxembourg</SelectItem>
+                          <SelectItem value="Malta">Malta</SelectItem>
+                          <SelectItem value="Moldova">Moldova</SelectItem>
+                          <SelectItem value="Montenegro">Montenegro</SelectItem>
+                          <SelectItem value="Netherlands">Netherlands</SelectItem>
+                          <SelectItem value="North Macedonia">North Macedonia</SelectItem>
+                          <SelectItem value="Norway">Norway</SelectItem>
+                          <SelectItem value="Poland">Poland</SelectItem>
+                          <SelectItem value="Portugal">Portugal</SelectItem>
+                          <SelectItem value="Romania">Romania</SelectItem>
+                          <SelectItem value="Serbia">Serbia</SelectItem>
+                          <SelectItem value="Slovakia">Slovakia</SelectItem>
+                          <SelectItem value="Slovenia">Slovenia</SelectItem>
+                          <SelectItem value="Spain">Spain</SelectItem>
+                          <SelectItem value="Sweden">Sweden</SelectItem>
+                          <SelectItem value="Switzerland">Switzerland</SelectItem>
+                          <SelectItem value="Turkey">Turkey</SelectItem>
+                          <SelectItem value="Ukraine">Ukraine</SelectItem>
+                          <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -319,6 +372,20 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="deliveryAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Delivery Address</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
@@ -393,6 +460,34 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="additionalCommodityCodes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Additional Commodity Codes</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(parseInt(value))} 
+                        value={field.value?.toString() || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-commodity-codes">
+                            <SelectValue placeholder="Select number" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                            <SelectItem key={num} value={num.toString()}>
+                              {num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
@@ -402,48 +497,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <CardTitle>Customs &amp; Clearance</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="customsClearanceAgent"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Customs Clearance Agent</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-customs-agent" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="deliveryAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Delivery Address</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="deliveryOrder"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Delivery Order</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-delivery-order" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="flex flex-wrap gap-4">
                 <FormField
                   control={form.control}
@@ -478,24 +531,59 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     </FormItem>
                   )}
                 />
+              </div>
 
+              {!rsToClear && (
                 <FormField
                   control={form.control}
-                  name="c21InvLink"
+                  name="customsClearanceAgent"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormItem>
+                      <FormLabel>Customs Clearance Agent</FormLabel>
                       <FormControl>
-                        <Checkbox
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-c21-inv-link"
-                        />
+                        <Input {...field} value={field.value || ""} data-testid="input-customs-agent" />
                       </FormControl>
-                      <FormLabel className="!mt-0">C21 Inv Link</FormLabel>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
+              )}
+
+              <FormField
+                control={form.control}
+                name="deliveryOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Delivery Order</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-delivery-order" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="clearanceType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Clearance Type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-clearance-type">
+                          <SelectValue placeholder="Select clearance type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="GVMS">GVMS</SelectItem>
+                        <SelectItem value="Inventory Linked">Inventory Linked</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
