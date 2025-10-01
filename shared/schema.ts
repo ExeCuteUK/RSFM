@@ -198,12 +198,13 @@ export const exportShipments = pgTable("export_shipments", {
   // Customer References
   receiverId: varchar("receiver_id"),
   destinationCustomerId: varchar("destination_customer_id"),
+  customerReferenceNumber: text("customer_reference_number"),
   
   // Shipment Details
   loadDate: text("load_date"),
   trailerNo: text("trailer_no"),
-  jobReference: text("job_reference"),
-  destination: text("destination"),
+  departureFrom: text("departure_from"),
+  portOfArrival: text("port_of_arrival"),
   incoterms: text("incoterms"),
   
   // Clearance Agents
@@ -214,16 +215,15 @@ export const exportShipments = pgTable("export_shipments", {
   supplier: text("supplier"),
   consignee: text("consignee"),
   value: text("value"),
-  numPackages: text("num_packages"),
-  packing: text("packing"),
-  description: text("description"),
-  grossWeightKg: text("gross_weight_kg"),
-  cbm: text("cbm"),
-  cargoWeight: text("cargo_weight"),
+  numberOfPieces: text("number_of_pieces"),
+  packaging: text("packaging"),
+  goodsDescription: text("goods_description"),
+  weight: text("weight"),
+  cube: text("cube"),
   
   // Rate Fields
   freightRateOut: text("freight_rate_out"),
-  exportClearanceCost: text("export_clearance_cost"),
+  clearanceCharge: text("clearance_charge"),
   arrivalClearanceCost: text("arrival_clearance_cost"),
   currency: text("currency"),
   additionalCommodityCodes: integer("additional_commodity_codes"),
@@ -286,6 +286,7 @@ export const customClearances = pgTable("custom_clearances", {
   // Additional Details (renamed from Customs Details)
   vatZeroRated: boolean("vat_zero_rated").default(false),
   clearanceType: text("clearance_type"),
+  incoterms: text("incoterms"),
   customerReferenceNumber: text("customer_reference_number"),
   supplierName: text("supplier_name"),
   
