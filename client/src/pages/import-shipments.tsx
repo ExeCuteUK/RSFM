@@ -347,7 +347,7 @@ export default function ImportShipments() {
                   </div>
                   {shipment.rsToClear && (
                     <div className="pt-2 mt-2 border-t">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
                         <p className={`${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           Advise Clearance to Agent
                         </p>
@@ -377,7 +377,7 @@ export default function ImportShipments() {
                     </div>
                   )}
                   <div className={shipment.rsToClear ? "mt-1" : "pt-2 mt-2 border-t"}>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                       <p className={`text-sm font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
                         Delivery Booked: {formatDate(shipment.bookingDate) || "N/A"}
                       </p>
