@@ -250,6 +250,11 @@ export default function ImportShipments() {
                   </div>
                 </div>
                 <div className="space-y-1 text-sm">
+                  {shipment.containerShipment && (
+                    <p className="underline" data-testid={`text-container-shipment-${shipment.id}`}>
+                      Container Shipment
+                    </p>
+                  )}
                   {shipment.trailerOrContainerNumber && (
                     <p data-testid={`text-truck-container-${shipment.id}`}>
                       {shipment.trailerOrContainerNumber}
@@ -292,13 +297,6 @@ export default function ImportShipments() {
                       </p>
                     )}
                   </div>
-                  {shipment.containerShipment && (
-                    <div className="pt-2 mt-2 border-t">
-                      <p className="underline" data-testid={`text-container-shipment-${shipment.id}`}>
-                        Container Shipment
-                      </p>
-                    </div>
-                  )}
                   {shipment.rsToClear && (
                     <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
                       R.S Processing Import Clearance
