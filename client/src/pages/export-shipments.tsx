@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Truck, RefreshCw } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -124,6 +124,15 @@ export default function ExportShipments() {
     }
   }
 
+  const parseAttachments = (attachments: string | null) => {
+    if (!attachments) return []
+    try {
+      return JSON.parse(attachments)
+    } catch {
+      return []
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -228,6 +237,20 @@ export default function ExportShipments() {
                       {shipment.description}
                     </p>
                   )}
+                  {(() => {
+                    const files = parseAttachments(shipment.attachments)
+                    if (files.length > 0) {
+                      return (
+                        <div className="flex items-center gap-1 mt-2 pt-2 border-t" data-testid={`attachments-${shipment.id}`}>
+                          <Paperclip className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {files.length} {files.length === 1 ? 'file' : 'files'} attached
+                          </span>
+                        </div>
+                      )
+                    }
+                    return null
+                  })()}
                 </div>
               </CardContent>
             </Card>

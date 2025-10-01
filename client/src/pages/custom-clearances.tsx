@@ -4,7 +4,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, FileCheck } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip } from "lucide-react"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -93,6 +93,15 @@ export default function CustomClearances() {
     return "N/A"
   }
 
+  const parseAttachments = (attachments: string | null) => {
+    if (!attachments) return []
+    try {
+      return JSON.parse(attachments)
+    } catch {
+      return []
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -175,6 +184,20 @@ export default function CustomClearances() {
                       {clearance.goodsDescription}
                     </p>
                   )}
+                  {(() => {
+                    const files = parseAttachments(clearance.attachments)
+                    if (files.length > 0) {
+                      return (
+                        <div className="flex items-center gap-1 mt-2 pt-2 border-t" data-testid={`attachments-${clearance.id}`}>
+                          <Paperclip className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {files.length} {files.length === 1 ? 'file' : 'files'} attached
+                          </span>
+                        </div>
+                      )
+                    }
+                    return null
+                  })()}
                 </div>
               </CardContent>
             </Card>
