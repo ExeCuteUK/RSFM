@@ -19,22 +19,24 @@ import { Plus, Pencil, Trash2 } from "lucide-react"
 import { ImportCustomerForm } from "@/components/import-customer-form"
 import { ExportCustomerForm } from "@/components/export-customer-form"
 import { ExportReceiverForm } from "@/components/export-receiver-form"
-import type { ImportCustomer, ExportCustomer, ExportReceiver, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver } from "@shared/schema"
+import { HaulierForm } from "@/components/haulier-form"
+import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 
-type CustomerType = "import" | "export" | "receiver"
+type CustomerType = "import" | "export" | "receiver" | "haulier"
 
 export default function Customers() {
   const [selectedTab, setSelectedTab] = useState<CustomerType>("import")
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | null>(null)
+  const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | null>(null)
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
   const { toast } = useToast()
 
   // Helper to determine customer type from entity properties
-  const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | null): CustomerType => {
+  const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | null): CustomerType => {
     if (!customer) return selectedTab
     if ('rsProcessCustomsClearance' in customer) return "import"
+    if ('haulierName' in customer) return "haulier"
     if ('contactName' in customer && customer.contactName !== undefined) return "export"
     return "receiver"
   }
@@ -50,6 +52,10 @@ export default function Customers() {
 
   const { data: exportReceivers = [], isLoading: isLoadingReceivers } = useQuery<ExportReceiver[]>({
     queryKey: ["/api/export-receivers"],
+  })
+
+  const { data: hauliers = [], isLoading: isLoadingHauliers } = useQuery<Haulier[]>({
+    queryKey: ["/api/hauliers"],
   })
 
   // Mutations
@@ -155,12 +161,46 @@ export default function Customers() {
     },
   })
 
+  const createHaulier = useMutation({
+    mutationFn: async (data: InsertHaulier) => {
+      return apiRequest("POST", "/api/hauliers", data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hauliers"] })
+      setIsFormOpen(false)
+      setEditingCustomer(null)
+      toast({ title: "Haulier created successfully" })
+    },
+  })
+
+  const updateHaulier = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: InsertHaulier }) => {
+      return apiRequest("PATCH", `/api/hauliers/${id}`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hauliers"] })
+      setIsFormOpen(false)
+      setEditingCustomer(null)
+      toast({ title: "Haulier updated successfully" })
+    },
+  })
+
+  const deleteHaulier = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/hauliers/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hauliers"] })
+      toast({ title: "Haulier deleted successfully" })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingCustomer(null)
     setIsFormOpen(true)
   }
 
-  const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver) => {
+  const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier) => {
     setEditingCustomer(customer)
     setIsFormOpen(true)
   }
@@ -176,18 +216,23 @@ export default function Customers() {
       deleteImportCustomer.mutate(deletingCustomerId)
     } else if (selectedTab === "export") {
       deleteExportCustomer.mutate(deletingCustomerId)
-    } else {
+    } else if (selectedTab === "receiver") {
       deleteExportReceiver.mutate(deletingCustomerId)
+    } else {
+      deleteHaulier.mutate(deletingCustomerId)
     }
     setDeletingCustomerId(null)
   }
 
-  const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver) => {
+  const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver | InsertHaulier) => {
     if (editingCustomer) {
       // Determine type from editingCustomer properties rather than selectedTab
       if ('rsProcessCustomsClearance' in editingCustomer) {
         // Import customer has unique import-specific fields
         updateImportCustomer.mutate({ id: editingCustomer.id, data: data as InsertImportCustomer })
+      } else if ('haulierName' in editingCustomer) {
+        // Haulier
+        updateHaulier.mutate({ id: editingCustomer.id, data: data as InsertHaulier })
       } else if ('contactName' in editingCustomer && editingCustomer.contactName !== undefined) {
         // Export customer has contactName, receiver doesn't
         updateExportCustomer.mutate({ id: editingCustomer.id, data: data as InsertExportCustomer })
@@ -200,13 +245,15 @@ export default function Customers() {
         createImportCustomer.mutate(data as InsertImportCustomer)
       } else if (selectedTab === "export") {
         createExportCustomer.mutate(data as InsertExportCustomer)
-      } else {
+      } else if (selectedTab === "receiver") {
         createExportReceiver.mutate(data as InsertExportReceiver)
+      } else {
+        createHaulier.mutate(data as InsertHaulier)
       }
     }
   }
 
-  const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers
+  const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers
 
   return (
     <div className="p-6 space-y-6">
@@ -219,15 +266,16 @@ export default function Customers() {
         </div>
         <Button data-testid="button-new-customer" onClick={handleCreateNew}>
           <Plus className="h-4 w-4 mr-2" />
-          New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : "Receiver"}
+          New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : selectedTab === "receiver" ? "Receiver" : "Haulier"}
         </Button>
       </div>
 
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as CustomerType)}>
-        <TabsList className="grid w-full max-w-md grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="import" data-testid="tab-import-customers">Import Customers</TabsTrigger>
           <TabsTrigger value="export" data-testid="tab-export-customers">Export Customers</TabsTrigger>
           <TabsTrigger value="receiver" data-testid="tab-export-receivers">Export Receivers</TabsTrigger>
+          <TabsTrigger value="haulier" data-testid="tab-hauliers">Hauliers</TabsTrigger>
         </TabsList>
 
         <TabsContent value="import" className="space-y-4">
@@ -401,6 +449,76 @@ export default function Customers() {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="haulier" className="space-y-4">
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          ) : hauliers.length === 0 ? (
+            <div className="text-center py-12" data-testid="empty-state">
+              <p className="text-lg text-muted-foreground">No hauliers yet</p>
+              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                Create your first haulier
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {hauliers.map((haulier) => (
+                <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg" data-testid={`text-haulier-name-${haulier.id}`}>{haulier.haulierName}</h3>
+                        {haulier.homeCountry && (
+                          <p className="text-sm text-muted-foreground" data-testid={`text-home-country-${haulier.id}`}>{haulier.homeCountry}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(haulier)}
+                          data-testid={`button-edit-${haulier.id}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDelete(haulier.id)}
+                          data-testid={`button-delete-${haulier.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      {haulier.email && <p data-testid={`text-email-${haulier.id}`}>{haulier.email}</p>}
+                      {haulier.telephone && <p data-testid={`text-telephone-${haulier.id}`}>{haulier.telephone}</p>}
+                      {haulier.mobile && <p data-testid={`text-mobile-${haulier.id}`}>{haulier.mobile}</p>}
+                      {haulier.destinationCountries && haulier.destinationCountries.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground mb-1">Services:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {haulier.destinationCountries.slice(0, 3).map((country) => (
+                              <span key={country} className="text-xs bg-secondary px-2 py-0.5 rounded" data-testid={`badge-country-${country}`}>
+                                {country}
+                              </span>
+                            ))}
+                            {haulier.destinationCountries.length > 3 && (
+                              <span className="text-xs text-muted-foreground">+{haulier.destinationCountries.length - 3} more</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -410,7 +528,7 @@ export default function Customers() {
               {editingCustomer ? "Edit" : "Create New"}{" "}
               {(() => {
                 const formType = getCustomerType(editingCustomer)
-                return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : "Export Receiver"
+                return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : formType === "haulier" ? "Haulier" : "Export Receiver"
               })()}
             </DialogTitle>
           </DialogHeader>
@@ -432,6 +550,14 @@ export default function Customers() {
                   defaultValues={editingCustomer as ExportCustomer}
                 />
               )
+            } else if (formType === "haulier") {
+              return (
+                <HaulierForm
+                  onSubmit={handleFormSubmit}
+                  onCancel={() => setIsFormOpen(false)}
+                  defaultValues={editingCustomer as Haulier}
+                />
+              )
             } else {
               return (
                 <ExportReceiverForm
@@ -450,7 +576,7 @@ export default function Customers() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this {selectedTab === "import" ? "import customer" : selectedTab === "export" ? "export customer" : "export receiver"}.
+              This action cannot be undone. This will permanently delete this {selectedTab === "import" ? "import customer" : selectedTab === "export" ? "export customer" : selectedTab === "receiver" ? "export receiver" : "haulier"}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
