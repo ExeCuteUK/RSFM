@@ -348,6 +348,38 @@ export class MemStorage implements IStorage {
     return this.exportReceivers.delete(id);
   }
 
+  // Haulier methods
+  async getAllHauliers(): Promise<Haulier[]> {
+    return [];
+  }
+
+  async getHaulier(id: string): Promise<Haulier | undefined> {
+    return undefined;
+  }
+
+  async createHaulier(haulier: InsertHaulier): Promise<Haulier> {
+    const id = randomUUID();
+    const created: Haulier = {
+      ...haulier,
+      id,
+      homeCountry: haulier.homeCountry ?? null,
+      address: haulier.address ?? null,
+      telephone: haulier.telephone ?? null,
+      mobile: haulier.mobile ?? null,
+      email: haulier.email ?? null,
+      destinationCountries: haulier.destinationCountries ?? null,
+    };
+    return created;
+  }
+
+  async updateHaulier(id: string, haulier: Partial<InsertHaulier>): Promise<Haulier | undefined> {
+    return undefined;
+  }
+
+  async deleteHaulier(id: string): Promise<boolean> {
+    return false;
+  }
+
   // Job Reference methods
   getNextJobRef(): number {
     return this.jobRefCounter++;

@@ -5,6 +5,7 @@ import {
   insertImportCustomerSchema,
   insertExportCustomerSchema,
   insertExportReceiverSchema,
+  insertHaulierSchema,
   insertImportShipmentSchema,
   insertExportShipmentSchema,
   insertCustomClearanceSchema
@@ -206,6 +207,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete export receiver" });
+    }
+  });
+
+  // ========== Hauliers Routes ==========
+  
+  // Get all hauliers
+  app.get("/api/hauliers", async (_req, res) => {
+    try {
+      const hauliers = await storage.getAllHauliers();
+      res.json(hauliers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch hauliers" });
+    }
+  });
+
+  // Get single haulier
+  app.get("/api/hauliers/:id", async (req, res) => {
+    try {
+      const haulier = await storage.getHaulier(req.params.id);
+      if (!haulier) {
+        return res.status(404).json({ error: "Haulier not found" });
+      }
+      res.json(haulier);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch haulier" });
+    }
+  });
+
+  // Create haulier
+  app.post("/api/hauliers", async (req, res) => {
+    try {
+      const validatedData = insertHaulierSchema.parse(req.body);
+      const haulier = await storage.createHaulier(validatedData);
+      res.status(201).json(haulier);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid haulier data" });
+    }
+  });
+
+  // Update haulier
+  app.patch("/api/hauliers/:id", async (req, res) => {
+    try {
+      const validatedData = insertHaulierSchema.partial().parse(req.body);
+      const haulier = await storage.updateHaulier(req.params.id, validatedData);
+      if (!haulier) {
+        return res.status(404).json({ error: "Haulier not found" });
+      }
+      res.json(haulier);
+    } catch (error) {
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid haulier data" });
+      }
+      res.status(500).json({ error: "Failed to update haulier" });
+    }
+  });
+
+  // Delete haulier
+  app.delete("/api/hauliers/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteHaulier(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Haulier not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete haulier" });
     }
   });
 
