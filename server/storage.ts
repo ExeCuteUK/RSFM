@@ -7,6 +7,8 @@ import {
   type InsertExportCustomer,
   type ExportReceiver,
   type InsertExportReceiver,
+  type Haulier,
+  type InsertHaulier,
   type ImportShipment,
   type InsertImportShipment,
   type ExportShipment,
@@ -16,6 +18,7 @@ import {
   importCustomers,
   exportCustomers,
   exportReceivers,
+  hauliers,
   importShipments,
   exportShipments,
   customClearances,
@@ -51,6 +54,13 @@ export interface IStorage {
   createExportReceiver(receiver: InsertExportReceiver): Promise<ExportReceiver>;
   updateExportReceiver(id: string, receiver: Partial<InsertExportReceiver>): Promise<ExportReceiver | undefined>;
   deleteExportReceiver(id: string): Promise<boolean>;
+
+  // Haulier methods
+  getAllHauliers(): Promise<Haulier[]>;
+  getHaulier(id: string): Promise<Haulier | undefined>;
+  createHaulier(haulier: InsertHaulier): Promise<Haulier>;
+  updateHaulier(id: string, haulier: Partial<InsertHaulier>): Promise<Haulier | undefined>;
+  deleteHaulier(id: string): Promise<boolean>;
 
   // Job Reference methods
   getNextJobRef(): number;
@@ -805,6 +815,31 @@ export class DatabaseStorage implements IStorage {
 
   async deleteExportReceiver(id: string): Promise<boolean> {
     const result = await db.delete(exportReceivers).where(eq(exportReceivers.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Haulier methods
+  async getAllHauliers(): Promise<Haulier[]> {
+    return await db.select().from(hauliers);
+  }
+
+  async getHaulier(id: string): Promise<Haulier | undefined> {
+    const [haulier] = await db.select().from(hauliers).where(eq(hauliers.id, id));
+    return haulier;
+  }
+
+  async createHaulier(haulier: InsertHaulier): Promise<Haulier> {
+    const [created] = await db.insert(hauliers).values(haulier).returning();
+    return created;
+  }
+
+  async updateHaulier(id: string, haulier: Partial<InsertHaulier>): Promise<Haulier | undefined> {
+    const [updated] = await db.update(hauliers).set(haulier).where(eq(hauliers.id, id)).returning();
+    return updated;
+  }
+
+  async deleteHaulier(id: string): Promise<boolean> {
+    const result = await db.delete(hauliers).where(eq(hauliers.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
