@@ -326,7 +326,7 @@ export default function Customers() {
                         <div className="space-y-0.5">
                           {customer.email.map((email, idx) => (
                             <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
-                              <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+                              <a href={`mailto:${email}`} className="text-muted-foreground hover:underline">{email}</a>
                             </p>
                           ))}
                         </div>
@@ -350,7 +350,7 @@ export default function Customers() {
                             <div>
                               {customer.agentEmail.map((email, idx) => (
                                 <p key={idx} data-testid={`text-agent-email-${customer.id}-${idx}`}>
-                                  <a href={`mailto:${email}`} className="hover:underline font-normal">{email}</a>
+                                  <a href={`mailto:${email}`} className="text-muted-foreground hover:underline font-normal">{email}</a>
                                 </p>
                               ))}
                             </div>
@@ -413,7 +413,7 @@ export default function Customers() {
                         <div className="space-y-0.5">
                           {customer.email.map((email, idx) => (
                             <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
-                              <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+                              <a href={`mailto:${email}`} className="text-muted-foreground hover:underline">{email}</a>
                             </p>
                           ))}
                         </div>
@@ -437,7 +437,7 @@ export default function Customers() {
                             <div>
                               {customer.agentEmail.map((email, idx) => (
                                 <p key={idx} data-testid={`text-agent-email-${customer.id}-${idx}`}>
-                                  <a href={`mailto:${email}`} className="hover:underline font-normal">{email}</a>
+                                  <a href={`mailto:${email}`} className="text-muted-foreground hover:underline font-normal">{email}</a>
                                 </p>
                               ))}
                             </div>
@@ -552,7 +552,7 @@ export default function Customers() {
                     <div className="space-y-1 text-sm">
                       {haulier.email && (
                         <p data-testid={`text-email-${haulier.id}`}>
-                          <a href={`mailto:${haulier.email}`} className="hover:underline">{haulier.email}</a>
+                          <a href={`mailto:${haulier.email}`} className="text-muted-foreground hover:underline">{haulier.email}</a>
                         </p>
                       )}
                       {haulier.telephone && <p data-testid={`text-telephone-${haulier.id}`}>{haulier.telephone}</p>}
