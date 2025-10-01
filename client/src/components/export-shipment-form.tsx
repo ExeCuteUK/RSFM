@@ -546,47 +546,51 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   />
                 )}
 
-                <FormField
-                  control={form.control}
-                  name="arrivalClearanceCost"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Arrival Clearance Cost</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="additionalCommodityCodes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Additional Commodity Codes</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))} 
-                        value={field.value?.toString() || ""}
-                      >
+                {arrivalClearanceAgent === "Haulier" && (
+                  <FormField
+                    control={form.control}
+                    name="arrivalClearanceCost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Arrival Clearance Cost</FormLabel>
                         <FormControl>
-                          <SelectTrigger data-testid="select-commodity-codes">
-                            <SelectValue placeholder="Select number" />
-                          </SelectTrigger>
+                          <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
                         </FormControl>
-                        <SelectContent>
-                          {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              {num}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {exportClearanceAgent && arrivalClearanceAgent && !((exportClearanceAgent === "N/A" || exportClearanceAgent === "Customer") && arrivalClearanceAgent === "Customer") && (
+                  <FormField
+                    control={form.control}
+                    name="additionalCommodityCodes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Additional Commodity Codes</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(parseInt(value))} 
+                          value={field.value?.toString() || ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-commodity-codes">
+                              <SelectValue placeholder="Select number" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             </CardContent>
           </Card>
