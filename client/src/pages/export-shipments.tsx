@@ -5,6 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
@@ -14,6 +24,7 @@ import { useToast } from "@/hooks/use-toast"
 export default function ExportShipments() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingShipment, setEditingShipment] = useState<ExportShipment | null>(null)
+  const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const { toast } = useToast()
 
@@ -88,7 +99,13 @@ export default function ExportShipments() {
   }
 
   const handleDelete = (id: string) => {
-    deleteShipment.mutate(id)
+    setDeletingShipmentId(id)
+  }
+
+  const confirmDelete = () => {
+    if (!deletingShipmentId) return
+    deleteShipment.mutate(deletingShipmentId)
+    setDeletingShipmentId(null)
   }
 
   const handleFormSubmit = (data: InsertExportShipment) => {
@@ -232,9 +249,9 @@ export default function ExportShipments() {
                       <span className="font-medium">Incoterms:</span> {shipment.incoterms}
                     </p>
                   )}
-                  {shipment.description && (
+                  {shipment.goodsDescription && (
                     <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
-                      {shipment.description}
+                      {shipment.goodsDescription}
                     </p>
                   )}
                   {(() => {
@@ -272,6 +289,21 @@ export default function ExportShipments() {
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deletingShipmentId} onOpenChange={(open) => !open && setDeletingShipmentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this export shipment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

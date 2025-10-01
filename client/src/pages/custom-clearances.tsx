@@ -4,6 +4,16 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, FileCheck, Paperclip } from "lucide-react"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
@@ -12,6 +22,7 @@ import { useToast } from "@/hooks/use-toast"
 export default function CustomClearances() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingClearance, setEditingClearance] = useState<CustomClearance | null>(null)
+  const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("All")
   const { toast } = useToast()
 
@@ -72,7 +83,13 @@ export default function CustomClearances() {
   }
 
   const handleDelete = (id: string) => {
-    deleteClearance.mutate(id)
+    setDeletingClearanceId(id)
+  }
+
+  const confirmDelete = () => {
+    if (!deletingClearanceId) return
+    deleteClearance.mutate(deletingClearanceId)
+    setDeletingClearanceId(null)
   }
 
   const handleFormSubmit = (data: InsertCustomClearance) => {
@@ -272,6 +289,21 @@ export default function CustomClearances() {
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deletingClearanceId} onOpenChange={(open) => !open && setDeletingClearanceId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this custom clearance job.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

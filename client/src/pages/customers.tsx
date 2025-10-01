@@ -5,6 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { ImportCustomerForm } from "@/components/import-customer-form"
 import { ExportCustomerForm } from "@/components/export-customer-form"
@@ -18,6 +28,7 @@ export default function Customers() {
   const [selectedTab, setSelectedTab] = useState<CustomerType>("import")
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | null>(null)
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
   const { toast } = useToast()
 
   // Helper to determine customer type from entity properties
@@ -155,13 +166,20 @@ export default function Customers() {
   }
 
   const handleDelete = (id: string) => {
+    setDeletingCustomerId(id)
+  }
+
+  const confirmDelete = () => {
+    if (!deletingCustomerId) return
+    
     if (selectedTab === "import") {
-      deleteImportCustomer.mutate(id)
+      deleteImportCustomer.mutate(deletingCustomerId)
     } else if (selectedTab === "export") {
-      deleteExportCustomer.mutate(id)
+      deleteExportCustomer.mutate(deletingCustomerId)
     } else {
-      deleteExportReceiver.mutate(id)
+      deleteExportReceiver.mutate(deletingCustomerId)
     }
+    setDeletingCustomerId(null)
   }
 
   const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver) => {
@@ -426,6 +444,21 @@ export default function Customers() {
           })()}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deletingCustomerId} onOpenChange={(open) => !open && setDeletingCustomerId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this {selectedTab === "import" ? "import customer" : selectedTab === "export" ? "export customer" : "export receiver"}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
