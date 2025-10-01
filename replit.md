@@ -4,6 +4,8 @@
 
 R.S International Freight Manager is a web-based freight management system designed to replace a legacy VB6 application. Its primary purpose is to manage import/export shipments, customs clearances, customer records, invoicing, and freight rate calculations, providing an enterprise-grade solution for logistics operations. The system handles three core workflows: Import Shipments, Export Shipments, and Custom Clearances, all sharing a unified job reference system starting at #26001. A key feature is the automatic generation of Custom Clearance jobs when an Import Shipment is marked "R.S To Clear", sharing the same job reference. The system also supports multi-currency financial fields and maintains separate databases for Import Customers, Export Customers, and Export Receivers. Each job type is visually differentiated with distinct color themes for clarity.
 
+The application now includes comprehensive file upload functionality integrated with Replit's App Storage (object storage), allowing users to attach files to shipments and custom clearances. Files are stored persistently and can be downloaded directly from the system.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -27,6 +29,7 @@ The API provides standard RESTful endpoints for managing:
 -   **Import Shipments**: GET, POST, PATCH, DELETE `/api/import-shipments` (auto-creates Custom Clearance if `rsToClear=true`)
 -   **Export Shipments**: GET, POST, PATCH, DELETE `/api/export-shipments`
 -   **Custom Clearances**: GET, POST, PATCH, DELETE `/api/custom-clearances`
+-   **File Storage**: POST `/api/objects/upload` (get presigned upload URL), GET `/objects/:objectPath` (download files), POST `/api/objects/normalize` (normalize uploaded file URLs)
 
 ### Navigation Routes
 
@@ -56,6 +59,10 @@ Key routes include:
 **Utility Libraries:**
 -   clsx, tailwind-merge, class-variance-authority (for CSS utilities)
 -   date-fns (for date manipulation)
+
+**File Upload & Storage:**
+-   Uppy (core, react, dashboard, aws-s3)
+-   @google-cloud/storage
 
 **Development Tools:**
 -   TypeScript

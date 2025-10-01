@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Plus } from "lucide-react"
+import { Calendar as CalendarIcon, Plus, Download, X, FileText } from "lucide-react"
+import { ObjectUploader } from "@/components/ObjectUploader"
+import type { UploadResult } from "@uppy/core"
 import {
   Form,
   FormControl,
@@ -35,7 +37,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 import { ExportCustomerForm } from "./export-customer-form"
 import { ExportReceiverForm } from "./export-receiver-form"
 import { apiRequest, queryClient } from "@/lib/queryClient"
@@ -51,6 +52,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const { toast } = useToast()
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
   const [isReceiverDialogOpen, setIsReceiverDialogOpen] = useState(false)
+  const [pendingProofOfDelivery, setPendingProofOfDelivery] = useState<string[]>([])
+  const [pendingAttachments, setPendingAttachments] = useState<string[]>([])
 
   const form = useForm<InsertExportShipment>({
     resolver: zodResolver(insertExportShipmentSchema),
@@ -66,7 +69,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       deliveryDate: "",
       deliveryReference: "",
       deliveryTimeNotes: "",
-      proofOfDelivery: "",
+      proofOfDelivery: [],
       trailerNo: "",
       departureFrom: "",
       portOfArrival: "",
@@ -90,7 +93,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       additionalCommodityCodes: 1,
       haulierName: "",
       haulierContactName: "",
-      attachments: "",
+      attachments: [],
       ...defaultValues
     },
   })
@@ -164,9 +167,60 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
     }
   }, [dispatchDate, status, form])
 
+  const handleFormSubmit = async (data: InsertExportShipment) => {
+    const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
+    const normalizedAttachments: string[] = [...(data.attachments || [])];
+
+    if (pendingProofOfDelivery.length > 0) {
+      try {
+        const normalizeResponse = await fetch("/api/objects/normalize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: pendingProofOfDelivery }),
+        });
+        const normalizeData = await normalizeResponse.json();
+        normalizedProofOfDelivery.push(...normalizeData.paths);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to normalize proof of delivery files",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    if (pendingAttachments.length > 0) {
+      try {
+        const normalizeResponse = await fetch("/api/objects/normalize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: pendingAttachments }),
+        });
+        const normalizeData = await normalizeResponse.json();
+        normalizedAttachments.push(...normalizeData.paths);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to normalize attachment files",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const finalData = {
+      ...data,
+      proofOfDelivery: normalizedProofOfDelivery,
+      attachments: normalizedAttachments,
+    };
+
+    onSubmit(finalData);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid gap-6">
           <Card>
             <CardHeader>
@@ -445,16 +499,64 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Proof Of Delivery</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="file" 
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              field.onChange(file ? file.name : "");
+                        <div className="space-y-3">
+                          <ObjectUploader
+                            maxNumberOfFiles={5}
+                            maxFileSize={20 * 1024 * 1024}
+                            onGetUploadParameters={async () => {
+                              const response = await fetch("/api/objects/upload", { method: "POST" });
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
                             }}
-                            data-testid="input-proof-of-delivery"
-                          />
-                        </FormControl>
+                            onComplete={(result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                              const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
+                              setPendingProofOfDelivery((prev) => [...prev, ...uploadedUrls]);
+                            }}
+                            buttonVariant="outline"
+                          >
+                            Upload Files
+                          </ObjectUploader>
+                          
+                          {(pendingProofOfDelivery.length > 0 || (field.value && field.value.length > 0)) && (
+                            <div className="space-y-2">
+                              {pendingProofOfDelivery.map((url, index) => (
+                                <div key={`pending-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4" />
+                                    <span className="text-sm">{url.split('/').pop()?.split('?')[0] || 'File'}</span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setPendingProofOfDelivery((prev) => prev.filter((_, i) => i !== index))}
+                                    data-testid={`button-remove-pending-pod-${index}`}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              {field.value && field.value.map((path: string, index: number) => (
+                                <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4" />
+                                    <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                                  </div>
+                                  <a href={`/objects/${path}`} target="_blank" rel="noopener noreferrer">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      data-testid={`button-download-pod-${index}`}
+                                    >
+                                      <Download className="h-4 w-4" />
+                                    </Button>
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -905,15 +1007,64 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 name="attachments"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>
-                      <FileUpload
-                        value={field.value ? JSON.parse(field.value) : []}
-                        onChange={(files: FileMetadata[]) => {
-                          field.onChange(JSON.stringify(files));
+                    <div className="space-y-3">
+                      <ObjectUploader
+                        maxNumberOfFiles={5}
+                        maxFileSize={20 * 1024 * 1024}
+                        onGetUploadParameters={async () => {
+                          const response = await fetch("/api/objects/upload", { method: "POST" });
+                          const data = await response.json();
+                          return { method: "PUT" as const, url: data.uploadURL };
                         }}
-                        testId="file-upload-attachments"
-                      />
-                    </FormControl>
+                        onComplete={(result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                          const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
+                          setPendingAttachments((prev) => [...prev, ...uploadedUrls]);
+                        }}
+                        buttonVariant="outline"
+                      >
+                        Upload Files
+                      </ObjectUploader>
+                      
+                      {(pendingAttachments.length > 0 || (field.value && field.value.length > 0)) && (
+                        <div className="space-y-2">
+                          {pendingAttachments.map((url, index) => (
+                            <div key={`pending-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                <span className="text-sm">{url.split('/').pop()?.split('?')[0] || 'File'}</span>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== index))}
+                                data-testid={`button-remove-pending-attachment-${index}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          {field.value && field.value.map((path: string, index: number) => (
+                            <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                              </div>
+                              <a href={`/objects/${path}`} target="_blank" rel="noopener noreferrer">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  data-testid={`button-download-attachment-${index}`}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
