@@ -32,6 +32,7 @@ interface ImportCustomerFormProps {
 
 export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: ImportCustomerFormProps) {
   const [newEmail, setNewEmail] = useState("")
+  const [newAccountsEmail, setNewAccountsEmail] = useState("")
   const [newAgentEmail, setNewAgentEmail] = useState("")
   
   const form = useForm<InsertImportCustomer>({
@@ -41,8 +42,8 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
       contactName: "",
       vatNumber: "",
       telephone: "",
-      fax: "",
       email: [],
+      accountsEmail: [],
       addressLine1: "",
       addressLine2: "",
       town: "",
@@ -52,7 +53,6 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
       agentName: "",
       agentContactName: "",
       agentTelephone: "",
-      agentFax: "",
       agentEmail: [],
       agentAddressLine1: "",
       agentAddressLine2: "",
@@ -73,6 +73,7 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
 
   const rsToArrangeClearance = form.watch("rsProcessCustomsClearance")
   const emails = form.watch("email") || []
+  const accountsEmails = form.watch("accountsEmail") || []
   const agentEmails = form.watch("agentEmail") || []
 
   const addEmail = () => {
@@ -87,6 +88,20 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
   const removeEmail = (email: string) => {
     const currentEmails = form.getValues("email") || []
     form.setValue("email", currentEmails.filter(e => e !== email))
+  }
+
+  const addAccountsEmail = () => {
+    if (!newAccountsEmail.trim()) return
+    const currentEmails = form.getValues("accountsEmail") || []
+    if (!currentEmails.includes(newAccountsEmail.trim())) {
+      form.setValue("accountsEmail", [...currentEmails, newAccountsEmail.trim()])
+      setNewAccountsEmail("")
+    }
+  }
+
+  const removeAccountsEmail = (email: string) => {
+    const currentEmails = form.getValues("accountsEmail") || []
+    form.setValue("accountsEmail", currentEmails.filter(e => e !== email))
   }
 
   const addAgentEmail = () => {
@@ -171,20 +186,6 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
               
               <FormField
                 control={form.control}
-                name="fax"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fax</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-fax" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
                 name="email"
                 render={() => (
                   <FormItem>
@@ -230,6 +231,66 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
                                 onClick={() => removeEmail(email)}
                                 className="hover:bg-destructive/20 rounded-sm"
                                 data-testid={`button-remove-email-${email}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="accountsEmail"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Accounts Email</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter accounts email address"
+                          value={newAccountsEmail}
+                          onChange={(e) => setNewAccountsEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addAccountsEmail()
+                            }
+                          }}
+                          type="email"
+                          data-testid="input-new-accounts-email"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addAccountsEmail}
+                          data-testid="button-add-accounts-email"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {accountsEmails.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-accounts-emails">
+                          {accountsEmails.map((email) => (
+                            <Badge
+                              key={email}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-accounts-email-${email}`}
+                            >
+                              {email}
+                              <button
+                                type="button"
+                                onClick={() => removeAccountsEmail(email)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-accounts-email-${email}`}
                               >
                                 <X className="h-3 w-3" />
                               </button>
@@ -371,20 +432,6 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
                     <FormLabel>Telephone</FormLabel>
                     <FormControl>
                       <Input {...field} value={field.value || ""} data-testid="input-agent-telephone" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="agentFax"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fax</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-fax" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
