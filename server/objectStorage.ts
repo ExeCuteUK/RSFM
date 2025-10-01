@@ -142,13 +142,14 @@ export class ObjectStorageService {
   }
 
   async getObjectEntityFile(objectPath: string): Promise<File> {
-    console.log("[getObjectEntityFile] objectPath:", objectPath);
     if (!objectPath.startsWith("/objects/")) {
+      console.error("[getObjectEntityFile] Invalid path - does not start with /objects/:", objectPath);
       throw new ObjectNotFoundError();
     }
 
     const parts = objectPath.slice(1).split("/");
     if (parts.length < 2) {
+      console.error("[getObjectEntityFile] Invalid path - not enough parts:", objectPath, "parts:", parts);
       throw new ObjectNotFoundError();
     }
 
@@ -158,14 +159,24 @@ export class ObjectStorageService {
       entityDir = `${entityDir}/`;
     }
     const objectEntityPath = `${entityDir}${entityId}`;
-    console.log("[getObjectEntityFile] entityId:", entityId, "entityDir:", entityDir, "objectEntityPath:", objectEntityPath);
     const { bucketName, objectName } = parseObjectPath(objectEntityPath);
-    console.log("[getObjectEntityFile] bucketName:", bucketName, "objectName:", objectName);
+    
+    console.log("[getObjectEntityFile] DEBUG INFO:");
+    console.log("  - Input objectPath:", objectPath);
+    console.log("  - Extracted entityId:", entityId);
+    console.log("  - Private entityDir:", entityDir);
+    console.log("  - Full objectEntityPath:", objectEntityPath);
+    console.log("  - Parsed bucketName:", bucketName);
+    console.log("  - Parsed objectName:", objectName);
+    
     const bucket = objectStorageClient.bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
-    console.log("[getObjectEntityFile] file exists:", exists);
+    
+    console.log("  - File exists in GCS:", exists);
+    
     if (!exists) {
+      console.error("[getObjectEntityFile] FILE NOT FOUND in GCS!");
       throw new ObjectNotFoundError();
     }
     return objectFile;
