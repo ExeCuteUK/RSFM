@@ -26,6 +26,7 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
   const [newEmail, setNewEmail] = useState("")
   const [newAccountsEmail, setNewAccountsEmail] = useState("")
   const [newAgentEmail, setNewAgentEmail] = useState("")
+  const [newAgentAccountsEmail, setNewAgentAccountsEmail] = useState("")
   
   const form = useForm<InsertExportCustomer>({
     resolver: zodResolver(insertExportCustomerSchema),
@@ -46,6 +47,7 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       agentContactName: "",
       agentTelephone: "",
       agentEmail: [],
+      agentAccountsEmail: [],
       agentAddressLine1: "",
       agentAddressLine2: "",
       agentTown: "",
@@ -98,9 +100,24 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
     form.setValue("agentEmail", currentAgentEmails.filter(e => e !== email))
   }
 
+  const addAgentAccountsEmail = () => {
+    if (!newAgentAccountsEmail.trim()) return
+    const currentAgentAccountsEmails = form.getValues("agentAccountsEmail") || []
+    if (!currentAgentAccountsEmails.includes(newAgentAccountsEmail.trim())) {
+      form.setValue("agentAccountsEmail", [...currentAgentAccountsEmails, newAgentAccountsEmail.trim()])
+      setNewAgentAccountsEmail("")
+    }
+  }
+
+  const removeAgentAccountsEmail = (email: string) => {
+    const currentAgentAccountsEmails = form.getValues("agentAccountsEmail") || []
+    form.setValue("agentAccountsEmail", currentAgentAccountsEmails.filter(e => e !== email))
+  }
+
   const emails = form.watch("email") || []
   const accountsEmails = form.watch("accountsEmail") || []
   const agentEmails = form.watch("agentEmail") || []
+  const agentAccountsEmails = form.watch("agentAccountsEmail") || []
 
   return (
     <Form {...form}>
@@ -469,6 +486,66 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
                                 onClick={() => removeAgentEmail(email)}
                                 className="hover:bg-destructive/20 rounded-sm"
                                 data-testid={`button-remove-agent-email-${email}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="agentAccountsEmail"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Agent Accounts Email</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter email address"
+                          value={newAgentAccountsEmail}
+                          onChange={(e) => setNewAgentAccountsEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addAgentAccountsEmail()
+                            }
+                          }}
+                          type="email"
+                          data-testid="input-new-agent-accounts-email"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addAgentAccountsEmail}
+                          data-testid="button-add-agent-accounts-email"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {agentAccountsEmails.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-agent-accounts-emails">
+                          {agentAccountsEmails.map((email) => (
+                            <Badge
+                              key={email}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-agent-accounts-email-${email}`}
+                            >
+                              {email}
+                              <button
+                                type="button"
+                                onClick={() => removeAgentAccountsEmail(email)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-agent-accounts-email-${email}`}
                               >
                                 <X className="h-3 w-3" />
                               </button>
