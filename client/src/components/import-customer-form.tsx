@@ -447,10 +447,10 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="PVA">PVA</SelectItem>
-                        <SelectItem value="R.S DAN">R.S DAN</SelectItem>
-                        <SelectItem value="Customer DAN">Customer DAN</SelectItem>
-                        <SelectItem value="FAS">FAS</SelectItem>
+                        <SelectItem value="Postponed VAT Accounting (PVA)">Postponed VAT Accounting (PVA)</SelectItem>
+                        <SelectItem value="R.S Deferment">R.S Deferment</SelectItem>
+                        <SelectItem value="Customer Deferment">Customer Deferment</SelectItem>
+                        <SelectItem value="Flexible Accounting (FAS)">Flexible Accounting (FAS)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
