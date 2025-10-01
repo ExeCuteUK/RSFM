@@ -452,7 +452,7 @@ export default function ImportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
-                        Book Deliver with Haulier: {formatDate(shipment.bookingDate) || "TBA"}
+                        Book Delivery Haulier
                       </p>
                       <div className="flex items-center gap-1">
                         <button
