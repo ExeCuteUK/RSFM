@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertImportShipmentSchema, type InsertImportShipment, type ImportCustomer } from "@shared/schema"
+import { insertImportShipmentSchema, type InsertImportShipment, type ImportCustomer, type InsertImportCustomer } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -20,15 +20,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useQuery } from "@tanstack/react-query"
-import { useEffect } from "react"
+import { useQuery, useMutation } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { format, parseISO } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ImportCustomerForm } from "./import-customer-form"
+import { apiRequest, queryClient } from "@/lib/queryClient"
+import { useToast } from "@/hooks/use-toast"
 
 interface ImportShipmentFormProps {
   onSubmit: (data: InsertImportShipment) => void
@@ -37,6 +47,9 @@ interface ImportShipmentFormProps {
 }
 
 export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: ImportShipmentFormProps) {
+  const { toast } = useToast()
+  const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
+
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(insertImportShipmentSchema),
     defaultValues: {
@@ -75,6 +88,29 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
     queryKey: ["/api/import-customers"],
   })
 
+  const createCustomerMutation = useMutation({
+    mutationFn: async (data: InsertImportCustomer) => {
+      const response = await apiRequest("/api/import-customers", "POST", data);
+      return response.json() as Promise<ImportCustomer>;
+    },
+    onSuccess: (newCustomer: ImportCustomer) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-customers"] })
+      form.setValue("importCustomerId", newCustomer.id)
+      setIsCustomerDialogOpen(false)
+      toast({
+        title: "Success",
+        description: "Import customer created successfully",
+      })
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create import customer",
+        variant: "destructive",
+      })
+    },
+  })
+
   const selectedCustomerId = form.watch("importCustomerId")
   const rsToClear = form.watch("rsToClear")
   const containerShipment = form.watch("containerShipment")
@@ -106,20 +142,31 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Import Customer</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-import-customer">
-                          <SelectValue placeholder="Select import customer" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {importCustomers?.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.companyName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex gap-2 flex-wrap">
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-import-customer">
+                            <SelectValue placeholder="Select import customer" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {importCustomers?.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                              {customer.companyName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsCustomerDialogOpen(true)}
+                        data-testid="button-create-customer"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New Customer
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -704,6 +751,21 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
           </Button>
         </div>
       </form>
+
+      <Dialog open={isCustomerDialogOpen} onOpenChange={setIsCustomerDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Import Customer</DialogTitle>
+            <DialogDescription>
+              Add a new import customer to the system. The customer will be automatically selected after creation.
+            </DialogDescription>
+          </DialogHeader>
+          <ImportCustomerForm
+            onSubmit={(data) => createCustomerMutation.mutate(data)}
+            onCancel={() => setIsCustomerDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </Form>
   )
 }
