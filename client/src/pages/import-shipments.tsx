@@ -104,6 +104,15 @@ export default function ImportShipments() {
     },
   })
 
+  const updateHaulierBookingStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/haulier-booking-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingShipment(null)
     setIsFormOpen(true)
@@ -156,6 +165,10 @@ export default function ImportShipments() {
     updateDeliveryBookedStatus.mutate({ id, status })
   }
 
+  const handleHaulierBookingStatusUpdate = (id: string, status: number) => {
+    updateHaulierBookingStatus.mutate({ id, status })
+  }
+
   const getClearanceStatusColor = (status: number | null) => {
     switch (status) {
       case 2: return "text-orange-600 dark:text-orange-400"
@@ -168,6 +181,17 @@ export default function ImportShipments() {
   }
 
   const getDeliveryBookedStatusColor = (status: number | null) => {
+    switch (status) {
+      case 1: return "text-orange-600 dark:text-orange-400"
+      case 2:
+      case null:
+      default: return "text-yellow-600 dark:text-yellow-400"
+      case 3: return "text-green-600 dark:text-green-400"
+      case 4: return "text-red-600 dark:text-red-400"
+    }
+  }
+
+  const getHaulierBookingStatusColor = (status: number | null) => {
     switch (status) {
       case 1: return "text-orange-600 dark:text-orange-400"
       case 2:
@@ -420,6 +444,55 @@ export default function ImportShipments() {
                               : 'bg-red-200 border-red-300 hover-elevate'
                           }`}
                           data-testid={`button-delivery-status-red-${shipment.id}`}
+                          title="Red Status"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
+                        Book Deliver with Haulier: {formatDate(shipment.bookingDate) || "TBA"}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.haulierBookingStatusIndicator === 2
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-haulier-status-yellow-${shipment.id}`}
+                          title="Yellow Status"
+                        />
+                        <button
+                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.haulierBookingStatusIndicator === 1
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-haulier-status-orange-${shipment.id}`}
+                          title="Orange Status"
+                        />
+                        <button
+                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.haulierBookingStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-haulier-status-green-${shipment.id}`}
+                          title="Green Status"
+                        />
+                        <button
+                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.haulierBookingStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-haulier-status-red-${shipment.id}`}
                           title="Red Status"
                         />
                       </div>

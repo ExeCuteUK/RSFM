@@ -377,6 +377,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update haulier booking status indicator
+  app.patch("/api/import-shipments/:id/haulier-booking-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateImportShipment(req.params.id, { 
+        haulierBookingStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update haulier booking status" });
+    }
+  });
+
   // Delete import shipment
   app.delete("/api/import-shipments/:id", async (req, res) => {
     try {
