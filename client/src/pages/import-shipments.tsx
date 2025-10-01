@@ -370,6 +370,10 @@ export default function ImportShipments() {
                           />
                         </div>
                       </div>
+                      <p className="text-sm mt-1" data-testid={`text-delivery-booked-${shipment.id}`}>
+                        <span className="font-medium">Delivery Booked:</span>{' '}
+                        {formatDate(shipment.bookingDate) || "N/A"}
+                      </p>
                     </div>
                   )}
                   {(() => {
