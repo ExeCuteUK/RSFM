@@ -568,7 +568,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     name="additionalCommodityCodes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Additional Commodity Codes</FormLabel>
+                        <FormLabel>Total Commodity Codes</FormLabel>
                         <Select 
                           onValueChange={(value) => field.onChange(parseInt(value))} 
                           value={field.value?.toString() || ""}
