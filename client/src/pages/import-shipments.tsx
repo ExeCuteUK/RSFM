@@ -148,6 +148,19 @@ export default function ImportShipments() {
     }
   }
 
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return null
+    try {
+      const date = new Date(dateStr)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = String(date.getFullYear()).slice(-2)
+      return `${day}/${month}/${year}`
+    } catch {
+      return dateStr
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -242,41 +255,37 @@ export default function ImportShipments() {
                       {shipment.trailerOrContainerNumber}
                     </p>
                   )}
+                  {shipment.portOfArrival && (
+                    <p data-testid={`text-port-${shipment.id}`}>
+                      <span className="font-medium">Port Of Arrival:</span> {shipment.portOfArrival}
+                    </p>
+                  )}
                   {shipment.goodsDescription && (
                     <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
                       {shipment.goodsDescription}
                     </p>
                   )}
                   {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
-                    <p data-testid={`text-weight-pieces-${shipment.id}`}>
-                      {shipment.weight && <><span className="font-medium">Weight:</span> {shipment.weight}</>}
+                    <p className="text-muted-foreground" data-testid={`text-weight-pieces-${shipment.id}`}>
+                      {shipment.weight && <>Weight: {shipment.weight}</>}
                       {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
                       {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
                     </p>
                   )}
                   {shipment.containerShipment && (
-                    <p data-testid={`text-container-shipment-${shipment.id}`}>
+                    <p className="underline" data-testid={`text-container-shipment-${shipment.id}`}>
                       Container Shipment
-                    </p>
-                  )}
-                  {shipment.portOfArrival && (
-                    <p data-testid={`text-port-${shipment.id}`}>
-                      <span className="font-medium">Port Of Arrival:</span> {shipment.portOfArrival}
                     </p>
                   )}
                   <p data-testid={`text-eta-port-${shipment.id}`}>
                     <span className="font-medium">ETA Port:</span>{' '}
-                    {shipment.importDateEtaPort ? (
-                      shipment.importDateEtaPort
-                    ) : (
+                    {formatDate(shipment.importDateEtaPort) || (
                       <span className="text-red-700 dark:text-red-600">TBA</span>
                     )}
                   </p>
                   <p data-testid={`text-delivery-date-${shipment.id}`}>
                     <span className="font-medium">Delivery Date:</span>{' '}
-                    {shipment.deliveryDate ? (
-                      shipment.deliveryDate
-                    ) : (
+                    {formatDate(shipment.deliveryDate) || (
                       <span className="text-red-700 dark:text-red-600">TBA</span>
                     )}
                   </p>
