@@ -42,24 +42,24 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       status: "Pending",
       receiverId: "",
       destinationCustomerId: "",
+      customerReferenceNumber: "",
       loadDate: "",
       trailerNo: "",
-      jobReference: "",
-      destination: "",
+      departureFrom: "",
+      portOfArrival: "",
       incoterms: "",
       exportClearanceAgent: "",
       arrivalClearanceAgent: "",
       supplier: "",
       consignee: "",
       value: "",
-      numPackages: "",
-      packing: "",
-      description: "",
-      grossWeightKg: "",
-      cbm: "",
-      cargoWeight: "",
+      numberOfPieces: "",
+      packaging: "",
+      goodsDescription: "",
+      weight: "",
+      cube: "",
       freightRateOut: "",
-      exportClearanceCost: "",
+      clearanceCharge: "",
       arrivalClearanceCost: "",
       currency: "GBP",
       additionalCommodityCodes: undefined,
@@ -79,7 +79,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   })
 
   const exportClearanceAgent = form.watch("exportClearanceAgent")
-  const arrivalClearanceAgent = form.watch("arrivalClearanceAgent")
 
   return (
     <Form {...form}>
@@ -135,6 +134,20 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="customerReferenceNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Customer Reference Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -200,12 +213,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="jobReference"
+                  name="departureFrom"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Job Reference</FormLabel>
+                      <FormLabel>Departure From</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-job-reference" />
+                        <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -214,12 +227,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="destination"
+                  name="portOfArrival"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Destination</FormLabel>
+                      <FormLabel>Port of Arrival</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-destination" />
+                        <Input {...field} value={field.value || ""} data-testid="input-port-of-arrival" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -232,9 +245,26 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Incoterms</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-incoterms" />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-incoterms">
+                            <SelectValue placeholder="Select incoterms" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="EXW">EXW - Ex Works</SelectItem>
+                          <SelectItem value="FCA">FCA - Free Carrier</SelectItem>
+                          <SelectItem value="CPT">CPT - Carriage Paid To</SelectItem>
+                          <SelectItem value="CIP">CIP - Carriage and Insurance Paid To</SelectItem>
+                          <SelectItem value="DAP">DAP - Delivered At Place</SelectItem>
+                          <SelectItem value="DPU">DPU - Delivered at Place Unloaded</SelectItem>
+                          <SelectItem value="DDP">DDP - Delivered Duty Paid</SelectItem>
+                          <SelectItem value="FAS">FAS - Free Alongside Ship</SelectItem>
+                          <SelectItem value="FOB">FOB - Free On Board</SelectItem>
+                          <SelectItem value="CFR">CFR - Cost and Freight</SelectItem>
+                          <SelectItem value="CIF">CIF - Cost, Insurance and Freight</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -347,12 +377,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="numPackages"
+                  name="numberOfPieces"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel># Pkgs</FormLabel>
+                      <FormLabel>Number of Pieces</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-num-packages" />
+                        <Input {...field} value={field.value || ""} data-testid="input-number-of-pieces" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -361,12 +391,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="packing"
+                  name="packaging"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Packing</FormLabel>
+                      <FormLabel>Packaging</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-packing" />
+                        <Input {...field} value={field.value || ""} data-testid="input-packaging" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -375,12 +405,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="grossWeightKg"
+                  name="weight"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>GW Kg</FormLabel>
+                      <FormLabel>Weight</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-gross-weight" />
+                        <Input {...field} value={field.value || ""} data-testid="input-weight" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -389,26 +419,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="cbm"
+                  name="cube"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CBM</FormLabel>
+                      <FormLabel>Cube</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-cbm" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="cargoWeight"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Crg Wt</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-cargo-weight" />
+                        <Input {...field} value={field.value || ""} data-testid="input-cube" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -418,12 +434,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
               <FormField
                 control={form.control}
-                name="description"
+                name="goodsDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Goods Description</FormLabel>
                     <FormControl>
-                      <Textarea {...field} value={field.value || ""} data-testid="input-description" />
+                      <Textarea {...field} value={field.value || ""} data-testid="input-goods-description" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -479,12 +495,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 {exportClearanceAgent === "R.S" && (
                   <FormField
                     control={form.control}
-                    name="exportClearanceCost"
+                    name="clearanceCharge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Export Clearance Cost</FormLabel>
+                        <FormLabel>Clearance Charge</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-export-clearance-cost" />
+                          <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -492,21 +508,19 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   />
                 )}
 
-                {arrivalClearanceAgent === "Haulier" && (
-                  <FormField
-                    control={form.control}
-                    name="arrivalClearanceCost"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Arrival Clearance Cost</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                <FormField
+                  control={form.control}
+                  name="arrivalClearanceCost"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Arrival Clearance Cost</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
