@@ -522,55 +522,57 @@ export default function ImportShipments() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
-                        Release Container to : {shipment.deliveryRelease || "N/A"}
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.containerReleaseStatusIndicator === 2
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                          }`}
-                          data-testid={`button-container-status-yellow-${shipment.id}`}
-                          title="Yellow Status"
-                        />
-                        <button
-                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.containerReleaseStatusIndicator === 1
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-container-status-orange-${shipment.id}`}
-                          title="Orange Status"
-                        />
-                        <button
-                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.containerReleaseStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
-                          }`}
-                          data-testid={`button-container-status-green-${shipment.id}`}
-                          title="Green Status"
-                        />
-                        <button
-                          onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.containerReleaseStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-container-status-red-${shipment.id}`}
-                          title="Red Status"
-                        />
+                  {shipment.containerShipment === "Container Shipment" && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
+                          Release Container to : {shipment.deliveryRelease || "N/A"}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 2)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.containerReleaseStatusIndicator === 2
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-container-status-yellow-${shipment.id}`}
+                            title="Yellow Status"
+                          />
+                          <button
+                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 1)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.containerReleaseStatusIndicator === 1
+                                ? 'bg-orange-400 border-orange-500 scale-110'
+                                : 'bg-orange-200 border-orange-300 hover-elevate'
+                            }`}
+                            data-testid={`button-container-status-orange-${shipment.id}`}
+                            title="Orange Status"
+                          />
+                          <button
+                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.containerReleaseStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-container-status-green-${shipment.id}`}
+                            title="Green Status"
+                          />
+                          <button
+                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 4)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.containerReleaseStatusIndicator === 4
+                                ? 'bg-red-400 border-red-500 scale-110'
+                                : 'bg-red-200 border-red-300 hover-elevate'
+                            }`}
+                            data-testid={`button-container-status-red-${shipment.id}`}
+                            title="Red Status"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   {(() => {
                     const files = parseAttachments(shipment.attachments)
                     if (files.length > 0) {
