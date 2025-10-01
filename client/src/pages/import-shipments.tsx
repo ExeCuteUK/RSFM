@@ -242,6 +242,18 @@ export default function ImportShipments() {
                       {shipment.trailerOrContainerNumber}
                     </p>
                   )}
+                  {shipment.goodsDescription && (
+                    <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
+                      {shipment.goodsDescription}
+                    </p>
+                  )}
+                  {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
+                    <p data-testid={`text-weight-pieces-${shipment.id}`}>
+                      {shipment.weight && <><span className="font-medium">Weight:</span> {shipment.weight}</>}
+                      {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
+                      {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
+                    </p>
+                  )}
                   {shipment.containerShipment && (
                     <p data-testid={`text-container-shipment-${shipment.id}`}>
                       Container Shipment
@@ -260,18 +272,6 @@ export default function ImportShipments() {
                       <span className="text-red-700 dark:text-red-600">TBA</span>
                     )}
                   </p>
-                  {shipment.goodsDescription && (
-                    <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
-                      {shipment.goodsDescription}
-                    </p>
-                  )}
-                  {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
-                    <p data-testid={`text-weight-pieces-${shipment.id}`}>
-                      {shipment.weight && <><span className="font-medium">Weight:</span> {shipment.weight}</>}
-                      {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
-                      {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
-                    </p>
-                  )}
                   <p data-testid={`text-delivery-date-${shipment.id}`}>
                     <span className="font-medium">Delivery Date:</span>{' '}
                     {shipment.deliveryDate ? (
