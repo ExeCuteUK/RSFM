@@ -209,6 +209,10 @@ export const importShipments = pgTable("import_shipments", {
   deliveryAddress: text("delivery_address"),
   supplierName: text("supplier_name"),
   
+  // Additional Notes
+  additionalNotes: text("additional_notes"),
+  jobTags: text("job_tags").array(),
+  
   // File Attachments (stored as array of file paths from object storage)
   attachments: text("attachments").array(),
   
@@ -312,6 +316,10 @@ export const exportShipments = pgTable("export_shipments", {
   // Haulier Information
   haulierName: text("haulier_name"),
   haulierContactName: text("haulier_contact_name"),
+  
+  // Additional Notes
+  additionalNotes: text("additional_notes"),
+  jobTags: text("job_tags").array(),
   
   // File Attachments (stored as array of file paths from object storage)
   attachments: text("attachments").array(),

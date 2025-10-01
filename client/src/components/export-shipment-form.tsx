@@ -93,6 +93,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       additionalCommodityCodes: 1,
       haulierName: "",
       haulierContactName: "",
+      additionalNotes: "",
+      jobTags: [],
       attachments: [],
       ...defaultValues
     },
@@ -1020,6 +1022,50 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   )}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Additional Notes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="additionalNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Notes</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} value={field.value || ""} rows={5} data-testid="textarea-additional-notes" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="jobTags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job Tags</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        value={field.value?.join(", ") || ""} 
+                        onChange={(e) => {
+                          const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0);
+                          field.onChange(tags);
+                        }}
+                        placeholder="Enter tags separated by commas"
+                        data-testid="input-job-tags"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
