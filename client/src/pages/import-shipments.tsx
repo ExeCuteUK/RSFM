@@ -303,9 +303,53 @@ export default function ImportShipments() {
                   </div>
                   {shipment.rsToClear && (
                     <div className="pt-2 mt-2 border-t">
-                      <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
-                        R.S Processing Import Clearance
-                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
+                          R.S Processing Import Clearance
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleClearanceStatusUpdate(shipment.id, 1)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.clearanceStatusIndicator === 1
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-status-yellow-${shipment.id}`}
+                            title="Yellow Status"
+                          />
+                          <button
+                            onClick={() => handleClearanceStatusUpdate(shipment.id, 2)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.clearanceStatusIndicator === 2
+                                ? 'bg-orange-400 border-orange-500 scale-110'
+                                : 'bg-orange-200 border-orange-300 hover-elevate'
+                            }`}
+                            data-testid={`button-status-orange-${shipment.id}`}
+                            title="Orange Status"
+                          />
+                          <button
+                            onClick={() => handleClearanceStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.clearanceStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-status-green-${shipment.id}`}
+                            title="Green Status"
+                          />
+                          <button
+                            onClick={() => handleClearanceStatusUpdate(shipment.id, 4)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.clearanceStatusIndicator === 4
+                                ? 'bg-red-400 border-red-500 scale-110'
+                                : 'bg-red-200 border-red-300 hover-elevate'
+                            }`}
+                            data-testid={`button-status-red-${shipment.id}`}
+                            title="Red Status"
+                          />
+                        </div>
+                      </div>
                     </div>
                   )}
                   {(() => {
