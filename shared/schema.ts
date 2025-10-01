@@ -176,7 +176,7 @@ export const importShipments = pgTable("import_shipments", {
   portOfArrival: text("port_of_arrival"),
   trailerOrContainerNumber: text("trailer_or_container_number"),
   departureCountry: text("departure_country"),
-  containerShipment: boolean("container_shipment").default(false),
+  containerShipment: text("container_shipment"),
   vesselName: text("vessel_name"),
   shippingLine: text("shipping_line"),
   deliveryRelease: text("delivery_release"),
@@ -291,7 +291,7 @@ export const exportShipments = pgTable("export_shipments", {
   departureFrom: text("departure_from"),
   portOfArrival: text("port_of_arrival"),
   incoterms: text("incoterms"),
-  containerShipment: boolean("container_shipment").default(false),
+  containerShipment: text("container_shipment"),
   vesselName: text("vessel_name"),
   
   // Clearance Agents
@@ -377,7 +377,7 @@ export const customClearances = pgTable("custom_clearances", {
   portOfArrival: text("port_of_arrival"),
   trailerOrContainerNumber: text("trailer_or_container_number"),
   departureFrom: text("departure_from"),
-  containerShipment: boolean("container_shipment").default(false),
+  containerShipment: text("container_shipment"),
   vesselName: text("vessel_name"),
   
   // Cargo Details
