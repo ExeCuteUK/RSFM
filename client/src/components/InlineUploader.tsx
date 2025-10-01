@@ -7,6 +7,7 @@ import type { UploadResult } from "@uppy/core";
 interface InlineUploaderProps {
   maxNumberOfFiles?: number;
   maxFileSize?: number;
+  height?: number;
   onGetUploadParameters: () => Promise<{
     method: "PUT";
     url: string;
@@ -20,6 +21,7 @@ interface InlineUploaderProps {
 export function InlineUploader({
   maxNumberOfFiles = 1,
   maxFileSize = 10485760,
+  height = 200,
   onGetUploadParameters,
   onComplete,
   note = "Drag and drop files here or click to browse",
@@ -53,7 +55,7 @@ export function InlineUploader({
       <Dashboard
         uppy={uppy}
         proudlyDisplayPoweredByUppy={false}
-        height={200}
+        height={height}
         width="100%"
         hideUploadButton={true}
         note={note}

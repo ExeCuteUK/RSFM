@@ -503,6 +503,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           <InlineUploader
                             maxNumberOfFiles={5}
                             maxFileSize={20 * 1024 * 1024}
+                            height={100}
                             onGetUploadParameters={async () => {
                               const response = await fetch("/api/objects/upload", { method: "POST" });
                               const data = await response.json();
