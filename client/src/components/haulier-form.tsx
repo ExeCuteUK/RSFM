@@ -237,7 +237,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                           data-testid="input-new-country"
                         />
                         {showSuggestions && filteredCountries.length > 0 && (
-                          <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto" data-testid="dropdown-country-suggestions">
+                          <div className="absolute top-full left-0 z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto" data-testid="dropdown-country-suggestions">
                             {filteredCountries.map((country) => (
                               <button
                                 key={country}
