@@ -74,7 +74,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       departureFrom: "",
       portOfArrival: "",
       incoterms: "",
-      containerShipment: false,
+      containerShipment: "",
       vesselName: "",
       exportClearanceAgent: "",
       arrivalClearanceAgent: "",
@@ -617,7 +617,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   name="trailerNo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{containerShipment ? "Container Number" : "Trailer No"}</FormLabel>
+                      <FormLabel>{containerShipment === "Container Shipment" ? "Container Number" : "Trailer No"}</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-trailer-no" />
                       </FormControl>
@@ -689,20 +689,26 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   control={form.control}
                   name="containerShipment"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-container-shipment"
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">Container Shipment</FormLabel>
+                    <FormItem>
+                      <FormLabel>Shipment Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-shipment-type">
+                            <SelectValue placeholder="Select shipment type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Road Shipment">Road Shipment</SelectItem>
+                          <SelectItem value="Container Shipment">Container Shipment</SelectItem>
+                          <SelectItem value="Air Freight">Air Freight</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {containerShipment && (
+                {containerShipment === "Container Shipment" && (
                   <FormField
                     control={form.control}
                     name="vesselName"
