@@ -363,6 +363,7 @@ export class MemStorage implements IStorage {
       departureCountry: insertShipment.departureCountry ?? null,
       containerShipment: insertShipment.containerShipment ?? false,
       vesselName: insertShipment.vesselName ?? null,
+      incoterms: insertShipment.incoterms ?? null,
       numberOfPieces: insertShipment.numberOfPieces ?? null,
       packaging: insertShipment.packaging ?? null,
       weight: insertShipment.weight ?? null,
@@ -436,6 +437,12 @@ export class MemStorage implements IStorage {
     const existing = this.importShipments.get(id);
     if (!existing) return undefined;
 
+    // If rsToClear is being changed from true to false, delete the linked clearance
+    if (existing.rsToClear && updates.rsToClear === false && existing.linkedClearanceId) {
+      this.customClearances.delete(existing.linkedClearanceId);
+      updates.linkedClearanceId = null;
+    }
+
     const updated: ImportShipment = { 
       ...existing, 
       ...updates,
@@ -447,6 +454,7 @@ export class MemStorage implements IStorage {
       departureCountry: updates.departureCountry !== undefined ? updates.departureCountry ?? null : existing.departureCountry,
       containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? false : existing.containerShipment,
       vesselName: updates.vesselName !== undefined ? updates.vesselName ?? null : existing.vesselName,
+      incoterms: updates.incoterms !== undefined ? updates.incoterms ?? null : existing.incoterms,
       numberOfPieces: updates.numberOfPieces !== undefined ? updates.numberOfPieces ?? null : existing.numberOfPieces,
       packaging: updates.packaging !== undefined ? updates.packaging ?? null : existing.packaging,
       weight: updates.weight !== undefined ? updates.weight ?? null : existing.weight,
@@ -503,6 +511,8 @@ export class MemStorage implements IStorage {
       departureFrom: insertShipment.departureFrom ?? null,
       portOfArrival: insertShipment.portOfArrival ?? null,
       incoterms: insertShipment.incoterms ?? null,
+      containerShipment: insertShipment.containerShipment ?? false,
+      vesselName: insertShipment.vesselName ?? null,
       exportClearanceAgent: insertShipment.exportClearanceAgent,
       arrivalClearanceAgent: insertShipment.arrivalClearanceAgent,
       supplier: insertShipment.supplier ?? null,
@@ -543,6 +553,8 @@ export class MemStorage implements IStorage {
       departureFrom: updates.departureFrom !== undefined ? updates.departureFrom ?? null : existing.departureFrom,
       portOfArrival: updates.portOfArrival !== undefined ? updates.portOfArrival ?? null : existing.portOfArrival,
       incoterms: updates.incoterms !== undefined ? updates.incoterms ?? null : existing.incoterms,
+      containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? false : existing.containerShipment,
+      vesselName: updates.vesselName !== undefined ? updates.vesselName ?? null : existing.vesselName,
       exportClearanceAgent: updates.exportClearanceAgent !== undefined ? updates.exportClearanceAgent : existing.exportClearanceAgent,
       arrivalClearanceAgent: updates.arrivalClearanceAgent !== undefined ? updates.arrivalClearanceAgent : existing.arrivalClearanceAgent,
       supplier: updates.supplier !== undefined ? updates.supplier ?? null : existing.supplier,
