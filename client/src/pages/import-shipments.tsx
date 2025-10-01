@@ -237,14 +237,19 @@ export default function ImportShipments() {
                   </div>
                 </div>
                 <div className="space-y-1 text-sm">
-                  {shipment.portOfArrival && (
-                    <p data-testid={`text-port-${shipment.id}`}>
-                      <span className="font-medium">Port:</span> {shipment.portOfArrival}
+                  {shipment.trailerOrContainerNumber && (
+                    <p data-testid={`text-truck-container-${shipment.id}`}>
+                      {shipment.trailerOrContainerNumber}
                     </p>
                   )}
-                  {shipment.importDateEtaPort && (
-                    <p data-testid={`text-date-${shipment.id}`}>
-                      <span className="font-medium">ETA:</span> {shipment.importDateEtaPort}
+                  {shipment.containerShipment && (
+                    <p data-testid={`text-container-shipment-${shipment.id}`}>
+                      Container Shipment
+                    </p>
+                  )}
+                  {shipment.portOfArrival && (
+                    <p data-testid={`text-port-${shipment.id}`}>
+                      <span className="font-medium">Port Of Arrival:</span> {shipment.portOfArrival}
                     </p>
                   )}
                   {shipment.goodsDescription && (
@@ -252,9 +257,16 @@ export default function ImportShipments() {
                       {shipment.goodsDescription}
                     </p>
                   )}
+                  {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
+                    <p data-testid={`text-weight-pieces-${shipment.id}`}>
+                      {shipment.weight && <><span className="font-medium">Weight:</span> {shipment.weight}</>}
+                      {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
+                      {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
+                    </p>
+                  )}
                   {shipment.rsToClear && (
                     <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
-                      R.S To Clear
+                      R.S Processing Import Clearance
                     </p>
                   )}
                   {(() => {
