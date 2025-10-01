@@ -206,6 +206,7 @@ export const importShipments = pgTable("import_shipments", {
   customsClearanceAgent: text("customs_clearance_agent"),
   rsToClear: boolean("rs_to_clear").default(false),
   clearanceStatusIndicator: integer("clearance_status_indicator"),
+  deliveryBookedStatusIndicator: integer("delivery_booked_status_indicator"),
   
   // Additional Details
   customerReferenceNumber: text("customer_reference_number"),
