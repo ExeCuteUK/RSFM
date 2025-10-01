@@ -45,6 +45,7 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       country: "",
       agentName: "",
       agentContactName: "",
+      agentVatNumber: "",
       agentTelephone: "",
       agentEmail: [],
       agentAccountsEmail: [],
@@ -419,6 +420,20 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
                     <FormLabel>Contact Name</FormLabel>
                     <FormControl>
                       <Input {...field} value={field.value || ""} data-testid="input-agent-contact-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="agentVatNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agent VAT Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-agent-vat-number" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
