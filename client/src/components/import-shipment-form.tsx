@@ -34,11 +34,13 @@ import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { format, parseISO } from "date-fns"
-import { CalendarIcon, Plus } from "lucide-react"
+import { CalendarIcon, Plus, FileText, X, Download } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ImportCustomerForm } from "./import-customer-form"
 import { apiRequest, queryClient } from "@/lib/queryClient"
 import { useToast } from "@/hooks/use-toast"
+import { InlineUploader } from "./InlineUploader"
+import type { UploadResult } from "@uppy/core"
 
 interface ImportShipmentFormProps {
   onSubmit: (data: InsertImportShipment) => void
@@ -49,12 +51,22 @@ interface ImportShipmentFormProps {
 export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: ImportShipmentFormProps) {
   const { toast } = useToast()
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
+  const [pendingProofOfDelivery, setPendingProofOfDelivery] = useState<string[]>([])
+  const [pendingAttachments, setPendingAttachments] = useState<string[]>([])
 
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(insertImportShipmentSchema),
     defaultValues: {
       jobType: "import",
+      status: "Pending",
       importCustomerId: "",
+      bookingDate: "",
+      approxLoadDate: "",
+      dispatchDate: "",
+      deliveryDate: "",
+      deliveryReference: "",
+      deliveryTimeNotes: "",
+      proofOfDelivery: [],
       importDateEtaPort: "",
       portOfArrival: "",
       trailerOrContainerNumber: "",
@@ -79,7 +91,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       customerReferenceNumber: "",
       deliveryAddress: "",
       supplierName: "",
-      attachments: "",
+      attachments: [],
       ...defaultValues
     },
   })
@@ -114,6 +126,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const selectedCustomerId = form.watch("importCustomerId")
   const rsToClear = form.watch("rsToClear")
   const containerShipment = form.watch("containerShipment")
+  const status = form.watch("status")
 
   useEffect(() => {
     if (selectedCustomerId && importCustomers) {
@@ -127,9 +140,62 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
     }
   }, [selectedCustomerId, importCustomers, form])
 
+  const handleFormSubmit = async (data: InsertImportShipment) => {
+    const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
+    const normalizedAttachments: string[] = [...(data.attachments || [])];
+
+    if (pendingProofOfDelivery.length > 0) {
+      try {
+        const normalizeResponse = await fetch("/api/objects/normalize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: pendingProofOfDelivery }),
+        });
+        const normalizeData = await normalizeResponse.json();
+        normalizedProofOfDelivery.push(...normalizeData.paths);
+        setPendingProofOfDelivery([]);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to process proof of delivery files",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    if (pendingAttachments.length > 0) {
+      try {
+        const normalizeResponse = await fetch("/api/objects/normalize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: pendingAttachments }),
+        });
+        const normalizeData = await normalizeResponse.json();
+        normalizedAttachments.push(...normalizeData.paths);
+        setPendingAttachments([]);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to process attachment files",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const finalData = {
+      ...data,
+      proofOfDelivery: normalizedProofOfDelivery,
+      attachments: normalizedAttachments,
+    };
+
+    onSubmit(finalData);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid gap-6">
           <Card>
             <CardHeader>
@@ -193,6 +259,295 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <CardTitle>Shipment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="bookingDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Booking Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-booking-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="approxLoadDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Approx Load Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-approx-load-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="dispatchDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dispatch Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-dispatch-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="deliveryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-delivery-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-job-status">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                          <SelectItem value="In Transit">In Transit</SelectItem>
+                          <SelectItem value="Delivered">Delivered</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {status === "Delivered" && (
+                  <FormField
+                    control={form.control}
+                    name="proofOfDelivery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Proof Of Delivery</FormLabel>
+                        <div className="space-y-3">
+                          <InlineUploader
+                            maxNumberOfFiles={5}
+                            maxFileSize={20 * 1024 * 1024}
+                            height={100}
+                            onGetUploadParameters={async () => {
+                              const response = await fetch("/api/objects/upload", { method: "POST" });
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                              const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
+                              setPendingProofOfDelivery((prev) => [...prev, ...uploadedUrls]);
+                            }}
+                            note="Drag and drop proof of delivery files here (up to 5 files, 20MB each)"
+                          />
+                          
+                          {(pendingProofOfDelivery.length > 0 || (field.value && field.value.length > 0)) && (
+                            <div className="space-y-2">
+                              {pendingProofOfDelivery.map((url, index) => (
+                                <div key={`pending-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4" />
+                                    <span className="text-sm">{url.split('/').pop()?.split('?')[0] || 'File'}</span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setPendingProofOfDelivery((prev) => prev.filter((_, i) => i !== index))}
+                                    data-testid={`button-remove-pending-pod-${index}`}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              {field.value && field.value.map((path: string, index: number) => (
+                                <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4" />
+                                    <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <a href={path} target="_blank" rel="noopener noreferrer">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        data-testid={`button-download-pod-${index}`}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </a>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        const newFiles = field.value?.filter((_, i) => i !== index) || [];
+                                        form.setValue('proofOfDelivery', newFiles);
+                                      }}
+                                      data-testid={`button-delete-pod-${index}`}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+
+              {status === "Delivered" && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="deliveryReference"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Reference</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="deliveryTimeNotes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Time/Notes</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -725,15 +1080,76 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 name="attachments"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>
-                      <FileUpload
-                        value={field.value ? JSON.parse(field.value) : []}
-                        onChange={(files: FileMetadata[]) => {
-                          field.onChange(JSON.stringify(files));
+                    <div className="space-y-3">
+                      <InlineUploader
+                        maxNumberOfFiles={10}
+                        maxFileSize={20 * 1024 * 1024}
+                        onGetUploadParameters={async () => {
+                          const response = await fetch("/api/objects/upload", { method: "POST" });
+                          const data = await response.json();
+                          return { method: "PUT" as const, url: data.uploadURL };
                         }}
-                        testId="file-upload-attachments"
+                        onComplete={(result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                          const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
+                          setPendingAttachments((prev) => [...prev, ...uploadedUrls]);
+                        }}
+                        note="Drag and drop files here (up to 10 files, 20MB each)"
                       />
-                    </FormControl>
+                      
+                      {(pendingAttachments.length > 0 || (field.value && field.value.length > 0)) && (
+                        <div className="space-y-2">
+                          {pendingAttachments.map((url, index) => (
+                            <div key={`pending-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                <span className="text-sm">{url.split('/').pop()?.split('?')[0] || 'File'}</span>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== index))}
+                                data-testid={`button-remove-pending-attachment-${index}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          {field.value && field.value.map((path: string, index: number) => (
+                            <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <a href={path} target="_blank" rel="noopener noreferrer">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    data-testid={`button-download-attachment-${index}`}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                </a>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    const newFiles = field.value?.filter((_, i) => i !== index) || [];
+                                    form.setValue('attachments', newFiles);
+                                  }}
+                                  data-testid={`button-delete-attachment-${index}`}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
