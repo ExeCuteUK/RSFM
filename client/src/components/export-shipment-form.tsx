@@ -63,6 +63,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       bookingDate: format(new Date(), "yyyy-MM-dd"),
       approxLoadDate: "",
       dispatchDate: "",
+      deliveryDate: "",
+      deliveryReference: "",
+      deliveryTimeNotes: "",
+      proofOfDelivery: "",
       trailerNo: "",
       departureFrom: "",
       portOfArrival: "",
@@ -375,6 +379,44 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
+                  name="deliveryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-delivery-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
                   name="status"
                   render={({ field }) => (
                     <FormItem>
@@ -391,6 +433,59 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           <SelectItem value="Delivered">Delivered</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {status === "Delivered" && (
+                  <FormField
+                    control={form.control}
+                    name="proofOfDelivery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Proof Of Delivery</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="file" 
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              field.onChange(file ? file.name : "");
+                            }}
+                            data-testid="input-proof-of-delivery"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="deliveryReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="deliveryTimeNotes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Time/Notes</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
