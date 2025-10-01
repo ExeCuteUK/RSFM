@@ -375,7 +375,9 @@ export default function ImportShipments() {
                   <div className={shipment.rsToClear ? "mt-1" : "pt-2 mt-2 border-t"}>
                     <p className="text-sm" data-testid={`text-delivery-booked-${shipment.id}`}>
                       <span className="font-medium">Delivery Booked:</span>{' '}
-                      {formatDate(shipment.bookingDate) || "N/A"}
+                      <span className={shipment.bookingDate ? "text-green-600 dark:text-green-400" : "text-yellow-600 dark:text-yellow-400"}>
+                        {formatDate(shipment.bookingDate) || "N/A"}
+                      </span>
                     </p>
                   </div>
                   {(() => {
