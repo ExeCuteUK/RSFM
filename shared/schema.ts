@@ -323,6 +323,9 @@ export const exportShipments = pgTable("export_shipments", {
   haulierName: text("haulier_name"),
   haulierContactName: text("haulier_contact_name"),
   
+  // Additional Details
+  deliveryAddress: text("delivery_address"),
+  
   // Additional Notes
   additionalNotes: text("additional_notes"),
   jobTags: text("job_tags").array(),

@@ -93,6 +93,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       additionalCommodityCodes: 1,
       haulierName: "",
       haulierContactName: "",
+      deliveryAddress: "",
       additionalNotes: "",
       jobTags: [],
       attachments: [],
@@ -481,6 +482,20 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                       <FormLabel>Delivery Time/Notes</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="deliveryAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Address</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
