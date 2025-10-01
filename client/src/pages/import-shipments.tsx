@@ -252,6 +252,14 @@ export default function ImportShipments() {
                       <span className="font-medium">Port Of Arrival:</span> {shipment.portOfArrival}
                     </p>
                   )}
+                  <p data-testid={`text-eta-port-${shipment.id}`}>
+                    <span className="font-medium">ETA Port:</span>{' '}
+                    {shipment.importDateEtaPort ? (
+                      shipment.importDateEtaPort
+                    ) : (
+                      <span className="text-red-700 dark:text-red-600">TBA</span>
+                    )}
+                  </p>
                   {shipment.goodsDescription && (
                     <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
                       {shipment.goodsDescription}
@@ -264,6 +272,14 @@ export default function ImportShipments() {
                       {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
                     </p>
                   )}
+                  <p data-testid={`text-delivery-date-${shipment.id}`}>
+                    <span className="font-medium">Delivery Date:</span>{' '}
+                    {shipment.deliveryDate ? (
+                      shipment.deliveryDate
+                    ) : (
+                      <span className="text-red-700 dark:text-red-600">TBA</span>
+                    )}
+                  </p>
                   {shipment.rsToClear && (
                     <p className="text-blue-600 dark:text-blue-400 font-medium" data-testid={`text-rs-to-clear-${shipment.id}`}>
                       R.S Processing Import Clearance
