@@ -143,13 +143,11 @@ export class ObjectStorageService {
 
   async getObjectEntityFile(objectPath: string): Promise<File> {
     if (!objectPath.startsWith("/objects/")) {
-      console.error("[getObjectEntityFile] Invalid path - does not start with /objects/:", objectPath);
       throw new ObjectNotFoundError();
     }
 
     const parts = objectPath.slice(1).split("/");
     if (parts.length < 2) {
-      console.error("[getObjectEntityFile] Invalid path - not enough parts:", objectPath, "parts:", parts);
       throw new ObjectNotFoundError();
     }
 
@@ -160,23 +158,10 @@ export class ObjectStorageService {
     }
     const objectEntityPath = `${entityDir}${entityId}`;
     const { bucketName, objectName } = parseObjectPath(objectEntityPath);
-    
-    console.log("[getObjectEntityFile] DEBUG INFO:");
-    console.log("  - Input objectPath:", objectPath);
-    console.log("  - Extracted entityId:", entityId);
-    console.log("  - Private entityDir:", entityDir);
-    console.log("  - Full objectEntityPath:", objectEntityPath);
-    console.log("  - Parsed bucketName:", bucketName);
-    console.log("  - Parsed objectName:", objectName);
-    
     const bucket = objectStorageClient.bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
-    
-    console.log("  - File exists in GCS:", exists);
-    
     if (!exists) {
-      console.error("[getObjectEntityFile] FILE NOT FOUND in GCS!");
       throw new ObjectNotFoundError();
     }
     return objectFile;
@@ -189,23 +174,18 @@ export class ObjectStorageService {
   
     const url = new URL(rawPath);
     const rawObjectPath = url.pathname;
-    console.log("[normalizeObjectEntityPath] rawObjectPath from URL:", rawObjectPath);
   
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
       objectEntityDir = `${objectEntityDir}/`;
     }
-    console.log("[normalizeObjectEntityPath] objectEntityDir:", objectEntityDir);
   
     if (!rawObjectPath.startsWith(objectEntityDir)) {
-      console.log("[normalizeObjectEntityPath] rawObjectPath does NOT start with objectEntityDir, returning as-is");
       return rawObjectPath;
     }
   
     const entityId = rawObjectPath.slice(objectEntityDir.length);
-    const result = `/objects/${entityId}`;
-    console.log("[normalizeObjectEntityPath] entityId:", entityId, "result:", result);
-    return result;
+    return `/objects/${entityId}`;
   }
 
   async trySetObjectEntityAclPolicy(

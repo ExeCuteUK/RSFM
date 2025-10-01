@@ -542,7 +542,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                                     <FileText className="h-4 w-4" />
                                     <span className="text-sm">{path.split('/').pop() || 'File'}</span>
                                   </div>
-                                  <a href={`/objects/${path}`} target="_blank" rel="noopener noreferrer">
+                                  <a href={path} target="_blank" rel="noopener noreferrer">
                                     <Button
                                       type="button"
                                       variant="ghost"
@@ -1050,7 +1050,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                                 <FileText className="h-4 w-4" />
                                 <span className="text-sm">{path.split('/').pop() || 'File'}</span>
                               </div>
-                              <a href={`/objects/${path}`} target="_blank" rel="noopener noreferrer">
+                              <a href={path} target="_blank" rel="noopener noreferrer">
                                 <Button
                                   type="button"
                                   variant="ghost"
