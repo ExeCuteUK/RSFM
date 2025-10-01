@@ -131,6 +131,7 @@ export const importShipments = pgTable("import_shipments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull().default("import"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
   
   // Status
   status: text("status").notNull().default("Pending"),
@@ -191,6 +192,7 @@ export const exportShipments = pgTable("export_shipments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull().default("export"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
   
   // Status
   status: text("status").notNull().default("Pending"),
@@ -252,6 +254,7 @@ export const customClearances = pgTable("custom_clearances", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
   
   // Status (Customs-specific)
   status: text("status").notNull().default("Waiting Entry"),
