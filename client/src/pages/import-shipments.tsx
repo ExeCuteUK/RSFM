@@ -4,6 +4,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Package } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
@@ -12,11 +13,16 @@ import { useToast } from "@/hooks/use-toast"
 export default function ImportShipments() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingShipment, setEditingShipment] = useState<ImportShipment | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const { toast } = useToast()
 
-  const { data: shipments = [], isLoading } = useQuery<ImportShipment[]>({
+  const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
   })
+
+  const shipments = statusFilter === "ALL" 
+    ? allShipments 
+    : allShipments.filter(s => s.status === statusFilter)
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
@@ -94,10 +100,23 @@ export default function ImportShipments() {
             Manage incoming shipments and customs clearances
           </p>
         </div>
-        <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Import Shipment
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40" data-testid="select-status-filter">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL" data-testid="filter-all">ALL</SelectItem>
+              <SelectItem value="Pending" data-testid="filter-pending">PENDING</SelectItem>
+              <SelectItem value="In Transit" data-testid="filter-in-transit">IN TRANSIT</SelectItem>
+              <SelectItem value="Delivered" data-testid="filter-delivered">DELIVERED</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Import Shipment
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

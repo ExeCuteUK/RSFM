@@ -4,6 +4,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Truck } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer } from "@shared/schema"
@@ -12,11 +13,16 @@ import { useToast } from "@/hooks/use-toast"
 export default function ExportShipments() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingShipment, setEditingShipment] = useState<ExportShipment | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const { toast } = useToast()
 
-  const { data: shipments = [], isLoading } = useQuery<ExportShipment[]>({
+  const { data: allShipments = [], isLoading } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
   })
+
+  const shipments = statusFilter === "ALL" 
+    ? allShipments 
+    : allShipments.filter(s => s.status === statusFilter)
 
   const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
     queryKey: ["/api/export-receivers"],
@@ -97,10 +103,23 @@ export default function ExportShipments() {
             Manage outgoing shipments and export clearances
           </p>
         </div>
-        <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Export Shipment
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40" data-testid="select-status-filter">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL" data-testid="filter-all">ALL</SelectItem>
+              <SelectItem value="Pending" data-testid="filter-pending">PENDING</SelectItem>
+              <SelectItem value="In Transit" data-testid="filter-in-transit">IN TRANSIT</SelectItem>
+              <SelectItem value="Delivered" data-testid="filter-delivered">DELIVERED</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Export Shipment
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
