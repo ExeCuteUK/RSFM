@@ -46,8 +46,8 @@ const menuItems = [
     icon: FileCheck,
   },
   {
-    title: "Customers", 
-    url: "/customers",
+    title: "Contacts", 
+    url: "/contacts",
     icon: Users,
   },
   {

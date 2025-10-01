@@ -27,7 +27,7 @@ function Router() {
       <Route path="/import-shipments" component={ImportShipments} />
       <Route path="/export-shipments" component={ExportShipments} />
       <Route path="/custom-clearances" component={CustomClearances} />
-      <Route path="/customers" component={Customers} />
+      <Route path="/contacts" component={Customers} />
       <Route path="/invoices" component={Invoices} />
       <Route path="/rates" component={RateCalculator} />
       <Route path="/tracking" component={() => <div className="p-6">Tracking page coming soon...</div>} />
