@@ -542,16 +542,30 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                                     <FileText className="h-4 w-4" />
                                     <span className="text-sm">{path.split('/').pop() || 'File'}</span>
                                   </div>
-                                  <a href={path} target="_blank" rel="noopener noreferrer">
+                                  <div className="flex items-center gap-1">
+                                    <a href={path} target="_blank" rel="noopener noreferrer">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        data-testid={`button-download-pod-${index}`}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </a>
                                     <Button
                                       type="button"
                                       variant="ghost"
                                       size="icon"
-                                      data-testid={`button-download-pod-${index}`}
+                                      onClick={() => {
+                                        const newFiles = field.value?.filter((_, i) => i !== index) || [];
+                                        form.setValue('proofOfDelivery', newFiles);
+                                      }}
+                                      data-testid={`button-delete-pod-${index}`}
                                     >
-                                      <Download className="h-4 w-4" />
+                                      <X className="h-4 w-4" />
                                     </Button>
-                                  </a>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -1050,16 +1064,30 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                                 <FileText className="h-4 w-4" />
                                 <span className="text-sm">{path.split('/').pop() || 'File'}</span>
                               </div>
-                              <a href={path} target="_blank" rel="noopener noreferrer">
+                              <div className="flex items-center gap-1">
+                                <a href={path} target="_blank" rel="noopener noreferrer">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    data-testid={`button-download-attachment-${index}`}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                </a>
                                 <Button
                                   type="button"
                                   variant="ghost"
                                   size="icon"
-                                  data-testid={`button-download-attachment-${index}`}
+                                  onClick={() => {
+                                    const newFiles = field.value?.filter((_, i) => i !== index) || [];
+                                    form.setValue('attachments', newFiles);
+                                  }}
+                                  data-testid={`button-delete-attachment-${index}`}
                                 >
-                                  <Download className="h-4 w-4" />
+                                  <X className="h-4 w-4" />
                                 </Button>
-                              </a>
+                              </div>
                             </div>
                           ))}
                         </div>
