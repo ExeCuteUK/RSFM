@@ -338,10 +338,13 @@ export default function Customers() {
                         </p>
                       )}
                       {customer.agentName && (
-                        <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
+                        <div className="mt-2 pt-2 border-t space-y-1" data-testid={`agent-info-${customer.id}`}>
                           <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
                           {customer.agentContactName && (
                             <p className="text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
+                          )}
+                          {customer.agentTelephone && (
+                            <p data-testid={`text-agent-telephone-${customer.id}`}>{customer.agentTelephone}</p>
                           )}
                           {customer.agentEmail && customer.agentEmail.length > 0 && (
                             <div className="space-y-0.5">
@@ -422,10 +425,13 @@ export default function Customers() {
                         </p>
                       )}
                       {customer.agentName && (
-                        <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
+                        <div className="mt-2 pt-2 border-t space-y-1" data-testid={`agent-info-${customer.id}`}>
                           <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
                           {customer.agentContactName && (
                             <p className="text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
+                          )}
+                          {customer.agentTelephone && (
+                            <p data-testid={`text-agent-telephone-${customer.id}`}>{customer.agentTelephone}</p>
                           )}
                           {customer.agentEmail && customer.agentEmail.length > 0 && (
                             <div className="space-y-0.5">
