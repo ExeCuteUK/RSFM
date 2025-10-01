@@ -403,7 +403,7 @@ export default function ImportShipments() {
                   <div className={shipment.rsToClear ? "mt-1" : "pt-2 mt-2 border-t"}>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
-                        Book Delivery Customer: {formatDate(shipment.bookingDate) || "TBA"}
+                        Book Delivery Customer
                       </p>
                       <div className="flex items-center gap-1">
                         <button
