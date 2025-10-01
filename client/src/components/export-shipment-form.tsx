@@ -81,7 +81,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       clearanceCharge: "",
       arrivalClearanceCost: "",
       currency: "GBP",
-      additionalCommodityCodes: undefined,
+      additionalCommodityCodes: 1,
       haulierName: "",
       haulierContactName: "",
       attachments: "",
@@ -455,34 +455,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="supplier"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Supplier</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-supplier" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="consignee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Consignee</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-consignee" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="value"

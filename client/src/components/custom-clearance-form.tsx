@@ -59,7 +59,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       transportCosts: "",
       clearanceCharge: "",
       currency: "",
-      additionalCommodityCodes: undefined,
+      additionalCommodityCodes: 1,
       vatZeroRated: false,
       clearanceType: "",
       customerReferenceNumber: "",

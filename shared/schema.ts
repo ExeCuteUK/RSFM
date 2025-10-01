@@ -281,6 +281,18 @@ export const insertExportShipmentSchema = createInsertSchema(exportShipments).om
   id: true,
   jobRef: true,
 }).extend({
+  destinationCustomerId: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Export Customer is required" }
+  ),
+  receiverId: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Export Receiver is required" }
+  ),
+  loadDate: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Load Date is required" }
+  ),
   exportClearanceAgent: z.string().min(1, "Export Clearance Agent is required"),
   arrivalClearanceAgent: z.string().min(1, "Arrival Clearance Agent is required"),
 });

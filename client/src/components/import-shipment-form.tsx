@@ -71,7 +71,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       freightCharge: "",
       clearanceCharge: "",
       currency: "",
-      additionalCommodityCodes: undefined,
+      additionalCommodityCodes: 1,
       vatZeroRated: false,
       clearanceType: "",
       customsClearanceAgent: "",

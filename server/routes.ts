@@ -315,7 +315,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertExportShipmentSchema.parse(req.body);
       const shipment = await storage.createExportShipment(validatedData);
       res.status(201).json(shipment);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Invalid export shipment data",
+          details: error.errors 
+        });
+      }
       res.status(400).json({ error: "Invalid export shipment data" });
     }
   });
@@ -323,15 +329,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update export shipment
   app.patch("/api/export-shipments/:id", async (req, res) => {
     try {
-      const validatedData = insertExportShipmentSchema.partial().parse(req.body);
-      const shipment = await storage.updateExportShipment(req.params.id, validatedData);
+      // For updates, we make the validation less strict by not requiring all fields
+      const shipment = await storage.updateExportShipment(req.params.id, req.body);
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
       }
       res.json(shipment);
-    } catch (error) {
-      if (error instanceof Error && error.name === "ZodError") {
-        return res.status(400).json({ error: "Invalid export shipment data" });
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ 
+          error: "Invalid export shipment data",
+          details: error.errors 
+        });
       }
       res.status(500).json({ error: "Failed to update export shipment" });
     }
