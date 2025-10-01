@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertExportShipmentSchema, type InsertExportShipment, type ExportReceiver, type ExportCustomer, type InsertExportCustomer, type InsertExportReceiver } from "@shared/schema"
+import { insertExportShipmentSchema, type InsertExportShipment, type ExportReceiver, type ExportCustomer, type InsertExportCustomer, type InsertExportReceiver, type Haulier } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -104,6 +104,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
   const { data: exportCustomers } = useQuery<ExportCustomer[]>({
     queryKey: ["/api/export-customers"],
+  })
+
+  const { data: hauliers } = useQuery<Haulier[]>({
+    queryKey: ["/api/hauliers"],
   })
 
   const createCustomerMutation = useMutation({
@@ -983,9 +987,20 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Haulier Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-haulier-name" />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-haulier-name">
+                            <SelectValue placeholder="Select haulier" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {hauliers?.map((haulier) => (
+                            <SelectItem key={haulier.id} value={haulier.haulierName}>
+                              {haulier.haulierName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

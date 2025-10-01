@@ -194,6 +194,10 @@ export const importShipments = pgTable("import_shipments", {
   currency: text("currency"),
   additionalCommodityCodes: integer("additional_commodity_codes"),
   
+  // Haulier Information
+  haulierName: text("haulier_name"),
+  haulierContactName: text("haulier_contact_name"),
+  
   // Customs Details
   vatZeroRated: boolean("vat_zero_rated").default(false),
   clearanceType: text("clearance_type"),
