@@ -416,24 +416,24 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
             <CardTitle>Import Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="rsProcessCustomsClearance"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value || false}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-rs-process-customs-clearance"
-                      />
-                    </FormControl>
-                    <FormLabel className="font-normal">R.S. To Arrange Clearance</FormLabel>
-                  </FormItem>
-                )}
-              />
-              
+            <FormField
+              control={form.control}
+              name="rsProcessCustomsClearance"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value || false}
+                      onCheckedChange={field.onChange}
+                      data-testid="checkbox-rs-process-customs-clearance"
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal">R.S. To Arrange Clearance</FormLabel>
+                </FormItem>
+              )}
+            />
+            
+            {rsToArrangeClearance && (
               <FormField
                 control={form.control}
                 name="vatPaymentMethod"
@@ -457,7 +457,7 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
                   </FormItem>
                 )}
               />
-            </div>
+            )}
             
             {!rsToArrangeClearance && (
               <>
