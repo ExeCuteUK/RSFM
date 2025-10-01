@@ -7,7 +7,8 @@ import {
   Settings, 
   Calculator,
   MapPin,
-  Bell
+  Bell,
+  FileCheck
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 
@@ -30,9 +31,19 @@ const menuItems = [
     icon: BarChart3,
   },
   {
-    title: "Shipments",
-    url: "/shipments",
+    title: "Import Shipments",
+    url: "/import-shipments",
     icon: Package,
+  },
+  {
+    title: "Export Shipments",
+    url: "/export-shipments",
+    icon: Truck,
+  },
+  {
+    title: "Custom Clearances",
+    url: "/custom-clearances",
+    icon: FileCheck,
   },
   {
     title: "Customers", 
@@ -76,12 +87,13 @@ export function AppSidebar() {
     <Sidebar data-testid="sidebar-app">
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground font-bold text-lg">
-            F
+          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground font-bold text-sm">
+            RS
           </div>
-          <div>
-            <h2 className="text-lg font-semibold" data-testid="text-app-title">FreightPro</h2>
-            <p className="text-xs text-muted-foreground">Freight Management</p>
+          <div className="flex-1">
+            <h2 className="text-sm font-semibold leading-tight" data-testid="text-app-title">
+              R.S International Freight Manager 4.0.1 alpha
+            </h2>
           </div>
         </div>
       </SidebarHeader>

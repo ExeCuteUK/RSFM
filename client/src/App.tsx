@@ -11,6 +11,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 // Pages
 import Dashboard from "@/pages/dashboard";
 import Shipments from "@/pages/shipments";
+import ImportShipments from "@/pages/import-shipments";
+import ExportShipments from "@/pages/export-shipments";
+import CustomClearances from "@/pages/custom-clearances";
 import Customers from "@/pages/customers";
 import Invoices from "@/pages/invoices";
 import RateCalculator from "@/pages/rates";
@@ -21,6 +24,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/shipments" component={Shipments} />
+      <Route path="/import-shipments" component={ImportShipments} />
+      <Route path="/export-shipments" component={ExportShipments} />
+      <Route path="/custom-clearances" component={CustomClearances} />
       <Route path="/customers" component={Customers} />
       <Route path="/invoices" component={Invoices} />
       <Route path="/rates" component={RateCalculator} />
