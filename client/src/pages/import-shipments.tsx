@@ -252,7 +252,11 @@ export default function ImportShipments() {
                 <div className="space-y-1 text-sm">
                   {shipment.containerShipment && (
                     <p className="underline" data-testid={`text-shipment-type-${shipment.id}`}>
-                      {shipment.containerShipment}
+                      {shipment.containerShipment === "Air Freight" 
+                        ? "Air Freight Shipment" 
+                        : shipment.containerShipment === "Road Shipment"
+                        ? "Road Freight Shipment"
+                        : shipment.containerShipment}
                     </p>
                   )}
                   {shipment.trailerOrContainerNumber && (
