@@ -132,6 +132,9 @@ export const importShipments = pgTable("import_shipments", {
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull().default("import"),
   
+  // Status
+  status: text("status").notNull().default("Pending"),
+  
   // Customer Reference
   importCustomerId: varchar("import_customer_id"),
   
@@ -168,6 +171,9 @@ export const importShipments = pgTable("import_shipments", {
   deliveryAddress: text("delivery_address"),
   supplierName: text("supplier_name"),
   
+  // File Attachments (stored as JSON array of {name, url, uploadedAt})
+  attachments: text("attachments"),
+  
   // Link to auto-created customs clearance
   linkedClearanceId: varchar("linked_clearance_id"),
 });
@@ -186,6 +192,9 @@ export const exportShipments = pgTable("export_shipments", {
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull().default("export"),
   
+  // Status
+  status: text("status").notNull().default("Pending"),
+  
   // Customer References
   receiverId: varchar("receiver_id"),
   destinationCustomerId: varchar("destination_customer_id"),
@@ -193,6 +202,8 @@ export const exportShipments = pgTable("export_shipments", {
   // Shipment Details
   loadDate: text("load_date"),
   trailerNo: text("trailer_no"),
+  jobReference: text("job_reference"),
+  destination: text("destination"),
   incoterms: text("incoterms"),
   
   // Clearance Agents
@@ -203,17 +214,25 @@ export const exportShipments = pgTable("export_shipments", {
   supplier: text("supplier"),
   consignee: text("consignee"),
   value: text("value"),
-  numPkts: text("num_pkts"),
+  numPackages: text("num_packages"),
   packing: text("packing"),
   description: text("description"),
   grossWeightKg: text("gross_weight_kg"),
   cbm: text("cbm"),
-  chargeableWeight: text("chargeable_weight"),
+  cargoWeight: text("cargo_weight"),
   
   // Rate Fields
-  rate1: text("rate1"),
-  rate2: text("rate2"),
-  rate3: text("rate3"),
+  freightRateOut: text("freight_rate_out"),
+  exportClearanceCost: text("export_clearance_cost"),
+  arrivalClearanceCost: text("arrival_clearance_cost"),
+  currency: text("currency"),
+  
+  // Haulier Information
+  haulierName: text("haulier_name"),
+  haulierContactName: text("haulier_contact_name"),
+  
+  // File Attachments (stored as JSON array of {name, url, uploadedAt})
+  attachments: text("attachments"),
 });
 
 export const insertExportShipmentSchema = createInsertSchema(exportShipments).omit({
@@ -229,6 +248,9 @@ export const customClearances = pgTable("custom_clearances", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull(),
+  
+  // Status
+  status: text("status").notNull().default("Pending"),
   
   // Customer References
   importCustomerId: varchar("import_customer_id"),
@@ -263,6 +285,9 @@ export const customClearances = pgTable("custom_clearances", {
   // Additional Details
   customerReferenceNumber: text("customer_reference_number"),
   supplierName: text("supplier_name"),
+  
+  // File Attachments (stored as JSON array of {name, url, uploadedAt})
+  attachments: text("attachments"),
   
   // Link to source shipment
   createdFromType: text("created_from_type"),
