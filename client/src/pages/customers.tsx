@@ -30,6 +30,7 @@ export default function Customers() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | null>(null)
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
+  const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | null>(null)
   const { toast } = useToast()
 
   // Helper to determine customer type from entity properties
@@ -209,6 +210,10 @@ export default function Customers() {
     setDeletingCustomerId(id)
   }
 
+  const handleViewDetails = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier) => {
+    setViewingCustomer(customer)
+  }
+
   const confirmDelete = () => {
     if (!deletingCustomerId) return
     
@@ -297,7 +302,13 @@ export default function Customers() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg" data-testid={`text-company-name-${customer.id}`}>{customer.companyName}</h3>
+                        <h3 
+                          className="font-semibold text-lg cursor-pointer hover:underline" 
+                          data-testid={`text-company-name-${customer.id}`}
+                          onClick={() => handleViewDetails(customer)}
+                        >
+                          {customer.companyName}
+                        </h3>
                         {customer.contactName && (
                           <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>{customer.contactName}</p>
                         )}
@@ -384,7 +395,13 @@ export default function Customers() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg" data-testid={`text-company-name-${customer.id}`}>{customer.companyName}</h3>
+                        <h3 
+                          className="font-semibold text-lg cursor-pointer hover:underline" 
+                          data-testid={`text-company-name-${customer.id}`}
+                          onClick={() => handleViewDetails(customer)}
+                        >
+                          {customer.companyName}
+                        </h3>
                         {customer.contactName && (
                           <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>{customer.contactName}</p>
                         )}
@@ -525,7 +542,13 @@ export default function Customers() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg" data-testid={`text-haulier-name-${haulier.id}`}>{haulier.haulierName}</h3>
+                        <h3 
+                          className="font-semibold text-lg cursor-pointer hover:underline" 
+                          data-testid={`text-haulier-name-${haulier.id}`}
+                          onClick={() => handleViewDetails(haulier)}
+                        >
+                          {haulier.haulierName}
+                        </h3>
                         {haulier.homeCountry && (
                           <p className="text-sm text-muted-foreground" data-testid={`text-home-country-${haulier.id}`}>{haulier.homeCountry}</p>
                         )}
@@ -645,6 +668,364 @@ export default function Customers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!viewingCustomer} onOpenChange={(open) => !open && setViewingCustomer(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {viewingCustomer && 'haulierName' in viewingCustomer ? viewingCustomer.haulierName : viewingCustomer?.companyName}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {viewingCustomer && 'rsProcessCustomsClearance' in viewingCustomer && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingCustomer.contactName && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Contact Name</p>
+                      <p>{viewingCustomer.contactName}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.vatNumber && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">VAT Number</p>
+                      <p>{viewingCustomer.vatNumber}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.telephone && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Telephone</p>
+                      <p>{viewingCustomer.telephone}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.email && viewingCustomer.email.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      {viewingCustomer.email.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                  {viewingCustomer.accountsEmail && viewingCustomer.accountsEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Accounts Email</p>
+                      {viewingCustomer.accountsEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Address</h3>
+                <div className="space-y-1">
+                  {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
+                  {viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
+                  {viewingCustomer.town && <p>{viewingCustomer.town}</p>}
+                  {viewingCustomer.county && <p>{viewingCustomer.county}</p>}
+                  {viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
+                  {viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+                </div>
+              </div>
+
+              {viewingCustomer.agentName && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Agent Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Agent Name</p>
+                      <p>{viewingCustomer.agentName}</p>
+                    </div>
+                    {viewingCustomer.agentContactName && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Contact Name</p>
+                        <p>{viewingCustomer.agentContactName}</p>
+                      </div>
+                    )}
+                    {viewingCustomer.agentVatNumber && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent VAT Number</p>
+                        <p>{viewingCustomer.agentVatNumber}</p>
+                      </div>
+                    )}
+                    {viewingCustomer.agentTelephone && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Telephone</p>
+                        <p>{viewingCustomer.agentTelephone}</p>
+                      </div>
+                    )}
+                    {viewingCustomer.agentEmail && viewingCustomer.agentEmail.length > 0 && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Email</p>
+                        {viewingCustomer.agentEmail.map((email, idx) => (
+                          <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                        ))}
+                      </div>
+                    )}
+                    {viewingCustomer.agentAccountsEmail && viewingCustomer.agentAccountsEmail.length > 0 && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Accounts Email</p>
+                        {viewingCustomer.agentAccountsEmail.map((email, idx) => (
+                          <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <h4 className="text-sm text-muted-foreground mb-2">Agent Address</h4>
+                    <div className="space-y-1">
+                      {viewingCustomer.agentAddressLine1 && <p>{viewingCustomer.agentAddressLine1}</p>}
+                      {viewingCustomer.agentAddressLine2 && <p>{viewingCustomer.agentAddressLine2}</p>}
+                      {viewingCustomer.agentTown && <p>{viewingCustomer.agentTown}</p>}
+                      {viewingCustomer.agentCounty && <p>{viewingCustomer.agentCounty}</p>}
+                      {viewingCustomer.agentPostcode && <p>{viewingCustomer.agentPostcode}</p>}
+                      {viewingCustomer.agentCountry && <p>{viewingCustomer.agentCountry}</p>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Import Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">R.S. Process Customs Clearance</p>
+                    <p>{viewingCustomer.rsProcessCustomsClearance ? "Yes" : "No"}</p>
+                  </div>
+                  {viewingCustomer.agentInDover && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Agent in Dover</p>
+                      <p>{viewingCustomer.agentInDover}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.vatPaymentMethod && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">VAT Payment Method</p>
+                      <p>{viewingCustomer.vatPaymentMethod}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.clearanceAgentDetails && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Clearance Agent Details</p>
+                      <p>{viewingCustomer.clearanceAgentDetails}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.defaultDeliveryAddress && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Default Delivery Address</p>
+                      <p>{viewingCustomer.defaultDeliveryAddress}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.defaultSuppliersName && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Default Suppliers Name</p>
+                      <p>{viewingCustomer.defaultSuppliersName}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.bookingInDetails && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Booking In Details</p>
+                      <p>{viewingCustomer.bookingInDetails}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {viewingCustomer && 'contactName' in viewingCustomer && viewingCustomer.contactName !== undefined && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingCustomer.contactName && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Contact Name</p>
+                      <p>{viewingCustomer.contactName}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.vatNumber && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">VAT Number</p>
+                      <p>{viewingCustomer.vatNumber}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.telephone && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Telephone</p>
+                      <p>{viewingCustomer.telephone}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.email && viewingCustomer.email.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      {viewingCustomer.email.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                  {viewingCustomer.accountsEmail && viewingCustomer.accountsEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Accounts Email</p>
+                      {viewingCustomer.accountsEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Address</h3>
+                <div className="space-y-1">
+                  {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
+                  {viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
+                  {viewingCustomer.town && <p>{viewingCustomer.town}</p>}
+                  {viewingCustomer.county && <p>{viewingCustomer.county}</p>}
+                  {viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
+                  {viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+                </div>
+              </div>
+
+              {viewingCustomer.agentName && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Agent Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Agent Name</p>
+                      <p>{viewingCustomer.agentName}</p>
+                    </div>
+                    {viewingCustomer.agentContactName && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Contact Name</p>
+                        <p>{viewingCustomer.agentContactName}</p>
+                      </div>
+                    )}
+                    {viewingCustomer.agentVatNumber && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent VAT Number</p>
+                        <p>{viewingCustomer.agentVatNumber}</p>
+                      </div>
+                    )}
+                    {viewingCustomer.agentTelephone && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Telephone</p>
+                        <p>{viewingCustomer.agentTelephone}</p>
+                      </div>
+                    )}
+                    {viewingCustomer.agentEmail && viewingCustomer.agentEmail.length > 0 && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Email</p>
+                        {viewingCustomer.agentEmail.map((email, idx) => (
+                          <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                        ))}
+                      </div>
+                    )}
+                    {viewingCustomer.agentAccountsEmail && viewingCustomer.agentAccountsEmail.length > 0 && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Agent Accounts Email</p>
+                        {viewingCustomer.agentAccountsEmail.map((email, idx) => (
+                          <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <h4 className="text-sm text-muted-foreground mb-2">Agent Address</h4>
+                    <div className="space-y-1">
+                      {viewingCustomer.agentAddressLine1 && <p>{viewingCustomer.agentAddressLine1}</p>}
+                      {viewingCustomer.agentAddressLine2 && <p>{viewingCustomer.agentAddressLine2}</p>}
+                      {viewingCustomer.agentTown && <p>{viewingCustomer.agentTown}</p>}
+                      {viewingCustomer.agentCounty && <p>{viewingCustomer.agentCounty}</p>}
+                      {viewingCustomer.agentPostcode && <p>{viewingCustomer.agentPostcode}</p>}
+                      {viewingCustomer.agentCountry && <p>{viewingCustomer.agentCountry}</p>}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {viewingCustomer && 'haulierName' in viewingCustomer && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingCustomer.homeCountry && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Home Country</p>
+                      <p>{viewingCustomer.homeCountry}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.telephone && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Telephone</p>
+                      <p>{viewingCustomer.telephone}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.mobile && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Mobile</p>
+                      <p>{viewingCustomer.mobile}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.email && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p><a href={`mailto:${viewingCustomer.email}`} className="hover:underline">{viewingCustomer.email}</a></p>
+                    </div>
+                  )}
+                  {viewingCustomer.destinationCountries && viewingCustomer.destinationCountries.length > 0 && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground mb-2">Destination Countries</p>
+                      <div className="flex flex-wrap gap-2">
+                        {viewingCustomer.destinationCountries.map((country) => (
+                          <span key={country} className="px-3 py-1 rounded bg-secondary text-sm">
+                            {country}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {viewingCustomer && !('rsProcessCustomsClearance' in viewingCustomer) && !('contactName' in viewingCustomer || (viewingCustomer as any).contactName === undefined) && !('haulierName' in viewingCustomer) && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingCustomer.email && viewingCustomer.email.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      {viewingCustomer.email.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Address</h3>
+                <div className="space-y-1">
+                  {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
+                  {viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
+                  {viewingCustomer.town && <p>{viewingCustomer.town}</p>}
+                  {viewingCustomer.county && <p>{viewingCustomer.county}</p>}
+                  {viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
+                  {viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
