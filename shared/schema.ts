@@ -66,14 +66,36 @@ export const insertImportCustomerSchema = createInsertSchema(importCustomers).om
 export type InsertImportCustomer = z.infer<typeof insertImportCustomerSchema>;
 export type ImportCustomer = typeof importCustomers.$inferSelect;
 
-// Export Customers Database (placeholder - awaiting field specifications)
+// Export Customers Database
 export const exportCustomers = pgTable("export_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Contact Information
   companyName: text("company_name").notNull(),
   contactName: text("contact_name"),
-  email: text("email"),
+  vatNumber: text("vat_number"),
   telephone: text("telephone"),
-  // Additional fields to be added based on user specifications
+  fax: text("fax"),
+  email: text("email"),
+  addressLine1: text("address_line_1"),
+  addressLine2: text("address_line_2"),
+  town: text("town"),
+  county: text("county"),
+  postcode: text("postcode"),
+  country: text("country"),
+  
+  // Agent Information
+  agentName: text("agent_name"),
+  agentContactName: text("agent_contact_name"),
+  agentTelephone: text("agent_telephone"),
+  agentFax: text("agent_fax"),
+  agentEmail: text("agent_email"),
+  agentAddressLine1: text("agent_address_line_1"),
+  agentAddressLine2: text("agent_address_line_2"),
+  agentTown: text("agent_town"),
+  agentCounty: text("agent_county"),
+  agentPostcode: text("agent_postcode"),
+  agentCountry: text("agent_country"),
 });
 
 export const insertExportCustomerSchema = createInsertSchema(exportCustomers).omit({
