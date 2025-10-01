@@ -326,3 +326,98 @@
     inset: -1px;
   }
 }
+
+/* Custom Uppy Dashboard Styling */
+.inline-uploader-wrapper {
+  font-family: var(--font-sans);
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-inner {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-AddFiles {
+  background-color: hsl(var(--background));
+  border: 2px dashed hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-AddFiles-title {
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-note {
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-AddFiles-info {
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-sans);
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-browse {
+  color: hsl(var(--primary));
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-browse:hover {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-Item {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-Item-name {
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-Item-status {
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-sans);
+}
+
+.inline-uploader-wrapper .uppy-ProgressBar {
+  background-color: hsl(var(--muted));
+}
+
+.inline-uploader-wrapper .uppy-ProgressBar-inner {
+  background-color: hsl(var(--primary));
+}
+
+.inline-uploader-wrapper .uppy-StatusBar {
+  background-color: hsl(var(--card));
+  border-top: 1px solid hsl(var(--border));
+  font-family: var(--font-sans);
+  color: hsl(var(--foreground));
+}
+
+.inline-uploader-wrapper .uppy-StatusBar-status {
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+}
+
+.inline-uploader-wrapper .uppy-StatusBar-progress {
+  background-color: hsl(var(--primary));
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-Item-action--remove {
+  color: hsl(var(--muted-foreground));
+}
+
+.inline-uploader-wrapper .uppy-Dashboard-Item-action--remove:hover {
+  color: hsl(var(--destructive));
+}
