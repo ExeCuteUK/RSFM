@@ -525,23 +525,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Normalize and set ACL policy for uploaded files
   app.post("/api/objects/normalize", async (req, res) => {
     try {
-      if (!req.body.uploadURL) {
-        return res.status(400).json({ error: "uploadURL is required" });
+      const urls = req.body.urls;
+      if (!urls || !Array.isArray(urls) || urls.length === 0) {
+        return res.status(400).json({ error: "urls array is required" });
       }
 
       const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        req.body.uploadURL,
-        {
-          owner: "system",
-          visibility: "public",
-        }
-      );
+      const paths: string[] = [];
 
-      res.json({ objectPath });
+      for (const url of urls) {
+        const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+          url,
+          {
+            owner: "system",
+            visibility: "public",
+          }
+        );
+        paths.push(objectPath);
+      }
+
+      res.json({ paths });
     } catch (error) {
-      console.error("Error normalizing object path:", error);
-      res.status(500).json({ error: "Failed to normalize object path" });
+      console.error("Error normalizing object paths:", error);
+      res.status(500).json({ error: "Failed to normalize object paths" });
     }
   });
 
