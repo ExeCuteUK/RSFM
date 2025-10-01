@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
+import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -58,6 +59,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       supplierName: "",
       createdFromType: "",
       createdFromId: "",
+      attachments: "",
       ...defaultValues
     },
   })
@@ -491,6 +493,32 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   )}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>File Attachments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
+                name="attachments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <FileUpload
+                        value={field.value ? JSON.parse(field.value) : []}
+                        onChange={(files: FileMetadata[]) => {
+                          field.onChange(JSON.stringify(files));
+                        }}
+                        testId="file-upload-attachments"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
         </div>

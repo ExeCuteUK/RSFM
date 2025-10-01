@@ -23,6 +23,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect } from "react"
+import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 
 interface ImportShipmentFormProps {
   onSubmit: (data: InsertImportShipment) => void
@@ -59,6 +60,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       customerReferenceNumber: "",
       deliveryAddress: "",
       supplierName: "",
+      attachments: "",
       ...defaultValues
     },
   })
@@ -494,6 +496,32 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>File Attachments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
+                name="attachments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <FileUpload
+                        value={field.value ? JSON.parse(field.value) : []}
+                        onChange={(files: FileMetadata[]) => {
+                          field.onChange(JSON.stringify(files));
+                        }}
+                        testId="file-upload-attachments"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
         </div>

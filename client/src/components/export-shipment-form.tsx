@@ -26,6 +26,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
+import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 
 interface ExportShipmentFormProps {
   onSubmit: (data: InsertExportShipment) => void
@@ -544,6 +545,32 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   )}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>File Attachments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
+                name="attachments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <FileUpload
+                        value={field.value ? JSON.parse(field.value) : []}
+                        onChange={(files: FileMetadata[]) => {
+                          field.onChange(JSON.stringify(files));
+                        }}
+                        testId="file-upload-attachments"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
         </div>
