@@ -48,6 +48,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       departureCountry: "",
       containerShipment: false,
       vesselName: "",
+      incoterms: "",
       numberOfPieces: "",
       packaging: "",
       weight: "",
@@ -294,6 +295,37 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                           <SelectItem value="United Kingdom">United Kingdom</SelectItem>
                           <SelectItem value="United States">United States</SelectItem>
                           <SelectItem value="Vietnam">Vietnam</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="incoterms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Incoterms</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-incoterms">
+                            <SelectValue placeholder="Select incoterms" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="EXW">EXW - Ex Works</SelectItem>
+                          <SelectItem value="FCA">FCA - Free Carrier</SelectItem>
+                          <SelectItem value="CPT">CPT - Carriage Paid To</SelectItem>
+                          <SelectItem value="CIP">CIP - Carriage and Insurance Paid To</SelectItem>
+                          <SelectItem value="DAP">DAP - Delivered At Place</SelectItem>
+                          <SelectItem value="DPU">DPU - Delivered at Place Unloaded</SelectItem>
+                          <SelectItem value="DDP">DDP - Delivered Duty Paid</SelectItem>
+                          <SelectItem value="FAS">FAS - Free Alongside Ship</SelectItem>
+                          <SelectItem value="FOB">FOB - Free On Board</SelectItem>
+                          <SelectItem value="CFR">CFR - Cost and Freight</SelectItem>
+                          <SelectItem value="CIF">CIF - Cost, Insurance and Freight</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
