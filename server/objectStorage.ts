@@ -142,6 +142,7 @@ export class ObjectStorageService {
   }
 
   async getObjectEntityFile(objectPath: string): Promise<File> {
+    console.log("[getObjectEntityFile] objectPath:", objectPath);
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
@@ -157,10 +158,13 @@ export class ObjectStorageService {
       entityDir = `${entityDir}/`;
     }
     const objectEntityPath = `${entityDir}${entityId}`;
+    console.log("[getObjectEntityFile] entityId:", entityId, "entityDir:", entityDir, "objectEntityPath:", objectEntityPath);
     const { bucketName, objectName } = parseObjectPath(objectEntityPath);
+    console.log("[getObjectEntityFile] bucketName:", bucketName, "objectName:", objectName);
     const bucket = objectStorageClient.bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
+    console.log("[getObjectEntityFile] file exists:", exists);
     if (!exists) {
       throw new ObjectNotFoundError();
     }
@@ -174,18 +178,23 @@ export class ObjectStorageService {
   
     const url = new URL(rawPath);
     const rawObjectPath = url.pathname;
+    console.log("[normalizeObjectEntityPath] rawObjectPath from URL:", rawObjectPath);
   
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
       objectEntityDir = `${objectEntityDir}/`;
     }
+    console.log("[normalizeObjectEntityPath] objectEntityDir:", objectEntityDir);
   
     if (!rawObjectPath.startsWith(objectEntityDir)) {
+      console.log("[normalizeObjectEntityPath] rawObjectPath does NOT start with objectEntityDir, returning as-is");
       return rawObjectPath;
     }
   
     const entityId = rawObjectPath.slice(objectEntityDir.length);
-    return `/objects/${entityId}`;
+    const result = `/objects/${entityId}`;
+    console.log("[normalizeObjectEntityPath] entityId:", entityId, "result:", result);
+    return result;
   }
 
   async trySetObjectEntityAclPolicy(
