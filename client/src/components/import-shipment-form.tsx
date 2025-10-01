@@ -73,6 +73,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       departureCountry: "",
       containerShipment: false,
       vesselName: "",
+      shippingLine: "",
+      deliveryRelease: "",
       incoterms: "",
       numberOfPieces: "",
       packaging: "",
@@ -757,19 +759,63 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 />
 
                 {containerShipment && (
-                  <FormField
-                    control={form.control}
-                    name="vesselName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Vessel Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="vesselName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Vessel Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="shippingLine"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Shipping Line</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <FormControl>
+                                <SelectTrigger data-testid="select-shipping-line">
+                                  <SelectValue placeholder="Select shipping line" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Corbion">Corbion</SelectItem>
+                                <SelectItem value="Cosco">Cosco</SelectItem>
+                                <SelectItem value="Hapag Lloyd">Hapag Lloyd</SelectItem>
+                                <SelectItem value="Maersk">Maersk</SelectItem>
+                                <SelectItem value="MSC">MSC</SelectItem>
+                                <SelectItem value="Newport">Newport</SelectItem>
+                                <SelectItem value="ONE Line">ONE Line</SelectItem>
+                                <SelectItem value="OOCL">OOCL</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="deliveryRelease"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Delivery Release</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-delivery-release" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
                 )}
               </div>
             </CardContent>
