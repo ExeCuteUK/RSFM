@@ -362,23 +362,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="rsToClear"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value ?? false}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-rs-to-clear"
-                      />
-                    </FormControl>
-                    <FormLabel className="!mt-0">R.S To Clear</FormLabel>
-                  </FormItem>
-                )}
-              />
             </CardContent>
           </Card>
 
