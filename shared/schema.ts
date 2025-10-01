@@ -165,6 +165,13 @@ export const importShipments = pgTable("import_shipments", {
   importCustomerId: varchar("import_customer_id"),
   
   // Shipment Details
+  bookingDate: text("booking_date"),
+  approxLoadDate: text("approx_load_date"),
+  dispatchDate: text("dispatch_date"),
+  deliveryDate: text("delivery_date"),
+  deliveryReference: text("delivery_reference"),
+  deliveryTimeNotes: text("delivery_time_notes"),
+  proofOfDelivery: text("proof_of_delivery").array(),
   importDateEtaPort: text("import_date_eta_port"),
   portOfArrival: text("port_of_arrival"),
   trailerOrContainerNumber: text("trailer_or_container_number"),
