@@ -407,6 +407,7 @@ export const customClearances = pgTable("custom_clearances", {
   incoterms: text("incoterms"),
   customerReferenceNumber: text("customer_reference_number"),
   supplierName: text("supplier_name"),
+  deliveryAddress: text("delivery_address"),
   
   // File Attachments (stored as array of file paths from object storage)
   attachments: text("attachments").array(),

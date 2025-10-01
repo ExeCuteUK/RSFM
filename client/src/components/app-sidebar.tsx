@@ -8,7 +8,8 @@ import {
   Calculator,
   MapPin,
   Bell,
-  FileCheck
+  FileCheck,
+  BookOpen
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 
@@ -29,6 +30,11 @@ const menuItems = [
     title: "Dashboard",
     url: "/",
     icon: BarChart3,
+  },
+  {
+    title: "Job Journals",
+    url: "/job-journals",
+    icon: BookOpen,
   },
   {
     title: "Import Shipments",
