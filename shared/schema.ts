@@ -38,6 +38,7 @@ export const importCustomers = pgTable("import_customers", {
   // Agent Information
   agentName: text("agent_name"),
   agentContactName: text("agent_contact_name"),
+  agentVatNumber: text("agent_vat_number"),
   agentTelephone: text("agent_telephone"),
   agentEmail: text("agent_email").array(),
   agentAccountsEmail: text("agent_accounts_email").array(),
@@ -86,6 +87,7 @@ export const exportCustomers = pgTable("export_customers", {
   // Agent Information
   agentName: text("agent_name"),
   agentContactName: text("agent_contact_name"),
+  agentVatNumber: text("agent_vat_number"),
   agentTelephone: text("agent_telephone"),
   agentEmail: text("agent_email").array(),
   agentAccountsEmail: text("agent_accounts_email").array(),
