@@ -74,9 +74,9 @@ const invoiceFilters = [
     key: "amount",
     label: "Amount Range",
     options: [
-      { value: "low", label: "Under $2,000" },
-      { value: "medium", label: "$2,000 - $5,000" },
-      { value: "high", label: "Over $5,000" }
+      { value: "low", label: "Under £2,000" },
+      { value: "medium", label: "£2,000 - £5,000" },
+      { value: "high", label: "Over £5,000" }
     ]
   }
 ]

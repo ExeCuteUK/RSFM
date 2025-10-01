@@ -168,7 +168,7 @@ export default function RateCalculator() {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Base Rate:</span>
-                    <span data-testid="text-base-rate">${formData.baseRate.toFixed(2)}</span>
+                    <span data-testid="text-base-rate">£{formData.baseRate.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Service Multiplier:</span>
@@ -176,7 +176,7 @@ export default function RateCalculator() {
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
                     <span>Total Rate:</span>
-                    <span data-testid="text-total-rate">${formData.totalRate.toFixed(2)}</span>
+                    <span data-testid="text-total-rate">£{formData.totalRate.toFixed(2)}</span>
                   </div>
                 </div>
 

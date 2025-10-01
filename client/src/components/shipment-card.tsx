@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, MapPin, Package, Truck, User } from "lucide-react"
+import { CalendarDays, MapPin, Package, User } from "lucide-react"
 
 export type ShipmentStatus = "pending" | "in-transit" | "delivered" | "cancelled"
 
@@ -13,7 +13,6 @@ export interface Shipment {
   status: ShipmentStatus
   pickupDate: string
   deliveryDate: string
-  driver?: string
   weight: number
   value: number
 }
@@ -62,17 +61,10 @@ export function ShipmentCard({ shipment, onEdit, onTrack }: ShipmentCardProps) {
           </span>
         </div>
         
-        {shipment.driver && (
-          <div className="flex items-center gap-2 text-sm">
-            <Truck className="h-4 w-4 text-muted-foreground" />
-            <span data-testid={`text-driver-${shipment.id}`}>{shipment.driver}</span>
-          </div>
-        )}
-        
         <div className="flex items-center gap-2 text-sm">
           <Package className="h-4 w-4 text-muted-foreground" />
           <span data-testid={`text-details-${shipment.id}`}>
-            {shipment.weight}kg | ${shipment.value.toLocaleString()}
+            {shipment.weight}kg | £{shipment.value.toLocaleString()}
           </span>
         </div>
         

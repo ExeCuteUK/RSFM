@@ -14,7 +14,6 @@ const mockRecentShipments: Shipment[] = [
     status: "in-transit",
     pickupDate: "2024-01-15",
     deliveryDate: "2024-01-18",
-    driver: "John Smith",
     weight: 1250,
     value: 15000
   },
@@ -36,8 +35,7 @@ const mockRecentShipments: Shipment[] = [
     destination: "Houston, TX",
     status: "delivered",
     pickupDate: "2024-01-12",
-    deliveryDate: "2024-01-15", 
-    driver: "Maria Rodriguez",
+    deliveryDate: "2024-01-15",
     weight: 2100,
     value: 22500
   }

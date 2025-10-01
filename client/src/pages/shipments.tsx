@@ -14,7 +14,6 @@ const mockShipments: Shipment[] = [
     status: "in-transit",
     pickupDate: "2024-01-15",
     deliveryDate: "2024-01-18",
-    driver: "John Smith",
     weight: 1250,
     value: 15000
   },
@@ -37,7 +36,6 @@ const mockShipments: Shipment[] = [
     status: "delivered",
     pickupDate: "2024-01-12",
     deliveryDate: "2024-01-15",
-    driver: "Maria Rodriguez",
     weight: 2100,
     value: 22500
   },
@@ -64,15 +62,6 @@ const shipmentFilters = [
       { value: "delivered", label: "Delivered" },
       { value: "cancelled", label: "Cancelled" }
     ]
-  },
-  {
-    key: "driver",
-    label: "Driver",
-    options: [
-      { value: "john-smith", label: "John Smith" },
-      { value: "maria-rodriguez", label: "Maria Rodriguez" },
-      { value: "unassigned", label: "Unassigned" }
-    ]
   }
 ]
 
@@ -95,20 +84,6 @@ export default function Shipments() {
 
     if (filters.status) {
       filtered = filtered.filter(shipment => shipment.status === filters.status)
-    }
-
-    if (filters.driver) {
-      const driverMap: Record<string, string> = {
-        'john-smith': 'John Smith',
-        'maria-rodriguez': 'Maria Rodriguez',
-        'unassigned': ''
-      }
-      const driverName = driverMap[filters.driver]
-      if (filters.driver === 'unassigned') {
-        filtered = filtered.filter(shipment => !shipment.driver)
-      } else {
-        filtered = filtered.filter(shipment => shipment.driver === driverName)
-      }
     }
 
     setFilteredShipments(filtered)

@@ -55,7 +55,7 @@ export function InvoiceCard({ invoice, onView, onDownload, onSend }: InvoiceCard
         <div className="flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
           <span className="text-xl font-bold" data-testid={`text-amount-${invoice.id}`}>
-            ${invoice.amount.toLocaleString()}
+            £{invoice.amount.toLocaleString()}
           </span>
         </div>
         
