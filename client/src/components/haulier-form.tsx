@@ -67,6 +67,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
   const [newCountry, setNewCountry] = useState("")
   const [filteredCountries, setFilteredCountries] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [newEmail, setNewEmail] = useState("")
   
   const form = useForm<InsertHaulier>({
     resolver: zodResolver(insertHaulierSchema),
@@ -76,7 +77,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
       address: "",
       telephone: "",
       mobile: "",
-      email: "",
+      email: [],
       destinationCountries: [],
       ...defaultValues
     },
@@ -114,6 +115,22 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
     const currentCountries = form.getValues("destinationCountries") || []
     form.setValue("destinationCountries", currentCountries.filter(c => c !== country))
   }
+
+  const addEmail = () => {
+    if (!newEmail.trim()) return
+    const currentEmails = form.getValues("email") || []
+    if (!currentEmails.includes(newEmail.trim())) {
+      form.setValue("email", [...currentEmails, newEmail.trim()])
+      setNewEmail("")
+    }
+  }
+
+  const removeEmail = (email: string) => {
+    const currentEmails = form.getValues("email") || []
+    form.setValue("email", currentEmails.filter(e => e !== email))
+  }
+
+  const emails = form.watch("email") || []
 
   return (
     <Form {...form}>
@@ -212,12 +229,58 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
             <FormField
               control={form.control}
               name="email"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value || ""} type="email" data-testid="input-email" />
-                  </FormControl>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter email address"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addEmail()
+                          }
+                        }}
+                        type="email"
+                        data-testid="input-new-email"
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        onClick={addEmail}
+                        data-testid="button-add-email"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {emails.length > 0 && (
+                      <div className="flex flex-wrap gap-2" data-testid="list-emails">
+                        {emails.map((email) => (
+                          <Badge
+                            key={email}
+                            variant="secondary"
+                            className="gap-1"
+                            data-testid={`badge-email-${email}`}
+                          >
+                            {email}
+                            <button
+                              type="button"
+                              onClick={() => removeEmail(email)}
+                              className="hover:bg-destructive/20 rounded-sm"
+                              data-testid={`button-remove-email-${email}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
