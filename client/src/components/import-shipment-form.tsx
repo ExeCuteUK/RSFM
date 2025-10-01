@@ -142,10 +142,10 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Import Customer</FormLabel>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-2">
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-import-customer">
+                          <SelectTrigger data-testid="select-import-customer" className="flex-1">
                             <SelectValue placeholder="Select import customer" />
                           </SelectTrigger>
                         </FormControl>
@@ -160,11 +160,11 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       <Button
                         type="button"
                         variant="outline"
+                        size="icon"
                         onClick={() => setIsCustomerDialogOpen(true)}
                         data-testid="button-create-customer"
                       >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create New Customer
+                        <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                     <FormMessage />
