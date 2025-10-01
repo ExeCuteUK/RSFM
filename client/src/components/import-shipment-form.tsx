@@ -90,7 +90,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
   const createCustomerMutation = useMutation({
     mutationFn: async (data: InsertImportCustomer) => {
-      const response = await apiRequest("/api/import-customers", "POST", data);
+      const response = await apiRequest("POST", "/api/import-customers", data);
       return response.json() as Promise<ImportCustomer>;
     },
     onSuccess: (newCustomer: ImportCustomer) => {
