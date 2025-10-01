@@ -4,6 +4,10 @@ import { insertExportShipmentSchema, type InsertExportShipment, type ExportRecei
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon } from "lucide-react"
 import {
   Form,
   FormControl,
@@ -21,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
+import { cn } from "@/lib/utils"
 
 interface ExportShipmentFormProps {
   onSubmit: (data: InsertExportShipment) => void
@@ -33,25 +38,32 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
     resolver: zodResolver(insertExportShipmentSchema),
     defaultValues: {
       jobType: "export",
+      status: "Pending",
       receiverId: "",
       destinationCustomerId: "",
       loadDate: "",
       trailerNo: "",
+      jobReference: "",
+      destination: "",
       incoterms: "",
       exportClearanceAgent: "",
       arrivalClearanceAgent: "",
       supplier: "",
       consignee: "",
       value: "",
-      numPkts: "",
+      numPackages: "",
       packing: "",
       description: "",
       grossWeightKg: "",
       cbm: "",
-      chargeableWeight: "",
-      rate1: "",
-      rate2: "",
-      rate3: "",
+      cargoWeight: "",
+      freightRateOut: "",
+      exportClearanceCost: "",
+      arrivalClearanceCost: "",
+      currency: "GBP",
+      haulierName: "",
+      haulierContactName: "",
+      attachments: "",
       ...defaultValues
     },
   })
@@ -63,6 +75,9 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const { data: exportCustomers } = useQuery<ExportCustomer[]>({
     queryKey: ["/api/export-customers"],
   })
+
+  const exportClearanceAgent = form.watch("exportClearanceAgent")
+  const arrivalClearanceAgent = form.watch("arrivalClearanceAgent")
 
   return (
     <Form {...form}>
@@ -136,10 +151,32 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   name="loadDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Load Date (DD/MM/YY)</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} placeholder="DD/MM/YY" data-testid="input-load-date" />
-                      </FormControl>
+                      <FormLabel>Load Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-load-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -153,6 +190,34 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                       <FormLabel>Trailer No</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-trailer-no" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="jobReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-job-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="destination"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Destination</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-destination" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -198,7 +263,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           <SelectItem value="Customer">Customer</SelectItem>
                           <SelectItem value="R.S">R.S</SelectItem>
                           <SelectItem value="N/A">N/A</SelectItem>
-                          <SelectItem value="Haulier">Haulier</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -219,10 +283,9 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Customer">Customer</SelectItem>
+                          <SelectItem value="Haulier">Haulier</SelectItem>
                           <SelectItem value="R.S">R.S</SelectItem>
                           <SelectItem value="N/A">N/A</SelectItem>
-                          <SelectItem value="Haulier">Haulier</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -283,12 +346,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="numPkts"
+                  name="numPackages"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Number of Packets</FormLabel>
+                      <FormLabel># Pkgs</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-num-pkts" />
+                        <Input {...field} value={field.value || ""} data-testid="input-num-packages" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -314,7 +377,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   name="grossWeightKg"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Gross Weight (kg)</FormLabel>
+                      <FormLabel>GW Kg</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-gross-weight" />
                       </FormControl>
@@ -339,12 +402,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="chargeableWeight"
+                  name="cargoWeight"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Chargeable Weight</FormLabel>
+                      <FormLabel>Crg Wt</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-chargeable-weight" />
+                        <Input {...field} value={field.value || ""} data-testid="input-cargo-weight" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -373,15 +436,94 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               <CardTitle>Rate Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="rate1"
+                  name="currency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rate 1</FormLabel>
+                      <FormLabel>Currency</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || "GBP"}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-currency">
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="GBP">GBP (£)</SelectItem>
+                          <SelectItem value="EUR">EUR (€)</SelectItem>
+                          <SelectItem value="USD">USD ($)</SelectItem>
+                          <SelectItem value="TL">TL (₺)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="freightRateOut"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Freight Rate Out</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-rate1" />
+                        <Input {...field} value={field.value || ""} data-testid="input-freight-rate-out" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {exportClearanceAgent === "R.S" && (
+                  <FormField
+                    control={form.control}
+                    name="exportClearanceCost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Export Clearance Cost</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-export-clearance-cost" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {arrivalClearanceAgent === "Haulier" && (
+                  <FormField
+                    control={form.control}
+                    name="arrivalClearanceCost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Arrival Clearance Cost</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Haulier Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="haulierName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Haulier Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-haulier-name" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -390,26 +532,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="rate2"
+                  name="haulierContactName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rate 2</FormLabel>
+                      <FormLabel>Haulier Contact Name</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-rate2" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="rate3"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Rate 3</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-rate3" />
+                        <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
