@@ -93,8 +93,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       const response = await apiRequest("POST", "/api/import-customers", data);
       return response.json() as Promise<ImportCustomer>;
     },
-    onSuccess: (newCustomer: ImportCustomer) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/import-customers"] })
+    onSuccess: async (newCustomer: ImportCustomer) => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/import-customers"] })
       form.setValue("importCustomerId", newCustomer.id)
       setIsCustomerDialogOpen(false)
       toast({
