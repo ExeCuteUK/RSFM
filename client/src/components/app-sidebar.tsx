@@ -40,11 +40,6 @@ const menuItems = [
     icon: Users,
   },
   {
-    title: "Drivers",
-    url: "/drivers",
-    icon: Truck,
-  },
-  {
     title: "Invoices",
     url: "/invoices",
     icon: FileText,

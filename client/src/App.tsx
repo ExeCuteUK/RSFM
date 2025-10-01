@@ -12,7 +12,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Dashboard from "@/pages/dashboard";
 import Shipments from "@/pages/shipments";
 import Customers from "@/pages/customers";
-import Drivers from "@/pages/drivers";
 import Invoices from "@/pages/invoices";
 import RateCalculator from "@/pages/rates";
 import NotFound from "@/pages/not-found";
@@ -23,7 +22,6 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/shipments" component={Shipments} />
       <Route path="/customers" component={Customers} />
-      <Route path="/drivers" component={Drivers} />
       <Route path="/invoices" component={Invoices} />
       <Route path="/rates" component={RateCalculator} />
       <Route path="/tracking" component={() => <div className="p-6">Tracking page coming soon...</div>} />
