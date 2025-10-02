@@ -232,6 +232,7 @@ export const importShipments = pgTable("import_shipments", {
   haulierContactName: text("haulier_contact_name").array(),
   haulierEmail: text("haulier_email").array(),
   haulierTelephone: text("haulier_telephone"),
+  haulierReference: text("haulier_reference"),
   
   // Customs Details
   vatZeroRated: boolean("vat_zero_rated").default(false),
