@@ -204,7 +204,7 @@ export default function JobJournals() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">TYPE</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">#</th>
                   <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Job Ref</th>
                   <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Client Name</th>
                   <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Destination</th>
@@ -232,7 +232,7 @@ export default function JobJournals() {
                       {getJobTypeAbbreviation(entry.jobType)}
                     </td>
                     <td className="p-2 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
-                      #{entry.jobRef}
+                      {entry.jobRef}
                     </td>
                     <td className="p-2 text-center border-r border-border" data-testid={`text-customer-${entry.jobRef}`}>
                       {entry.customerName}
