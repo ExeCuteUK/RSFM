@@ -495,41 +495,39 @@ export default function ImportShipments() {
                       </p>
                     )}
                   </div>
-                  {shipment.rsToClear && (
-                    <div className="pt-2 mt-2 border-t">
-                      <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${shipment.id}`}>
-                        To-Do List
-                      </h3>
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
-                          Advise Clearance to Agent
-                        </p>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleClearanceStatusUpdate(shipment.id, 1)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.clearanceStatusIndicator === 1 || shipment.clearanceStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-status-yellow-${shipment.id}`}
-                            title="Yellow Status"
-                          />
-                          <button
-                            onClick={() => handleClearanceStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.clearanceStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
-                            }`}
-                            data-testid={`button-status-green-${shipment.id}`}
-                            title="Green Status"
-                          />
-                        </div>
+                  <div className="pt-2 mt-2 border-t">
+                    <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${shipment.id}`}>
+                      To-Do List
+                    </h3>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
+                        Advise Clearance to Agent
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleClearanceStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.clearanceStatusIndicator === 1 || shipment.clearanceStatusIndicator === null
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-status-yellow-${shipment.id}`}
+                          title="Yellow Status"
+                        />
+                        <button
+                          onClick={() => handleClearanceStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.clearanceStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-status-green-${shipment.id}`}
+                          title="Green Status"
+                        />
                       </div>
                     </div>
-                  )}
-                  <div className={shipment.rsToClear ? "mt-1" : "pt-2 mt-2 border-t"}>
+                  </div>
+                  <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
                         Book Delivery Customer
