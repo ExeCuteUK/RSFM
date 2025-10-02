@@ -1225,6 +1225,62 @@ export default function ImportShipments() {
                 </CardContent>
               </Card>
 
+              {(viewingShipment.collectionAddress || viewingShipment.collectionContactName || viewingShipment.collectionContactTelephone || viewingShipment.collectionContactEmail || viewingShipment.collectionReference || viewingShipment.collectionNotes) && (
+                <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Collection Information</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {viewingShipment.collectionAddress && (
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-xs text-muted-foreground mb-1">Collection Address</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.collectionAddress}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        {viewingShipment.collectionContactName && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Collection Contact Name</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.collectionContactName}</p>
+                          </div>
+                        )}
+                        {viewingShipment.collectionContactTelephone && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Collection Contact Telephone</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.collectionContactTelephone}</p>
+                          </div>
+                        )}
+                        {viewingShipment.collectionContactEmail && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Collection Contact Email</p>
+                            <a 
+                              href={`mailto:${viewingShipment.collectionContactEmail}`} 
+                              className="font-semibold text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                              {viewingShipment.collectionContactEmail}
+                            </a>
+                          </div>
+                        )}
+                        {viewingShipment.collectionReference && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Collection Reference</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.collectionReference}</p>
+                          </div>
+                        )}
+                      </div>
+                      {viewingShipment.collectionNotes && (
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-xs text-muted-foreground mb-1">Collection Notes</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.collectionNotes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                   <CardContent className="p-5">
