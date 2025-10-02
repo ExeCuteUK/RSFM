@@ -700,7 +700,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   name="collectionContactName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Name</FormLabel>
+                      <FormLabel>Collection Contact Name</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-collection-contact-name" />
                       </FormControl>
@@ -714,7 +714,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   name="collectionContactTelephone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Telephone</FormLabel>
+                      <FormLabel>Collection Contact Telephone</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-collection-contact-telephone" />
                       </FormControl>
@@ -730,7 +730,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   name="collectionContactEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Email</FormLabel>
+                      <FormLabel>Collection Contact Email</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-collection-contact-email" />
                       </FormControl>
