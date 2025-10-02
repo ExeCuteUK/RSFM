@@ -89,6 +89,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       clearanceCharge: "",
       currency: "",
       additionalCommodityCodes: 1,
+      expensesToChargeOut: [],
+      additionalExpensesIn: [],
       haulierName: "",
       haulierContactName: [],
       haulierEmail: [],
@@ -1265,6 +1267,67 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     )}
                   />
                 )}
+
+                <FormField
+                  control={form.control}
+                  name="expensesToChargeOut"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Expenses To Charge Out</FormLabel>
+                      <div className="space-y-2">
+                        {(field.value || []).map((expense: { description: string; amount: string }, index) => (
+                          <div key={index} className="flex gap-2 items-start">
+                            <Input
+                              value={expense.description}
+                              onChange={(e) => {
+                                const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                newExpenses[index].description = e.target.value;
+                                field.onChange(newExpenses);
+                              }}
+                              placeholder="Description"
+                              className="flex-1"
+                            />
+                            <Input
+                              value={expense.amount}
+                              onChange={(e) => {
+                                const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                newExpenses[index].amount = e.target.value;
+                                field.onChange(newExpenses);
+                              }}
+                              placeholder="Amount"
+                              className="w-32"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                const newExpenses = (field.value || []).filter((_, i) => i !== index);
+                                field.onChange(newExpenses);
+                              }}
+                              data-testid={`button-remove-expense-out-${index}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            field.onChange([...(field.value || []), { description: "", amount: "" }]);
+                          }}
+                          data-testid="button-add-expense-out"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Expense
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="border-t pt-4">
@@ -1336,6 +1399,67 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       )}
                     />
                   )}
+
+                  <FormField
+                    control={form.control}
+                    name="additionalExpensesIn"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Additional Expenses In</FormLabel>
+                        <div className="space-y-2">
+                          {(field.value || []).map((expense: { description: string; amount: string }, index) => (
+                            <div key={index} className="flex gap-2 items-start">
+                              <Input
+                                value={expense.description}
+                                onChange={(e) => {
+                                  const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                  newExpenses[index].description = e.target.value;
+                                  field.onChange(newExpenses);
+                                }}
+                                placeholder="Description"
+                                className="flex-1"
+                              />
+                              <Input
+                                value={expense.amount}
+                                onChange={(e) => {
+                                  const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                  newExpenses[index].amount = e.target.value;
+                                  field.onChange(newExpenses);
+                                }}
+                                placeholder="Amount"
+                                className="w-32"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  const newExpenses = (field.value || []).filter((_, i) => i !== index);
+                                  field.onChange(newExpenses);
+                                }}
+                                data-testid={`button-remove-expense-in-${index}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              field.onChange([...(field.value || []), { description: "", amount: "" }]);
+                            }}
+                            data-testid="button-add-expense-in"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Expense
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
             </CardContent>

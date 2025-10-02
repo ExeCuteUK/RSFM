@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, integer, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -220,10 +220,12 @@ export const importShipments = pgTable("import_shipments", {
   exportCustomsClearanceCharge: text("export_customs_clearance_charge"),
   additionalCommodityCodes: integer("additional_commodity_codes"),
   additionalCommodityCodeCharge: text("additional_commodity_code_charge"),
+  expensesToChargeOut: jsonb("expenses_to_charge_out").$type<Array<{description: string, amount: string}>>().default([]),
   currencyIn: text("currency_in"),
   haulierFreightRateIn: text("haulier_freight_rate_in"),
   exportClearanceChargeIn: text("export_clearance_charge_in"),
   destinationClearanceCostIn: text("destination_clearance_cost_in"),
+  additionalExpensesIn: jsonb("additional_expenses_in").$type<Array<{description: string, amount: string}>>().default([]),
   
   // Haulier Information
   haulierName: text("haulier_name"),
