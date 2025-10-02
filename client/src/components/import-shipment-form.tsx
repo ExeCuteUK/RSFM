@@ -28,6 +28,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
@@ -53,6 +54,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
   const [pendingProofOfDelivery, setPendingProofOfDelivery] = useState<string[]>([])
   const [pendingAttachments, setPendingAttachments] = useState<string[]>([])
+  const [newHaulierEmail, setNewHaulierEmail] = useState("")
 
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(insertImportShipmentSchema),
@@ -143,6 +145,21 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const rsToClear = form.watch("rsToClear")
   const containerShipment = form.watch("containerShipment")
   const status = form.watch("status")
+  const haulierEmails = form.watch("haulierEmail") || []
+
+  const addHaulierEmail = () => {
+    if (!newHaulierEmail.trim()) return
+    const currentEmails = form.getValues("haulierEmail") || []
+    if (!currentEmails.includes(newHaulierEmail.trim())) {
+      form.setValue("haulierEmail", [...currentEmails, newHaulierEmail.trim()])
+      setNewHaulierEmail("")
+    }
+  }
+
+  const removeHaulierEmail = (email: string) => {
+    const currentEmails = form.getValues("haulierEmail") || []
+    form.setValue("haulierEmail", currentEmails.filter(e => e !== email))
+  }
 
   useEffect(() => {
     if (selectedCustomerId && importCustomers) {
@@ -1362,29 +1379,67 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 )}
               />
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="haulierEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hauliers Email</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          value={field.value?.join(", ") || ""} 
-                          onChange={(e) => {
-                            const emails = e.target.value.split(",").map(email => email.trim()).filter(email => email.length > 0);
-                            field.onChange(emails);
+              <FormField
+                control={form.control}
+                name="haulierEmail"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Hauliers Email</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter email address"
+                          value={newHaulierEmail}
+                          onChange={(e) => setNewHaulierEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addHaulierEmail()
+                            }
                           }}
-                          placeholder="Enter emails separated by commas"
-                          data-testid="input-haulier-email" 
+                          type="email"
+                          data-testid="input-new-haulier-email"
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addHaulierEmail}
+                          data-testid="button-add-haulier-email"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {haulierEmails.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-emails">
+                          {haulierEmails.map((email) => (
+                            <Badge
+                              key={email}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-haulier-email-${email}`}
+                            >
+                              {email}
+                              <button
+                                type="button"
+                                onClick={() => removeHaulierEmail(email)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-haulier-email-${email}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid gap-4 md:grid-cols-2">
 
                 <FormField
                   control={form.control}
