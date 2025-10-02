@@ -18,6 +18,7 @@ import Customers from "@/pages/customers";
 import Invoices from "@/pages/invoices";
 import RateCalculator from "@/pages/rates";
 import JobJournals from "@/pages/job-journals";
+import ShippingLines from "@/pages/shipping-lines";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/invoices" component={Invoices} />
       <Route path="/rates" component={RateCalculator} />
       <Route path="/job-journals" component={JobJournals} />
+      <Route path="/shipping-lines" component={ShippingLines} />
       <Route path="/tracking" component={() => <div className="p-6">Tracking page coming soon...</div>} />
       <Route path="/notifications" component={() => <div className="p-6">Notifications page coming soon...</div>} />
       <Route path="/settings" component={() => <div className="p-6">Settings page coming soon...</div>} />

@@ -9,6 +9,8 @@ import {
   type InsertExportReceiver,
   type Haulier,
   type InsertHaulier,
+  type ShippingLine,
+  type InsertShippingLine,
   type ImportShipment,
   type InsertImportShipment,
   type ExportShipment,
@@ -19,6 +21,7 @@ import {
   exportCustomers,
   exportReceivers,
   hauliers,
+  shippingLines,
   importShipments,
   exportShipments,
   customClearances,
@@ -61,6 +64,13 @@ export interface IStorage {
   createHaulier(haulier: InsertHaulier): Promise<Haulier>;
   updateHaulier(id: string, haulier: Partial<InsertHaulier>): Promise<Haulier | undefined>;
   deleteHaulier(id: string): Promise<boolean>;
+
+  // Shipping Line methods
+  getAllShippingLines(): Promise<ShippingLine[]>;
+  getShippingLine(id: string): Promise<ShippingLine | undefined>;
+  createShippingLine(shippingLine: InsertShippingLine): Promise<ShippingLine>;
+  updateShippingLine(id: string, shippingLine: Partial<InsertShippingLine>): Promise<ShippingLine | undefined>;
+  deleteShippingLine(id: string): Promise<boolean>;
 
   // Job Reference methods
   getNextJobRef(): number;
@@ -377,6 +387,37 @@ export class MemStorage implements IStorage {
   }
 
   async deleteHaulier(id: string): Promise<boolean> {
+    return false;
+  }
+
+  // Shipping Line methods
+  async getAllShippingLines(): Promise<ShippingLine[]> {
+    return [];
+  }
+
+  async getShippingLine(id: string): Promise<ShippingLine | undefined> {
+    return undefined;
+  }
+
+  async createShippingLine(shippingLine: InsertShippingLine): Promise<ShippingLine> {
+    const created: ShippingLine = {
+      id: randomUUID(),
+      shippingLineName: shippingLine.shippingLineName,
+      shippingLineAddress: shippingLine.shippingLineAddress ?? null,
+      telephone: shippingLine.telephone ?? null,
+      importEmail: shippingLine.importEmail ?? null,
+      exportEmail: shippingLine.exportEmail ?? null,
+      releasesEmail: shippingLine.releasesEmail ?? null,
+      accountingEmail: shippingLine.accountingEmail ?? null,
+    };
+    return created;
+  }
+
+  async updateShippingLine(id: string, shippingLine: Partial<InsertShippingLine>): Promise<ShippingLine | undefined> {
+    return undefined;
+  }
+
+  async deleteShippingLine(id: string): Promise<boolean> {
     return false;
   }
 
@@ -872,6 +913,31 @@ export class DatabaseStorage implements IStorage {
 
   async deleteHaulier(id: string): Promise<boolean> {
     const result = await db.delete(hauliers).where(eq(hauliers.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Shipping Line methods
+  async getAllShippingLines(): Promise<ShippingLine[]> {
+    return await db.select().from(shippingLines);
+  }
+
+  async getShippingLine(id: string): Promise<ShippingLine | undefined> {
+    const [shippingLine] = await db.select().from(shippingLines).where(eq(shippingLines.id, id));
+    return shippingLine;
+  }
+
+  async createShippingLine(shippingLine: InsertShippingLine): Promise<ShippingLine> {
+    const [created] = await db.insert(shippingLines).values(shippingLine).returning();
+    return created;
+  }
+
+  async updateShippingLine(id: string, shippingLine: Partial<InsertShippingLine>): Promise<ShippingLine | undefined> {
+    const [updated] = await db.update(shippingLines).set(shippingLine).where(eq(shippingLines.id, id)).returning();
+    return updated;
+  }
+
+  async deleteShippingLine(id: string): Promise<boolean> {
+    const result = await db.delete(shippingLines).where(eq(shippingLines.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 

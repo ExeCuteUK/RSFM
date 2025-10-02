@@ -6,6 +6,7 @@ import {
   insertExportCustomerSchema,
   insertExportReceiverSchema,
   insertHaulierSchema,
+  insertShippingLineSchema,
   insertImportShipmentSchema,
   insertExportShipmentSchema,
   insertCustomClearanceSchema
@@ -274,6 +275,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete haulier" });
+    }
+  });
+
+  // ========== Shipping Lines Routes ==========
+  
+  // Get all shipping lines
+  app.get("/api/shipping-lines", async (_req, res) => {
+    try {
+      const shippingLines = await storage.getAllShippingLines();
+      res.json(shippingLines);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch shipping lines" });
+    }
+  });
+
+  // Get single shipping line
+  app.get("/api/shipping-lines/:id", async (req, res) => {
+    try {
+      const shippingLine = await storage.getShippingLine(req.params.id);
+      if (!shippingLine) {
+        return res.status(404).json({ error: "Shipping line not found" });
+      }
+      res.json(shippingLine);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch shipping line" });
+    }
+  });
+
+  // Create shipping line
+  app.post("/api/shipping-lines", async (req, res) => {
+    try {
+      const validatedData = insertShippingLineSchema.parse(req.body);
+      const shippingLine = await storage.createShippingLine(validatedData);
+      res.status(201).json(shippingLine);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid shipping line data" });
+    }
+  });
+
+  // Update shipping line
+  app.patch("/api/shipping-lines/:id", async (req, res) => {
+    try {
+      const validatedData = insertShippingLineSchema.partial().parse(req.body);
+      const shippingLine = await storage.updateShippingLine(req.params.id, validatedData);
+      if (!shippingLine) {
+        return res.status(404).json({ error: "Shipping line not found" });
+      }
+      res.json(shippingLine);
+    } catch (error) {
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid shipping line data" });
+      }
+      res.status(500).json({ error: "Failed to update shipping line" });
+    }
+  });
+
+  // Delete shipping line
+  app.delete("/api/shipping-lines/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteShippingLine(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Shipping line not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete shipping line" });
     }
   });
 

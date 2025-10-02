@@ -151,6 +151,27 @@ export const insertHaulierSchema = createInsertSchema(hauliers).omit({
 export type InsertHaulier = z.infer<typeof insertHaulierSchema>;
 export type Haulier = typeof hauliers.$inferSelect;
 
+// Shipping Lines Database
+export const shippingLines = pgTable("shipping_lines", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Contact Information
+  shippingLineName: text("shipping_line_name").notNull(),
+  shippingLineAddress: text("shipping_line_address"),
+  telephone: text("telephone"),
+  importEmail: text("import_email").array(),
+  exportEmail: text("export_email").array(),
+  releasesEmail: text("releases_email").array(),
+  accountingEmail: text("accounting_email").array(),
+});
+
+export const insertShippingLineSchema = createInsertSchema(shippingLines).omit({
+  id: true,
+});
+
+export type InsertShippingLine = z.infer<typeof insertShippingLineSchema>;
+export type ShippingLine = typeof shippingLines.$inferSelect;
+
 // Import Shipments Database
 export const importShipments = pgTable("import_shipments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
