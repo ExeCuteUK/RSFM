@@ -1312,7 +1312,7 @@ export default function ImportShipments() {
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <PoundSterling className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">R.S. Quotation Out</h3>
+                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">R.S Charges / Income</h3>
                       {viewingShipment.currency && (
                         <Badge variant="outline" className="ml-auto text-xs border-green-300 dark:border-green-700">
                           {formatCurrency(viewingShipment.currency)}
@@ -1344,6 +1344,19 @@ export default function ImportShipments() {
                           <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
                         </div>
                       )}
+                      {viewingShipment.expensesToChargeOut && viewingShipment.expensesToChargeOut.length > 0 && (
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 col-span-2">
+                          <p className="text-xs text-muted-foreground mb-2">Expenses To Charge Out</p>
+                          <div className="space-y-1">
+                            {viewingShipment.expensesToChargeOut.map((expense: { description: string; amount: string }, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center">
+                                <span className="text-sm text-green-900 dark:text-green-100">{expense.description}</span>
+                                <span className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{expense.amount}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -1352,7 +1365,7 @@ export default function ImportShipments() {
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <PoundSterling className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Haulier Quotation In</h3>
+                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Job Expenses</h3>
                       {viewingShipment.currencyIn && (
                         <Badge variant="outline" className="ml-auto text-xs border-orange-300 dark:border-orange-700">
                           {formatCurrency(viewingShipment.currencyIn)}
@@ -1376,6 +1389,19 @@ export default function ImportShipments() {
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Destination Clearance Cost</p>
                           <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.destinationClearanceCostIn}</p>
+                        </div>
+                      )}
+                      {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
+                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <p className="text-xs text-muted-foreground mb-2">Additional Expenses In</p>
+                          <div className="space-y-1">
+                            {viewingShipment.additionalExpensesIn.map((expense: { description: string; amount: string }, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center">
+                                <span className="text-sm text-orange-900 dark:text-orange-100">{expense.description}</span>
+                                <span className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{expense.amount}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
