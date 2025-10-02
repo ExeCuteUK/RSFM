@@ -574,31 +574,43 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Approx Load Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                              data-testid="button-approx-load-date"
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={field.value ? new Date(field.value) : undefined}
-                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <div className="flex gap-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                data-testid="button-approx-load-date"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={field.value ? new Date(field.value) : undefined}
+                              onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        {field.value && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => field.onChange("")}
+                            data-testid="button-clear-approx-load-date"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -612,31 +624,43 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Dispatch Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                              data-testid="button-dispatch-date"
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={field.value ? new Date(field.value) : undefined}
-                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <div className="flex gap-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                data-testid="button-dispatch-date"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={field.value ? new Date(field.value) : undefined}
+                              onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        {field.value && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => field.onChange("")}
+                            data-testid="button-clear-dispatch-date"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -648,31 +672,43 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Delivery Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                              data-testid="button-delivery-date"
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
-                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <div className="flex gap-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                data-testid="button-delivery-date"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                              onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        {field.value && field.value !== "" && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => field.onChange("")}
+                            data-testid="button-clear-delivery-date"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
