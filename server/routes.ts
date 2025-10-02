@@ -508,6 +508,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete file from attachments or proofOfDelivery
+  app.delete("/api/import-shipments/:id/files", async (req, res) => {
+    try {
+      const deleteFileSchema = z.object({
+        filePath: z.string(),
+        fileType: z.enum(["attachment", "pod"])
+      });
+      const { filePath, fileType } = deleteFileSchema.parse(req.body);
+      
+      const shipment = await storage.getImportShipment(req.params.id);
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+
+      let updatedFiles;
+      if (fileType === "attachment") {
+        updatedFiles = (shipment.attachments || []).filter(f => f !== filePath);
+        await storage.updateImportShipment(req.params.id, { attachments: updatedFiles });
+      } else {
+        updatedFiles = (shipment.proofOfDelivery || []).filter(f => f !== filePath);
+        await storage.updateImportShipment(req.params.id, { proofOfDelivery: updatedFiles });
+      }
+
+      const updated = await storage.getImportShipment(req.params.id);
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Invalid file deletion request", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to delete file" });
+    }
+  });
+
   // Delete import shipment
   app.delete("/api/import-shipments/:id", async (req, res) => {
     try {

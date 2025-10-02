@@ -134,6 +134,16 @@ export default function ImportShipments() {
     },
   })
 
+  const deleteFile = useMutation({
+    mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
+      return apiRequest("DELETE", `/api/import-shipments/${id}/files`, { filePath, fileType })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({ title: "File deleted successfully" })
+    },
+  })
+
   const updateNotes = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
       return apiRequest("PATCH", `/api/import-shipments/${id}`, { additionalNotes: notes })
@@ -223,6 +233,12 @@ export default function ImportShipments() {
 
   const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
     updateInvoiceCustomerStatus.mutate({ id, status })
+  }
+
+  const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
+    if (confirm("Are you sure you want to delete this file?")) {
+      deleteFile.mutate({ id, filePath, fileType })
+    }
   }
 
   const getClearanceStatusColor = (status: number | null) => {
@@ -676,17 +692,25 @@ export default function ImportShipments() {
                                   {attachmentFiles.map((filePath, idx) => {
                                     const fileName = filePath.split('/').pop() || filePath
                                     return (
-                                      <div key={idx} className="flex items-center gap-1">
+                                      <div key={idx} className="flex items-center gap-1 group">
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                         <a
                                           href={`/objects/${filePath}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-xs text-primary hover:underline truncate"
+                                          className="text-xs text-primary hover:underline truncate flex-1"
                                           title={fileName}
                                         >
                                           {fileName}
                                         </a>
+                                        <button
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                          data-testid={`button-delete-attachment-${idx}`}
+                                          title="Delete file"
+                                        >
+                                          <X className="h-3 w-3 text-destructive" />
+                                        </button>
                                       </div>
                                     )
                                   })}
@@ -702,17 +726,25 @@ export default function ImportShipments() {
                                   {podFiles.map((filePath, idx) => {
                                     const fileName = filePath.split('/').pop() || filePath
                                     return (
-                                      <div key={idx} className="flex items-center gap-1">
+                                      <div key={idx} className="flex items-center gap-1 group">
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                         <a
                                           href={`/objects/${filePath}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-xs text-primary hover:underline truncate"
+                                          className="text-xs text-primary hover:underline truncate flex-1"
                                           title={fileName}
                                         >
                                           {fileName}
                                         </a>
+                                        <button
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                          data-testid={`button-delete-pod-${idx}`}
+                                          title="Delete file"
+                                        >
+                                          <X className="h-3 w-3 text-destructive" />
+                                        </button>
                                       </div>
                                     )
                                   })}
