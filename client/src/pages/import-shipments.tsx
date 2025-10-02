@@ -508,7 +508,7 @@ export default function ImportShipments() {
                           <button
                             onClick={() => handleClearanceStatusUpdate(shipment.id, 1)}
                             className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.clearanceStatusIndicator === 1
+                              shipment.clearanceStatusIndicator === 1 || shipment.clearanceStatusIndicator === null
                                 ? 'bg-yellow-400 border-yellow-500 scale-110'
                                 : 'bg-yellow-200 border-yellow-300 hover-elevate'
                             }`}
@@ -538,7 +538,7 @@ export default function ImportShipments() {
                         <button
                           onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 2)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.deliveryBookedStatusIndicator === 2
+                            shipment.deliveryBookedStatusIndicator === 2 || shipment.deliveryBookedStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
@@ -587,7 +587,7 @@ export default function ImportShipments() {
                         <button
                           onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 2)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.haulierBookingStatusIndicator === 2
+                            shipment.haulierBookingStatusIndicator === 2 || shipment.haulierBookingStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
@@ -637,7 +637,7 @@ export default function ImportShipments() {
                           <button
                             onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 2)}
                             className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.containerReleaseStatusIndicator === 2
+                              shipment.containerReleaseStatusIndicator === 2 || shipment.containerReleaseStatusIndicator === null
                                 ? 'bg-yellow-400 border-yellow-500 scale-110'
                                 : 'bg-yellow-200 border-yellow-300 hover-elevate'
                             }`}
@@ -687,7 +687,7 @@ export default function ImportShipments() {
                         <button
                           onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 2)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 2
+                            shipment.invoiceCustomerStatusIndicator === 2 || shipment.invoiceCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
@@ -716,7 +716,7 @@ export default function ImportShipments() {
                         <button
                           onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 2)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === 2
+                            shipment.sendPodToCustomerStatusIndicator === 2 || shipment.sendPodToCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
