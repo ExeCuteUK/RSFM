@@ -1273,6 +1273,12 @@ export default function ImportShipments() {
                         </Badge>
                       </div>
                     </div>
+                    {viewingShipment.clearanceType && (
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <p className="text-xs text-muted-foreground mb-1">Clearance Type</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.clearanceType}</p>
+                      </div>
+                    )}
                     {viewingShipment.invoiceValue && (
                       <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
@@ -1283,12 +1289,6 @@ export default function ImportShipments() {
                       <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Transport Costs</p>
                         <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightCharge}</p>
-                      </div>
-                    )}
-                    {viewingShipment.clearanceType && (
-                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <p className="text-xs text-muted-foreground mb-1">Clearance Type</p>
-                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.clearanceType}</p>
                       </div>
                     )}
                     {viewingShipment.customsClearanceAgent && (
