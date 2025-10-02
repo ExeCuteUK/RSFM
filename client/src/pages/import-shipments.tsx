@@ -1151,38 +1151,38 @@ export default function ImportShipments() {
                 </Card>
               </div>
 
-              <Card>
+              <Card className="bg-purple-50/50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <h3 className="font-semibold text-lg">Customs & Clearance</h3>
+                    <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <h3 className="font-semibold text-lg text-purple-900 dark:text-purple-100">Customs & Clearance</h3>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {viewingShipment.invoiceValue && (
-                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
-                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.invoiceValue}</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.invoiceValue}</p>
                       </div>
                     )}
                     {viewingShipment.freightCharge && (
-                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Transport Costs</p>
-                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightCharge}</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightCharge}</p>
                       </div>
                     )}
                     {viewingShipment.clearanceType && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Clearance Type</p>
-                        <p className="font-medium text-sm">{viewingShipment.clearanceType}</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.clearanceType}</p>
                       </div>
                     )}
                     {viewingShipment.customsClearanceAgent && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Customs Agent</p>
-                        <p className="font-medium text-sm">{viewingShipment.customsClearanceAgent}</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.customsClearanceAgent}</p>
                       </div>
                     )}
-                    <div className="bg-muted/30 p-3 rounded-lg">
+                    <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                       <p className="text-xs text-muted-foreground mb-1">R.S To Clear</p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant={viewingShipment.rsToClear ? "default" : "secondary"} className="text-xs">
@@ -1190,7 +1190,7 @@ export default function ImportShipments() {
                         </Badge>
                       </div>
                     </div>
-                    <div className="bg-muted/30 p-3 rounded-lg">
+                    <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                       <p className="text-xs text-muted-foreground mb-1">VAT Zero Rated</p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant={viewingShipment.vatZeroRated ? "default" : "secondary"} className="text-xs">
@@ -1199,9 +1199,9 @@ export default function ImportShipments() {
                       </div>
                     </div>
                     {viewingShipment.additionalCommodityCodes !== null && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Additional Commodity Codes</p>
-                        <p className="font-medium text-sm">{viewingShipment.additionalCommodityCodes}</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.additionalCommodityCodes}</p>
                       </div>
                     )}
                   </div>
@@ -1224,25 +1224,25 @@ export default function ImportShipments() {
                       {viewingShipment.freightRateOut && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
                           <p className="text-xs text-muted-foreground mb-1">Freight Rate</p>
-                          <p className="font-semibold text-base text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
                         </div>
                       )}
                       {viewingShipment.rsToClear && viewingShipment.clearanceCharge && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
                           <p className="text-xs text-muted-foreground mb-1">Import Clearance</p>
-                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.clearanceCharge}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.clearanceCharge}</p>
                         </div>
                       )}
                       {viewingShipment.exportCustomsClearanceCharge && (
-                        <div className="bg-muted/30 p-3 rounded-lg col-span-2">
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 col-span-2">
                           <p className="text-xs text-muted-foreground mb-1">Export Customs Clearance</p>
-                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.exportCustomsClearanceCharge}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.exportCustomsClearanceCharge}</p>
                         </div>
                       )}
                       {viewingShipment.additionalCommodityCodeCharge && (
-                        <div className="bg-muted/30 p-3 rounded-lg col-span-2">
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 col-span-2">
                           <p className="text-xs text-muted-foreground mb-1">Commodity Code Charge</p>
-                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
                         </div>
                       )}
                     </div>
@@ -1264,19 +1264,19 @@ export default function ImportShipments() {
                       {viewingShipment.haulierFreightRateIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate</p>
-                          <p className="font-semibold text-base text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.haulierFreightRateIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.haulierFreightRateIn}</p>
                         </div>
                       )}
                       {viewingShipment.exportClearanceChargeIn && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
+                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
-                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.exportClearanceChargeIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.exportClearanceChargeIn}</p>
                         </div>
                       )}
                       {viewingShipment.destinationClearanceCostIn && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
+                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Destination Clearance Cost</p>
-                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.destinationClearanceCostIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.destinationClearanceCostIn}</p>
                         </div>
                       )}
                     </div>
