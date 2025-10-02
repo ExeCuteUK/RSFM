@@ -1015,10 +1015,24 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
                 <FormField
                   control={form.control}
+                  name="deliveryReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="deliveryTimeNotes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Delivery Time/Notes</FormLabel>
+                      <FormLabel>Delivery Notes</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
                       </FormControl>
@@ -1035,20 +1049,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       <FormLabel>Delivery Address</FormLabel>
                       <FormControl>
                         <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="deliveryReference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Reference</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

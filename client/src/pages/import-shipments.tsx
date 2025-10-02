@@ -1215,17 +1215,11 @@ export default function ImportShipments() {
                         <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.deliveryDate)}</p>
                       </div>
                     )}
-                    {viewingShipment.deliveryTimeNotes && (
-                      <div className="col-span-3 bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p className="text-xs text-muted-foreground mb-1">Delivery Time Notes</p>
-                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryTimeNotes}</p>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              {(viewingShipment.collectionAddress || viewingShipment.collectionContactName || viewingShipment.collectionContactTelephone || viewingShipment.collectionContactEmail || viewingShipment.collectionReference || viewingShipment.collectionNotes || viewingShipment.deliveryAddress || viewingShipment.deliveryReference) && (
+              {(viewingShipment.collectionAddress || viewingShipment.collectionContactName || viewingShipment.collectionContactTelephone || viewingShipment.collectionContactEmail || viewingShipment.collectionReference || viewingShipment.collectionNotes || viewingShipment.deliveryAddress || viewingShipment.deliveryReference || viewingShipment.deliveryTimeNotes) && (
                 <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
@@ -1290,6 +1284,12 @@ export default function ImportShipments() {
                           </div>
                         )}
                       </div>
+                      {viewingShipment.deliveryTimeNotes && (
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-xs text-muted-foreground mb-1">Delivery Notes</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.deliveryTimeNotes}</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
