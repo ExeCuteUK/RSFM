@@ -974,11 +974,11 @@ export default function ImportShipments() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <Ship className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <h3 className="font-semibold text-lg">Shipment Details</h3>
+                    <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Shipment Details</h3>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     {viewingShipment.containerShipment && (
@@ -1033,11 +1033,11 @@ export default function ImportShipments() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <h3 className="font-semibold text-lg">Important Dates</h3>
+                    <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Important Dates</h3>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {viewingShipment.bookingDate && (
@@ -1081,11 +1081,11 @@ export default function ImportShipments() {
               </Card>
 
               <div className="grid grid-cols-2 gap-4">
-                <Card>
+                <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <Box className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      <h3 className="font-semibold text-lg">Cargo</h3>
+                      <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Cargo</h3>
                     </div>
                     <div className="space-y-3">
                       {viewingShipment.goodsDescription && (
@@ -1118,11 +1118,11 @@ export default function ImportShipments() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      <h3 className="font-semibold text-lg">Haulier Information</h3>
+                      <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Haulier Information</h3>
                     </div>
                     <div className="space-y-3">
                       {viewingShipment.deliveryAddress && (
