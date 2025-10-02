@@ -1233,12 +1233,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   {rsToClear && (
                     <FormField
                       control={form.control}
-                      name="exportClearanceChargeIn"
+                      name="destinationClearanceCostIn"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Export Clearance Charge In</FormLabel>
+                          <FormLabel>Destination Clearance Cost In</FormLabel>
                           <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
+                            <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1248,12 +1248,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
                   <FormField
                     control={form.control}
-                    name="destinationClearanceCostIn"
+                    name="exportClearanceChargeIn"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Destination Clearance Cost In</FormLabel>
+                        <FormLabel>Export Clearance Charge In</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
+                          <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
