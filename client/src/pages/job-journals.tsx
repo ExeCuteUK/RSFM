@@ -79,12 +79,6 @@ export default function JobJournals() {
     queryKey: ["/api/export-customers"],
   })
 
-  const extractCountry = (address: string | null | undefined): string => {
-    if (!address) return ""
-    const parts = address.split(",").map(p => p.trim())
-    return parts[parts.length - 1] || ""
-  }
-
   const getCustomerName = (
     customerId: string | null | undefined,
     customerType: "import" | "export"
@@ -98,22 +92,6 @@ export default function JobJournals() {
       const customer = exportCustomers.find(c => c.id === customerId)
       return customer?.companyName || "Unassigned"
     }
-  }
-
-  const getDestinationForClearance = (clearance: CustomClearance): string => {
-    if (clearance.deliveryAddress) {
-      return extractCountry(clearance.deliveryAddress)
-    }
-    
-    if (clearance.createdFromType === "import" && clearance.createdFromId) {
-      const linkedShipment = importShipments.find(s => s.id === clearance.createdFromId)
-      return extractCountry(linkedShipment?.deliveryAddress)
-    } else if (clearance.createdFromType === "export" && clearance.createdFromId) {
-      const linkedShipment = exportShipments.find(s => s.id === clearance.createdFromId)
-      return extractCountry(linkedShipment?.deliveryAddress)
-    }
-    
-    return extractCountry(clearance.portOfArrival || clearance.departureFrom)
   }
 
   const matchesMonthYear = (date: string): boolean => {
@@ -133,7 +111,7 @@ export default function JobJournals() {
       jobRef: shipment.jobRef,
       jobType: "Import",
       customerName: getCustomerName(shipment.importCustomerId, "import"),
-      destination: extractCountry(shipment.deliveryAddress),
+      destination: shipment.portOfArrival || "",
       date: shipment.bookingDate || shipment.importDateEtaPort || "",
       regContainerFlight: shipment.trailerOrContainerNumber || "",
       supplier: shipment.supplierName || "",
@@ -143,7 +121,7 @@ export default function JobJournals() {
       jobRef: shipment.jobRef,
       jobType: "Export",
       customerName: getCustomerName(shipment.destinationCustomerId, "export"),
-      destination: extractCountry(shipment.deliveryAddress),
+      destination: shipment.portOfArrival || "",
       date: shipment.bookingDate || shipment.dispatchDate || "",
       regContainerFlight: shipment.trailerNo || "",
       supplier: shipment.supplier || "",
@@ -156,7 +134,7 @@ export default function JobJournals() {
         clearance.importCustomerId || clearance.exportCustomerId,
         clearance.importCustomerId ? "import" : "export"
       ),
-      destination: getDestinationForClearance(clearance),
+      destination: clearance.portOfArrival || "",
       date: clearance.etaPort || clearance.createdAt || "",
       regContainerFlight: clearance.trailerOrContainerNumber || "",
       supplier: clearance.supplierName || "",
