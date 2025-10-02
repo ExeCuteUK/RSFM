@@ -1257,6 +1257,22 @@ export default function ImportShipments() {
                     <h3 className="font-semibold text-lg text-purple-900 dark:text-purple-100">Customs Clearance</h3>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <p className="text-xs text-muted-foreground mb-1">R.S To Clear</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant={viewingShipment.rsToClear ? "default" : "secondary"} className="text-xs">
+                          {viewingShipment.rsToClear ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <p className="text-xs text-muted-foreground mb-1">VAT Zero Rated</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant={viewingShipment.vatZeroRated ? "default" : "secondary"} className="text-xs">
+                          {viewingShipment.vatZeroRated ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                    </div>
                     {viewingShipment.invoiceValue && (
                       <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
@@ -1281,22 +1297,6 @@ export default function ImportShipments() {
                         <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.customsClearanceAgent}</p>
                       </div>
                     )}
-                    <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                      <p className="text-xs text-muted-foreground mb-1">R.S To Clear</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant={viewingShipment.rsToClear ? "default" : "secondary"} className="text-xs">
-                          {viewingShipment.rsToClear ? "Yes" : "No"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                      <p className="text-xs text-muted-foreground mb-1">VAT Zero Rated</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant={viewingShipment.vatZeroRated ? "default" : "secondary"} className="text-xs">
-                          {viewingShipment.vatZeroRated ? "Yes" : "No"}
-                        </Badge>
-                      </div>
-                    </div>
                     {viewingShipment.additionalCommodityCodes !== null && (
                       <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Additional Commodity Codes</p>
