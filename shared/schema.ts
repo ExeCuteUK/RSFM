@@ -227,7 +227,7 @@ export const importShipments = pgTable("import_shipments", {
   // Haulier Information
   haulierName: text("haulier_name"),
   haulierContactName: text("haulier_contact_name"),
-  haulierEmail: text("haulier_email"),
+  haulierEmail: text("haulier_email").array(),
   haulierTelephone: text("haulier_telephone"),
   
   // Customs Details

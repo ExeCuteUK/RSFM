@@ -88,7 +88,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       additionalCommodityCodes: 1,
       haulierName: "",
       haulierContactName: "",
-      haulierEmail: "",
+      haulierEmail: [],
       haulierTelephone: "",
       vatZeroRated: false,
       clearanceType: "",
@@ -1319,7 +1319,17 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Haulier</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        const selectedHaulier = hauliers?.find(h => h.haulierName === value);
+                        if (selectedHaulier) {
+                          form.setValue("haulierEmail", selectedHaulier.email || []);
+                          form.setValue("haulierTelephone", selectedHaulier.telephone || "");
+                        }
+                      }} 
+                      value={field.value || ""}
+                    >
                       <FormControl>
                         <SelectTrigger data-testid="select-haulier-name">
                           <SelectValue placeholder="Select haulier" />
@@ -1343,7 +1353,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 name="haulierContactName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Haulier Contact</FormLabel>
+                    <FormLabel>Haulier Contact Name</FormLabel>
                     <FormControl>
                       <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
                     </FormControl>
@@ -1360,7 +1370,16 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     <FormItem>
                       <FormLabel>Hauliers Email</FormLabel>
                       <FormControl>
-                        <Input type="email" {...field} value={field.value || ""} data-testid="input-haulier-email" />
+                        <Input 
+                          {...field} 
+                          value={field.value?.join(", ") || ""} 
+                          onChange={(e) => {
+                            const emails = e.target.value.split(",").map(email => email.trim()).filter(email => email.length > 0);
+                            field.onChange(emails);
+                          }}
+                          placeholder="Enter emails separated by commas"
+                          data-testid="input-haulier-email" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
