@@ -8,7 +8,7 @@ interface InlineUploaderProps {
   maxNumberOfFiles?: number;
   maxFileSize?: number;
   height?: number;
-  onGetUploadParameters: () => Promise<{
+  onGetUploadParameters: (file?: any) => Promise<{
     method: "PUT";
     url: string;
   }>;

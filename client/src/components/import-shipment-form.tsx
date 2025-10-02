@@ -332,8 +332,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                             maxNumberOfFiles={5}
                             maxFileSize={20 * 1024 * 1024}
                             height={100}
-                            onGetUploadParameters={async () => {
-                              const response = await fetch("/api/objects/upload", { method: "POST" });
+                            onGetUploadParameters={async (file) => {
+                              const response = await fetch("/api/objects/upload", { 
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ filename: file?.name })
+                              });
                               const data = await response.json();
                               return { method: "PUT" as const, url: data.uploadURL };
                             }}
@@ -1405,8 +1409,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       <InlineUploader
                         maxNumberOfFiles={10}
                         maxFileSize={20 * 1024 * 1024}
-                        onGetUploadParameters={async () => {
-                          const response = await fetch("/api/objects/upload", { method: "POST" });
+                        onGetUploadParameters={async (file) => {
+                          const response = await fetch("/api/objects/upload", { 
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ filename: file?.name })
+                          });
                           const data = await response.json();
                           return { method: "PUT" as const, url: data.uploadURL };
                         }}
