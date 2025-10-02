@@ -350,6 +350,156 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-job-status">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                          <SelectItem value="In Transit">In Transit</SelectItem>
+                          <SelectItem value="Delivered">Delivered</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="trailerNo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {containerShipment === "Air Freight" 
+                          ? "Flight Number" 
+                          : containerShipment === "Container Shipment" 
+                            ? "Container Number" 
+                            : "Trailer No"}
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-trailer-no" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="departureFrom"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Departure From</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="portOfArrival"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Port of Arrival</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-port-of-arrival" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="incoterms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Incoterms</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-incoterms">
+                            <SelectValue placeholder="Select incoterms" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="EXW">EXW - Ex Works</SelectItem>
+                          <SelectItem value="FCA">FCA - Free Carrier</SelectItem>
+                          <SelectItem value="CPT">CPT - Carriage Paid To</SelectItem>
+                          <SelectItem value="CIP">CIP - Carriage and Insurance Paid To</SelectItem>
+                          <SelectItem value="DAP">DAP - Delivered At Place</SelectItem>
+                          <SelectItem value="DPU">DPU - Delivered at Place Unloaded</SelectItem>
+                          <SelectItem value="DDP">DDP - Delivered Duty Paid</SelectItem>
+                          <SelectItem value="FAS">FAS - Free Alongside Ship</SelectItem>
+                          <SelectItem value="FOB">FOB - Free On Board</SelectItem>
+                          <SelectItem value="CFR">CFR - Cost and Freight</SelectItem>
+                          <SelectItem value="CIF">CIF - Cost, Insurance and Freight</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="containerShipment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Shipment Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-shipment-type">
+                            <SelectValue placeholder="Select shipment type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Road Shipment">Road Shipment</SelectItem>
+                          <SelectItem value="Container Shipment">Container Shipment</SelectItem>
+                          <SelectItem value="Air Freight">Air Freight</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {containerShipment === "Container Shipment" && (
+                  <FormField
+                    control={form.control}
+                    name="vesselName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vessel Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Scheduling & Delivery</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
                   name="bookingDate"
                   render={({ field }) => (
                     <FormItem>
@@ -510,22 +660,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="deliveryAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Address</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
                   name="deliveryReference"
                   render={({ field }) => (
                     <FormItem>
@@ -540,28 +674,21 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="status"
+                  name="deliveryAddress"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Job Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-job-status">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                          <SelectItem value="In Transit">In Transit</SelectItem>
-                          <SelectItem value="Delivered">Delivered</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Delivery Address</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              </div>
 
-                {status === "Delivered" && (
+              {status === "Delivered" && (
+                <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="proofOfDelivery"
@@ -643,128 +770,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                       </FormItem>
                     )}
                   />
-                )}
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="trailerNo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {containerShipment === "Air Freight" 
-                          ? "Flight Number" 
-                          : containerShipment === "Container Shipment" 
-                            ? "Container Number" 
-                            : "Trailer No"}
-                      </FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-trailer-no" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="departureFrom"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Departure From</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="portOfArrival"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Port of Arrival</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-port-of-arrival" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="incoterms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Incoterms</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-incoterms">
-                            <SelectValue placeholder="Select incoterms" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="EXW">EXW - Ex Works</SelectItem>
-                          <SelectItem value="FCA">FCA - Free Carrier</SelectItem>
-                          <SelectItem value="CPT">CPT - Carriage Paid To</SelectItem>
-                          <SelectItem value="CIP">CIP - Carriage and Insurance Paid To</SelectItem>
-                          <SelectItem value="DAP">DAP - Delivered At Place</SelectItem>
-                          <SelectItem value="DPU">DPU - Delivered at Place Unloaded</SelectItem>
-                          <SelectItem value="DDP">DDP - Delivered Duty Paid</SelectItem>
-                          <SelectItem value="FAS">FAS - Free Alongside Ship</SelectItem>
-                          <SelectItem value="FOB">FOB - Free On Board</SelectItem>
-                          <SelectItem value="CFR">CFR - Cost and Freight</SelectItem>
-                          <SelectItem value="CIF">CIF - Cost, Insurance and Freight</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="containerShipment"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Shipment Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-shipment-type">
-                            <SelectValue placeholder="Select shipment type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Road Shipment">Road Shipment</SelectItem>
-                          <SelectItem value="Container Shipment">Container Shipment</SelectItem>
-                          <SelectItem value="Air Freight">Air Freight</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {containerShipment === "Container Shipment" && (
-                  <FormField
-                    control={form.control}
-                    name="vesselName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Vessel Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
