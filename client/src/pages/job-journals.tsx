@@ -134,22 +134,24 @@ export default function JobJournals() {
       supplier: shipment.supplier || "",
       customer: getCustomerName(shipment.destinationCustomerId, "export"),
     })),
-    ...customClearances.map(clearance => ({
-      jobRef: clearance.jobRef,
-      jobType: "Customs",
-      customerName: getCustomerName(
-        clearance.importCustomerId || clearance.exportCustomerId,
-        clearance.importCustomerId ? "import" : "export"
-      ),
-      destination: clearance.portOfArrival || "",
-      date: clearance.etaPort || clearance.createdAt || "",
-      regContainerFlight: clearance.trailerOrContainerNumber || "",
-      supplier: clearance.supplierName || "",
-      customer: getCustomerName(
-        clearance.importCustomerId || clearance.exportCustomerId,
-        clearance.importCustomerId ? "import" : "export"
-      ),
-    })),
+    ...customClearances
+      .filter(clearance => !clearance.createdFromType && !clearance.createdFromId)
+      .map(clearance => ({
+        jobRef: clearance.jobRef,
+        jobType: "Customs",
+        customerName: getCustomerName(
+          clearance.importCustomerId || clearance.exportCustomerId,
+          clearance.importCustomerId ? "import" : "export"
+        ),
+        destination: clearance.portOfArrival || "",
+        date: clearance.etaPort || clearance.createdAt || "",
+        regContainerFlight: clearance.trailerOrContainerNumber || "",
+        supplier: clearance.supplierName || "",
+        customer: getCustomerName(
+          clearance.importCustomerId || clearance.exportCustomerId,
+          clearance.importCustomerId ? "import" : "export"
+        ),
+      })),
   ].sort((a, b) => b.jobRef - a.jobRef)
 
   const journalEntries = allJournalEntries.filter(entry => matchesMonthYear(entry.date))
