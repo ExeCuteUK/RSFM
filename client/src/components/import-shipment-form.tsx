@@ -64,7 +64,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       status: "Pending",
       importCustomerId: "",
       bookingDate: defaultValues?.bookingDate || format(new Date(), "yyyy-MM-dd"),
-      approxLoadDate: "",
+      collectionDate: "",
       dispatchDate: "",
       deliveryDate: "",
       deliveryTime: "",
@@ -815,10 +815,10 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
                 <FormField
                   control={form.control}
-                  name="approxLoadDate"
+                  name="collectionDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Approx Load Date</FormLabel>
+                      <FormLabel>Collection Date</FormLabel>
                       <div className="flex gap-2">
                         <Popover>
                           <PopoverTrigger asChild>

@@ -64,7 +64,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       destinationCustomerId: "",
       customerReferenceNumber: "",
       bookingDate: format(new Date(), "yyyy-MM-dd"),
-      approxLoadDate: "",
+      collectionDate: "",
       dispatchDate: "",
       deliveryDate: "",
       deliveryReference: "",
@@ -671,10 +671,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
-                  name="approxLoadDate"
+                  name="collectionDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Approx Load Date</FormLabel>
+                      <FormLabel>Collection Date</FormLabel>
                       <div className="flex gap-2">
                         <Popover>
                           <PopoverTrigger asChild>

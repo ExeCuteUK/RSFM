@@ -188,7 +188,7 @@ export const importShipments = pgTable("import_shipments", {
   
   // Shipment Details
   bookingDate: text("booking_date"),
-  approxLoadDate: text("approx_load_date"),
+  collectionDate: text("collection_date"),
   dispatchDate: text("dispatch_date"),
   deliveryDate: text("delivery_date"),
   deliveryTime: text("delivery_time"),
@@ -354,7 +354,7 @@ export const exportShipments = pgTable("export_shipments", {
   
   // Shipment Details
   bookingDate: text("booking_date"),
-  approxLoadDate: text("approx_load_date"),
+  collectionDate: text("collection_date"),
   dispatchDate: text("dispatch_date"),
   deliveryDate: text("delivery_date"),
   deliveryTime: text("delivery_time"),

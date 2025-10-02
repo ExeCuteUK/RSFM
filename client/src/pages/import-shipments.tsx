@@ -1191,10 +1191,10 @@ export default function ImportShipments() {
                         <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.bookingDate)}</p>
                       </div>
                     )}
-                    {viewingShipment.approxLoadDate && (
+                    {viewingShipment.collectionDate && (
                       <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p className="text-xs text-muted-foreground mb-1">Approx Load Date</p>
-                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.approxLoadDate)}</p>
+                        <p className="text-xs text-muted-foreground mb-1">Collection Date</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.collectionDate)}</p>
                       </div>
                     )}
                     {viewingShipment.dispatchDate && (
