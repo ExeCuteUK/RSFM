@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertImportShipmentSchema, type InsertImportShipment, type ImportCustomer, type InsertImportCustomer, type Haulier } from "@shared/schema"
+import { insertImportShipmentSchema, type InsertImportShipment, type ImportCustomer, type InsertImportCustomer, type Haulier, type ShippingLine } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -108,6 +108,10 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
   const { data: hauliers } = useQuery<Haulier[]>({
     queryKey: ["/api/hauliers"],
+  })
+
+  const { data: shippingLines } = useQuery<ShippingLine[]>({
+    queryKey: ["/api/shipping-lines"],
   })
 
   const createCustomerMutation = useMutation({
@@ -582,14 +586,15 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Corbion">Corbion</SelectItem>
-                              <SelectItem value="Cosco">Cosco</SelectItem>
-                              <SelectItem value="Hapag Lloyd">Hapag Lloyd</SelectItem>
-                              <SelectItem value="Maersk">Maersk</SelectItem>
-                              <SelectItem value="MSC">MSC</SelectItem>
-                              <SelectItem value="Newport">Newport</SelectItem>
-                              <SelectItem value="ONE Line">ONE Line</SelectItem>
-                              <SelectItem value="OOCL">OOCL</SelectItem>
+                              {shippingLines && shippingLines.length > 0 ? (
+                                shippingLines.map((line) => (
+                                  <SelectItem key={line.id} value={line.shippingLineName}>
+                                    {line.shippingLineName}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="" disabled>No shipping lines available</SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />
