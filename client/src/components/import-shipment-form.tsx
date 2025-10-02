@@ -416,11 +416,14 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
 
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="importDateEtaPort"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>ETA Port</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -428,21 +431,21 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                             <Button
                               variant="outline"
                               className={cn(
-                                "w-full pl-3 text-left font-normal",
+                                "w-full justify-start text-left font-normal",
                                 !field.value && "text-muted-foreground"
                               )}
                               data-testid="button-import-date"
                             >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
                               {field.value ? (
                                 format(parseISO(field.value), "dd/MM/yy")
                               ) : (
                                 <span>Pick a date</span>
                               )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0">
                           <Calendar
                             mode="single"
                             selected={field.value ? parseISO(field.value) : undefined}
@@ -470,6 +473,22 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
 
+                <div></div>
+
+                <FormField
+                  control={form.control}
+                  name="deliveryReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="deliveryAddress"
@@ -486,20 +505,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="deliveryReference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Reference</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="status"
