@@ -984,7 +984,17 @@ export default function ImportShipments() {
                           {!hasAgent && customer?.email && customer.email.length > 0 && (
                             <div>
                               <p className="text-xs text-muted-foreground mb-1">Customer Email</p>
-                              <p className="text-base">{customer.email.join(', ')}</p>
+                              <div className="flex flex-col gap-1">
+                                {customer.email.map((email, idx) => (
+                                  <a 
+                                    key={idx} 
+                                    href={`mailto:${email}`} 
+                                    className="text-base text-blue-600 dark:text-blue-400 hover:underline"
+                                  >
+                                    {email}
+                                  </a>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -1010,7 +1020,17 @@ export default function ImportShipments() {
                             {customer.agentEmail && customer.agentEmail.length > 0 && (
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Agent Email</p>
-                                <p className="text-base">{customer.agentEmail.join(', ')}</p>
+                                <div className="flex flex-col gap-1">
+                                  {customer.agentEmail.map((email, idx) => (
+                                    <a 
+                                      key={idx} 
+                                      href={`mailto:${email}`} 
+                                      className="text-base text-blue-600 dark:text-blue-400 hover:underline"
+                                    >
+                                      {email}
+                                    </a>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
