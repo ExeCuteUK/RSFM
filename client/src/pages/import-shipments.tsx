@@ -989,7 +989,7 @@ export default function ImportShipments() {
                                 {customer.email.map((email, idx) => {
                                   const yourRefPart = viewingShipment.customerReferenceNumber ? `/ Your Ref : ${viewingShipment.customerReferenceNumber} ` : '';
                                   const formattedDate = viewingShipment.bookingDate ? format(new Date(viewingShipment.bookingDate), 'dd/MM/yy') : '';
-                                  const subject = `Our Ref : IMP ${viewingShipment.jobRef} ${yourRefPart}/ ${formattedDate} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
+                                  const subject = `Our Ref : IMP ${viewingShipment.jobRef} ${yourRefPart}/ Booking Date : ${formattedDate} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
                                   return (
                                     <a 
                                       key={idx} 
@@ -1030,7 +1030,7 @@ export default function ImportShipments() {
                                   {customer.agentEmail.map((email, idx) => {
                                     const yourRefPart = viewingShipment.customerReferenceNumber ? `/ Your Ref : ${viewingShipment.customerReferenceNumber} ` : '';
                                     const formattedDate = viewingShipment.bookingDate ? format(new Date(viewingShipment.bookingDate), 'dd/MM/yy') : '';
-                                    const subject = `Our Ref : IMP ${viewingShipment.jobRef} ${yourRefPart}/ ${formattedDate} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
+                                    const subject = `Our Ref : IMP ${viewingShipment.jobRef} ${yourRefPart}/ Booking Date : ${formattedDate} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
                                     return (
                                       <a 
                                         key={idx} 
