@@ -233,12 +233,12 @@ export const importShipments = pgTable("import_shipments", {
   clearanceType: text("clearance_type"),
   customsClearanceAgent: text("customs_clearance_agent"),
   rsToClear: boolean("rs_to_clear").default(false),
-  clearanceStatusIndicator: integer("clearance_status_indicator"),
-  deliveryBookedStatusIndicator: integer("delivery_booked_status_indicator"),
-  haulierBookingStatusIndicator: integer("haulier_booking_status_indicator"),
-  containerReleaseStatusIndicator: integer("container_release_status_indicator"),
-  invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator"),
-  sendPodToCustomerStatusIndicator: integer("send_pod_to_customer_status_indicator"),
+  clearanceStatusIndicator: integer("clearance_status_indicator").default(1),
+  deliveryBookedStatusIndicator: integer("delivery_booked_status_indicator").default(1),
+  haulierBookingStatusIndicator: integer("haulier_booking_status_indicator").default(1),
+  containerReleaseStatusIndicator: integer("container_release_status_indicator").default(1),
+  invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
+  sendPodToCustomerStatusIndicator: integer("send_pod_to_customer_status_indicator").default(1),
   
   // Additional Details
   customerReferenceNumber: text("customer_reference_number"),
