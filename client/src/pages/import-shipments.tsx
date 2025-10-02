@@ -882,7 +882,7 @@ export default function ImportShipments() {
             <Textarea
               value={notesValue}
               onChange={(e) => setNotesValue(e.target.value)}
-              className="h-full resize-none"
+              className="h-full resize-none !border-2 !border-yellow-500 dark:!border-yellow-600 focus-visible:!ring-yellow-500"
               placeholder="Enter additional notes here..."
               data-testid="textarea-notes"
             />
