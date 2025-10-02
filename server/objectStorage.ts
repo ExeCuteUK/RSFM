@@ -165,9 +165,7 @@ export class ObjectStorageService {
     const { bucketName, objectName } = parseObjectPath(objectEntityPath);
     const bucket = objectStorageClient.bucket(bucketName);
     const objectFile = bucket.file(objectName);
-    console.log("Looking for file:", objectName);
     const [exists] = await objectFile.exists();
-    console.log("File exists:", exists);
     if (!exists) {
       throw new ObjectNotFoundError();
     }
