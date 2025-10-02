@@ -418,6 +418,46 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
                 <FormField
                   control={form.control}
+                  name="importDateEtaPort"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>ETA Port</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-import-date"
+                            >
+                              {field.value ? (
+                                format(parseISO(field.value), "dd/MM/yy")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? parseISO(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="deliveryTimeNotes"
                   render={({ field }) => (
                     <FormItem>
@@ -569,46 +609,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="importDateEtaPort"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Import Date / ETA Port</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                              data-testid="button-import-date"
-                            >
-                              {field.value ? (
-                                format(parseISO(field.value), "dd/MM/yy")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value ? parseISO(field.value) : undefined}
-                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="portOfArrival"
