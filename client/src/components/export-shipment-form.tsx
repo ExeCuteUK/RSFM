@@ -94,6 +94,12 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       haulierName: "",
       haulierContactName: "",
       deliveryAddress: "",
+      collectionAddress: "",
+      collectionContactName: "",
+      collectionContactTelephone: "",
+      collectionContactEmail: "",
+      collectionReference: "",
+      collectionNotes: "",
       additionalNotes: "",
       jobTags: [],
       attachments: [],
@@ -523,6 +529,101 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Collection Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="collectionAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Collection Address</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} value={field.value || ""} data-testid="input-collection-address" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="collectionContactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-collection-contact-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="collectionContactTelephone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Telephone</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-collection-contact-telephone" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="collectionContactEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-collection-contact-email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="collectionReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Collection Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-collection-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="collectionNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Collection Notes</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} value={field.value || ""} data-testid="input-collection-notes" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 

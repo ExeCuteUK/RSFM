@@ -251,6 +251,14 @@ export const importShipments = pgTable("import_shipments", {
   deliveryAddress: text("delivery_address"),
   supplierName: text("supplier_name"),
   
+  // Collection Information
+  collectionAddress: text("collection_address"),
+  collectionContactName: text("collection_contact_name"),
+  collectionContactTelephone: text("collection_contact_telephone"),
+  collectionContactEmail: text("collection_contact_email"),
+  collectionReference: text("collection_reference"),
+  collectionNotes: text("collection_notes"),
+  
   // Additional Notes
   additionalNotes: text("additional_notes"),
   jobTags: text("job_tags").array(),
@@ -390,6 +398,14 @@ export const exportShipments = pgTable("export_shipments", {
   
   // Additional Details
   deliveryAddress: text("delivery_address"),
+  
+  // Collection Information
+  collectionAddress: text("collection_address"),
+  collectionContactName: text("collection_contact_name"),
+  collectionContactTelephone: text("collection_contact_telephone"),
+  collectionContactEmail: text("collection_contact_email"),
+  collectionReference: text("collection_reference"),
+  collectionNotes: text("collection_notes"),
   
   // Additional Notes
   additionalNotes: text("additional_notes"),
