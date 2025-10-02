@@ -455,7 +455,7 @@ export default function ImportShipments() {
                         {shipment.trailerOrContainerNumber}
                         {shipment.containerShipment === "Container Shipment" && shipment.shippingLine && ` / ${shipment.shippingLine}`}
                       </p>
-                      <p data-testid={`text-eta-port-${shipment.id}`}>
+                      <p className="font-semibold text-lg" data-testid={`text-eta-port-${shipment.id}`}>
                         <span>ETA Port:</span>{' '}
                         {formatDate(shipment.importDateEtaPort) || (
                           <span className="text-red-700 dark:text-red-600">TBA</span>
