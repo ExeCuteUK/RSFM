@@ -737,85 +737,82 @@ export default function ImportShipments() {
                   {(() => {
                     const attachmentFiles = parseAttachments(shipment.attachments)
                     const podFiles = parseAttachments(shipment.proofOfDelivery)
-                    if (attachmentFiles.length > 0 || podFiles.length > 0) {
-                      return (
-                        <div className="mt-2 pt-2 border-t">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                              <p className="text-xs font-medium text-muted-foreground">Documents</p>
-                              {attachmentFiles.length > 0 ? (
-                                <div className="space-y-0.5">
-                                  {attachmentFiles.map((filePath, idx) => {
-                                    const fileName = filePath.split('/').pop() || filePath
-                                    const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                    return (
-                                      <div key={idx} className="flex items-center gap-1 group">
-                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                        <a
-                                          href={downloadPath}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-xs text-primary hover:underline truncate flex-1"
-                                          title={fileName}
-                                        >
-                                          {fileName}
-                                        </a>
-                                        <button
-                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
-                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
-                                          data-testid={`button-delete-attachment-${idx}`}
-                                          title="Delete file"
-                                        >
-                                          <X className="h-3 w-3 text-destructive" />
-                                        </button>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="text-xs text-muted-foreground italic">None</p>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-xs font-medium text-muted-foreground">POD</p>
-                              {podFiles.length > 0 ? (
-                                <div className="space-y-0.5">
-                                  {podFiles.map((filePath, idx) => {
-                                    const fileName = filePath.split('/').pop() || filePath
-                                    const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                    return (
-                                      <div key={idx} className="flex items-center gap-1 group">
-                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                        <a
-                                          href={downloadPath}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-xs text-primary hover:underline truncate flex-1"
-                                          title={fileName}
-                                        >
-                                          {fileName}
-                                        </a>
-                                        <button
-                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
-                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
-                                          data-testid={`button-delete-pod-${idx}`}
-                                          title="Delete file"
-                                        >
-                                          <X className="h-3 w-3 text-destructive" />
-                                        </button>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="text-xs text-muted-foreground italic">None</p>
-                              )}
-                            </div>
+                    return (
+                      <div className="mt-2 pt-2 border-t">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Documents</p>
+                            {attachmentFiles.length > 0 ? (
+                              <div className="space-y-0.5">
+                                {attachmentFiles.map((filePath, idx) => {
+                                  const fileName = filePath.split('/').pop() || filePath
+                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  return (
+                                    <div key={idx} className="flex items-center gap-1 group">
+                                      <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <a
+                                        href={downloadPath}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-primary hover:underline truncate flex-1"
+                                        title={fileName}
+                                      >
+                                        {fileName}
+                                      </a>
+                                      <button
+                                        onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                        data-testid={`button-delete-attachment-${idx}`}
+                                        title="Delete file"
+                                      >
+                                        <X className="h-3 w-3 text-destructive" />
+                                      </button>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground italic">None</p>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">POD</p>
+                            {podFiles.length > 0 ? (
+                              <div className="space-y-0.5">
+                                {podFiles.map((filePath, idx) => {
+                                  const fileName = filePath.split('/').pop() || filePath
+                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  return (
+                                    <div key={idx} className="flex items-center gap-1 group">
+                                      <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <a
+                                        href={downloadPath}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-primary hover:underline truncate flex-1"
+                                        title={fileName}
+                                      >
+                                        {fileName}
+                                      </a>
+                                      <button
+                                        onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                        data-testid={`button-delete-pod-${idx}`}
+                                        title="Delete file"
+                                      >
+                                        <X className="h-3 w-3 text-destructive" />
+                                      </button>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground italic">None</p>
+                            )}
                           </div>
                         </div>
-                      )
-                    }
-                    return null
+                      </div>
+                    )
                   })()}
                 </div>
               </CardContent>
