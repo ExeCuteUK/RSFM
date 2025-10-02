@@ -260,16 +260,16 @@ export default function JobJournals() {
                     <td className="p-2 text-center bg-red-100 dark:bg-red-950 border-r-2 border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
                       {entry.purchaseInvoiceAmount || ""}
                     </td>
-                    <td className="p-2 text-center bg-blue-100 dark:bg-blue-950 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-green-100 dark:bg-green-950 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
                       
                     </td>
-                    <td className="p-2 text-center bg-blue-100 dark:bg-blue-950 border-r border-border" data-testid={`text-sales-invoice-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-green-100 dark:bg-green-950 border-r border-border" data-testid={`text-sales-invoice-${entry.jobRef}`}>
                       {entry.salesInvoiceNumber || ""}
                     </td>
-                    <td className="p-2 text-center bg-blue-100 dark:bg-blue-950 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-green-100 dark:bg-green-950 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
                       {entry.salesInvoiceDate || ""}
                     </td>
-                    <td className="p-2 text-center bg-blue-100 dark:bg-blue-950 border-r-2 border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-green-100 dark:bg-green-950 border-r-2 border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
                       {entry.salesInvoiceAmount || ""}
                     </td>
                     <td className="p-2 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
