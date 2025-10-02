@@ -232,7 +232,7 @@ export default function ExportShipments() {
                     <div className="flex items-center gap-2 mb-1">
                       <Truck className="h-4 w-4 text-green-600 dark:text-green-400" />
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
-                        #{shipment.jobRef}
+                        {shipment.jobRef}
                       </h3>
                       <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
                         {shipment.status}

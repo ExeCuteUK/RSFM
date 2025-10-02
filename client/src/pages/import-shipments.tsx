@@ -333,7 +333,7 @@ export default function ImportShipments() {
                     <div className="flex items-center gap-2 mb-1">
                       <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
-                        #{shipment.jobRef}
+                        {shipment.jobRef}
                       </h3>
                       <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
                         {shipment.status}
