@@ -349,7 +349,7 @@ export default function ImportShipments() {
                       variant="ghost"
                       onClick={() => handleOpenNotes(shipment)}
                       data-testid={`button-notes-${shipment.id}`}
-                      title="Additional Notes"
+                      title={shipment.additionalNotes || "Additional Notes"}
                     >
                       <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
                     </Button>
