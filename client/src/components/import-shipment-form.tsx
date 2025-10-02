@@ -473,7 +473,19 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
 
-                <div></div>
+                <FormField
+                  control={form.control}
+                  name="deliveryAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Address</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -489,22 +501,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="deliveryAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Address</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="status"
