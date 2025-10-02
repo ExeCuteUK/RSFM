@@ -1158,6 +1158,18 @@ export default function ImportShipments() {
                     <h3 className="font-semibold text-lg">Customs & Clearance</h3>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
+                    {viewingShipment.invoiceValue && (
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.invoiceValue}</p>
+                      </div>
+                    )}
+                    {viewingShipment.freightCharge && (
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-muted-foreground mb-1">Transport Costs</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightCharge}</p>
+                      </div>
+                    )}
                     {viewingShipment.clearanceType && (
                       <div className="bg-muted/30 p-3 rounded-lg">
                         <p className="text-xs text-muted-foreground mb-1">Clearance Type</p>
@@ -1209,28 +1221,16 @@ export default function ImportShipments() {
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      {viewingShipment.invoiceValue && (
+                      {viewingShipment.freightRateOut && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                          <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
-                          <p className="font-semibold text-base text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.invoiceValue}</p>
-                        </div>
-                      )}
-                      {viewingShipment.freightCharge && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
-                          <p className="text-xs text-muted-foreground mb-1">Freight Charge</p>
-                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightCharge}</p>
+                          <p className="text-xs text-muted-foreground mb-1">Freight Rate</p>
+                          <p className="font-semibold text-base text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
                         </div>
                       )}
                       {viewingShipment.clearanceCharge && (
                         <div className="bg-muted/30 p-3 rounded-lg">
-                          <p className="text-xs text-muted-foreground mb-1">Clearance Charge</p>
+                          <p className="text-xs text-muted-foreground mb-1">Import Clearance</p>
                           <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.clearanceCharge}</p>
-                        </div>
-                      )}
-                      {viewingShipment.freightRateOut && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
-                          <p className="text-xs text-muted-foreground mb-1">Freight Rate Out</p>
-                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
                         </div>
                       )}
                       {viewingShipment.exportCustomsClearanceCharge && (
