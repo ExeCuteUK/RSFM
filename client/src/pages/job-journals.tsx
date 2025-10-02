@@ -219,20 +219,20 @@ export default function JobJournals() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2 font-semibold bg-muted/50">Job Reference</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Customer Name</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Destination</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Date</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Reg/Container/Flight</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50 border-l-2 border-border">Supplier</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Invoice Number</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Date</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Amount</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50 border-l-2 border-border">Customer</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Invoice Number</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Date</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50">Amount</th>
-                  <th className="text-left p-2 font-semibold bg-muted/50 border-l-2 border-border">Profit/Loss</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Job Ref</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Client Name</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Destination</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Date</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Identifier</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Invoice From</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Invoice No</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Date</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Amount</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Invoice To</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Invoice No</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Date</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Amount</th>
+                  <th className="text-center p-2 font-semibold bg-muted/50">P/L</th>
                 </tr>
               </thead>
               <tbody>
@@ -242,46 +242,46 @@ export default function JobJournals() {
                     className="border-b hover-elevate"
                     data-testid={`row-job-${entry.jobRef}`}
                   >
-                    <td className="p-2" data-testid={`text-jobref-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
                       #{entry.jobRef}
                     </td>
-                    <td className="p-2" data-testid={`text-customer-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-customer-${entry.jobRef}`}>
                       {entry.customerName}
                     </td>
-                    <td className="p-2" data-testid={`text-destination-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-destination-${entry.jobRef}`}>
                       {entry.destination}
                     </td>
-                    <td className="p-2" data-testid={`text-date-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-date-${entry.jobRef}`}>
                       {formatDateToDDMMYY(entry.date)}
                     </td>
-                    <td className="p-2" data-testid={`text-reg-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-reg-${entry.jobRef}`}>
                       {entry.regContainerFlight}
                     </td>
-                    <td className="p-2 border-l-2 border-border" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
                       {entry.supplier || ""}
                     </td>
-                    <td className="p-2" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
                       {entry.purchaseInvoiceNumber || ""}
                     </td>
-                    <td className="p-2" data-testid={`text-purchase-date-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-purchase-date-${entry.jobRef}`}>
                       {entry.purchaseInvoiceDate || ""}
                     </td>
-                    <td className="p-2" data-testid={`text-purchase-amount-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
                       {entry.purchaseInvoiceAmount || ""}
                     </td>
-                    <td className="p-2 border-l-2 border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
                       
                     </td>
-                    <td className="p-2" data-testid={`text-sales-invoice-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-sales-invoice-${entry.jobRef}`}>
                       {entry.salesInvoiceNumber || ""}
                     </td>
-                    <td className="p-2" data-testid={`text-sales-date-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
                       {entry.salesInvoiceDate || ""}
                     </td>
-                    <td className="p-2" data-testid={`text-sales-amount-${entry.jobRef}`}>
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
                       {entry.salesInvoiceAmount || ""}
                     </td>
-                    <td className="p-2 border-l-2 border-border" data-testid={`text-profit-loss-${entry.jobRef}`}>
+                    <td className="p-2 text-center" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {entry.profitLoss !== undefined ? `£${entry.profitLoss.toFixed(2)}` : ""}
                     </td>
                   </tr>
