@@ -111,13 +111,9 @@ export default function CustomClearances() {
     return "N/A"
   }
 
-  const parseAttachments = (attachments: string | null) => {
+  const parseAttachments = (attachments: string[] | null) => {
     if (!attachments) return []
-    try {
-      return JSON.parse(attachments)
-    } catch {
-      return []
-    }
+    return attachments
   }
 
   const filteredClearances = statusFilter === "All" 
