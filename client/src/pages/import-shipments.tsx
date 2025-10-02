@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, DollarSign, Shield, ClipboardList } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -165,6 +165,12 @@ export default function ImportShipments() {
       toast({ title: "Notes updated successfully" })
     },
   })
+
+  const formatCurrency = (currency: string | null | undefined) => {
+    if (!currency) return ""
+    if (currency === "GBP") return "£"
+    return currency
+  }
 
   const handleOpenNotes = (shipment: ImportShipment) => {
     setNotesShipmentId(shipment.id)
@@ -1194,11 +1200,11 @@ export default function ImportShipments() {
                 <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Financial (Out)</h3>
+                      <PoundSterling className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">R.S. Quotation Out</h3>
                       {viewingShipment.currency && (
                         <Badge variant="outline" className="ml-auto text-xs border-green-300 dark:border-green-700">
-                          {viewingShipment.currency}
+                          {formatCurrency(viewingShipment.currency)}
                         </Badge>
                       )}
                     </div>
@@ -1206,37 +1212,37 @@ export default function ImportShipments() {
                       {viewingShipment.invoiceValue && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
                           <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
-                          <p className="font-semibold text-base text-green-900 dark:text-green-100">{viewingShipment.currency} {viewingShipment.invoiceValue}</p>
+                          <p className="font-semibold text-base text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.invoiceValue}</p>
                         </div>
                       )}
                       {viewingShipment.freightCharge && (
                         <div className="bg-muted/30 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground mb-1">Freight Charge</p>
-                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.freightCharge}</p>
+                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightCharge}</p>
                         </div>
                       )}
                       {viewingShipment.clearanceCharge && (
                         <div className="bg-muted/30 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground mb-1">Clearance Charge</p>
-                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.clearanceCharge}</p>
+                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.clearanceCharge}</p>
                         </div>
                       )}
                       {viewingShipment.freightRateOut && (
                         <div className="bg-muted/30 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground mb-1">Freight Rate Out</p>
-                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.freightRateOut}</p>
+                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
                         </div>
                       )}
                       {viewingShipment.exportCustomsClearanceCharge && (
                         <div className="bg-muted/30 p-3 rounded-lg col-span-2">
                           <p className="text-xs text-muted-foreground mb-1">Export Customs Clearance</p>
-                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.exportCustomsClearanceCharge}</p>
+                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.exportCustomsClearanceCharge}</p>
                         </div>
                       )}
                       {viewingShipment.additionalCommodityCodeCharge && (
                         <div className="bg-muted/30 p-3 rounded-lg col-span-2">
                           <p className="text-xs text-muted-foreground mb-1">Commodity Code Charge</p>
-                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.additionalCommodityCodeCharge}</p>
+                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
                         </div>
                       )}
                     </div>
@@ -1246,11 +1252,11 @@ export default function ImportShipments() {
                 <Card className="bg-orange-50/50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <DollarSign className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Financial (In)</h3>
+                      <PoundSterling className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Haulier Quotation In</h3>
                       {viewingShipment.currencyIn && (
                         <Badge variant="outline" className="ml-auto text-xs border-orange-300 dark:border-orange-700">
-                          {viewingShipment.currencyIn}
+                          {formatCurrency(viewingShipment.currencyIn)}
                         </Badge>
                       )}
                     </div>
@@ -1258,19 +1264,19 @@ export default function ImportShipments() {
                       {viewingShipment.haulierFreightRateIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate</p>
-                          <p className="font-semibold text-base text-orange-900 dark:text-orange-100">{viewingShipment.currencyIn} {viewingShipment.haulierFreightRateIn}</p>
+                          <p className="font-semibold text-base text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.haulierFreightRateIn}</p>
                         </div>
                       )}
                       {viewingShipment.exportClearanceChargeIn && (
                         <div className="bg-muted/30 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
-                          <p className="font-medium text-sm">{viewingShipment.currencyIn} {viewingShipment.exportClearanceChargeIn}</p>
+                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.exportClearanceChargeIn}</p>
                         </div>
                       )}
                       {viewingShipment.destinationClearanceCostIn && (
                         <div className="bg-muted/30 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground mb-1">Destination Clearance Cost</p>
-                          <p className="font-medium text-sm">{viewingShipment.currencyIn} {viewingShipment.destinationClearanceCostIn}</p>
+                          <p className="font-medium text-sm">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.destinationClearanceCostIn}</p>
                         </div>
                       )}
                     </div>
