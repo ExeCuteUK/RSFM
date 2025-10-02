@@ -1122,7 +1122,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   name="currency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Currency</FormLabel>
+                      <FormLabel>R.S Quotation Currency</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || "GBP"}>
                         <FormControl>
                           <SelectTrigger data-testid="select-currency">
@@ -1239,7 +1239,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     name="currencyIn"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Currency</FormLabel>
+                        <FormLabel>Haulier Rate Currency</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || "GBP"}>
                           <FormControl>
                             <SelectTrigger data-testid="select-currency-in">
