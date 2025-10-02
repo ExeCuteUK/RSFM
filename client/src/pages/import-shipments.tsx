@@ -691,7 +691,7 @@ export default function ImportShipments() {
                                 <div className="space-y-0.5">
                                   {attachmentFiles.map((filePath, idx) => {
                                     const fileName = filePath.split('/').pop() || filePath
-                                    const downloadPath = filePath.startsWith('objects/') ? `/${filePath}` : `/objects/${filePath}`
+                                    const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
                                     return (
                                       <div key={idx} className="flex items-center gap-1 group">
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -726,7 +726,7 @@ export default function ImportShipments() {
                                 <div className="space-y-0.5">
                                   {podFiles.map((filePath, idx) => {
                                     const fileName = filePath.split('/').pop() || filePath
-                                    const downloadPath = filePath.startsWith('objects/') ? `/${filePath}` : `/objects/${filePath}`
+                                    const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
                                     return (
                                       <div key={idx} className="flex items-center gap-1 group">
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
