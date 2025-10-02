@@ -1143,10 +1143,10 @@ export default function ImportShipments() {
                           <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierName}</p>
                         </div>
                       )}
-                      {viewingShipment.haulierContactName && (
+                      {viewingShipment.haulierContactName && viewingShipment.haulierContactName.length > 0 && (
                         <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Haulier Contact</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierContactName}</p>
+                          <p className="text-xs text-muted-foreground mb-1">Haulier Contact Name</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierContactName.join(", ")}</p>
                         </div>
                       )}
                       <div className="grid grid-cols-2 gap-3">

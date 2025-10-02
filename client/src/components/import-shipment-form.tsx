@@ -55,6 +55,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [pendingProofOfDelivery, setPendingProofOfDelivery] = useState<string[]>([])
   const [pendingAttachments, setPendingAttachments] = useState<string[]>([])
   const [newHaulierEmail, setNewHaulierEmail] = useState("")
+  const [newHaulierContactName, setNewHaulierContactName] = useState("")
 
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(insertImportShipmentSchema),
@@ -89,7 +90,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       currency: "",
       additionalCommodityCodes: 1,
       haulierName: "",
-      haulierContactName: "",
+      haulierContactName: [],
       haulierEmail: [],
       haulierTelephone: "",
       vatZeroRated: false,
@@ -146,6 +147,21 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const containerShipment = form.watch("containerShipment")
   const status = form.watch("status")
   const haulierEmails = form.watch("haulierEmail") || []
+  const haulierContactNames = form.watch("haulierContactName") || []
+
+  const addHaulierContactName = () => {
+    if (!newHaulierContactName.trim()) return
+    const currentNames = form.getValues("haulierContactName") || []
+    if (!currentNames.includes(newHaulierContactName.trim())) {
+      form.setValue("haulierContactName", [...currentNames, newHaulierContactName.trim()])
+      setNewHaulierContactName("")
+    }
+  }
+
+  const removeHaulierContactName = (name: string) => {
+    const currentNames = form.getValues("haulierContactName") || []
+    form.setValue("haulierContactName", currentNames.filter(n => n !== name))
+  }
 
   const addHaulierEmail = () => {
     if (!newHaulierEmail.trim()) return
@@ -1341,6 +1357,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         field.onChange(value);
                         const selectedHaulier = hauliers?.find(h => h.haulierName === value);
                         if (selectedHaulier) {
+                          form.setValue("haulierContactName", selectedHaulier.contactNames || []);
                           form.setValue("haulierEmail", selectedHaulier.email || []);
                           form.setValue("haulierTelephone", selectedHaulier.telephone || "");
                         }
@@ -1368,12 +1385,57 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <FormField
                 control={form.control}
                 name="haulierContactName"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Haulier Contact Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
-                    </FormControl>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter contact name"
+                          value={newHaulierContactName}
+                          onChange={(e) => setNewHaulierContactName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addHaulierContactName()
+                            }
+                          }}
+                          data-testid="input-new-haulier-contact-name"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addHaulierContactName}
+                          data-testid="button-add-haulier-contact-name"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {haulierContactNames.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-contact-names">
+                          {haulierContactNames.map((name) => (
+                            <Badge
+                              key={name}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-haulier-contact-name-${name}`}
+                            >
+                              {name}
+                              <button
+                                type="button"
+                                onClick={() => removeHaulierContactName(name)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-haulier-contact-name-${name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1384,7 +1446,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 name="haulierEmail"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Hauliers Email</FormLabel>
+                    <FormLabel>Haulier Contact Email For This Shipment</FormLabel>
                     <div className="space-y-3">
                       <div className="flex gap-2">
                         <Input

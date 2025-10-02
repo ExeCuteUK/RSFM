@@ -134,6 +134,7 @@ export const hauliers = pgTable("hauliers", {
   
   // Contact Information
   haulierName: text("haulier_name").notNull(),
+  contactNames: text("contact_names").array(),
   homeCountry: text("home_country"),
   address: text("address"),
   telephone: text("telephone"),
@@ -226,7 +227,7 @@ export const importShipments = pgTable("import_shipments", {
   
   // Haulier Information
   haulierName: text("haulier_name"),
-  haulierContactName: text("haulier_contact_name"),
+  haulierContactName: text("haulier_contact_name").array(),
   haulierEmail: text("haulier_email").array(),
   haulierTelephone: text("haulier_telephone"),
   
