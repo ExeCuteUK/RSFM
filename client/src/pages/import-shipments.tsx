@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
@@ -31,6 +31,7 @@ export default function ImportShipments() {
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
   const [viewingShipment, setViewingShipment] = useState<ImportShipment | null>(null)
+  const [statusPrompt, setStatusPrompt] = useState<{ show: boolean; newStatus: string; message: string }>({ show: false, newStatus: '', message: '' })
   const { toast } = useToast()
 
   const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
@@ -265,6 +266,52 @@ export default function ImportShipments() {
     if (confirm("Are you sure you want to delete this file?")) {
       deleteFile.mutate({ id, filePath, fileType })
     }
+  }
+
+  useEffect(() => {
+    if (!viewingShipment) return
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    if (viewingShipment.approxLoadDate && viewingShipment.status === "Pending") {
+      const loadDate = new Date(viewingShipment.approxLoadDate)
+      loadDate.setHours(0, 0, 0, 0)
+      
+      if (loadDate <= today) {
+        setStatusPrompt({
+          show: true,
+          newStatus: "In Transit",
+          message: "The Approx Load Date has passed. Would you like to set the status to 'In Transit'?"
+        })
+        return
+      }
+    }
+
+    if (viewingShipment.deliveryDate && (viewingShipment.status === "In Transit" || viewingShipment.status === "Pending")) {
+      const deliveryDate = new Date(viewingShipment.deliveryDate)
+      deliveryDate.setHours(0, 0, 0, 0)
+      
+      if (deliveryDate < today) {
+        setStatusPrompt({
+          show: true,
+          newStatus: "Delivered",
+          message: "The Delivery Date has passed. Would you like to set the status to 'Delivered'?"
+        })
+      }
+    }
+  }, [viewingShipment])
+
+  const handleStatusPromptConfirm = () => {
+    if (viewingShipment && statusPrompt.newStatus) {
+      updateStatus.mutate({ id: viewingShipment.id, status: statusPrompt.newStatus })
+      setStatusPrompt({ show: false, newStatus: '', message: '' })
+      setViewingShipment(null)
+    }
+  }
+
+  const handleStatusPromptCancel = () => {
+    setStatusPrompt({ show: false, newStatus: '', message: '' })
   }
 
   const getClearanceStatusColor = (status: number | null) => {
@@ -1558,6 +1605,21 @@ export default function ImportShipments() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={statusPrompt.show} onOpenChange={(open) => !open && handleStatusPromptCancel()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Status</AlertDialogTitle>
+            <AlertDialogDescription>
+              {statusPrompt.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleStatusPromptCancel}>No, keep current status</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStatusPromptConfirm}>Yes, update status</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
