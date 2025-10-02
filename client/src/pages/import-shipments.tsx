@@ -274,7 +274,7 @@ export default function ImportShipments() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    if (viewingShipment.deliveryDate) {
+    if (viewingShipment.deliveryDate && (viewingShipment.status === "In Transit" || viewingShipment.status === "Pending")) {
       const deliveryDate = new Date(viewingShipment.deliveryDate)
       deliveryDate.setHours(0, 0, 0, 0)
       
@@ -288,7 +288,7 @@ export default function ImportShipments() {
       }
     }
 
-    if (viewingShipment.dispatchDate) {
+    if (viewingShipment.dispatchDate && viewingShipment.status === "Pending") {
       const dispatchDate = new Date(viewingShipment.dispatchDate)
       dispatchDate.setHours(0, 0, 0, 0)
       
