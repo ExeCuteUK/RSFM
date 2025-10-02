@@ -221,6 +221,11 @@ export default function ImportShipments() {
     return customer?.companyName || "N/A"
   }
 
+  const getCustomer = (customerId: string | null) => {
+    if (!customerId) return null
+    return importCustomers.find(c => c.id === customerId) || null
+  }
+
   const toggleStatus = (currentStatus: string, id: string) => {
     const statusCycle: { [key: string]: string } = {
       "Pending": "In Transit",
@@ -953,24 +958,81 @@ export default function ImportShipments() {
                     <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Customer Information</h3>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Customer</p>
-                      <p className="font-semibold text-base">{getCustomerName(viewingShipment.importCustomerId)}</p>
-                    </div>
-                    {viewingShipment.customerReferenceNumber && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
-                        <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
+                  {(() => {
+                    const customer = getCustomer(viewingShipment.importCustomerId)
+                    const hasAgent = customer?.agentName
+                    
+                    return (
+                      <div className="space-y-4">
+                        <div className={hasAgent ? "grid grid-cols-1 gap-4" : "grid grid-cols-4 gap-4"}>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Customer</p>
+                            <p className="font-semibold text-base">{getCustomerName(viewingShipment.importCustomerId)}</p>
+                          </div>
+                          {!hasAgent && customer?.contactName && customer.contactName.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Customer Contact Name</p>
+                              <p className="text-base">{customer.contactName.join(', ')}</p>
+                            </div>
+                          )}
+                          {!hasAgent && customer?.telephone && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Customer Telephone</p>
+                              <p className="text-base">{customer.telephone}</p>
+                            </div>
+                          )}
+                          {!hasAgent && customer?.email && customer.email.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Customer Email</p>
+                              <p className="text-base">{customer.email.join(', ')}</p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {hasAgent && (
+                          <div className="grid grid-cols-4 gap-4">
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Agent Name</p>
+                              <p className="text-base">{customer.agentName}</p>
+                            </div>
+                            {customer.agentContactName && customer.agentContactName.length > 0 && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Agent Contact Name</p>
+                                <p className="text-base">{customer.agentContactName.join(', ')}</p>
+                              </div>
+                            )}
+                            {customer.agentTelephone && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                                <p className="text-base">{customer.agentTelephone}</p>
+                              </div>
+                            )}
+                            {customer.agentEmail && customer.agentEmail.length > 0 && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Agent Email</p>
+                                <p className="text-base">{customer.agentEmail.join(', ')}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          {viewingShipment.customerReferenceNumber && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
+                              <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
+                            </div>
+                          )}
+                          {viewingShipment.supplierName && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Supplier Name</p>
+                              <p className="text-base">{viewingShipment.supplierName}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    {viewingShipment.supplierName && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Supplier Name</p>
-                        <p className="text-base">{viewingShipment.supplierName}</p>
-                      </div>
-                    )}
-                  </div>
+                    )
+                  })()}
                 </CardContent>
               </Card>
 
