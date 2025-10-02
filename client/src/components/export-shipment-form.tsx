@@ -1031,7 +1031,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   />
                 )}
 
-                {exportClearanceAgent && arrivalClearanceAgent && !((exportClearanceAgent === "N/A" || exportClearanceAgent === "Customer") && arrivalClearanceAgent === "Customer") && (
+                {(exportClearanceAgent === "R.S" || (exportClearanceAgent && arrivalClearanceAgent && !((exportClearanceAgent === "N/A" || exportClearanceAgent === "Customer") && arrivalClearanceAgent === "Customer"))) && (
                   <FormField
                     control={form.control}
                     name="additionalCommodityCodes"
