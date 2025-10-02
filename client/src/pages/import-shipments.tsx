@@ -1215,6 +1215,12 @@ export default function ImportShipments() {
                         <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.deliveryDate)}</p>
                       </div>
                     )}
+                    {viewingShipment.deliveryTime && (
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-muted-foreground mb-1">Delivery Time</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryTime}</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
