@@ -1225,7 +1225,7 @@ export default function ImportShipments() {
                 </CardContent>
               </Card>
 
-              {(viewingShipment.collectionAddress || viewingShipment.collectionContactName || viewingShipment.collectionContactTelephone || viewingShipment.collectionContactEmail || viewingShipment.collectionReference || viewingShipment.collectionNotes) && (
+              {(viewingShipment.collectionAddress || viewingShipment.collectionContactName || viewingShipment.collectionContactTelephone || viewingShipment.collectionContactEmail || viewingShipment.collectionReference || viewingShipment.collectionNotes || viewingShipment.deliveryAddress || viewingShipment.deliveryReference) && (
                 <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
@@ -1276,6 +1276,20 @@ export default function ImportShipments() {
                           <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.collectionNotes}</p>
                         </div>
                       )}
+                      <div className="grid grid-cols-2 gap-3">
+                        {viewingShipment.deliveryAddress && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Delivery Address</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryAddress}</p>
+                          </div>
+                        )}
+                        {viewingShipment.deliveryReference && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Delivery Reference</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryReference}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1326,18 +1340,6 @@ export default function ImportShipments() {
                       <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Haulier Information</h3>
                     </div>
                     <div className="space-y-3">
-                      {viewingShipment.deliveryAddress && (
-                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Delivery Address</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryAddress}</p>
-                        </div>
-                      )}
-                      {viewingShipment.deliveryReference && (
-                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Delivery Reference</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryReference}</p>
-                        </div>
-                      )}
                       {viewingShipment.haulierName && (
                         <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                           <p className="text-xs text-muted-foreground mb-1">Haulier</p>
