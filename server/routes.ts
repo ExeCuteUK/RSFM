@@ -701,10 +701,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ========== Object Storage Routes ==========
 
   // Get presigned upload URL for file uploads
-  app.post("/api/objects/upload", async (_req, res) => {
+  app.post("/api/objects/upload", async (req, res) => {
     try {
       const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const filename = req.body?.filename;
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL(filename);
       res.json({ uploadURL });
     } catch (error) {
       console.error("Error generating upload URL:", error);

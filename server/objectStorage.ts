@@ -119,7 +119,7 @@ export class ObjectStorageService {
     }
   }
 
-  async getObjectEntityUploadURL(): Promise<string> {
+  async getObjectEntityUploadURL(filename?: string): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();
     if (!privateObjectDir) {
       throw new Error(
@@ -128,7 +128,14 @@ export class ObjectStorageService {
       );
     }
 
-    const objectId = randomUUID();
+    let objectId: string;
+    if (filename) {
+      const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const timestamp = Date.now();
+      objectId = `${timestamp}_${sanitizedFilename}`;
+    } else {
+      objectId = randomUUID();
+    }
     const fullPath = `${privateObjectDir}/uploads/${objectId}`;
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
