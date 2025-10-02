@@ -29,6 +29,7 @@ export default function ImportShipments() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
+  const [viewingShipment, setViewingShipment] = useState<ImportShipment | null>(null)
   const { toast } = useToast()
 
   const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
@@ -400,7 +401,11 @@ export default function ImportShipments() {
                       ) : (
                         <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       )}
-                      <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
+                      <h3 
+                        className="font-semibold text-lg text-blue-600 dark:text-blue-400 hover:underline cursor-pointer" 
+                        onClick={() => setViewingShipment(shipment)}
+                        data-testid={`text-job-ref-${shipment.id}`}
+                      >
                         {shipment.jobRef}
                       </h3>
                       <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
@@ -892,6 +897,387 @@ export default function ImportShipments() {
               {updateNotes.isPending ? "Saving..." : "Save/Update"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!viewingShipment} onOpenChange={(open) => !open && setViewingShipment(null)}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl">
+          <DialogHeader>
+            <div className="flex items-center justify-between gap-4">
+              <DialogTitle className="text-2xl">
+                Import Shipment {viewingShipment?.jobRef}
+              </DialogTitle>
+              {viewingShipment && (
+                <Badge className={getStatusColor(viewingShipment.status)}>
+                  {viewingShipment.status}
+                </Badge>
+              )}
+            </div>
+          </DialogHeader>
+
+          {viewingShipment && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Customer Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Customer</p>
+                    <p className="font-medium">{getCustomerName(viewingShipment.importCustomerId)}</p>
+                  </div>
+                  {viewingShipment.customerReferenceNumber && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Customer Reference</p>
+                      <p>{viewingShipment.customerReferenceNumber}</p>
+                    </div>
+                  )}
+                  {viewingShipment.supplierName && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Supplier Name</p>
+                      <p>{viewingShipment.supplierName}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Shipment Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.containerShipment && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Shipment Type</p>
+                      <p>{viewingShipment.containerShipment}</p>
+                    </div>
+                  )}
+                  {viewingShipment.trailerOrContainerNumber && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Trailer/Container Number</p>
+                      <p className="font-medium">{viewingShipment.trailerOrContainerNumber}</p>
+                    </div>
+                  )}
+                  {viewingShipment.vesselName && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Vessel Name</p>
+                      <p>{viewingShipment.vesselName}</p>
+                    </div>
+                  )}
+                  {viewingShipment.shippingLine && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Shipping Line</p>
+                      <p>{viewingShipment.shippingLine}</p>
+                    </div>
+                  )}
+                  {viewingShipment.departureCountry && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Departure Country</p>
+                      <p>{viewingShipment.departureCountry}</p>
+                    </div>
+                  )}
+                  {viewingShipment.portOfArrival && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Port of Arrival</p>
+                      <p>{viewingShipment.portOfArrival}</p>
+                    </div>
+                  )}
+                  {viewingShipment.incoterms && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Incoterms</p>
+                      <p>{viewingShipment.incoterms}</p>
+                    </div>
+                  )}
+                  {viewingShipment.deliveryRelease && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Delivery Release</p>
+                      <p>{viewingShipment.deliveryRelease}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Important Dates</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.bookingDate && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Booking Date</p>
+                      <p>{formatDate(viewingShipment.bookingDate)}</p>
+                    </div>
+                  )}
+                  {viewingShipment.approxLoadDate && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Approx Load Date</p>
+                      <p>{formatDate(viewingShipment.approxLoadDate)}</p>
+                    </div>
+                  )}
+                  {viewingShipment.dispatchDate && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Dispatch Date</p>
+                      <p>{formatDate(viewingShipment.dispatchDate)}</p>
+                    </div>
+                  )}
+                  {viewingShipment.importDateEtaPort && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">ETA Port</p>
+                      <p className="font-medium">{formatDate(viewingShipment.importDateEtaPort)}</p>
+                    </div>
+                  )}
+                  {viewingShipment.deliveryDate && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Delivery Date</p>
+                      <p className="font-medium">{formatDate(viewingShipment.deliveryDate)}</p>
+                    </div>
+                  )}
+                  {viewingShipment.deliveryTimeNotes && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Delivery Time Notes</p>
+                      <p>{viewingShipment.deliveryTimeNotes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Cargo Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.goodsDescription && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Goods Description</p>
+                      <p>{viewingShipment.goodsDescription}</p>
+                    </div>
+                  )}
+                  {viewingShipment.numberOfPieces && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Number of Pieces</p>
+                      <p>{viewingShipment.numberOfPieces} {viewingShipment.packaging}</p>
+                    </div>
+                  )}
+                  {viewingShipment.weight && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Weight</p>
+                      <p>{viewingShipment.weight} kgs</p>
+                    </div>
+                  )}
+                  {viewingShipment.cube && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Cube</p>
+                      <p>{viewingShipment.cube}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Delivery Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.deliveryAddress && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Delivery Address</p>
+                      <p>{viewingShipment.deliveryAddress}</p>
+                    </div>
+                  )}
+                  {viewingShipment.deliveryReference && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Delivery Reference</p>
+                      <p>{viewingShipment.deliveryReference}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Haulier Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.haulierName && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Haulier Name</p>
+                      <p>{viewingShipment.haulierName}</p>
+                    </div>
+                  )}
+                  {viewingShipment.haulierContactName && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Haulier Contact</p>
+                      <p>{viewingShipment.haulierContactName}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Customs & Clearance</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.clearanceType && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Clearance Type</p>
+                      <p>{viewingShipment.clearanceType}</p>
+                    </div>
+                  )}
+                  {viewingShipment.customsClearanceAgent && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Customs Clearance Agent</p>
+                      <p>{viewingShipment.customsClearanceAgent}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-muted-foreground">R.S To Clear</p>
+                    <p>{viewingShipment.rsToClear ? "Yes" : "No"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">VAT Zero Rated</p>
+                    <p>{viewingShipment.vatZeroRated ? "Yes" : "No"}</p>
+                  </div>
+                  {viewingShipment.additionalCommodityCodes !== null && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Additional Commodity Codes</p>
+                      <p>{viewingShipment.additionalCommodityCodes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Financial Information (Out)</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.invoiceValue && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Invoice Value</p>
+                      <p className="font-medium">{viewingShipment.currency} {viewingShipment.invoiceValue}</p>
+                    </div>
+                  )}
+                  {viewingShipment.freightCharge && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Freight Charge</p>
+                      <p>{viewingShipment.currency} {viewingShipment.freightCharge}</p>
+                    </div>
+                  )}
+                  {viewingShipment.clearanceCharge && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Clearance Charge</p>
+                      <p>{viewingShipment.currency} {viewingShipment.clearanceCharge}</p>
+                    </div>
+                  )}
+                  {viewingShipment.freightRateOut && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Freight Rate Out</p>
+                      <p>{viewingShipment.currency} {viewingShipment.freightRateOut}</p>
+                    </div>
+                  )}
+                  {viewingShipment.exportCustomsClearanceCharge && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Export Customs Clearance Charge</p>
+                      <p>{viewingShipment.currency} {viewingShipment.exportCustomsClearanceCharge}</p>
+                    </div>
+                  )}
+                  {viewingShipment.additionalCommodityCodeCharge && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Additional Commodity Code Charge</p>
+                      <p>{viewingShipment.currency} {viewingShipment.additionalCommodityCodeCharge}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Financial Information (In)</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingShipment.haulierFreightRateIn && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Haulier Freight Rate In</p>
+                      <p>{viewingShipment.currencyIn} {viewingShipment.haulierFreightRateIn}</p>
+                    </div>
+                  )}
+                  {viewingShipment.exportClearanceChargeIn && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Export Clearance Charge In</p>
+                      <p>{viewingShipment.currencyIn} {viewingShipment.exportClearanceChargeIn}</p>
+                    </div>
+                  )}
+                  {viewingShipment.destinationClearanceCostIn && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Destination Clearance Cost In</p>
+                      <p>{viewingShipment.currencyIn} {viewingShipment.destinationClearanceCostIn}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {viewingShipment.additionalNotes && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Additional Notes</h3>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <p className="whitespace-pre-wrap">{viewingShipment.additionalNotes}</p>
+                  </div>
+                </div>
+              )}
+
+              {(() => {
+                const attachmentFiles = parseAttachments(viewingShipment.attachments)
+                const podFiles = parseAttachments(viewingShipment.proofOfDelivery)
+                if (attachmentFiles.length > 0 || podFiles.length > 0) {
+                  return (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-3">Attachments</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">Documents</p>
+                          {attachmentFiles.length > 0 ? (
+                            <div className="space-y-1">
+                              {attachmentFiles.map((filePath, idx) => {
+                                const fileName = filePath.split('/').pop() || filePath
+                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                return (
+                                  <div key={idx} className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                    <a
+                                      href={downloadPath}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-primary hover:underline truncate"
+                                      title={fileName}
+                                    >
+                                      {fileName}
+                                    </a>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">None</p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">Proof of Delivery</p>
+                          {podFiles.length > 0 ? (
+                            <div className="space-y-1">
+                              {podFiles.map((filePath, idx) => {
+                                const fileName = filePath.split('/').pop() || filePath
+                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                return (
+                                  <div key={idx} className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                    <a
+                                      href={downloadPath}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-primary hover:underline truncate"
+                                      title={fileName}
+                                    >
+                                      {fileName}
+                                    </a>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">None</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })()}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
