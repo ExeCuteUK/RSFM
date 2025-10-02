@@ -1230,7 +1230,7 @@ export default function ImportShipments() {
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Collection Information</h3>
+                      <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Collection & Delivery Information</h3>
                     </div>
                     <div className="space-y-3">
                       {viewingShipment.collectionAddress && (
