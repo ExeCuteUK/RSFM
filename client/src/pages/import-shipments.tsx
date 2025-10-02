@@ -1308,7 +1308,7 @@ export default function ImportShipments() {
                       <ClipboardList className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                       <h3 className="font-semibold text-lg text-yellow-900 dark:text-yellow-100">Additional Notes</h3>
                     </div>
-                    <div className="bg-white dark:bg-yellow-950/30 p-4 rounded-lg border-2 border-yellow-500 dark:border-yellow-600">
+                    <div className="bg-white dark:bg-yellow-950/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-900">
                       <p className="whitespace-pre-wrap text-sm">{viewingShipment.additionalNotes}</p>
                     </div>
                   </CardContent>
