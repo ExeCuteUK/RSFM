@@ -270,7 +270,7 @@ export default function JobJournals() {
                       {entry.purchaseInvoiceAmount || ""}
                     </td>
                     <td className="p-2 border-l-2 border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
-                      {entry.customer || ""}
+                      
                     </td>
                     <td className="p-2" data-testid={`text-sales-invoice-${entry.jobRef}`}>
                       {entry.salesInvoiceNumber || ""}
