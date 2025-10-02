@@ -1067,7 +1067,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     name="additionalCommodityCodeCharge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Additional Commodity Code Charge</FormLabel>
+                        <FormLabel>Additional Charge Per HS Code</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-additional-commodity-code-charge" />
                         </FormControl>
