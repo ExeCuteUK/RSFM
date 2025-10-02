@@ -351,7 +351,7 @@ export default function ImportShipments() {
                       data-testid={`button-notes-${shipment.id}`}
                       title="Additional Notes"
                     >
-                      <StickyNote className="h-4 w-4" />
+                      <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
                     </Button>
                     <Button
                       size="icon"
