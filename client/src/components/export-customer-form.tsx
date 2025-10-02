@@ -27,12 +27,14 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
   const [newAccountsEmail, setNewAccountsEmail] = useState("")
   const [newAgentEmail, setNewAgentEmail] = useState("")
   const [newAgentAccountsEmail, setNewAgentAccountsEmail] = useState("")
+  const [newContactName, setNewContactName] = useState("")
+  const [newAgentContactName, setNewAgentContactName] = useState("")
   
   const form = useForm<InsertExportCustomer>({
     resolver: zodResolver(insertExportCustomerSchema),
     defaultValues: {
       companyName: "",
-      contactName: "",
+      contactName: [],
       vatNumber: "",
       telephone: "",
       email: [],
@@ -44,7 +46,7 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       postcode: "",
       country: "",
       agentName: "",
-      agentContactName: "",
+      agentContactName: [],
       agentVatNumber: "",
       agentTelephone: "",
       agentEmail: [],
@@ -58,6 +60,41 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       ...defaultValues
     },
   })
+
+  const emails = form.watch("email") || []
+  const accountsEmails = form.watch("accountsEmail") || []
+  const agentEmails = form.watch("agentEmail") || []
+  const agentAccountsEmails = form.watch("agentAccountsEmail") || []
+  const contactNames = form.watch("contactName") || []
+  const agentContactNames = form.watch("agentContactName") || []
+
+  const addContactName = () => {
+    if (!newContactName.trim()) return
+    const currentNames = form.getValues("contactName") || []
+    if (!currentNames.includes(newContactName.trim())) {
+      form.setValue("contactName", [...currentNames, newContactName.trim()])
+      setNewContactName("")
+    }
+  }
+
+  const removeContactName = (name: string) => {
+    const currentNames = form.getValues("contactName") || []
+    form.setValue("contactName", currentNames.filter(n => n !== name))
+  }
+
+  const addAgentContactName = () => {
+    if (!newAgentContactName.trim()) return
+    const currentNames = form.getValues("agentContactName") || []
+    if (!currentNames.includes(newAgentContactName.trim())) {
+      form.setValue("agentContactName", [...currentNames, newAgentContactName.trim()])
+      setNewAgentContactName("")
+    }
+  }
+
+  const removeAgentContactName = (name: string) => {
+    const currentNames = form.getValues("agentContactName") || []
+    form.setValue("agentContactName", currentNames.filter(n => n !== name))
+  }
 
   const addEmail = () => {
     if (!newEmail.trim()) return
@@ -115,11 +152,6 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
     form.setValue("agentAccountsEmail", currentAgentAccountsEmails.filter(e => e !== email))
   }
 
-  const emails = form.watch("email") || []
-  const accountsEmails = form.watch("accountsEmail") || []
-  const agentEmails = form.watch("agentEmail") || []
-  const agentAccountsEmails = form.watch("agentAccountsEmail") || []
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -147,12 +179,57 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
               <FormField
                 control={form.control}
                 name="contactName"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Contact Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-contact-name" />
-                    </FormControl>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter contact name"
+                          value={newContactName}
+                          onChange={(e) => setNewContactName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addContactName()
+                            }
+                          }}
+                          data-testid="input-new-contact-name"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addContactName}
+                          data-testid="button-add-contact-name"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {contactNames.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-contact-names">
+                          {contactNames.map((name) => (
+                            <Badge
+                              key={name}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-contact-name-${name}`}
+                            >
+                              {name}
+                              <button
+                                type="button"
+                                onClick={() => removeContactName(name)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-contact-name-${name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -415,12 +492,57 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
               <FormField
                 control={form.control}
                 name="agentContactName"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
-                    <FormLabel>Contact Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-contact-name" />
-                    </FormControl>
+                    <FormLabel>Agent Contact Name</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter agent contact name"
+                          value={newAgentContactName}
+                          onChange={(e) => setNewAgentContactName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addAgentContactName()
+                            }
+                          }}
+                          data-testid="input-new-agent-contact-name"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addAgentContactName}
+                          data-testid="button-add-agent-contact-name"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {agentContactNames.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-agent-contact-names">
+                          {agentContactNames.map((name) => (
+                            <Badge
+                              key={name}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-agent-contact-name-${name}`}
+                            >
+                              {name}
+                              <button
+                                type="button"
+                                onClick={() => removeAgentContactName(name)}
+                                className="hover:bg-destructive/20 rounded-sm"
+                                data-testid={`button-remove-agent-contact-name-${name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

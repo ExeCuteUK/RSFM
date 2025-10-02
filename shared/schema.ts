@@ -23,7 +23,7 @@ export const importCustomers = pgTable("import_customers", {
   
   // Contact Information
   companyName: text("company_name").notNull(),
-  contactName: text("contact_name"),
+  contactName: text("contact_name").array(),
   vatNumber: text("vat_number"),
   telephone: text("telephone"),
   email: text("email").array(),
@@ -37,7 +37,7 @@ export const importCustomers = pgTable("import_customers", {
   
   // Agent Information
   agentName: text("agent_name"),
-  agentContactName: text("agent_contact_name"),
+  agentContactName: text("agent_contact_name").array(),
   agentVatNumber: text("agent_vat_number"),
   agentTelephone: text("agent_telephone"),
   agentEmail: text("agent_email").array(),
@@ -72,7 +72,7 @@ export const exportCustomers = pgTable("export_customers", {
   
   // Contact Information
   companyName: text("company_name").notNull(),
-  contactName: text("contact_name"),
+  contactName: text("contact_name").array(),
   vatNumber: text("vat_number"),
   telephone: text("telephone"),
   email: text("email").array(),
@@ -86,7 +86,7 @@ export const exportCustomers = pgTable("export_customers", {
   
   // Agent Information
   agentName: text("agent_name"),
-  agentContactName: text("agent_contact_name"),
+  agentContactName: text("agent_contact_name").array(),
   agentVatNumber: text("agent_vat_number"),
   agentTelephone: text("agent_telephone"),
   agentEmail: text("agent_email").array(),
