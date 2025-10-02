@@ -130,9 +130,8 @@ export class ObjectStorageService {
 
     let objectId: string;
     if (filename) {
-      const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const timestamp = Date.now();
-      objectId = `${timestamp}_${sanitizedFilename}`;
+      const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.\-_ ]/g, '_');
+      objectId = sanitizedFilename;
     } else {
       objectId = randomUUID();
     }
