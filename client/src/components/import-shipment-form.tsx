@@ -953,6 +953,67 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
           <Card>
             <CardHeader>
+              <CardTitle>Invoice Value & Additional Declaired Values</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Currency</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-currency">
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="GBP">GBP (£)</SelectItem>
+                          <SelectItem value="EUR">Euro (€)</SelectItem>
+                          <SelectItem value="USD">USD ($)</SelectItem>
+                          <SelectItem value="TL">TL</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="invoiceValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Invoice Value</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-invoice-value" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="freightCharge"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transport Costs</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-freight-charge" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Customs &amp; Clearance</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1033,50 +1094,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="clearanceCharge"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Clearance Charge</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="additionalCommodityCodes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Total Commodity Codes</FormLabel>
-                          <Select 
-                            onValueChange={(value) => field.onChange(parseInt(value))} 
-                            value={field.value?.toString() || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid="select-commodity-codes">
-                                <SelectValue placeholder="Select number" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
-                                <SelectItem key={num} value={num.toString()}>
-                                  {num}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                 </>
               )}
             </CardContent>
@@ -1084,61 +1101,55 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
           <Card>
             <CardHeader>
-              <CardTitle>Financial Details</CardTitle>
+              <CardTitle>Rate Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Currency</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                {rsToClear && (
+                  <FormField
+                    control={form.control}
+                    name="clearanceCharge"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Clearance Charge</FormLabel>
                         <FormControl>
-                          <SelectTrigger data-testid="select-currency">
-                            <SelectValue placeholder="Select currency" />
-                          </SelectTrigger>
+                          <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="GBP">GBP (£)</SelectItem>
-                          <SelectItem value="EUR">Euro (€)</SelectItem>
-                          <SelectItem value="USD">USD ($)</SelectItem>
-                          <SelectItem value="TL">TL</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
-                <FormField
-                  control={form.control}
-                  name="invoiceValue"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Invoice Value</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-invoice-value" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="freightCharge"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Freight Charge</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-freight-charge" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {rsToClear && (
+                  <FormField
+                    control={form.control}
+                    name="additionalCommodityCodes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Total Commodity Codes</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(parseInt(value))} 
+                          value={field.value?.toString() || ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-commodity-codes">
+                              <SelectValue placeholder="Select number" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             </CardContent>
           </Card>

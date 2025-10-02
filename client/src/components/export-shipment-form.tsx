@@ -777,60 +777,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
           <Card>
             <CardHeader>
-              <CardTitle>Clearance Agents</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="exportClearanceAgent"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Export Clearance Agent</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-export-clearance-agent">
-                            <SelectValue placeholder="Select agent" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Customer">Customer</SelectItem>
-                          <SelectItem value="R.S">R.S</SelectItem>
-                          <SelectItem value="N/A">N/A</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="arrivalClearanceAgent"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Arrival Clearance Agent</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-arrival-clearance-agent">
-                            <SelectValue placeholder="Select agent" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Haulier">Haulier</SelectItem>
-                          <SelectItem value="Customer">Customer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <CardTitle>Cargo Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -958,7 +904,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     name="clearanceCharge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Clearance Charge</FormLabel>
+                        <FormLabel>Clearance Charge Out</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
                         </FormControl>
@@ -1019,27 +965,26 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
           <Card>
             <CardHeader>
-              <CardTitle>Financial Details</CardTitle>
+              <CardTitle>Clearance Agents</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="currency"
+                  name="exportClearanceAgent"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Currency</FormLabel>
+                      <FormLabel>Export Clearance Agent</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-currency">
-                            <SelectValue placeholder="Select currency" />
+                          <SelectTrigger data-testid="select-export-clearance-agent">
+                            <SelectValue placeholder="Select agent" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="GBP">GBP (£)</SelectItem>
-                          <SelectItem value="EUR">Euro (€)</SelectItem>
-                          <SelectItem value="USD">USD ($)</SelectItem>
-                          <SelectItem value="TL">TL</SelectItem>
+                          <SelectItem value="Customer">Customer</SelectItem>
+                          <SelectItem value="R.S">R.S</SelectItem>
+                          <SelectItem value="N/A">N/A</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -1047,6 +992,37 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="arrivalClearanceAgent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Arrival Clearance Agent</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-arrival-clearance-agent">
+                            <SelectValue placeholder="Select agent" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Haulier">Haulier</SelectItem>
+                          <SelectItem value="Customer">Customer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Invoice Value & Additional Declaired Values</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="value"
