@@ -1083,9 +1083,9 @@ export default function ImportShipments() {
                     {viewingShipment.trailerOrContainerNumber && (
                       <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">
-                          {viewingShipment.shippingType === 'Sea' ? 'Container Number' : 
-                           viewingShipment.shippingType === 'Road' ? 'Trailer Number' : 
-                           viewingShipment.shippingType === 'Air' ? 'Flight Number' : 
+                          {viewingShipment.containerShipment === 'Container Shipment' ? 'Container Number' : 
+                           viewingShipment.containerShipment === 'Road Shipment' ? 'Trailer Number' : 
+                           viewingShipment.containerShipment === 'Air Freight' ? 'Flight Number' : 
                            'Container/Trailer #'}
                         </p>
                         <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.trailerOrContainerNumber}</p>
