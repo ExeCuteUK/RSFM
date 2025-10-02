@@ -705,7 +705,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const objectStorageService = new ObjectStorageService();
       const filename = req.body?.filename;
+      console.log("Upload request - filename:", filename);
       const uploadURL = await objectStorageService.getObjectEntityUploadURL(filename);
+      console.log("Generated upload URL:", uploadURL);
       res.json({ uploadURL });
     } catch (error) {
       console.error("Error generating upload URL:", error);
@@ -736,6 +738,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "urls array is required" });
       }
 
+      console.log("Normalize request - URLs:", urls);
       const objectStorageService = new ObjectStorageService();
       const paths: string[] = [];
 
@@ -747,6 +750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             visibility: "public",
           }
         );
+        console.log("Normalized path:", objectPath);
         paths.push(objectPath);
       }
 
