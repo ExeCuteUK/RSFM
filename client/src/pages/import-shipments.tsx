@@ -1237,7 +1237,7 @@ export default function ImportShipments() {
                             <p className="text-xs text-muted-foreground mb-1">Hauliers Email</p>
                             <div className="flex flex-col gap-1">
                               {viewingShipment.haulierEmail.map((email, idx) => {
-                                const subject = `Enquiry / Our Ref : ${viewingShipment.jobRef} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} / ${viewingShipment.weight || ''}`;
+                                const subject = `Enquiry / Our Ref : ${viewingShipment.jobRef} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} & ${viewingShipment.packaging || ''} / ${viewingShipment.weight || ''} kgs`;
                                 return (
                                   <a 
                                     key={idx} 
