@@ -450,10 +450,18 @@ export default function ImportShipments() {
                 </div>
                 <div className="space-y-1 text-xs">
                   {shipment.trailerOrContainerNumber && (
-                    <p className="font-semibold text-lg" data-testid={`text-truck-container-${shipment.id}`}>
-                      {shipment.trailerOrContainerNumber}
-                      {shipment.containerShipment === "Container Shipment" && shipment.shippingLine && ` / ${shipment.shippingLine}`}
-                    </p>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className="font-semibold text-lg" data-testid={`text-truck-container-${shipment.id}`}>
+                        {shipment.trailerOrContainerNumber}
+                        {shipment.containerShipment === "Container Shipment" && shipment.shippingLine && ` / ${shipment.shippingLine}`}
+                      </p>
+                      <p data-testid={`text-eta-port-${shipment.id}`}>
+                        <span>ETA Port:</span>{' '}
+                        {formatDate(shipment.importDateEtaPort) || (
+                          <span className="text-red-700 dark:text-red-600">TBA</span>
+                        )}
+                      </p>
+                    </div>
                   )}
                   {shipment.containerShipment === "Container Shipment" && shipment.vesselName && (
                     <p data-testid={`text-vessel-name-${shipment.id}`}>
@@ -465,12 +473,6 @@ export default function ImportShipments() {
                       <span>Port Of Arrival:</span> {shipment.portOfArrival}
                     </p>
                   )}
-                  <p data-testid={`text-eta-port-${shipment.id}`}>
-                    <span>ETA Port:</span>{' '}
-                    {formatDate(shipment.importDateEtaPort) || (
-                      <span className="text-red-700 dark:text-red-600">TBA</span>
-                    )}
-                  </p>
                   <p data-testid={`text-delivery-date-${shipment.id}`}>
                     <span>Delivery Date:</span>{' '}
                     {formatDate(shipment.deliveryDate) || (
