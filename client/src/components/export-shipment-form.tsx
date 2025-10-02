@@ -512,7 +512,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                                   </SelectItem>
                                 ))
                               ) : (
-                                <SelectItem value="" disabled>No shipping lines available</SelectItem>
+                                <SelectItem value="none" disabled>No shipping lines available</SelectItem>
                               )}
                             </SelectContent>
                           </Select>

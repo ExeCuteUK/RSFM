@@ -593,7 +593,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                   </SelectItem>
                                 ))
                               ) : (
-                                <SelectItem value="" disabled>No shipping lines available</SelectItem>
+                                <SelectItem value="none" disabled>No shipping lines available</SelectItem>
                               )}
                             </SelectContent>
                           </Select>
