@@ -652,7 +652,13 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   name="trailerNo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{containerShipment === "Container Shipment" ? "Container Number" : "Trailer No"}</FormLabel>
+                      <FormLabel>
+                        {containerShipment === "Air Freight" 
+                          ? "Flight Number" 
+                          : containerShipment === "Container Shipment" 
+                            ? "Container Number" 
+                            : "Trailer No"}
+                      </FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-trailer-no" />
                       </FormControl>
