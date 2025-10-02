@@ -982,9 +982,9 @@ export default function ImportShipments() {
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     {viewingShipment.containerShipment && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Shipment Type</p>
-                        <p className="font-medium text-sm">{viewingShipment.containerShipment}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.containerShipment}</p>
                       </div>
                     )}
                     {viewingShipment.trailerOrContainerNumber && (
@@ -994,39 +994,39 @@ export default function ImportShipments() {
                       </div>
                     )}
                     {viewingShipment.vesselName && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Vessel Name</p>
-                        <p className="font-medium text-sm">{viewingShipment.vesselName}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.vesselName}</p>
                       </div>
                     )}
                     {viewingShipment.shippingLine && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Shipping Line</p>
-                        <p className="font-medium text-sm">{viewingShipment.shippingLine}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.shippingLine}</p>
                       </div>
                     )}
                     {viewingShipment.departureCountry && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Departure Country</p>
-                        <p className="font-medium text-sm">{viewingShipment.departureCountry}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.departureCountry}</p>
                       </div>
                     )}
                     {viewingShipment.portOfArrival && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Port of Arrival</p>
-                        <p className="font-medium text-sm">{viewingShipment.portOfArrival}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.portOfArrival}</p>
                       </div>
                     )}
                     {viewingShipment.incoterms && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Incoterms</p>
-                        <p className="font-medium text-sm">{viewingShipment.incoterms}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.incoterms}</p>
                       </div>
                     )}
                     {viewingShipment.deliveryRelease && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Delivery Release</p>
-                        <p className="font-medium text-sm">{viewingShipment.deliveryRelease}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryRelease}</p>
                       </div>
                     )}
                   </div>
@@ -1041,21 +1041,21 @@ export default function ImportShipments() {
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {viewingShipment.bookingDate && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Booking Date</p>
-                        <p className="font-medium text-sm">{formatDate(viewingShipment.bookingDate)}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.bookingDate)}</p>
                       </div>
                     )}
                     {viewingShipment.approxLoadDate && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Approx Load Date</p>
-                        <p className="font-medium text-sm">{formatDate(viewingShipment.approxLoadDate)}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.approxLoadDate)}</p>
                       </div>
                     )}
                     {viewingShipment.dispatchDate && (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Dispatch Date</p>
-                        <p className="font-medium text-sm">{formatDate(viewingShipment.dispatchDate)}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.dispatchDate)}</p>
                       </div>
                     )}
                     {viewingShipment.importDateEtaPort && (
@@ -1071,9 +1071,9 @@ export default function ImportShipments() {
                       </div>
                     )}
                     {viewingShipment.deliveryTimeNotes && (
-                      <div className="col-span-3 bg-muted/30 p-3 rounded-lg">
+                      <div className="col-span-3 bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs text-muted-foreground mb-1">Delivery Time Notes</p>
-                        <p className="text-sm">{viewingShipment.deliveryTimeNotes}</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryTimeNotes}</p>
                       </div>
                     )}
                   </div>
@@ -1089,28 +1089,28 @@ export default function ImportShipments() {
                     </div>
                     <div className="space-y-3">
                       {viewingShipment.goodsDescription && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                           <p className="text-xs text-muted-foreground mb-1">Goods Description</p>
-                          <p className="text-sm">{viewingShipment.goodsDescription}</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.goodsDescription}</p>
                         </div>
                       )}
                       <div className="grid grid-cols-2 gap-3">
                         {viewingShipment.numberOfPieces && (
-                          <div className="bg-muted/30 p-3 rounded-lg">
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                             <p className="text-xs text-muted-foreground mb-1">Pieces</p>
-                            <p className="font-medium text-sm">{viewingShipment.numberOfPieces} {viewingShipment.packaging}</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.numberOfPieces} {viewingShipment.packaging}</p>
                           </div>
                         )}
                         {viewingShipment.weight && (
-                          <div className="bg-muted/30 p-3 rounded-lg">
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                             <p className="text-xs text-muted-foreground mb-1">Weight</p>
-                            <p className="font-medium text-sm">{viewingShipment.weight} kgs</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.weight} kgs</p>
                           </div>
                         )}
                         {viewingShipment.cube && (
-                          <div className="bg-muted/30 p-3 rounded-lg col-span-2">
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800 col-span-2">
                             <p className="text-xs text-muted-foreground mb-1">Cube</p>
-                            <p className="font-medium text-sm">{viewingShipment.cube}</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.cube}</p>
                           </div>
                         )}
                       </div>
@@ -1121,26 +1121,26 @@ export default function ImportShipments() {
                 <Card>
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      <h3 className="font-semibold text-lg">Delivery & Haulier</h3>
+                      <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <h3 className="font-semibold text-lg">Haulier Information</h3>
                     </div>
                     <div className="space-y-3">
                       {viewingShipment.deliveryAddress && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                           <p className="text-xs text-muted-foreground mb-1">Delivery Address</p>
-                          <p className="text-sm">{viewingShipment.deliveryAddress}</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryAddress}</p>
                         </div>
                       )}
                       {viewingShipment.deliveryReference && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                           <p className="text-xs text-muted-foreground mb-1">Delivery Reference</p>
-                          <p className="font-medium text-sm">{viewingShipment.deliveryReference}</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryReference}</p>
                         </div>
                       )}
                       {viewingShipment.haulierName && (
-                        <div className="bg-muted/30 p-3 rounded-lg">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                           <p className="text-xs text-muted-foreground mb-1">Haulier</p>
-                          <p className="font-medium text-sm">{viewingShipment.haulierName}</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierName}</p>
                           {viewingShipment.haulierContactName && (
                             <p className="text-xs text-muted-foreground mt-1">{viewingShipment.haulierContactName}</p>
                           )}
@@ -1155,7 +1155,7 @@ export default function ImportShipments() {
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <h3 className="font-semibold text-lg text-purple-900 dark:text-purple-100">Customs & Clearance</h3>
+                    <h3 className="font-semibold text-lg text-purple-900 dark:text-purple-100">Customs Clearance</h3>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {viewingShipment.invoiceValue && (

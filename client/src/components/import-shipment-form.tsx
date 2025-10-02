@@ -1026,7 +1026,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
           <Card>
             <CardHeader>
-              <CardTitle>Customs &amp; Clearance</CardTitle>
+              <CardTitle>Customs Clearance</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-4">
