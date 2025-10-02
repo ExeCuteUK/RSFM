@@ -1532,7 +1532,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   <FormItem>
                     <FormLabel>Additional Notes</FormLabel>
                     <FormControl>
-                      <Textarea {...field} value={field.value || ""} rows={5} className="!border-yellow-200 dark:!border-yellow-900 focus-visible:!ring-yellow-500" data-testid="textarea-additional-notes" />
+                      <Textarea {...field} value={field.value || ""} rows={5} className="!border-2 !border-yellow-500 dark:!border-yellow-600 focus-visible:!ring-yellow-500" data-testid="textarea-additional-notes" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
