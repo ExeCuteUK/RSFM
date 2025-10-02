@@ -1227,7 +1227,7 @@ export default function ImportShipments() {
                           <p className="font-semibold text-base text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
                         </div>
                       )}
-                      {viewingShipment.clearanceCharge && (
+                      {viewingShipment.rsToClear && viewingShipment.clearanceCharge && (
                         <div className="bg-muted/30 p-3 rounded-lg">
                           <p className="text-xs text-muted-foreground mb-1">Import Clearance</p>
                           <p className="font-medium text-sm">{formatCurrency(viewingShipment.currency)}{viewingShipment.clearanceCharge}</p>
