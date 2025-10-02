@@ -963,7 +963,7 @@ export default function ImportShipments() {
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="border-b pb-4">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 {viewingShipment?.containerShipment === "Road Shipment" ? (
                   <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                     <Truck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -982,11 +982,21 @@ export default function ImportShipments() {
                   </div>
                 )}
                 <div>
-                  <DialogTitle className="text-2xl">
+                  <DialogTitle className="text-2xl leading-none">
                     R.S Import Shipment {viewingShipment?.jobRef}
                   </DialogTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Created {viewingShipment?.createdAt}
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Created {viewingShipment?.createdAt && (() => {
+                      const date = new Date(viewingShipment.createdAt);
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const year = String(date.getFullYear()).slice(-2);
+                      let hours = date.getHours();
+                      const minutes = String(date.getMinutes()).padStart(2, '0');
+                      const ampm = hours >= 12 ? 'PM' : 'AM';
+                      hours = hours % 12 || 12;
+                      return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+                    })()}
                   </p>
                 </div>
               </div>
