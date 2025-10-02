@@ -1025,6 +1025,30 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Invoice Currency</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || "GBP"}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-invoice-currency">
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="GBP">GBP (£)</SelectItem>
+                          <SelectItem value="EUR">EUR (€)</SelectItem>
+                          <SelectItem value="USD">USD ($)</SelectItem>
+                          <SelectItem value="TL">TL (₺)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="value"
                   render={({ field }) => (
                     <FormItem>
