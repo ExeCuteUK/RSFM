@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, DollarSign, Shield, ClipboardList } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -901,14 +901,38 @@ export default function ImportShipments() {
       </Dialog>
 
       <Dialog open={!!viewingShipment} onOpenChange={(open) => !open && setViewingShipment(null)}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl">
-          <DialogHeader>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="border-b pb-4">
             <div className="flex items-center justify-between gap-4">
-              <DialogTitle className="text-2xl">
-                Import Shipment {viewingShipment?.jobRef}
-              </DialogTitle>
+              <div className="flex items-center gap-3">
+                {viewingShipment?.containerShipment === "Road Shipment" ? (
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Truck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                ) : viewingShipment?.containerShipment === "Container Shipment" ? (
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Container className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                ) : viewingShipment?.containerShipment === "Air Freight" ? (
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Plane className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                ) : (
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                )}
+                <div>
+                  <DialogTitle className="text-2xl">
+                    Import Shipment #{viewingShipment?.jobRef}
+                  </DialogTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Created {viewingShipment?.createdAt}
+                  </p>
+                </div>
+              </div>
               {viewingShipment && (
-                <Badge className={getStatusColor(viewingShipment.status)}>
+                <Badge className={getStatusColor(viewingShipment.status)} data-testid="badge-detail-status">
                   {viewingShipment.status}
                 </Badge>
               )}
@@ -916,296 +940,356 @@ export default function ImportShipments() {
           </DialogHeader>
 
           {viewingShipment && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Customer Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Customer</p>
-                    <p className="font-medium">{getCustomerName(viewingShipment.importCustomerId)}</p>
+            <div className="space-y-4 pt-4">
+              <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Customer Information</h3>
                   </div>
-                  {viewingShipment.customerReferenceNumber && (
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Customer Reference</p>
-                      <p>{viewingShipment.customerReferenceNumber}</p>
+                      <p className="text-xs text-muted-foreground mb-1">Customer</p>
+                      <p className="font-semibold text-base">{getCustomerName(viewingShipment.importCustomerId)}</p>
                     </div>
-                  )}
-                  {viewingShipment.supplierName && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Supplier Name</p>
-                      <p>{viewingShipment.supplierName}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Shipment Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.containerShipment && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Shipment Type</p>
-                      <p>{viewingShipment.containerShipment}</p>
-                    </div>
-                  )}
-                  {viewingShipment.trailerOrContainerNumber && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Trailer/Container Number</p>
-                      <p className="font-medium">{viewingShipment.trailerOrContainerNumber}</p>
-                    </div>
-                  )}
-                  {viewingShipment.vesselName && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Vessel Name</p>
-                      <p>{viewingShipment.vesselName}</p>
-                    </div>
-                  )}
-                  {viewingShipment.shippingLine && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Shipping Line</p>
-                      <p>{viewingShipment.shippingLine}</p>
-                    </div>
-                  )}
-                  {viewingShipment.departureCountry && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Departure Country</p>
-                      <p>{viewingShipment.departureCountry}</p>
-                    </div>
-                  )}
-                  {viewingShipment.portOfArrival && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Port of Arrival</p>
-                      <p>{viewingShipment.portOfArrival}</p>
-                    </div>
-                  )}
-                  {viewingShipment.incoterms && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Incoterms</p>
-                      <p>{viewingShipment.incoterms}</p>
-                    </div>
-                  )}
-                  {viewingShipment.deliveryRelease && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Delivery Release</p>
-                      <p>{viewingShipment.deliveryRelease}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Important Dates</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.bookingDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Booking Date</p>
-                      <p>{formatDate(viewingShipment.bookingDate)}</p>
-                    </div>
-                  )}
-                  {viewingShipment.approxLoadDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Approx Load Date</p>
-                      <p>{formatDate(viewingShipment.approxLoadDate)}</p>
-                    </div>
-                  )}
-                  {viewingShipment.dispatchDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Dispatch Date</p>
-                      <p>{formatDate(viewingShipment.dispatchDate)}</p>
-                    </div>
-                  )}
-                  {viewingShipment.importDateEtaPort && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">ETA Port</p>
-                      <p className="font-medium">{formatDate(viewingShipment.importDateEtaPort)}</p>
-                    </div>
-                  )}
-                  {viewingShipment.deliveryDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Delivery Date</p>
-                      <p className="font-medium">{formatDate(viewingShipment.deliveryDate)}</p>
-                    </div>
-                  )}
-                  {viewingShipment.deliveryTimeNotes && (
-                    <div className="col-span-2">
-                      <p className="text-sm text-muted-foreground">Delivery Time Notes</p>
-                      <p>{viewingShipment.deliveryTimeNotes}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Cargo Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.goodsDescription && (
-                    <div className="col-span-2">
-                      <p className="text-sm text-muted-foreground">Goods Description</p>
-                      <p>{viewingShipment.goodsDescription}</p>
-                    </div>
-                  )}
-                  {viewingShipment.numberOfPieces && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Number of Pieces</p>
-                      <p>{viewingShipment.numberOfPieces} {viewingShipment.packaging}</p>
-                    </div>
-                  )}
-                  {viewingShipment.weight && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Weight</p>
-                      <p>{viewingShipment.weight} kgs</p>
-                    </div>
-                  )}
-                  {viewingShipment.cube && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Cube</p>
-                      <p>{viewingShipment.cube}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Delivery Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.deliveryAddress && (
-                    <div className="col-span-2">
-                      <p className="text-sm text-muted-foreground">Delivery Address</p>
-                      <p>{viewingShipment.deliveryAddress}</p>
-                    </div>
-                  )}
-                  {viewingShipment.deliveryReference && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Delivery Reference</p>
-                      <p>{viewingShipment.deliveryReference}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Haulier Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.haulierName && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Haulier Name</p>
-                      <p>{viewingShipment.haulierName}</p>
-                    </div>
-                  )}
-                  {viewingShipment.haulierContactName && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Haulier Contact</p>
-                      <p>{viewingShipment.haulierContactName}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Customs & Clearance</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.clearanceType && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Clearance Type</p>
-                      <p>{viewingShipment.clearanceType}</p>
-                    </div>
-                  )}
-                  {viewingShipment.customsClearanceAgent && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Customs Clearance Agent</p>
-                      <p>{viewingShipment.customsClearanceAgent}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm text-muted-foreground">R.S To Clear</p>
-                    <p>{viewingShipment.rsToClear ? "Yes" : "No"}</p>
+                    {viewingShipment.customerReferenceNumber && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
+                        <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
+                      </div>
+                    )}
+                    {viewingShipment.supplierName && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Supplier Name</p>
+                        <p className="text-base">{viewingShipment.supplierName}</p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">VAT Zero Rated</p>
-                    <p>{viewingShipment.vatZeroRated ? "Yes" : "No"}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Ship className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h3 className="font-semibold text-lg">Shipment Details</h3>
                   </div>
-                  {viewingShipment.additionalCommodityCodes !== null && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Additional Commodity Codes</p>
-                      <p>{viewingShipment.additionalCommodityCodes}</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    {viewingShipment.containerShipment && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Shipment Type</p>
+                        <p className="font-medium text-sm">{viewingShipment.containerShipment}</p>
+                      </div>
+                    )}
+                    {viewingShipment.trailerOrContainerNumber && (
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-muted-foreground mb-1">Container/Trailer #</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.trailerOrContainerNumber}</p>
+                      </div>
+                    )}
+                    {viewingShipment.vesselName && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Vessel Name</p>
+                        <p className="font-medium text-sm">{viewingShipment.vesselName}</p>
+                      </div>
+                    )}
+                    {viewingShipment.shippingLine && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Shipping Line</p>
+                        <p className="font-medium text-sm">{viewingShipment.shippingLine}</p>
+                      </div>
+                    )}
+                    {viewingShipment.departureCountry && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Departure Country</p>
+                        <p className="font-medium text-sm">{viewingShipment.departureCountry}</p>
+                      </div>
+                    )}
+                    {viewingShipment.portOfArrival && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Port of Arrival</p>
+                        <p className="font-medium text-sm">{viewingShipment.portOfArrival}</p>
+                      </div>
+                    )}
+                    {viewingShipment.incoterms && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Incoterms</p>
+                        <p className="font-medium text-sm">{viewingShipment.incoterms}</p>
+                      </div>
+                    )}
+                    {viewingShipment.deliveryRelease && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Delivery Release</p>
+                        <p className="font-medium text-sm">{viewingShipment.deliveryRelease}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h3 className="font-semibold text-lg">Important Dates</h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {viewingShipment.bookingDate && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Booking Date</p>
+                        <p className="font-medium text-sm">{formatDate(viewingShipment.bookingDate)}</p>
+                      </div>
+                    )}
+                    {viewingShipment.approxLoadDate && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Approx Load Date</p>
+                        <p className="font-medium text-sm">{formatDate(viewingShipment.approxLoadDate)}</p>
+                      </div>
+                    )}
+                    {viewingShipment.dispatchDate && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Dispatch Date</p>
+                        <p className="font-medium text-sm">{formatDate(viewingShipment.dispatchDate)}</p>
+                      </div>
+                    )}
+                    {viewingShipment.importDateEtaPort && (
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-muted-foreground mb-1">ETA Port</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.importDateEtaPort)}</p>
+                      </div>
+                    )}
+                    {viewingShipment.deliveryDate && (
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-muted-foreground mb-1">Delivery Date</p>
+                        <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{formatDate(viewingShipment.deliveryDate)}</p>
+                      </div>
+                    )}
+                    {viewingShipment.deliveryTimeNotes && (
+                      <div className="col-span-3 bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Delivery Time Notes</p>
+                        <p className="text-sm">{viewingShipment.deliveryTimeNotes}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Card>
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Box className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <h3 className="font-semibold text-lg">Cargo</h3>
                     </div>
-                  )}
-                </div>
+                    <div className="space-y-3">
+                      {viewingShipment.goodsDescription && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Goods Description</p>
+                          <p className="text-sm">{viewingShipment.goodsDescription}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        {viewingShipment.numberOfPieces && (
+                          <div className="bg-muted/30 p-3 rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-1">Pieces</p>
+                            <p className="font-medium text-sm">{viewingShipment.numberOfPieces} {viewingShipment.packaging}</p>
+                          </div>
+                        )}
+                        {viewingShipment.weight && (
+                          <div className="bg-muted/30 p-3 rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-1">Weight</p>
+                            <p className="font-medium text-sm">{viewingShipment.weight} kgs</p>
+                          </div>
+                        )}
+                        {viewingShipment.cube && (
+                          <div className="bg-muted/30 p-3 rounded-lg col-span-2">
+                            <p className="text-xs text-muted-foreground mb-1">Cube</p>
+                            <p className="font-medium text-sm">{viewingShipment.cube}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <h3 className="font-semibold text-lg">Delivery & Haulier</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {viewingShipment.deliveryAddress && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Delivery Address</p>
+                          <p className="text-sm">{viewingShipment.deliveryAddress}</p>
+                        </div>
+                      )}
+                      {viewingShipment.deliveryReference && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Delivery Reference</p>
+                          <p className="font-medium text-sm">{viewingShipment.deliveryReference}</p>
+                        </div>
+                      )}
+                      {viewingShipment.haulierName && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Haulier</p>
+                          <p className="font-medium text-sm">{viewingShipment.haulierName}</p>
+                          {viewingShipment.haulierContactName && (
+                            <p className="text-xs text-muted-foreground mt-1">{viewingShipment.haulierContactName}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Financial Information (Out)</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.invoiceValue && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Invoice Value</p>
-                      <p className="font-medium">{viewingShipment.currency} {viewingShipment.invoiceValue}</p>
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h3 className="font-semibold text-lg">Customs & Clearance</h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {viewingShipment.clearanceType && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Clearance Type</p>
+                        <p className="font-medium text-sm">{viewingShipment.clearanceType}</p>
+                      </div>
+                    )}
+                    {viewingShipment.customsClearanceAgent && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Customs Agent</p>
+                        <p className="font-medium text-sm">{viewingShipment.customsClearanceAgent}</p>
+                      </div>
+                    )}
+                    <div className="bg-muted/30 p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">R.S To Clear</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant={viewingShipment.rsToClear ? "default" : "secondary"} className="text-xs">
+                          {viewingShipment.rsToClear ? "Yes" : "No"}
+                        </Badge>
+                      </div>
                     </div>
-                  )}
-                  {viewingShipment.freightCharge && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Freight Charge</p>
-                      <p>{viewingShipment.currency} {viewingShipment.freightCharge}</p>
+                    <div className="bg-muted/30 p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">VAT Zero Rated</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant={viewingShipment.vatZeroRated ? "default" : "secondary"} className="text-xs">
+                          {viewingShipment.vatZeroRated ? "Yes" : "No"}
+                        </Badge>
+                      </div>
                     </div>
-                  )}
-                  {viewingShipment.clearanceCharge && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Clearance Charge</p>
-                      <p>{viewingShipment.currency} {viewingShipment.clearanceCharge}</p>
-                    </div>
-                  )}
-                  {viewingShipment.freightRateOut && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Freight Rate Out</p>
-                      <p>{viewingShipment.currency} {viewingShipment.freightRateOut}</p>
-                    </div>
-                  )}
-                  {viewingShipment.exportCustomsClearanceCharge && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Export Customs Clearance Charge</p>
-                      <p>{viewingShipment.currency} {viewingShipment.exportCustomsClearanceCharge}</p>
-                    </div>
-                  )}
-                  {viewingShipment.additionalCommodityCodeCharge && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Additional Commodity Code Charge</p>
-                      <p>{viewingShipment.currency} {viewingShipment.additionalCommodityCodeCharge}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                    {viewingShipment.additionalCommodityCodes !== null && (
+                      <div className="bg-muted/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Additional Commodity Codes</p>
+                        <p className="font-medium text-sm">{viewingShipment.additionalCommodityCodes}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Financial Information (In)</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingShipment.haulierFreightRateIn && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Haulier Freight Rate In</p>
-                      <p>{viewingShipment.currencyIn} {viewingShipment.haulierFreightRateIn}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Financial (Out)</h3>
+                      {viewingShipment.currency && (
+                        <Badge variant="outline" className="ml-auto text-xs border-green-300 dark:border-green-700">
+                          {viewingShipment.currency}
+                        </Badge>
+                      )}
                     </div>
-                  )}
-                  {viewingShipment.exportClearanceChargeIn && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Export Clearance Charge In</p>
-                      <p>{viewingShipment.currencyIn} {viewingShipment.exportClearanceChargeIn}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {viewingShipment.invoiceValue && (
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                          <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
+                          <p className="font-semibold text-base text-green-900 dark:text-green-100">{viewingShipment.currency} {viewingShipment.invoiceValue}</p>
+                        </div>
+                      )}
+                      {viewingShipment.freightCharge && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Freight Charge</p>
+                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.freightCharge}</p>
+                        </div>
+                      )}
+                      {viewingShipment.clearanceCharge && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Clearance Charge</p>
+                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.clearanceCharge}</p>
+                        </div>
+                      )}
+                      {viewingShipment.freightRateOut && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Freight Rate Out</p>
+                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.freightRateOut}</p>
+                        </div>
+                      )}
+                      {viewingShipment.exportCustomsClearanceCharge && (
+                        <div className="bg-muted/30 p-3 rounded-lg col-span-2">
+                          <p className="text-xs text-muted-foreground mb-1">Export Customs Clearance</p>
+                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.exportCustomsClearanceCharge}</p>
+                        </div>
+                      )}
+                      {viewingShipment.additionalCommodityCodeCharge && (
+                        <div className="bg-muted/30 p-3 rounded-lg col-span-2">
+                          <p className="text-xs text-muted-foreground mb-1">Commodity Code Charge</p>
+                          <p className="font-medium text-sm">{viewingShipment.currency} {viewingShipment.additionalCommodityCodeCharge}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {viewingShipment.destinationClearanceCostIn && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Destination Clearance Cost In</p>
-                      <p>{viewingShipment.currencyIn} {viewingShipment.destinationClearanceCostIn}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-orange-50/50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <DollarSign className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Financial (In)</h3>
+                      {viewingShipment.currencyIn && (
+                        <Badge variant="outline" className="ml-auto text-xs border-orange-300 dark:border-orange-700">
+                          {viewingShipment.currencyIn}
+                        </Badge>
+                      )}
                     </div>
-                  )}
-                </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      {viewingShipment.haulierFreightRateIn && (
+                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate</p>
+                          <p className="font-semibold text-base text-orange-900 dark:text-orange-100">{viewingShipment.currencyIn} {viewingShipment.haulierFreightRateIn}</p>
+                        </div>
+                      )}
+                      {viewingShipment.exportClearanceChargeIn && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
+                          <p className="font-medium text-sm">{viewingShipment.currencyIn} {viewingShipment.exportClearanceChargeIn}</p>
+                        </div>
+                      )}
+                      {viewingShipment.destinationClearanceCostIn && (
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Destination Clearance Cost</p>
+                          <p className="font-medium text-sm">{viewingShipment.currencyIn} {viewingShipment.destinationClearanceCostIn}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               {viewingShipment.additionalNotes && (
-                <div>
-                  <h3 className="font-semibold text-lg mb-3">Additional Notes</h3>
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <p className="whitespace-pre-wrap">{viewingShipment.additionalNotes}</p>
-                  </div>
-                </div>
+                <Card className="bg-yellow-50/50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ClipboardList className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      <h3 className="font-semibold text-lg text-yellow-900 dark:text-yellow-100">Additional Notes</h3>
+                    </div>
+                    <div className="bg-white dark:bg-yellow-950/30 p-4 rounded-lg">
+                      <p className="whitespace-pre-wrap text-sm">{viewingShipment.additionalNotes}</p>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {(() => {
@@ -1213,65 +1297,76 @@ export default function ImportShipments() {
                 const podFiles = parseAttachments(viewingShipment.proofOfDelivery)
                 if (attachmentFiles.length > 0 || podFiles.length > 0) {
                   return (
-                    <div>
-                      <h3 className="font-semibold text-lg mb-3">Attachments</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-2">Documents</p>
-                          {attachmentFiles.length > 0 ? (
-                            <div className="space-y-1">
-                              {attachmentFiles.map((filePath, idx) => {
-                                const fileName = filePath.split('/').pop() || filePath
-                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                return (
-                                  <div key={idx} className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <Card>
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Paperclip className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          <h3 className="font-semibold text-lg">Attachments</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Documents</p>
+                            {attachmentFiles.length > 0 ? (
+                              <div className="space-y-2">
+                                {attachmentFiles.map((filePath, idx) => {
+                                  const fileName = filePath.split('/').pop() || filePath
+                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  return (
                                     <a
+                                      key={idx}
                                       href={downloadPath}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-sm text-primary hover:underline truncate"
+                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group"
                                       title={fileName}
                                     >
-                                      {fileName}
+                                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-md">
+                                        <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                      </div>
+                                      <span className="text-sm truncate flex-1 group-hover:text-primary">
+                                        {fileName}
+                                      </span>
                                     </a>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground italic">None</p>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-2">Proof of Delivery</p>
-                          {podFiles.length > 0 ? (
-                            <div className="space-y-1">
-                              {podFiles.map((filePath, idx) => {
-                                const fileName = filePath.split('/').pop() || filePath
-                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                return (
-                                  <div key={idx} className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground italic p-3 bg-muted/20 rounded-lg">No documents</p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Proof of Delivery</p>
+                            {podFiles.length > 0 ? (
+                              <div className="space-y-2">
+                                {podFiles.map((filePath, idx) => {
+                                  const fileName = filePath.split('/').pop() || filePath
+                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  return (
                                     <a
+                                      key={idx}
                                       href={downloadPath}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-sm text-primary hover:underline truncate"
+                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group"
                                       title={fileName}
                                     >
-                                      {fileName}
+                                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-md">
+                                        <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                      </div>
+                                      <span className="text-sm truncate flex-1 group-hover:text-primary">
+                                        {fileName}
+                                      </span>
                                     </a>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground italic">None</p>
-                          )}
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground italic p-3 bg-muted/20 rounded-lg">No POD files</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   )
                 }
                 return null
