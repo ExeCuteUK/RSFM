@@ -373,6 +373,29 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
                 <FormField
                   control={form.control}
+                  name="containerShipment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Shipment Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-shipment-type">
+                            <SelectValue placeholder="Select shipment type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Road Shipment">Road Shipment</SelectItem>
+                          <SelectItem value="Container Shipment">Container Shipment</SelectItem>
+                          <SelectItem value="Air Freight">Air Freight</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="trailerNo"
                   render={({ field }) => (
                     <FormItem>
@@ -443,29 +466,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           <SelectItem value="FOB">FOB - Free On Board</SelectItem>
                           <SelectItem value="CFR">CFR - Cost and Freight</SelectItem>
                           <SelectItem value="CIF">CIF - Cost, Insurance and Freight</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="containerShipment"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Shipment Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-shipment-type">
-                            <SelectValue placeholder="Select shipment type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Road Shipment">Road Shipment</SelectItem>
-                          <SelectItem value="Container Shipment">Container Shipment</SelectItem>
-                          <SelectItem value="Air Freight">Air Freight</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
