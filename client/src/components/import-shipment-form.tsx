@@ -1202,6 +1202,22 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     )}
                   />
                 )}
+
+                {rsToClear && (
+                  <FormField
+                    control={form.control}
+                    name="additionalCommodityCodeCharge"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Additional Commodity Code Charge</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-additional-commodity-code-charge" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               <div className="border-t pt-4">

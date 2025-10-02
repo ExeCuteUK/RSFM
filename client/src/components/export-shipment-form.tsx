@@ -1060,6 +1060,22 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     )}
                   />
                 )}
+
+                {(exportClearanceAgent === "R.S" || (exportClearanceAgent && arrivalClearanceAgent && !((exportClearanceAgent === "N/A" || exportClearanceAgent === "Customer") && arrivalClearanceAgent === "Customer"))) && (
+                  <FormField
+                    control={form.control}
+                    name="additionalCommodityCodeCharge"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Additional Commodity Code Charge</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-additional-commodity-code-charge" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               <div className="border-t pt-4">
