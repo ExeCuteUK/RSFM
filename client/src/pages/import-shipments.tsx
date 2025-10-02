@@ -426,7 +426,7 @@ export default function ImportShipments() {
                     )}
                     {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
                       <p className="text-muted-foreground" data-testid={`text-weight-pieces-${shipment.id}`}>
-                        {shipment.weight && <>Weight: {shipment.weight}</>}
+                        {shipment.weight && <>Weight: {shipment.weight} kgs</>}
                         {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
                         {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
                       </p>
