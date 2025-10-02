@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -353,7 +353,15 @@ export default function ImportShipments() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      {shipment.containerShipment === "Road Shipment" ? (
+                        <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      ) : shipment.containerShipment === "Container Shipment" ? (
+                        <Container className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      ) : shipment.containerShipment === "Air Freight" ? (
+                        <Plane className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      ) : (
+                        <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      )}
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
                         {shipment.jobRef}
                       </h3>
