@@ -60,7 +60,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       jobType: "import",
       status: "Pending",
       importCustomerId: "",
-      bookingDate: "",
+      bookingDate: defaultValues?.bookingDate || format(new Date(), "yyyy-MM-dd"),
       approxLoadDate: "",
       dispatchDate: "",
       deliveryDate: "",
