@@ -957,7 +957,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
           <Card>
             <CardHeader>
-              <CardTitle>Rate Information</CardTitle>
+              <CardTitle>Quotation / Rate Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -1005,7 +1005,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     name="clearanceCharge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Clearance Charge Out</FormLabel>
+                        <FormLabel>Export Clearance Charge</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
                         </FormControl>
@@ -1060,6 +1060,80 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     )}
                   />
                 )}
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="currencyIn"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Currency</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || "GBP"}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-currency-in">
+                              <SelectValue placeholder="Select currency" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="GBP">GBP (£)</SelectItem>
+                            <SelectItem value="EUR">EUR (€)</SelectItem>
+                            <SelectItem value="USD">USD ($)</SelectItem>
+                            <SelectItem value="TL">TL (₺)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="haulierFreightRateIn"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Haulier Freight Rate In</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-haulier-freight-rate-in" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {exportClearanceAgent === "R.S" && (
+                    <FormField
+                      control={form.control}
+                      name="exportClearanceChargeIn"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Export Clearance Charge In</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {arrivalClearanceAgent === "Haulier" && (
+                    <FormField
+                      control={form.control}
+                      name="destinationClearanceCostIn"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Destination Clearance Cost In</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

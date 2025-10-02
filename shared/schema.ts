@@ -194,7 +194,12 @@ export const importShipments = pgTable("import_shipments", {
   freightCharge: text("freight_charge"),
   clearanceCharge: text("clearance_charge"),
   currency: text("currency"),
+  freightRateOut: text("freight_rate_out"),
   additionalCommodityCodes: integer("additional_commodity_codes"),
+  currencyIn: text("currency_in"),
+  haulierFreightRateIn: text("haulier_freight_rate_in"),
+  exportClearanceChargeIn: text("export_clearance_charge_in"),
+  destinationClearanceCostIn: text("destination_clearance_cost_in"),
   
   // Haulier Information
   haulierName: text("haulier_name"),
@@ -342,6 +347,10 @@ export const exportShipments = pgTable("export_shipments", {
   arrivalClearanceCost: text("arrival_clearance_cost"),
   currency: text("currency"),
   additionalCommodityCodes: integer("additional_commodity_codes"),
+  currencyIn: text("currency_in"),
+  haulierFreightRateIn: text("haulier_freight_rate_in"),
+  exportClearanceChargeIn: text("export_clearance_charge_in"),
+  destinationClearanceCostIn: text("destination_clearance_cost_in"),
   
   // Haulier Information
   haulierName: text("haulier_name"),
