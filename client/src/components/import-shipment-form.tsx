@@ -88,6 +88,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       additionalCommodityCodes: 1,
       haulierName: "",
       haulierContactName: "",
+      haulierEmail: "",
+      haulierTelephone: "",
       vatZeroRated: false,
       clearanceType: "",
       customsClearanceAgent: "",
@@ -1311,27 +1313,55 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <CardTitle>Haulier Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="haulierName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Haulier</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-haulier-name">
+                          <SelectValue placeholder="Select haulier" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {hauliers?.map((haulier) => (
+                          <SelectItem key={haulier.id} value={haulier.haulierName}>
+                            {haulier.haulierName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="haulierContactName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Haulier Contact</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="haulierName"
+                  name="haulierEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Haulier Name</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-haulier-name">
-                            <SelectValue placeholder="Select haulier" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {hauliers?.map((haulier) => (
-                            <SelectItem key={haulier.id} value={haulier.haulierName}>
-                              {haulier.haulierName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Hauliers Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" {...field} value={field.value || ""} data-testid="input-haulier-email" />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1339,12 +1369,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
                 <FormField
                   control={form.control}
-                  name="haulierContactName"
+                  name="haulierTelephone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Haulier Contact Name</FormLabel>
+                      <FormLabel>Telephone</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
+                        <Input type="tel" {...field} value={field.value || ""} data-testid="input-haulier-telephone" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

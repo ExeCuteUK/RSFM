@@ -1141,11 +1141,28 @@ export default function ImportShipments() {
                         <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                           <p className="text-xs text-muted-foreground mb-1">Haulier</p>
                           <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierName}</p>
-                          {viewingShipment.haulierContactName && (
-                            <p className="text-xs text-muted-foreground mt-1">{viewingShipment.haulierContactName}</p>
-                          )}
                         </div>
                       )}
+                      {viewingShipment.haulierContactName && (
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-xs text-muted-foreground mb-1">Haulier Contact</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierContactName}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        {viewingShipment.haulierEmail && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Hauliers Email</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierEmail}</p>
+                          </div>
+                        )}
+                        {viewingShipment.haulierTelephone && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierTelephone}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
