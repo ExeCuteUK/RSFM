@@ -493,6 +493,9 @@ export default function ImportShipments() {
                   </div>
                   {shipment.rsToClear && (
                     <div className="pt-2 mt-2 border-t">
+                      <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${shipment.id}`}>
+                        To-Do List
+                      </h3>
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           Advise Clearance to Agent
