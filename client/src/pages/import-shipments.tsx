@@ -1313,35 +1313,47 @@ export default function ImportShipments() {
                     <div className="flex items-center gap-2 mb-4">
                       <PoundSterling className="h-5 w-5 text-green-600 dark:text-green-400" />
                       <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">R.S Charges / Income</h3>
-                      {viewingShipment.currency && (
-                        <Badge variant="outline" className="ml-auto text-xs border-green-300 dark:border-green-700">
-                          {formatCurrency(viewingShipment.currency)}
-                        </Badge>
-                      )}
+                      {(() => {
+                        const total = [
+                          viewingShipment.freightRateOut,
+                          viewingShipment.clearanceCharge,
+                          viewingShipment.exportCustomsClearanceCharge,
+                          viewingShipment.additionalCommodityCodeCharge,
+                          ...(viewingShipment.expensesToChargeOut || []).map((e: { amount: string }) => e.amount)
+                        ]
+                          .filter(Boolean)
+                          .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0);
+                        
+                        return total > 0 ? (
+                          <Badge variant="outline" className="ml-auto text-xs border-green-300 dark:border-green-700">
+                            {formatCurrency(viewingShipment.currency)}{total.toFixed(2)}
+                          </Badge>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {viewingShipment.freightRateOut && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
                           <p className="text-xs text-muted-foreground mb-1">Freight Rate</p>
-                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{viewingShipment.freightRateOut}</p>
                         </div>
                       )}
                       {viewingShipment.rsToClear && viewingShipment.clearanceCharge && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
                           <p className="text-xs text-muted-foreground mb-1">Import Clearance</p>
-                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.clearanceCharge}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{viewingShipment.clearanceCharge}</p>
                         </div>
                       )}
                       {viewingShipment.exportCustomsClearanceCharge && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 col-span-2">
                           <p className="text-xs text-muted-foreground mb-1">Export Customs Clearance</p>
-                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.exportCustomsClearanceCharge}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{viewingShipment.exportCustomsClearanceCharge}</p>
                         </div>
                       )}
                       {viewingShipment.additionalCommodityCodeCharge && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 col-span-2">
                           <p className="text-xs text-muted-foreground mb-1">Commodity Code Charge</p>
-                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
                         </div>
                       )}
                       {viewingShipment.expensesToChargeOut && viewingShipment.expensesToChargeOut.length > 0 && (
@@ -1351,7 +1363,7 @@ export default function ImportShipments() {
                             {viewingShipment.expensesToChargeOut.map((expense: { description: string; amount: string }, idx: number) => (
                               <div key={idx} className="flex justify-between items-center">
                                 <span className="text-sm text-green-900 dark:text-green-100">{expense.description}</span>
-                                <span className="font-semibold text-sm text-green-900 dark:text-green-100">{formatCurrency(viewingShipment.currency)}{expense.amount}</span>
+                                <span className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{expense.amount}</span>
                               </div>
                             ))}
                           </div>
@@ -1366,29 +1378,40 @@ export default function ImportShipments() {
                     <div className="flex items-center gap-2 mb-4">
                       <PoundSterling className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                       <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Job Expenses</h3>
-                      {viewingShipment.currencyIn && (
-                        <Badge variant="outline" className="ml-auto text-xs border-orange-300 dark:border-orange-700">
-                          {formatCurrency(viewingShipment.currencyIn)}
-                        </Badge>
-                      )}
+                      {(() => {
+                        const total = [
+                          viewingShipment.haulierFreightRateIn,
+                          viewingShipment.exportClearanceChargeIn,
+                          viewingShipment.destinationClearanceCostIn,
+                          ...(viewingShipment.additionalExpensesIn || []).map((e: { amount: string }) => e.amount)
+                        ]
+                          .filter(Boolean)
+                          .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0);
+                        
+                        return total > 0 ? (
+                          <Badge variant="outline" className="ml-auto text-xs border-orange-300 dark:border-orange-700">
+                            {formatCurrency(viewingShipment.currencyIn || "GBP")}{total.toFixed(2)}
+                          </Badge>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="grid grid-cols-1 gap-3">
                       {viewingShipment.haulierFreightRateIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
                         </div>
                       )}
                       {viewingShipment.exportClearanceChargeIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
                         </div>
                       )}
                       {viewingShipment.destinationClearanceCostIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Destination Clearance Cost</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.destinationClearanceCostIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.destinationClearanceCostIn}</p>
                         </div>
                       )}
                       {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
@@ -1398,7 +1421,7 @@ export default function ImportShipments() {
                             {viewingShipment.additionalExpensesIn.map((expense: { description: string; amount: string }, idx: number) => (
                               <div key={idx} className="flex justify-between items-center">
                                 <span className="text-sm text-orange-900 dark:text-orange-100">{expense.description}</span>
-                                <span className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{expense.amount}</span>
+                                <span className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{expense.amount}</span>
                               </div>
                             ))}
                           </div>
