@@ -274,20 +274,6 @@ export default function ImportShipments() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    if (viewingShipment.approxLoadDate && viewingShipment.status === "Pending") {
-      const loadDate = new Date(viewingShipment.approxLoadDate)
-      loadDate.setHours(0, 0, 0, 0)
-      
-      if (loadDate <= today) {
-        setStatusPrompt({
-          show: true,
-          newStatus: "In Transit",
-          message: "The Approx Load Date has passed. Would you like to set the status to 'In Transit'?"
-        })
-        return
-      }
-    }
-
     if (viewingShipment.deliveryDate && (viewingShipment.status === "In Transit" || viewingShipment.status === "Pending")) {
       const deliveryDate = new Date(viewingShipment.deliveryDate)
       deliveryDate.setHours(0, 0, 0, 0)
@@ -297,6 +283,20 @@ export default function ImportShipments() {
           show: true,
           newStatus: "Delivered",
           message: "The Delivery Date has passed. Would you like to set the status to 'Delivered'?"
+        })
+        return
+      }
+    }
+
+    if (viewingShipment.approxLoadDate && viewingShipment.status === "Pending") {
+      const loadDate = new Date(viewingShipment.approxLoadDate)
+      loadDate.setHours(0, 0, 0, 0)
+      
+      if (loadDate <= today) {
+        setStatusPrompt({
+          show: true,
+          newStatus: "In Transit",
+          message: "The Approx Load Date has passed. Would you like to set the status to 'In Transit'?"
         })
       }
     }
