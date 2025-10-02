@@ -367,14 +367,16 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                   </Button>
                                 </div>
                               ))}
-                              {field.value && field.value.map((path: string, index: number) => (
+                              {field.value && field.value.map((path: string, index: number) => {
+                                const downloadPath = path.startsWith('/') ? path : `/objects/${path}`;
+                                return (
                                 <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
                                   <div className="flex items-center gap-2">
                                     <FileText className="h-4 w-4" />
                                     <span className="text-sm">{path.split('/').pop() || 'File'}</span>
                                   </div>
                                   <div className="flex items-center gap-1">
-                                    <a href={path} target="_blank" rel="noopener noreferrer">
+                                    <a href={downloadPath} target="_blank" rel="noopener noreferrer">
                                       <Button
                                         type="button"
                                         variant="ghost"
@@ -398,7 +400,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                     </Button>
                                   </div>
                                 </div>
-                              ))}
+                              )
+                              })}
                             </div>
                           )}
                         </div>
@@ -1444,14 +1447,16 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                               </Button>
                             </div>
                           ))}
-                          {field.value && field.value.map((path: string, index: number) => (
+                          {field.value && field.value.map((path: string, index: number) => {
+                            const downloadPath = path.startsWith('/') ? path : `/objects/${path}`;
+                            return (
                             <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
                               <div className="flex items-center gap-2">
                                 <FileText className="h-4 w-4" />
                                 <span className="text-sm">{path.split('/').pop() || 'File'}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <a href={path} target="_blank" rel="noopener noreferrer">
+                                <a href={downloadPath} target="_blank" rel="noopener noreferrer">
                                   <Button
                                     type="button"
                                     variant="ghost"
@@ -1475,7 +1480,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                 </Button>
                               </div>
                             </div>
-                          ))}
+                          )
+                          })}
                         </div>
                       )}
                     </div>
