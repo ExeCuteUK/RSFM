@@ -5,8 +5,6 @@ import {
   Truck, 
   FileText, 
   Settings, 
-  Calculator,
-  MapPin,
   Bell,
   FileCheck,
   BookOpen
@@ -60,16 +58,6 @@ const menuItems = [
     title: "Invoices",
     url: "/invoices",
     icon: FileText,
-  },
-  {
-    title: "Rate Calculator",
-    url: "/rates",
-    icon: Calculator,
-  },
-  {
-    title: "Tracking",
-    url: "/tracking",
-    icon: MapPin,
   },
 ]
 
