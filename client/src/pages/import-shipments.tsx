@@ -983,7 +983,7 @@ export default function ImportShipments() {
                 )}
                 <div>
                   <DialogTitle className="text-2xl">
-                    Import Shipment #{viewingShipment?.jobRef}
+                    R.S Import Shipment {viewingShipment?.jobRef}
                   </DialogTitle>
                   <p className="text-sm text-muted-foreground">
                     Created {viewingShipment?.createdAt}
