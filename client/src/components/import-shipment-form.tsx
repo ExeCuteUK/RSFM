@@ -91,6 +91,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       additionalCommodityCodes: 1,
       expensesToChargeOut: [],
       additionalExpensesIn: [],
+      currencyIn: "GBP",
       haulierName: "",
       haulierContactName: [],
       haulierEmail: [],

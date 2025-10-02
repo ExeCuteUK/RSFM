@@ -1376,19 +1376,19 @@ export default function ImportShipments() {
                       {viewingShipment.haulierFreightRateIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.haulierFreightRateIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
                         </div>
                       )}
                       {viewingShipment.exportClearanceChargeIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.exportClearanceChargeIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
                         </div>
                       )}
                       {viewingShipment.destinationClearanceCostIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-1">Destination Clearance Cost</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{viewingShipment.destinationClearanceCostIn}</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.destinationClearanceCostIn}</p>
                         </div>
                       )}
                       {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
@@ -1398,7 +1398,7 @@ export default function ImportShipments() {
                             {viewingShipment.additionalExpensesIn.map((expense: { description: string; amount: string }, idx: number) => (
                               <div key={idx} className="flex justify-between items-center">
                                 <span className="text-sm text-orange-900 dark:text-orange-100">{expense.description}</span>
-                                <span className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn)}{expense.amount}</span>
+                                <span className="font-semibold text-sm text-orange-900 dark:text-orange-100">{formatCurrency(viewingShipment.currencyIn || "GBP")}{expense.amount}</span>
                               </div>
                             ))}
                           </div>
