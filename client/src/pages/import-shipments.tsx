@@ -402,7 +402,7 @@ export default function ImportShipments() {
                     </Button>
                   </div>
                 </div>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text-xs">
                   {shipment.containerShipment && (
                     <p className="underline" data-testid={`text-shipment-type-${shipment.id}`}>
                       {shipment.containerShipment === "Air Freight" 
@@ -425,17 +425,17 @@ export default function ImportShipments() {
                   )}
                   {shipment.portOfArrival && (
                     <p data-testid={`text-port-${shipment.id}`}>
-                      <span className="font-medium">Port Of Arrival:</span> {shipment.portOfArrival}
+                      <span>Port Of Arrival:</span> {shipment.portOfArrival}
                     </p>
                   )}
                   <p data-testid={`text-eta-port-${shipment.id}`}>
-                    <span className="font-medium">ETA Port:</span>{' '}
+                    <span>ETA Port:</span>{' '}
                     {formatDate(shipment.importDateEtaPort) || (
                       <span className="text-red-700 dark:text-red-600">TBA</span>
                     )}
                   </p>
                   <p data-testid={`text-delivery-date-${shipment.id}`}>
-                    <span className="font-medium">Delivery Date:</span>{' '}
+                    <span>Delivery Date:</span>{' '}
                     {formatDate(shipment.deliveryDate) || (
                       <span className="text-red-700 dark:text-red-600">TBA</span>
                     )}
