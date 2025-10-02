@@ -1235,7 +1235,20 @@ export default function ImportShipments() {
                         {viewingShipment.haulierEmail && viewingShipment.haulierEmail.length > 0 && (
                           <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                             <p className="text-xs text-muted-foreground mb-1">Hauliers Email</p>
-                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.haulierEmail.join(", ")}</p>
+                            <div className="flex flex-col gap-1">
+                              {viewingShipment.haulierEmail.map((email, idx) => {
+                                const subject = `Enquiry / Our Ref : ${viewingShipment.jobRef} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.departureCountry || ''} > ${viewingShipment.portOfArrival || ''}`;
+                                return (
+                                  <a 
+                                    key={idx} 
+                                    href={`mailto:${email}?subject=${encodeURIComponent(subject)}`} 
+                                    className="font-semibold text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                                  >
+                                    {email}
+                                  </a>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
                         {viewingShipment.haulierTelephone && (
