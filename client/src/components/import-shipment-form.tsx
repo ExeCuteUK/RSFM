@@ -1266,7 +1266,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       name="exportClearanceChargeIn"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Departure Export Clearance Charge In</FormLabel>
+                          <FormLabel>Export Customs Clearance Charge In</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
                           </FormControl>
