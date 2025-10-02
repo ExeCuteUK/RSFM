@@ -411,15 +411,6 @@ export default function ImportShipments() {
                   </div>
                 </div>
                 <div className="space-y-1 text-xs">
-                  {shipment.containerShipment && (
-                    <p className="underline" data-testid={`text-shipment-type-${shipment.id}`}>
-                      {shipment.containerShipment === "Air Freight" 
-                        ? "Air Freight Shipment" 
-                        : shipment.containerShipment === "Road Shipment"
-                        ? "Road Freight Shipment"
-                        : shipment.containerShipment}
-                    </p>
-                  )}
                   {shipment.trailerOrContainerNumber && (
                     <p data-testid={`text-truck-container-${shipment.id}`}>
                       {shipment.trailerOrContainerNumber}
