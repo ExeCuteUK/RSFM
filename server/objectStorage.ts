@@ -178,7 +178,7 @@ export class ObjectStorageService {
     }
   
     const url = new URL(rawPath);
-    const rawObjectPath = url.pathname;
+    const rawObjectPath = decodeURIComponent(url.pathname);
   
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
