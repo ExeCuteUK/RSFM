@@ -54,6 +54,13 @@ const formatDateToDDMMYY = (dateString: string | null | undefined): string => {
   return format(date, "dd/MM/yy")
 }
 
+const getJobTypeAbbreviation = (jobType: string): string => {
+  if (jobType === "Import") return "IMP"
+  if (jobType === "Export") return "EXP"
+  if (jobType === "Customs") return "CC"
+  return ""
+}
+
 export default function JobJournals() {
   const currentDate = new Date()
   const [selectedMonth, setSelectedMonth] = useState((currentDate.getMonth() + 1).toString())
@@ -197,6 +204,7 @@ export default function JobJournals() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b">
+                  <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">TYPE</th>
                   <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Job Ref</th>
                   <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Client Name</th>
                   <th className="text-center p-2 font-semibold bg-muted/50 border-r border-border">Destination</th>
@@ -220,6 +228,9 @@ export default function JobJournals() {
                     className="border-b hover-elevate"
                     data-testid={`row-job-${entry.jobRef}`}
                   >
+                    <td className="p-2 text-center border-r border-border" data-testid={`text-type-${entry.jobRef}`}>
+                      {getJobTypeAbbreviation(entry.jobType)}
+                    </td>
                     <td className="p-2 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
                       #{entry.jobRef}
                     </td>
