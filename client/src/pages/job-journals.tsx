@@ -249,7 +249,7 @@ export default function JobJournals() {
                       {entry.regContainerFlight}
                     </td>
                     <td className="p-2 text-center border-l-2 border-r border-border" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
-                      {entry.supplier || ""}
+                      
                     </td>
                     <td className="p-2 text-center border-r border-border" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
                       {entry.purchaseInvoiceNumber || ""}
