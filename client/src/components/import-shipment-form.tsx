@@ -628,7 +628,13 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   name="trailerOrContainerNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{containerShipment === "Container Shipment" ? "Container Number" : "Trailer Number"}</FormLabel>
+                      <FormLabel>
+                        {containerShipment === "Air Freight" 
+                          ? "Flight Number" 
+                          : containerShipment === "Container Shipment" 
+                            ? "Container Number" 
+                            : "Trailer Number"}
+                      </FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
                       </FormControl>
