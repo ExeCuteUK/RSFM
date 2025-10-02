@@ -986,7 +986,8 @@ export default function ImportShipments() {
                               <p className="text-xs text-muted-foreground mb-1">Customer Email</p>
                               <div className="flex flex-col gap-1">
                                 {customer.email.map((email, idx) => {
-                                  const subject = `Our Ref : IMP ${viewingShipment.jobRef} / Your Ref : ${viewingShipment.customerReferenceNumber || ''} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''} / ${viewingShipment.weight || ''} kgs`;
+                                  const yourRefPart = viewingShipment.customerReferenceNumber ? `/ Your Ref : ${viewingShipment.customerReferenceNumber} ` : '';
+                                  const subject = `Our Ref : IMP ${viewingShipment.jobRef} ${yourRefPart}/ ${viewingShipment.bookingDate || ''} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
                                   return (
                                     <a 
                                       key={idx} 
@@ -1025,7 +1026,8 @@ export default function ImportShipments() {
                                 <p className="text-xs text-muted-foreground mb-1">Agent Email</p>
                                 <div className="flex flex-col gap-1">
                                   {customer.agentEmail.map((email, idx) => {
-                                    const subject = `Our Ref : IMP ${viewingShipment.jobRef} / Your Ref : ${viewingShipment.customerReferenceNumber || ''} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''} / ${viewingShipment.weight || ''} kgs`;
+                                    const yourRefPart = viewingShipment.customerReferenceNumber ? `/ Your Ref : ${viewingShipment.customerReferenceNumber} ` : '';
+                                    const subject = `Our Ref : IMP ${viewingShipment.jobRef} ${yourRefPart}/ ${viewingShipment.bookingDate || ''}/ ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
                                     return (
                                       <a 
                                         key={idx} 
