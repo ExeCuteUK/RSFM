@@ -20,24 +20,26 @@ import { ImportCustomerForm } from "@/components/import-customer-form"
 import { ExportCustomerForm } from "@/components/export-customer-form"
 import { ExportReceiverForm } from "@/components/export-receiver-form"
 import { HaulierForm } from "@/components/haulier-form"
-import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier } from "@shared/schema"
+import { ShippingLineForm } from "@/components/shipping-line-form"
+import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, ShippingLine, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier, InsertShippingLine } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 
-type CustomerType = "import" | "export" | "receiver" | "haulier"
+type CustomerType = "import" | "export" | "receiver" | "haulier" | "shippingline"
 
 export default function Customers() {
   const [selectedTab, setSelectedTab] = useState<CustomerType>("import")
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | null>(null)
+  const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | null>(null)
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
-  const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | null>(null)
+  const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | null>(null)
   const { toast } = useToast()
 
   // Helper to determine customer type from entity properties
-  const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | null): CustomerType => {
+  const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | null): CustomerType => {
     if (!customer) return selectedTab
     if ('rsProcessCustomsClearance' in customer) return "import"
     if ('haulierName' in customer) return "haulier"
+    if ('shippingLineName' in customer) return "shippingline"
     if ('contactName' in customer && customer.contactName !== undefined) return "export"
     return "receiver"
   }
@@ -57,6 +59,10 @@ export default function Customers() {
 
   const { data: hauliers = [], isLoading: isLoadingHauliers } = useQuery<Haulier[]>({
     queryKey: ["/api/hauliers"],
+  })
+
+  const { data: shippingLines = [], isLoading: isLoadingShippingLines } = useQuery<ShippingLine[]>({
+    queryKey: ["/api/shipping-lines"],
   })
 
   // Mutations
@@ -196,12 +202,46 @@ export default function Customers() {
     },
   })
 
+  const createShippingLine = useMutation({
+    mutationFn: async (data: InsertShippingLine) => {
+      return apiRequest("POST", "/api/shipping-lines", data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] })
+      setIsFormOpen(false)
+      setEditingCustomer(null)
+      toast({ title: "Shipping line created successfully" })
+    },
+  })
+
+  const updateShippingLine = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: InsertShippingLine }) => {
+      return apiRequest("PATCH", `/api/shipping-lines/${id}`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] })
+      setIsFormOpen(false)
+      setEditingCustomer(null)
+      toast({ title: "Shipping line updated successfully" })
+    },
+  })
+
+  const deleteShippingLine = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/shipping-lines/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] })
+      toast({ title: "Shipping line deleted successfully" })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingCustomer(null)
     setIsFormOpen(true)
   }
 
-  const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier) => {
+  const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine) => {
     setEditingCustomer(customer)
     setIsFormOpen(true)
   }
@@ -210,7 +250,7 @@ export default function Customers() {
     setDeletingCustomerId(id)
   }
 
-  const handleViewDetails = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier) => {
+  const handleViewDetails = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine) => {
     setViewingCustomer(customer)
   }
 
@@ -223,13 +263,15 @@ export default function Customers() {
       deleteExportCustomer.mutate(deletingCustomerId)
     } else if (selectedTab === "receiver") {
       deleteExportReceiver.mutate(deletingCustomerId)
+    } else if (selectedTab === "shippingline") {
+      deleteShippingLine.mutate(deletingCustomerId)
     } else {
       deleteHaulier.mutate(deletingCustomerId)
     }
     setDeletingCustomerId(null)
   }
 
-  const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver | InsertHaulier) => {
+  const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver | InsertHaulier | InsertShippingLine) => {
     if (editingCustomer) {
       // Determine type from editingCustomer properties rather than selectedTab
       if ('rsProcessCustomsClearance' in editingCustomer) {
@@ -238,6 +280,9 @@ export default function Customers() {
       } else if ('haulierName' in editingCustomer) {
         // Haulier
         updateHaulier.mutate({ id: editingCustomer.id, data: data as InsertHaulier })
+      } else if ('shippingLineName' in editingCustomer) {
+        // Shipping Line
+        updateShippingLine.mutate({ id: editingCustomer.id, data: data as InsertShippingLine })
       } else if ('contactName' in editingCustomer && editingCustomer.contactName !== undefined) {
         // Export customer has contactName, receiver doesn't
         updateExportCustomer.mutate({ id: editingCustomer.id, data: data as InsertExportCustomer })
@@ -252,13 +297,15 @@ export default function Customers() {
         createExportCustomer.mutate(data as InsertExportCustomer)
       } else if (selectedTab === "receiver") {
         createExportReceiver.mutate(data as InsertExportReceiver)
+      } else if (selectedTab === "shippingline") {
+        createShippingLine.mutate(data as InsertShippingLine)
       } else {
         createHaulier.mutate(data as InsertHaulier)
       }
     }
   }
 
-  const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers
+  const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers || isLoadingShippingLines
 
   return (
     <div className="p-6 space-y-6">
@@ -266,21 +313,22 @@ export default function Customers() {
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Contacts</h1>
           <p className="text-muted-foreground">
-            Manage import customers, export customers, export receivers and hauliers
+            Manage import customers, export customers, export receivers, hauliers and shipping lines
           </p>
         </div>
         <Button data-testid="button-new-customer" onClick={handleCreateNew}>
           <Plus className="h-4 w-4 mr-2" />
-          New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : selectedTab === "receiver" ? "Receiver" : "Haulier"}
+          New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : selectedTab === "receiver" ? "Receiver" : selectedTab === "shippingline" ? "Shipping Line" : "Haulier"}
         </Button>
       </div>
 
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as CustomerType)}>
-        <TabsList className="grid w-full max-w-2xl grid-cols-4">
+        <TabsList className="grid w-full max-w-3xl grid-cols-5">
           <TabsTrigger value="import" data-testid="tab-import-customers">Import Customers</TabsTrigger>
           <TabsTrigger value="export" data-testid="tab-export-customers">Export Customers</TabsTrigger>
           <TabsTrigger value="receiver" data-testid="tab-export-receivers">Export Receivers</TabsTrigger>
           <TabsTrigger value="haulier" data-testid="tab-hauliers">Hauliers</TabsTrigger>
+          <TabsTrigger value="shippingline" data-testid="tab-shipping-lines">Shipping Lines</TabsTrigger>
         </TabsList>
 
         <TabsContent value="import" className="space-y-4">
@@ -602,6 +650,80 @@ export default function Customers() {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="shippingline" className="space-y-4">
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          ) : shippingLines.length === 0 ? (
+            <div className="text-center py-12" data-testid="empty-state">
+              <p className="text-lg text-muted-foreground">No shipping lines yet</p>
+              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                Create your first shipping line
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {shippingLines.map((line) => (
+                <Card key={line.id} data-testid={`card-shipping-line-${line.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 
+                          className="font-semibold text-lg cursor-pointer hover:underline" 
+                          data-testid={`text-shipping-line-name-${line.id}`}
+                          onClick={() => handleViewDetails(line)}
+                        >
+                          {line.shippingLineName}
+                        </h3>
+                        {line.shippingLineAddress && (
+                          <p className="text-sm text-muted-foreground" data-testid={`text-address-${line.id}`}>{line.shippingLineAddress}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(line)}
+                          data-testid={`button-edit-${line.id}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDelete(line.id)}
+                          data-testid={`button-delete-${line.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      {line.telephone && <p data-testid={`text-telephone-${line.id}`}>{line.telephone}</p>}
+                      {line.importEmail && line.importEmail.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground">Import Emails:</p>
+                          <div className="space-y-0.5">
+                            {line.importEmail.slice(0, 2).map((email, idx) => (
+                              <p key={idx} data-testid={`text-import-email-${line.id}-${idx}`}>
+                                <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
+                              </p>
+                            ))}
+                            {line.importEmail.length > 2 && (
+                              <span className="text-xs text-muted-foreground">+{line.importEmail.length - 2} more</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -611,7 +733,7 @@ export default function Customers() {
               {editingCustomer ? "Edit" : "Create New"}{" "}
               {(() => {
                 const formType = getCustomerType(editingCustomer)
-                return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : formType === "haulier" ? "Haulier" : "Export Receiver"
+                return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : formType === "haulier" ? "Haulier" : formType === "shippingline" ? "Shipping Line" : "Export Receiver"
               })()}
             </DialogTitle>
           </DialogHeader>
@@ -641,6 +763,14 @@ export default function Customers() {
                   defaultValues={editingCustomer as Haulier}
                 />
               )
+            } else if (formType === "shippingline") {
+              return (
+                <ShippingLineForm
+                  onSubmit={handleFormSubmit}
+                  onCancel={() => setIsFormOpen(false)}
+                  defaultValues={editingCustomer as ShippingLine}
+                />
+              )
             } else {
               return (
                 <ExportReceiverForm
@@ -659,7 +789,7 @@ export default function Customers() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this {selectedTab === "import" ? "import customer" : selectedTab === "export" ? "export customer" : selectedTab === "receiver" ? "export receiver" : "haulier"}.
+              This action cannot be undone. This will permanently delete this {selectedTab === "import" ? "import customer" : selectedTab === "export" ? "export customer" : selectedTab === "receiver" ? "export receiver" : selectedTab === "shippingline" ? "shipping line" : "haulier"}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
