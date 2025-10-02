@@ -236,6 +236,30 @@ export const insertImportShipmentSchema = createInsertSchema(importShipments).om
     }
     return val;
   }),
+  bookingDate: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Booking Date is required" }
+  ),
+  portOfArrival: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Port of Arrival is required" }
+  ),
+  trailerOrContainerNumber: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Trailer Number / Container Number is required" }
+  ),
+  departureCountry: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Departure Country is required" }
+  ),
+  incoterms: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Incoterms is required" }
+  ),
+  containerShipment: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Shipment Type is required" }
+  ),
 }).superRefine((data, ctx) => {
   // Check if Import Customer is required
   if (!data.importCustomerId || data.importCustomerId.length === 0) {
@@ -349,13 +373,21 @@ export const insertExportShipmentSchema = createInsertSchema(exportShipments).om
     (val) => val !== null && val !== undefined && val.length > 0,
     { message: "Export Receiver is required" }
   ),
-  bookingDate: z.string().nullable().refine(
+  portOfArrival: z.string().nullable().refine(
     (val) => val !== null && val !== undefined && val.length > 0,
-    { message: "Booking Date is required" }
+    { message: "Port of Arrival is required" }
   ),
-  approxLoadDate: z.string().nullable().refine(
+  departureFrom: z.string().nullable().refine(
     (val) => val !== null && val !== undefined && val.length > 0,
-    { message: "Approx Load Date is required" }
+    { message: "Departure From is required" }
+  ),
+  trailerNo: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Trailer Number / Container Number is required" }
+  ),
+  containerShipment: z.string().nullable().refine(
+    (val) => val !== null && val !== undefined && val.length > 0,
+    { message: "Shipment Type is required" }
   ),
   exportClearanceAgent: z.string().min(1, "Export Clearance Agent is required"),
   arrivalClearanceAgent: z.string().min(1, "Arrival Clearance Agent is required"),
