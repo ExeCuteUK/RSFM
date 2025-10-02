@@ -468,17 +468,19 @@ export default function ImportShipments() {
                       {shipment.vesselName}
                     </p>
                   )}
-                  {shipment.portOfArrival && (
-                    <p data-testid={`text-port-${shipment.id}`}>
-                      <span>Port Of Arrival:</span> {shipment.portOfArrival}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p data-testid={`text-delivery-date-${shipment.id}`}>
+                      <span>Delivery Date:</span>{' '}
+                      {formatDate(shipment.deliveryDate) || (
+                        <span className="text-red-700 dark:text-red-600">TBA</span>
+                      )}
                     </p>
-                  )}
-                  <p data-testid={`text-delivery-date-${shipment.id}`}>
-                    <span>Delivery Date:</span>{' '}
-                    {formatDate(shipment.deliveryDate) || (
-                      <span className="text-red-700 dark:text-red-600">TBA</span>
+                    {shipment.portOfArrival && (
+                      <p data-testid={`text-port-${shipment.id}`}>
+                        <span>Port Of Arrival:</span> {shipment.portOfArrival}
+                      </p>
                     )}
-                  </p>
+                  </div>
                   <div className="pt-2 mt-2 border-t space-y-1">
                     {shipment.goodsDescription && (
                       <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
