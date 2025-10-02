@@ -1272,35 +1272,35 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     )}
                   />
 
+                  <FormField
+                    control={form.control}
+                    name="exportClearanceChargeIn"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Export Customs Clearance Charge In</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   {rsToClear && (
                     <FormField
                       control={form.control}
-                      name="exportClearanceChargeIn"
+                      name="destinationClearanceCostIn"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Export Customs Clearance Charge In</FormLabel>
+                          <FormLabel>Import Customs Clearance Charge In</FormLabel>
                           <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
+                            <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   )}
-
-                  <FormField
-                    control={form.control}
-                    name="destinationClearanceCostIn"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Import Customs Clearance Charge In</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </div>
             </CardContent>
