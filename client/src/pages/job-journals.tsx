@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from "@shared/schema"
@@ -44,6 +45,13 @@ const generateYears = () => {
     years.push({ value: year.toString(), label: year.toString() })
   }
   return years
+}
+
+const formatDateToDDMMYY = (dateString: string | null | undefined): string => {
+  if (!dateString) return ""
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return ""
+  return format(date, "dd/MM/yy")
 }
 
 export default function JobJournals() {
@@ -244,7 +252,7 @@ export default function JobJournals() {
                       {entry.destination}
                     </td>
                     <td className="p-2" data-testid={`text-date-${entry.jobRef}`}>
-                      {entry.date}
+                      {formatDateToDDMMYY(entry.date)}
                     </td>
                     <td className="p-2" data-testid={`text-reg-${entry.jobRef}`}>
                       {entry.regContainerFlight}
