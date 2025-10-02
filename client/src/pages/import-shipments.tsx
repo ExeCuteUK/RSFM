@@ -134,6 +134,15 @@ export default function ImportShipments() {
     },
   })
 
+  const updateSendPodToCustomerStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/send-pod-to-customer-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
   const deleteFile = useMutation({
     mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
       return apiRequest("DELETE", `/api/import-shipments/${id}/files`, { filePath, fileType })
@@ -235,6 +244,10 @@ export default function ImportShipments() {
     updateInvoiceCustomerStatus.mutate({ id, status })
   }
 
+  const handleSendPodToCustomerStatusUpdate = (id: string, status: number) => {
+    updateSendPodToCustomerStatus.mutate({ id, status })
+  }
+
   const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
     if (confirm("Are you sure you want to delete this file?")) {
       deleteFile.mutate({ id, filePath, fileType })
@@ -286,6 +299,15 @@ export default function ImportShipments() {
   }
 
   const getInvoiceCustomerStatusColor = (status: number | null) => {
+    switch (status) {
+      case 2:
+      case null:
+      default: return "text-yellow-600 dark:text-yellow-400"
+      case 3: return "text-green-600 dark:text-green-400"
+    }
+  }
+
+  const getSendPodToCustomerStatusColor = (status: number | null) => {
     switch (status) {
       case 2:
       case null:
@@ -673,6 +695,35 @@ export default function ImportShipments() {
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-invoice-status-green-${shipment.id}`}
+                          title="Green Status"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
+                        Send POD to Customer
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.sendPodToCustomerStatusIndicator === 2
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-send-pod-status-yellow-${shipment.id}`}
+                          title="Yellow Status"
+                        />
+                        <button
+                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.sendPodToCustomerStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-send-pod-status-green-${shipment.id}`}
                           title="Green Status"
                         />
                       </div>
