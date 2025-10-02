@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -26,6 +27,8 @@ export default function ExportShipments() {
   const [editingShipment, setEditingShipment] = useState<ExportShipment | null>(null)
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
+  const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
+  const [notesValue, setNotesValue] = useState("")
   const { toast } = useToast()
 
   const { data: allShipments = [], isLoading } = useQuery<ExportShipment[]>({
@@ -89,6 +92,33 @@ export default function ExportShipments() {
       toast({ title: "Status updated successfully" })
     },
   })
+
+  const updateNotes = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      return apiRequest("PATCH", `/api/export-shipments/${id}`, { additionalNotes: notes })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      setNotesShipmentId(null)
+      setNotesValue("")
+      toast({ title: "Notes updated successfully" })
+    },
+  })
+
+  const handleOpenNotes = (shipment: ExportShipment) => {
+    setNotesShipmentId(shipment.id)
+    setNotesValue(shipment.additionalNotes || "")
+  }
+
+  const handleSaveNotes = () => {
+    if (!notesShipmentId) return
+    updateNotes.mutate({ id: notesShipmentId, notes: notesValue })
+  }
+
+  const handleCloseNotes = () => {
+    setNotesShipmentId(null)
+    setNotesValue("")
+  }
 
   const handleCreateNew = () => {
     setEditingShipment(null)
@@ -216,6 +246,15 @@ export default function ExportShipments() {
                     <Button
                       size="icon"
                       variant="ghost"
+                      onClick={() => handleOpenNotes(shipment)}
+                      data-testid={`button-notes-${shipment.id}`}
+                      title="Additional Notes"
+                    >
+                      <StickyNote className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
                       onClick={() => toggleStatus(shipment.status, shipment.id)}
                       data-testid={`button-toggle-status-${shipment.id}`}
                       title="Toggle status"
@@ -306,6 +345,47 @@ export default function ExportShipments() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!notesShipmentId} onOpenChange={(open) => !open && handleCloseNotes()}>
+        <DialogContent className="max-w-3xl h-[400px] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle>Additional Notes</DialogTitle>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleCloseNotes}
+              data-testid="button-close-notes"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 py-4">
+            <Textarea
+              value={notesValue}
+              onChange={(e) => setNotesValue(e.target.value)}
+              className="h-full resize-none"
+              placeholder="Enter additional notes here..."
+              data-testid="textarea-notes"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseNotes}
+              data-testid="button-close-without-saving"
+            >
+              Close Without Saving
+            </Button>
+            <Button
+              onClick={handleSaveNotes}
+              disabled={updateNotes.isPending}
+              data-testid="button-save-notes"
+            >
+              {updateNotes.isPending ? "Saving..." : "Save/Update"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
