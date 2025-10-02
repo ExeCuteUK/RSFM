@@ -303,7 +303,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-muted/30 border-2">
             <CardHeader>
               <CardTitle>Shipment Details</CardTitle>
             </CardHeader>
@@ -665,7 +665,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-muted/30 border-2">
             <CardHeader>
               <CardTitle>Scheduling & Delivery</CardTitle>
             </CardHeader>
@@ -905,7 +905,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-muted/30 border-2">
             <CardHeader>
               <CardTitle>Cargo Details</CardTitle>
             </CardHeader>
@@ -1341,7 +1341,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-muted/30 border-2">
             <CardHeader>
               <CardTitle>Haulier Information</CardTitle>
             </CardHeader>
@@ -1532,7 +1532,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   <FormItem>
                     <FormLabel>Additional Notes</FormLabel>
                     <FormControl>
-                      <Textarea {...field} value={field.value || ""} rows={5} data-testid="textarea-additional-notes" />
+                      <Textarea {...field} value={field.value || ""} rows={5} className="border-input" data-testid="textarea-additional-notes" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
