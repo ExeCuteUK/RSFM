@@ -1346,7 +1346,7 @@ export default function ImportShipments() {
                       )}
                       {viewingShipment.expensesToChargeOut && viewingShipment.expensesToChargeOut.length > 0 && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 col-span-2">
-                          <p className="text-xs text-muted-foreground mb-2">Expenses To Charge Out</p>
+                          <p className="text-xs text-muted-foreground mb-2">Additional Charges Out</p>
                           <div className="space-y-1">
                             {viewingShipment.expensesToChargeOut.map((expense: { description: string; amount: string }, idx: number) => (
                               <div key={idx} className="flex justify-between items-center">
@@ -1393,7 +1393,7 @@ export default function ImportShipments() {
                       )}
                       {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                          <p className="text-xs text-muted-foreground mb-2">Additional Expenses In</p>
+                          <p className="text-xs text-muted-foreground mb-2">Additional Charges In</p>
                           <div className="space-y-1">
                             {viewingShipment.additionalExpensesIn.map((expense: { description: string; amount: string }, idx: number) => (
                               <div key={idx} className="flex justify-between items-center">
