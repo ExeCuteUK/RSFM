@@ -482,6 +482,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update invoice customer status indicator
+  app.patch("/api/import-shipments/:id/invoice-customer-status", async (req, res) => {
+    try {
+      const invoiceStatusSchema = z.object({
+        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+      });
+      const { status } = invoiceStatusSchema.parse(req.body);
+      const shipment = await storage.updateImportShipment(req.params.id, { 
+        invoiceCustomerStatusIndicator: status ?? null 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to update invoice customer status" });
+    }
+  });
+
   // Delete import shipment
   app.delete("/api/import-shipments/:id", async (req, res) => {
     try {

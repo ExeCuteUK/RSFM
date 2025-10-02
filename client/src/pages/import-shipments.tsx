@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -125,6 +125,15 @@ export default function ImportShipments() {
     },
   })
 
+  const updateInvoiceCustomerStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/invoice-customer-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
   const updateNotes = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
       return apiRequest("PATCH", `/api/import-shipments/${id}`, { additionalNotes: notes })
@@ -212,6 +221,10 @@ export default function ImportShipments() {
     updateContainerReleaseStatus.mutate({ id, status })
   }
 
+  const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
+    updateInvoiceCustomerStatus.mutate({ id, status })
+  }
+
   const getClearanceStatusColor = (status: number | null) => {
     switch (status) {
       case 2: return "text-orange-600 dark:text-orange-400"
@@ -253,6 +266,15 @@ export default function ImportShipments() {
       default: return "text-yellow-600 dark:text-yellow-400"
       case 3: return "text-green-600 dark:text-green-400"
       case 4: return "text-red-600 dark:text-red-400"
+    }
+  }
+
+  const getInvoiceCustomerStatusColor = (status: number | null) => {
+    switch (status) {
+      case 2:
+      case null:
+      default: return "text-yellow-600 dark:text-yellow-400"
+      case 3: return "text-green-600 dark:text-green-400"
     }
   }
 
@@ -612,15 +634,95 @@ export default function ImportShipments() {
                       </div>
                     </div>
                   )}
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
+                        Invoice Customer
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.invoiceCustomerStatusIndicator === 2
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-invoice-status-yellow-${shipment.id}`}
+                          title="Yellow Status"
+                        />
+                        <button
+                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.invoiceCustomerStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-invoice-status-green-${shipment.id}`}
+                          title="Green Status"
+                        />
+                      </div>
+                    </div>
+                  </div>
                   {(() => {
-                    const files = parseAttachments(shipment.attachments)
-                    if (files.length > 0) {
+                    const attachmentFiles = parseAttachments(shipment.attachments)
+                    const podFiles = parseAttachments(shipment.proofOfDelivery)
+                    if (attachmentFiles.length > 0 || podFiles.length > 0) {
                       return (
-                        <div className="flex items-center gap-1 mt-2 pt-2 border-t" data-testid={`attachments-${shipment.id}`}>
-                          <Paperclip className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {files.length} {files.length === 1 ? 'file' : 'files'} attached
-                          </span>
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium text-muted-foreground">Documents</p>
+                              {attachmentFiles.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {attachmentFiles.map((filePath, idx) => {
+                                    const fileName = filePath.split('/').pop() || filePath
+                                    return (
+                                      <div key={idx} className="flex items-center gap-1">
+                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                        <a
+                                          href={`/objects/${filePath}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-xs text-primary hover:underline truncate"
+                                          title={fileName}
+                                        >
+                                          {fileName}
+                                        </a>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground italic">None</p>
+                              )}
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium text-muted-foreground">POD</p>
+                              {podFiles.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {podFiles.map((filePath, idx) => {
+                                    const fileName = filePath.split('/').pop() || filePath
+                                    return (
+                                      <div key={idx} className="flex items-center gap-1">
+                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                        <a
+                                          href={`/objects/${filePath}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-xs text-primary hover:underline truncate"
+                                          title={fileName}
+                                        >
+                                          {fileName}
+                                        </a>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground italic">None</p>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       )
                     }
