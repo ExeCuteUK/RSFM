@@ -1143,6 +1143,20 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="exportCustomsClearanceCharge"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Export Customs Clearance Charge</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-export-customs-clearance-charge" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {rsToClear && (
                   <FormField
                     control={form.control}
@@ -1236,7 +1250,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       name="destinationClearanceCostIn"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Destination Clearance Cost In</FormLabel>
+                          <FormLabel>Import Customs Clearance Charge In</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
                           </FormControl>
@@ -1251,7 +1265,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     name="exportClearanceChargeIn"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Export Clearance Charge In</FormLabel>
+                        <FormLabel>Departure Export Clearance Charge In</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
                         </FormControl>

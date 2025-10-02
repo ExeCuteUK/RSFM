@@ -195,6 +195,7 @@ export const importShipments = pgTable("import_shipments", {
   clearanceCharge: text("clearance_charge"),
   currency: text("currency"),
   freightRateOut: text("freight_rate_out"),
+  exportCustomsClearanceCharge: text("export_customs_clearance_charge"),
   additionalCommodityCodes: integer("additional_commodity_codes"),
   currencyIn: text("currency_in"),
   haulierFreightRateIn: text("haulier_freight_rate_in"),
