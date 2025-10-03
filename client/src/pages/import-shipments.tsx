@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, Printer } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -962,7 +962,7 @@ export default function ImportShipments() {
       <Dialog open={!!viewingShipment} onOpenChange={(open) => !open && setViewingShipment(null)}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="border-b pb-4">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
                 {viewingShipment?.containerShipment === "Road Shipment" ? (
                   <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -985,26 +985,50 @@ export default function ImportShipments() {
                   <DialogTitle className="text-2xl leading-none">
                     R.S Import Shipment {viewingShipment?.jobRef}
                   </DialogTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Created {viewingShipment?.createdAt && (() => {
-                      const date = new Date(viewingShipment.createdAt);
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const year = String(date.getFullYear()).slice(-2);
-                      let hours = date.getHours();
-                      const minutes = String(date.getMinutes()).padStart(2, '0');
-                      const ampm = hours >= 12 ? 'PM' : 'AM';
-                      hours = hours % 12 || 12;
-                      return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
-                    })()}
-                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm text-muted-foreground">
+                      Created {viewingShipment?.createdAt && (() => {
+                        const date = new Date(viewingShipment.createdAt);
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = String(date.getFullYear()).slice(-2);
+                        let hours = date.getHours();
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        hours = hours % 12 || 12;
+                        return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+                      })()}
+                    </p>
+                    {viewingShipment && (
+                      <Badge className={getStatusColor(viewingShipment.status)} data-testid="badge-detail-status">
+                        {viewingShipment.status}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
-              {viewingShipment && (
-                <Badge className={getStatusColor(viewingShipment.status)} data-testid="badge-detail-status">
-                  {viewingShipment.status}
-                </Badge>
-              )}
+              <div className="flex items-center gap-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => window.print()}
+                  data-testid="button-print-shipment"
+                >
+                  <Printer className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditingShipment(viewingShipment)
+                    setViewingShipment(null)
+                    setIsFormOpen(true)
+                  }}
+                  data-testid="button-edit-shipment"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </DialogHeader>
 
@@ -1513,8 +1537,10 @@ export default function ImportShipments() {
                           </div>
                           {viewingShipment.additionalCommodityCodeCharge && (
                             <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                              <p className="text-xs text-muted-foreground mb-1">Additional Charge Per HS Code</p>
-                              <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
+                              <p className="text-xs text-muted-foreground mb-1">Additional HS Code Charge</p>
+                              <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">
+                                £{((viewingShipment.additionalCommodityCodes - 1) * parseFloat(viewingShipment.additionalCommodityCodeCharge)).toFixed(2)}
+                              </p>
                             </div>
                           )}
                         </div>
