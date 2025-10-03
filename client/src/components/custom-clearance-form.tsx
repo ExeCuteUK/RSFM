@@ -28,7 +28,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
 import { InlineUploader } from "./InlineUploader"
-import type { UploadResult } from "@uppy/core"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -747,14 +746,13 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             const data = await response.json();
                             return { method: "PUT" as const, url: data.uploadURL };
                           }}
-                          onUploadComplete={(result: UploadResult) => {
+                          onComplete={(result) => {
                             if (result.successful && result.successful.length > 0) {
                               const urls = result.successful.map((file: any) => file.uploadURL?.split('?')[0]);
                               const currentUrls = field.value || [];
                               field.onChange([...currentUrls, ...urls]);
                             }
                           }}
-                          testId="uploader-transport-documents"
                         />
                       </div>
                       <FormMessage />
@@ -787,14 +785,13 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             const data = await response.json();
                             return { method: "PUT" as const, url: data.uploadURL };
                           }}
-                          onUploadComplete={(result: UploadResult) => {
+                          onComplete={(result) => {
                             if (result.successful && result.successful.length > 0) {
                               const urls = result.successful.map((file: any) => file.uploadURL?.split('?')[0]);
                               const currentUrls = field.value || [];
                               field.onChange([...currentUrls, ...urls]);
                             }
                           }}
-                          testId="uploader-clearance-documents"
                         />
                       </div>
                       <FormMessage />

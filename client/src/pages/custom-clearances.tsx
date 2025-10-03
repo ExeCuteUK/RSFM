@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo } from "lucide-react"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -127,6 +127,28 @@ export default function CustomClearances() {
   const parseAttachments = (attachments: string[] | null) => {
     if (!attachments) return []
     return attachments
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return ""
+    try {
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = String(date.getFullYear()).slice(-2)
+      return `${day}/${month}/${year}`
+    } catch {
+      return dateString
+    }
+  }
+
+  const getStatusIndicatorLabel = (value: number) => {
+    switch(value) {
+      case 1: return "pending"
+      case 2: return "in-progress"
+      case 3: return "completed"
+      default: return "pending"
+    }
   }
 
   const handleAllClick = () => {
@@ -265,91 +287,171 @@ export default function CustomClearances() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {filteredClearances.map((clearance) => (
-            <Card key={clearance.id} data-testid={`card-clearance-${clearance.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                      <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${clearance.id}`}>
-                        {clearance.jobRef}
-                      </h3>
-                      <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-                        {clearance.jobType}
-                      </span>
-                      <span 
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          clearance.status === "Fully Cleared" 
-                            ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                            : clearance.status === "Waiting Arrival"
-                            ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
-                            : clearance.status === "P.H Hold" || clearance.status === "Customs Issue"
-                            ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-                            : "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                        }`}
-                        data-testid={`text-status-${clearance.id}`}
-                      >
-                        {clearance.status}
-                      </span>
+          {filteredClearances.map((clearance) => {
+            const transportDocs = parseAttachments(clearance.transportDocuments || null)
+            const clearanceDocs = parseAttachments(clearance.clearanceDocuments || null)
+            const totalFiles = transportDocs.length + clearanceDocs.length
+            const hasNotes = clearance.additionalNotes && clearance.additionalNotes.trim().length > 0
+
+            return (
+              <Card key={clearance.id} data-testid={`card-clearance-${clearance.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${clearance.id}`}>
+                          {clearance.jobRef}
+                        </h3>
+                        <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                          {clearance.jobType}
+                        </span>
+                        <span 
+                          className={`text-xs px-2 py-0.5 rounded ${
+                            clearance.status === "Fully Cleared" 
+                              ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                              : clearance.status === "Waiting Arrival"
+                              ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
+                              : clearance.status === "P.H Hold" || clearance.status === "Customs Issue"
+                              ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
+                              : "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                          }`}
+                          data-testid={`text-status-${clearance.id}`}
+                        >
+                          {clearance.status}
+                        </span>
+                        {hasNotes && (
+                          <StickyNote className="h-4 w-4 text-yellow-600 dark:text-yellow-400" data-testid={`icon-notes-${clearance.id}`} />
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
+                        {getCustomerName(clearance)}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
-                      {getCustomerName(clearance)}
-                    </p>
+                    <div className="flex gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleEdit(clearance)}
+                        data-testid={`button-edit-${clearance.id}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDelete(clearance.id)}
+                        data-testid={`button-delete-${clearance.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleEdit(clearance)}
-                      data-testid={`button-edit-${clearance.id}`}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleDelete(clearance.id)}
-                      data-testid={`button-delete-${clearance.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="space-y-1 text-sm">
-                  {clearance.portOfArrival && (
-                    <p data-testid={`text-port-${clearance.id}`}>
-                      <span className="font-medium">Port:</span> {clearance.portOfArrival}
-                    </p>
-                  )}
-                  {clearance.etaPort && (
-                    <p data-testid={`text-date-${clearance.id}`}>
-                      <span className="font-medium">ETA:</span> {clearance.etaPort}
-                    </p>
-                  )}
-                  {clearance.goodsDescription && (
-                    <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${clearance.id}`}>
-                      {clearance.goodsDescription}
-                    </p>
-                  )}
-                  {(() => {
-                    const files = parseAttachments(clearance.attachments)
-                    if (files.length > 0) {
-                      return (
-                        <div className="flex items-center gap-1 mt-2 pt-2 border-t" data-testid={`attachments-${clearance.id}`}>
-                          <Paperclip className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {files.length} {files.length === 1 ? 'file' : 'files'} attached
+                  <div className="space-y-2 text-sm">
+                    {clearance.trailerOrContainerNumber && (
+                      <p data-testid={`text-trailer-${clearance.id}`}>
+                        <span className="font-medium">Container/Trailer:</span> {clearance.trailerOrContainerNumber}
+                      </p>
+                    )}
+                    {clearance.clearanceType && (
+                      <p data-testid={`text-clearance-type-${clearance.id}`}>
+                        <span className="font-medium">Type:</span> {clearance.clearanceType}
+                      </p>
+                    )}
+                    {clearance.portOfArrival && (
+                      <p data-testid={`text-port-${clearance.id}`}>
+                        <span className="font-medium">Port:</span> {clearance.portOfArrival}
+                      </p>
+                    )}
+                    {clearance.etaPort && (
+                      <p data-testid={`text-date-${clearance.id}`}>
+                        <span className="font-medium">ETA:</span> {formatDate(clearance.etaPort)}
+                      </p>
+                    )}
+                    {clearance.goodsDescription && (
+                      <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${clearance.id}`}>
+                        {clearance.goodsDescription}
+                      </p>
+                    )}
+
+                    {/* To Do List */}
+                    <div className="pt-2 mt-2 border-t">
+                      <div className="flex items-center gap-1 mb-2">
+                        <ListTodo className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground">To Do</span>
+                      </div>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center gap-2" data-testid={`todo-advise-agent-${clearance.id}`}>
+                          <div className={`h-2 w-2 rounded-full ${
+                            clearance.adviseAgentStatusIndicator === 3 ? "bg-green-500" :
+                            clearance.adviseAgentStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
+                          }`} />
+                          <span className={clearance.adviseAgentStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
+                            Advise Clearance To Agent
                           </span>
                         </div>
-                      )
-                    }
-                    return null
-                  })()}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                        <div className="flex items-center gap-2" data-testid={`todo-send-entry-${clearance.id}`}>
+                          <div className={`h-2 w-2 rounded-full ${
+                            clearance.sendEntryToCustomerStatusIndicator === 3 ? "bg-green-500" :
+                            clearance.sendEntryToCustomerStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
+                          }`} />
+                          <span className={clearance.sendEntryToCustomerStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
+                            Send Entry/EAD to Customer
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2" data-testid={`todo-invoice-${clearance.id}`}>
+                          <div className={`h-2 w-2 rounded-full ${
+                            clearance.invoiceCustomerStatusIndicator === 3 ? "bg-green-500" :
+                            clearance.invoiceCustomerStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
+                          }`} />
+                          <span className={clearance.invoiceCustomerStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
+                            Invoice Customer
+                          </span>
+                        </div>
+                        {clearance.jobType === "import" && (
+                          <div className="flex items-center gap-2" data-testid={`todo-cleared-entry-${clearance.id}`}>
+                            <div className={`h-2 w-2 rounded-full ${
+                              clearance.sendClearedEntryStatusIndicator === 3 ? "bg-green-500" :
+                              clearance.sendClearedEntryStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
+                            }`} />
+                            <span className={clearance.sendClearedEntryStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
+                              Send Cleared Entry to Customer
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Files Section */}
+                    {totalFiles > 0 && (
+                      <div className="pt-2 mt-2 border-t" data-testid={`files-section-${clearance.id}`}>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <div className="flex items-center gap-1 mb-1">
+                              <FileText className="h-3 w-3 text-muted-foreground" />
+                              <span className="font-medium text-muted-foreground">Transport</span>
+                            </div>
+                            <span className="text-muted-foreground">
+                              {transportDocs.length} {transportDocs.length === 1 ? 'file' : 'files'}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1 mb-1">
+                              <FileText className="h-3 w-3 text-muted-foreground" />
+                              <span className="font-medium text-muted-foreground">Clearance</span>
+                            </div>
+                            <span className="text-muted-foreground">
+                              {clearanceDocs.length} {clearanceDocs.length === 1 ? 'file' : 'files'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
 
