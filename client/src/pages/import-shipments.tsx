@@ -66,6 +66,12 @@ export default function ImportShipments() {
     queryKey: ["/api/custom-clearances"],
   })
 
+  const getCustomerName = (customerId: string | null) => {
+    if (!customerId) return "N/A"
+    const customer = importCustomers.find(c => c.id === customerId)
+    return customer?.companyName || "N/A"
+  }
+
   const createShipment = useMutation({
     mutationFn: async (data: InsertImportShipment) => {
       return apiRequest("POST", "/api/import-shipments", data)
@@ -236,12 +242,6 @@ export default function ImportShipments() {
     } else {
       createShipment.mutate(data)
     }
-  }
-
-  const getCustomerName = (customerId: string | null) => {
-    if (!customerId) return "N/A"
-    const customer = importCustomers.find(c => c.id === customerId)
-    return customer?.companyName || "N/A"
   }
 
   const getCustomer = (customerId: string | null) => {
