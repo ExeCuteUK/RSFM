@@ -1,5 +1,5 @@
 -- Contact Databases Restore Script
--- Generated: 2025-10-03T18:14:05.807Z
+-- Generated: 2025-10-03T18:22:23.940Z
 -- This script will restore all contact databases
 -- WARNING: This will DELETE all existing data in these tables!
 

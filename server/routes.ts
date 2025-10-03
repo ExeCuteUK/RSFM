@@ -899,6 +899,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Backup Routes ==========
 
+  // List all backups
+  app.get("/api/backups", async (_req, res) => {
+    try {
+      const { readdirSync, readFileSync, statSync } = await import("fs");
+      const { join } = await import("path");
+      
+      const backupsDir = "backups";
+      const entries = readdirSync(backupsDir, { withFileTypes: true });
+      const backups = [];
+      
+      for (const entry of entries) {
+        if (entry.isDirectory() && entry.name.startsWith("backup_")) {
+          const metadataPath = join(backupsDir, entry.name, "metadata.json");
+          try {
+            const metadata = JSON.parse(readFileSync(metadataPath, "utf-8"));
+            const stats = statSync(join(backupsDir, entry.name));
+            backups.push({
+              ...metadata,
+              createdAt: stats.birthtime.toISOString(),
+            });
+          } catch (error) {
+            // Skip backups without metadata
+            console.warn(`Skipping backup ${entry.name}: no metadata found`);
+          }
+        }
+      }
+      
+      // Sort by timestamp, newest first
+      backups.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      
+      res.json(backups);
+    } catch (error) {
+      console.error("List backups error:", error);
+      res.status(500).json({ error: "Failed to list backups" });
+    }
+  });
+
   // Create backup of all contact databases
   app.post("/api/backups/create", async (_req, res) => {
     try {
@@ -908,28 +945,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stdio: ["pipe", "pipe", "pipe"],
       });
       
-      // Parse the output to get backup statistics
-      const lines = result.split("\n");
-      const tables = [];
-      let totalRecords = 0;
+      // Parse the output to get backup name
+      const backupNameMatch = result.match(/Backup name: (backup_[^\n]+)/);
+      const backupName = backupNameMatch ? backupNameMatch[1] : null;
       
-      for (const line of lines) {
-        const match = line.match(/✓ (.+) backed up: (\d+) records/);
-        if (match) {
-          const count = parseInt(match[2]);
-          tables.push({
-            name: match[1],
-            count: count,
-          });
-          totalRecords += count;
-        }
+      if (!backupName) {
+        throw new Error("Failed to extract backup name");
       }
+      
+      // Read metadata file
+      const { readFileSync } = await import("fs");
+      const metadata = JSON.parse(readFileSync(`backups/${backupName}/metadata.json`, "utf-8"));
       
       res.json({
         success: true,
-        timestamp: new Date().toISOString(),
-        tables,
-        totalRecords,
+        ...metadata,
       });
     } catch (error) {
       console.error("Backup error:", error);
@@ -937,11 +967,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Restore from backup
-  app.post("/api/backups/restore", async (_req, res) => {
+  // Restore from specific backup
+  app.post("/api/backups/restore/:backupName", async (req, res) => {
     try {
+      const { backupName } = req.params;
       const { execSync } = await import("child_process");
-      const result = execSync("tsx scripts/restore-contact-databases.ts", {
+      
+      const result = execSync(`tsx scripts/restore-contact-databases.ts ${backupName}`, {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
       });
@@ -965,6 +997,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
+        backupName,
         timestamp: new Date().toISOString(),
         tables,
         totalRecords,
@@ -972,6 +1005,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Restore error:", error);
       res.status(500).json({ error: "Failed to restore backup" });
+    }
+  });
+
+  // Delete specific backup
+  app.delete("/api/backups/:backupName", async (req, res) => {
+    try {
+      const { backupName } = req.params;
+      const { rmSync } = await import("fs");
+      const { join } = await import("path");
+      
+      // Validate backup name to prevent directory traversal
+      if (!backupName.startsWith("backup_") || backupName.includes("..")) {
+        return res.status(400).json({ error: "Invalid backup name" });
+      }
+      
+      const backupPath = join("backups", backupName);
+      rmSync(backupPath, { recursive: true, force: true });
+      
+      res.json({
+        success: true,
+        message: `Backup ${backupName} deleted successfully`,
+      });
+    } catch (error) {
+      console.error("Delete backup error:", error);
+      res.status(500).json({ error: "Failed to delete backup" });
     }
   });
 

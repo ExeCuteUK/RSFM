@@ -1,6 +1,6 @@
 -- Backup for export_customers
 -- 2007 records
--- Generated: 2025-10-03T18:14:05.481Z
+-- Generated: 2025-10-03T18:22:23.654Z
 
 INSERT INTO export_customers ("id", "companyName", "contactName", "vatNumber", "telephone", "email", "accountsEmail", "address", "agentName", "agentContactName", "agentVatNumber", "agentTelephone", "agentEmail", "agentAccountsEmail", "agentAddress") VALUES ('a26ba46b-f8df-486f-ac55-e5d157c6a1b4', 'The Testometric Co. Ltd', ARRAY["Lynne"], '158 4496 28', '01706 654039', NULL, NULL, 'Unit 1. Lincoln Business Park,
 Lincoln Close,

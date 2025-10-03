@@ -12,102 +12,78 @@ import { mkdirSync } from "fs";
 
 async function backupContactDatabases() {
   try {
-    mkdirSync("backups", { recursive: true });
+    // Create timestamped backup directory
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const backupDir = `backups/backup_${timestamp}`;
+    mkdirSync(backupDir, { recursive: true });
 
-    console.log("Starting backup of contact databases...");
+    console.log(`Starting backup of contact databases...`);
+    console.log(`Backup directory: ${backupDir}`);
 
     // Backup Import Customers
     console.log("Backing up Import Customers...");
     const importCustomersData = await db.select().from(importCustomers);
     const importCustomersSQL = generateInsertSQL("import_customers", importCustomersData);
-    writeFileSync("backups/import_customers_backup.sql", importCustomersSQL);
+    writeFileSync(`${backupDir}/import_customers_backup.sql`, importCustomersSQL);
     console.log(`✓ Import Customers backed up: ${importCustomersData.length} records`);
 
     // Backup Export Customers
     console.log("Backing up Export Customers...");
     const exportCustomersData = await db.select().from(exportCustomers);
     const exportCustomersSQL = generateInsertSQL("export_customers", exportCustomersData);
-    writeFileSync("backups/export_customers_backup.sql", exportCustomersSQL);
+    writeFileSync(`${backupDir}/export_customers_backup.sql`, exportCustomersSQL);
     console.log(`✓ Export Customers backed up: ${exportCustomersData.length} records`);
 
     // Backup Export Receivers
     console.log("Backing up Export Receivers...");
     const exportReceiversData = await db.select().from(exportReceivers);
     const exportReceiversSQL = generateInsertSQL("export_receivers", exportReceiversData);
-    writeFileSync("backups/export_receivers_backup.sql", exportReceiversSQL);
+    writeFileSync(`${backupDir}/export_receivers_backup.sql`, exportReceiversSQL);
     console.log(`✓ Export Receivers backed up: ${exportReceiversData.length} records`);
 
     // Backup Hauliers
     console.log("Backing up Hauliers...");
     const hauliersData = await db.select().from(hauliers);
     const hauliersSQL = generateInsertSQL("hauliers", hauliersData);
-    writeFileSync("backups/hauliers_backup.sql", hauliersSQL);
+    writeFileSync(`${backupDir}/hauliers_backup.sql`, hauliersSQL);
     console.log(`✓ Hauliers backed up: ${hauliersData.length} records`);
 
     // Backup Shipping Lines
     console.log("Backing up Shipping Lines...");
     const shippingLinesData = await db.select().from(shippingLines);
     const shippingLinesSQL = generateInsertSQL("shipping_lines", shippingLinesData);
-    writeFileSync("backups/shipping_lines_backup.sql", shippingLinesSQL);
+    writeFileSync(`${backupDir}/shipping_lines_backup.sql`, shippingLinesSQL);
     console.log(`✓ Shipping Lines backed up: ${shippingLinesData.length} records`);
 
     // Backup Clearance Agents
     console.log("Backing up Clearance Agents...");
     const clearanceAgentsData = await db.select().from(clearanceAgents);
     const clearanceAgentsSQL = generateInsertSQL("clearance_agents", clearanceAgentsData);
-    writeFileSync("backups/clearance_agents_backup.sql", clearanceAgentsSQL);
+    writeFileSync(`${backupDir}/clearance_agents_backup.sql`, clearanceAgentsSQL);
     console.log(`✓ Clearance Agents backed up: ${clearanceAgentsData.length} records`);
 
-    // Create a restore script
-    const restoreScript = `-- Contact Databases Restore Script
--- Generated: ${new Date().toISOString()}
--- This script will restore all contact databases
--- WARNING: This will DELETE all existing data in these tables!
+    // Create metadata file
+    const metadata = {
+      timestamp: new Date().toISOString(),
+      backupName: `backup_${timestamp}`,
+      tables: [
+        { name: "import_customers", count: importCustomersData.length },
+        { name: "export_customers", count: exportCustomersData.length },
+        { name: "export_receivers", count: exportReceiversData.length },
+        { name: "hauliers", count: hauliersData.length },
+        { name: "shipping_lines", count: shippingLinesData.length },
+        { name: "clearance_agents", count: clearanceAgentsData.length },
+      ],
+      totalRecords: importCustomersData.length + exportCustomersData.length + 
+                    exportReceiversData.length + hauliersData.length + 
+                    shippingLinesData.length + clearanceAgentsData.length,
+    };
+    
+    writeFileSync(`${backupDir}/metadata.json`, JSON.stringify(metadata, null, 2));
 
-BEGIN;
-
--- Clear existing data
-DELETE FROM clearance_agents;
-DELETE FROM shipping_lines;
-DELETE FROM hauliers;
-DELETE FROM export_receivers;
-DELETE FROM export_customers;
-DELETE FROM import_customers;
-
--- Import backups (run each file in order)
-\\i import_customers_backup.sql
-\\i export_customers_backup.sql
-\\i export_receivers_backup.sql
-\\i hauliers_backup.sql
-\\i shipping_lines_backup.sql
-\\i clearance_agents_backup.sql
-
-COMMIT;
-
--- Verify counts
-SELECT 'import_customers' as table_name, COUNT(*) as record_count FROM import_customers
-UNION ALL
-SELECT 'export_customers', COUNT(*) FROM export_customers
-UNION ALL
-SELECT 'export_receivers', COUNT(*) FROM export_receivers
-UNION ALL
-SELECT 'hauliers', COUNT(*) FROM hauliers
-UNION ALL
-SELECT 'shipping_lines', COUNT(*) FROM shipping_lines
-UNION ALL
-SELECT 'clearance_agents', COUNT(*) FROM clearance_agents;
-`;
-
-    writeFileSync("backups/restore_all.sql", restoreScript);
     console.log("\n✓ All contact databases backed up successfully!");
-    console.log("\nBackup files created:");
-    console.log("  - backups/import_customers_backup.sql");
-    console.log("  - backups/export_customers_backup.sql");
-    console.log("  - backups/export_receivers_backup.sql");
-    console.log("  - backups/hauliers_backup.sql");
-    console.log("  - backups/shipping_lines_backup.sql");
-    console.log("  - backups/clearance_agents_backup.sql");
-    console.log("  - backups/restore_all.sql (master restore script)");
+    console.log(`\nBackup name: backup_${timestamp}`);
+    console.log(`Total records: ${metadata.totalRecords}`);
 
     process.exit(0);
   } catch (error) {

@@ -4,17 +4,28 @@ import { sql } from "drizzle-orm";
 
 async function restoreContactDatabases() {
   try {
-    console.log("Starting restore of contact databases...");
+    // Get backup name from command line argument
+    const backupName = process.argv[2];
+    
+    if (!backupName) {
+      console.error("Error: Backup name is required");
+      console.log("Usage: tsx scripts/restore-contact-databases.ts <backup_name>");
+      process.exit(1);
+    }
+
+    const backupDir = `backups/${backupName}`;
+    
+    console.log(`Starting restore of contact databases from: ${backupName}`);
     console.log("WARNING: This will DELETE all existing data in contact tables!");
     
     // Read and execute each backup file
     const tables = [
-      { name: "import_customers", file: "backups/import_customers_backup.sql" },
-      { name: "export_customers", file: "backups/export_customers_backup.sql" },
-      { name: "export_receivers", file: "backups/export_receivers_backup.sql" },
-      { name: "hauliers", file: "backups/hauliers_backup.sql" },
-      { name: "shipping_lines", file: "backups/shipping_lines_backup.sql" },
-      { name: "clearance_agents", file: "backups/clearance_agents_backup.sql" },
+      { name: "import_customers", file: `${backupDir}/import_customers_backup.sql` },
+      { name: "export_customers", file: `${backupDir}/export_customers_backup.sql` },
+      { name: "export_receivers", file: `${backupDir}/export_receivers_backup.sql` },
+      { name: "hauliers", file: `${backupDir}/hauliers_backup.sql` },
+      { name: "shipping_lines", file: `${backupDir}/shipping_lines_backup.sql` },
+      { name: "clearance_agents", file: `${backupDir}/clearance_agents_backup.sql` },
     ];
 
     // Clear existing data
