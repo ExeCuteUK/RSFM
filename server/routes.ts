@@ -9,6 +9,7 @@ import {
   insertHaulierSchema,
   insertShippingLineSchema,
   insertClearanceAgentSchema,
+  insertSettingsSchema,
   insertImportShipmentSchema,
   insertExportShipmentSchema,
   insertCustomClearanceSchema
@@ -409,6 +410,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete clearance agent" });
+    }
+  });
+
+  // ========== Settings Routes ==========
+  
+  // Get settings (single record)
+  app.get("/api/settings", async (_req, res) => {
+    try {
+      const settingsRecord = await storage.getSettings();
+      if (!settingsRecord) {
+        return res.status(404).json({ error: "Settings not found" });
+      }
+      res.json(settingsRecord);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  // Create settings
+  app.post("/api/settings", async (req, res) => {
+    try {
+      const validatedData = insertSettingsSchema.parse(req.body);
+      const settingsRecord = await storage.createSettings(validatedData);
+      res.status(201).json(settingsRecord);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid settings data" });
+    }
+  });
+
+  // Update settings
+  app.patch("/api/settings/:id", async (req, res) => {
+    try {
+      const validatedData = insertSettingsSchema.partial().parse(req.body);
+      const settingsRecord = await storage.updateSettings(req.params.id, validatedData);
+      if (!settingsRecord) {
+        return res.status(404).json({ error: "Settings not found" });
+      }
+      res.json(settingsRecord);
+    } catch (error) {
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid settings data" });
+      }
+      res.status(500).json({ error: "Failed to update settings" });
     }
   });
 
