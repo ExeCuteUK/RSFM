@@ -651,7 +651,7 @@ export default function ImportShipments() {
                       <div className="flex items-center gap-1.5">
                         <Truck className="h-3.5 w-3.5 text-muted-foreground" />
                         <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
-                          Book Delivery Haulier
+                          {shipment.deliveryRelease === "Line" ? "Book Delivery with Line" : "Book Delivery Haulier"}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
