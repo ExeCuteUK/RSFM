@@ -16,6 +16,9 @@ Preferred communication style: Simple, everyday language.
 
 **Database Population:**
 - Import Customers: 1,424 records imported via `scripts/import-all-to-import-customers.ts`
+  - Field mapping: 0-11 Contact Info, 12-22 Agent Info, 23-31 Import Information
+  - VAT Payment Method logic: Field 24=1 → Customer Deferment (170), Field 25=1 → PVA (106), neither → R.S Deferment (1,148)
+  - Multi-value fields: contactName and agentContactName (split by /), email and agentEmail (split by ,)
 - Export Customers: 2,007 records imported via `scripts/import-export-customers.ts`  
 - Export Receivers: 2,147 records imported via `scripts/import-export-receivers.ts`
 - All imports use ##! delimiter and combine address fields with line breaks for readability
