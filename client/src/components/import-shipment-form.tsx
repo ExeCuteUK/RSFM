@@ -363,7 +363,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         <SelectContent>
                           <SelectItem value="Pending">Pending</SelectItem>
                           <SelectItem value="In Transit">In Transit</SelectItem>
-                          <SelectItem value="Delivered">Delivered</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -415,7 +415,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   />
                 )}
 
-                {status === "Delivered" && (
+                {status === "Completed" && (
                   <FormField
                     control={form.control}
                     name="proofOfDelivery"
