@@ -118,7 +118,7 @@ export default function Dashboard() {
       case "Pending":
         return "secondary"
       case "In Transit":
-      case "Delivered":
+      case "Completed":
       default:
         return "default"
     }
