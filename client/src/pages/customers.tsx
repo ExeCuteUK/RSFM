@@ -959,7 +959,7 @@ export default function Customers() {
                     <div className="space-y-1 text-sm">
                       {agent.agentImportEmail && agent.agentImportEmail.length > 0 && (
                         <div className="mt-2">
-                          <p className="text-xs text-white dark:text-white">Import Emails:</p>
+                          <p className="text-xs text-muted-foreground">Import Emails:</p>
                           <div className="space-y-0.5">
                             {agent.agentImportEmail.slice(0, 2).map((email, idx) => (
                               <p key={idx} data-testid={`text-import-email-${agent.id}-${idx}`}>
@@ -974,7 +974,7 @@ export default function Customers() {
                       )}
                       {agent.agentExportEmail && agent.agentExportEmail.length > 0 && (
                         <div className="mt-2">
-                          <p className="text-xs text-white dark:text-white">Export Emails:</p>
+                          <p className="text-xs text-muted-foreground">Export Emails:</p>
                           <div className="space-y-0.5">
                             {agent.agentExportEmail.slice(0, 2).map((email, idx) => (
                               <p key={idx} data-testid={`text-export-email-${agent.id}-${idx}`}>
