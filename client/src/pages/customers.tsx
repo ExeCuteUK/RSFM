@@ -440,13 +440,13 @@ export default function Customers() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as CustomerType)}>
-        <TabsList className="grid w-full max-w-3xl grid-cols-6 gap-3 px-3">
-          <TabsTrigger value="import" data-testid="tab-import-customers">Import Customers</TabsTrigger>
-          <TabsTrigger value="export" data-testid="tab-export-customers">Export Customers</TabsTrigger>
-          <TabsTrigger value="receiver" data-testid="tab-export-receivers">Export Receivers</TabsTrigger>
-          <TabsTrigger value="haulier" data-testid="tab-hauliers">Hauliers</TabsTrigger>
-          <TabsTrigger value="shippingline" data-testid="tab-shipping-lines">Shipping Lines</TabsTrigger>
-          <TabsTrigger value="clearanceagent" data-testid="tab-clearance-agents">Clearance Agents</TabsTrigger>
+        <TabsList className="grid w-full max-w-3xl grid-cols-6 gap-3 p-1">
+          <TabsTrigger value="import" data-testid="tab-import-customers" className="px-4">Import Customers</TabsTrigger>
+          <TabsTrigger value="export" data-testid="tab-export-customers" className="px-4">Export Customers</TabsTrigger>
+          <TabsTrigger value="receiver" data-testid="tab-export-receivers" className="px-4">Export Receivers</TabsTrigger>
+          <TabsTrigger value="haulier" data-testid="tab-hauliers" className="px-4">Hauliers</TabsTrigger>
+          <TabsTrigger value="shippingline" data-testid="tab-shipping-lines" className="px-4">Shipping Lines</TabsTrigger>
+          <TabsTrigger value="clearanceagent" data-testid="tab-clearance-agents" className="px-4">Clearance Agents</TabsTrigger>
         </TabsList>
 
         <div className="my-4">

@@ -34,7 +34,6 @@ function Router() {
       <Route path="/invoices" component={Invoices} />
       <Route path="/job-journals" component={JobJournals} />
       <Route path="/shipping-lines" component={ShippingLines} />
-      <Route path="/notifications" component={() => <div className="p-6">Notifications page coming soon...</div>} />
       <Route path="/backups" component={BackupsPage} />
       <Route path="/settings" component={SettingsPage} />
       {/* Fallback to 404 */}

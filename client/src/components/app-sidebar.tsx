@@ -5,7 +5,6 @@ import {
   Truck, 
   FileText, 
   Settings, 
-  Bell,
   FileCheck,
   BookOpen,
   Database
@@ -63,11 +62,6 @@ const menuItems = [
 ]
 
 const secondaryItems = [
-  {
-    title: "Notifications",
-    url: "/notifications",
-    icon: Bell,
-  },
   {
     title: "Backups",
     url: "/backups",
