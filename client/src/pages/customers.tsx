@@ -1026,15 +1026,15 @@ export default function Customers() {
                 />
               )
             } else if (formType === "haulier") {
-              const haulier = editingCustomer as Haulier
+              const haulier = editingCustomer as Haulier | null
               return (
                 <HaulierForm
                   onSubmit={handleFormSubmit}
                   onCancel={() => setIsFormOpen(false)}
-                  defaultValues={{
+                  defaultValues={haulier ? {
                     ...haulier,
                     contacts: haulier.contacts || []
-                  }}
+                  } : undefined}
                 />
               )
             } else if (formType === "shippingline") {

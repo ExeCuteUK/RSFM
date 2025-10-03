@@ -117,7 +117,7 @@ export const hauliers = pgTable("hauliers", {
   
   // Contact Information
   haulierName: text("haulier_name").notNull(),
-  contacts: jsonb("contacts").$type<HaulierContact[]>().default(sql`'[]'::jsonb`),
+  contacts: jsonb("contacts").$type<HaulierContact[]>().notNull().default(sql`'[]'::jsonb`),
   address: text("address"),
   telephone: text("telephone"),
   mobile: text("mobile"),
