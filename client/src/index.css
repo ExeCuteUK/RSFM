@@ -421,3 +421,34 @@
 .inline-uploader-wrapper .uppy-Dashboard-Item-action--remove:hover {
   color: hsl(var(--destructive));
 }
+
+/* Print Styles */
+@media print {
+  /* Remove scrollbars and overflow constraints for dialogs */
+  [role="dialog"] {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Allow dialog content to span multiple pages */
+  [role="dialog"] > * {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Hide scrollbars globally when printing */
+  * {
+    overflow: visible !important;
+  }
+  
+  /* Ensure page breaks work properly */
+  .space-y-4 > * {
+    page-break-inside: avoid;
+  }
+  
+  /* Hide interactive elements when printing */
+  button[data-testid="button-print-shipment"],
+  button[data-testid="button-edit-shipment"] {
+    display: none !important;
+  }
+}
