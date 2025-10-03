@@ -582,7 +582,7 @@ export default function ImportShipments() {
                       <p className="font-semibold text-lg" data-testid={`text-eta-port-${shipment.id}`}>
                         <span>ETA Port:</span>{' '}
                         {formatDate(shipment.importDateEtaPort) || (
-                          <span className="text-red-700 dark:text-red-600">TBA</span>
+                          <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                         )}
                       </p>
                     </div>
@@ -596,7 +596,7 @@ export default function ImportShipments() {
                     <p data-testid={`text-delivery-date-${shipment.id}`}>
                       <span>Delivery Date:</span>{' '}
                       {formatDate(shipment.deliveryDate) || (
-                        <span className="text-red-700 dark:text-red-600">TBA</span>
+                        <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                       )}
                     </p>
                     {shipment.portOfArrival && (
