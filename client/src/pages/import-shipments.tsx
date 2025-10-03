@@ -704,7 +704,9 @@ export default function ImportShipments() {
                         <div className="flex items-center gap-1.5">
                           <Unlock className="h-3.5 w-3.5 text-muted-foreground" />
                           <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
-                            Release Container to : {shipment.deliveryRelease || "N/A"}
+                            {shipment.deliveryRelease === "Line" 
+                              ? "Pay Line for Delivery" 
+                              : `Release Container to : ${shipment.deliveryRelease || "N/A"}`}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
