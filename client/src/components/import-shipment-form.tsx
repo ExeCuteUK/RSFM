@@ -1447,19 +1447,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 )}
 
                 {rsToClear && additionalCommodityCodes && additionalCommodityCodes > 1 && (
-                  <FormField
-                    control={form.control}
-                    name="additionalCommodityCodeCharge"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Additional Charge Per HS Code</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-additional-commodity-code-charge" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <FormLabel>Additional HS Code Charges</FormLabel>
+                    <div className="text-sm font-medium" data-testid="display-additional-hs-code-charges">
+                      £{((additionalCommodityCodes - 1) * parseFloat(form.watch("additionalCommodityCodeCharge") || "5")).toFixed(2)}
+                    </div>
+                  </div>
                 )}
 
                 <FormField
