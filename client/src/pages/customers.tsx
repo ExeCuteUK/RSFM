@@ -440,7 +440,7 @@ export default function Customers() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as CustomerType)}>
-        <TabsList className="grid w-full max-w-3xl grid-cols-6">
+        <TabsList className="grid w-full max-w-3xl grid-cols-6 gap-3">
           <TabsTrigger value="import" data-testid="tab-import-customers">Import Customers</TabsTrigger>
           <TabsTrigger value="export" data-testid="tab-export-customers">Export Customers</TabsTrigger>
           <TabsTrigger value="receiver" data-testid="tab-export-receivers">Export Receivers</TabsTrigger>
