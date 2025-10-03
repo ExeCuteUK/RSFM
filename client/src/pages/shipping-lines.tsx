@@ -197,69 +197,31 @@ export default function ShippingLines() {
                     </div>
                   )}
 
-                  {shippingLine.importEmail && shippingLine.importEmail.length > 0 && (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                        <span className="font-medium text-orange-600 dark:text-orange-400">Import:</span>
+                  {(() => {
+                    const allEmails = [
+                      ...(shippingLine.importEmail || []),
+                      ...(shippingLine.exportEmail || []),
+                      ...(shippingLine.releasesEmail || []),
+                      ...(shippingLine.accountingEmail || [])
+                    ];
+                    const uniqueEmails = Array.from(new Set(allEmails));
+                    
+                    return uniqueEmails.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                          <span className="font-medium text-orange-600 dark:text-orange-400">Email Contacts:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1 ml-6" data-testid={`list-all-emails-${shippingLine.id}`}>
+                          {uniqueEmails.map((email, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {email}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-1 ml-6" data-testid={`list-import-emails-${shippingLine.id}`}>
-                        {shippingLine.importEmail.map((email, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {email}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {shippingLine.exportEmail && shippingLine.exportEmail.length > 0 && (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                        <span className="font-medium text-orange-600 dark:text-orange-400">Export:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 ml-6" data-testid={`list-export-emails-${shippingLine.id}`}>
-                        {shippingLine.exportEmail.map((email, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {email}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {shippingLine.releasesEmail && shippingLine.releasesEmail.length > 0 && (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                        <span className="font-medium text-orange-600 dark:text-orange-400">Releases:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 ml-6" data-testid={`list-releases-emails-${shippingLine.id}`}>
-                        {shippingLine.releasesEmail.map((email, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {email}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {shippingLine.accountingEmail && shippingLine.accountingEmail.length > 0 && (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                        <span className="font-medium text-orange-600 dark:text-orange-400">Accounting:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 ml-6" data-testid={`list-accounting-emails-${shippingLine.id}`}>
-                        {shippingLine.accountingEmail.map((email, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {email}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </CardContent>
             </Card>
