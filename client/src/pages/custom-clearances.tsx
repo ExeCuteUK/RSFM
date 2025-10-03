@@ -99,6 +99,58 @@ export default function CustomClearances() {
     },
   })
 
+  const updateAdviseAgentStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/advise-agent-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
+  const updateSendEntryStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/send-entry-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
+  const updateInvoiceStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/invoice-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
+  const updateSendClearedEntryStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/send-cleared-entry-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
+  const handleAdviseAgentStatusUpdate = (id: string, status: number) => {
+    updateAdviseAgentStatus.mutate({ id, status })
+  }
+
+  const handleSendEntryStatusUpdate = (id: string, status: number) => {
+    updateSendEntryStatus.mutate({ id, status })
+  }
+
+  const handleInvoiceStatusUpdate = (id: string, status: number) => {
+    updateInvoiceStatus.mutate({ id, status })
+  }
+
+  const handleSendClearedEntryStatusUpdate = (id: string, status: number) => {
+    updateSendClearedEntryStatus.mutate({ id, status })
+  }
+
   const handleOpenNotes = (clearance: CustomClearance) => {
     setNotesClearanceId(clearance.id)
     setNotesValue(clearance.additionalNotes || "")
@@ -421,149 +473,138 @@ export default function CustomClearances() {
                       </p>
                     )}
 
-                    {/* To Do List */}
-                    <div className="pt-2 mt-2 border-t space-y-1">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5">
-                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                          <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium`} data-testid={`todo-advise-agent-${clearance.id}`}>
-                            Advise Clearance To Agent
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.adviseAgentStatusIndicator === 1
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-advise-pending-${clearance.id}`}
-                          />
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.adviseAgentStatusIndicator === 2
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-advise-progress-${clearance.id}`}
-                          />
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.adviseAgentStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
-                            }`}
-                            data-testid={`button-advise-complete-${clearance.id}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5">
-                          <Send className="h-3.5 w-3.5 text-muted-foreground" />
-                          <p className={`text-xs ${getStatusColor(clearance.sendEntryToCustomerStatusIndicator)} font-medium`} data-testid={`todo-send-entry-${clearance.id}`}>
-                            Send Entry/EAD to Customer
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.sendEntryToCustomerStatusIndicator === 1
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-entry-pending-${clearance.id}`}
-                          />
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.sendEntryToCustomerStatusIndicator === 2
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-entry-progress-${clearance.id}`}
-                          />
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.sendEntryToCustomerStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
-                            }`}
-                            data-testid={`button-entry-complete-${clearance.id}`}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5">
-                          <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
-                          <p className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium`} data-testid={`todo-invoice-${clearance.id}`}>
-                            Invoice Customer
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.invoiceCustomerStatusIndicator === 1
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-invoice-pending-${clearance.id}`}
-                          />
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.invoiceCustomerStatusIndicator === 2
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-invoice-progress-${clearance.id}`}
-                          />
-                          <button
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              clearance.invoiceCustomerStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
-                            }`}
-                            data-testid={`button-invoice-complete-${clearance.id}`}
-                          />
-                        </div>
-                      </div>
-
-                      {clearance.jobType === "import" && (
+                    {/* To-Do List */}
+                    <div className="pt-2 mt-2 border-t">
+                      <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${clearance.id}`}>
+                        To-Do List
+                      </h3>
+                      <div className="space-y-1">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
-                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                            <p className={`text-xs ${getStatusColor(clearance.sendClearedEntryStatusIndicator)} font-medium`} data-testid={`todo-cleared-entry-${clearance.id}`}>
-                              Send Cleared Entry to Customer
+                            <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                            <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium`} data-testid={`todo-advise-agent-${clearance.id}`}>
+                              Advise Clearance To Agent
                             </p>
                           </div>
                           <div className="flex items-center gap-1">
                             <button
+                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 2)}
                               className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendClearedEntryStatusIndicator === 1
+                                clearance.adviseAgentStatusIndicator === 2 || clearance.adviseAgentStatusIndicator === null
                                   ? 'bg-yellow-400 border-yellow-500 scale-110'
                                   : 'bg-yellow-200 border-yellow-300 hover-elevate'
                               }`}
-                              data-testid={`button-cleared-pending-${clearance.id}`}
+                              data-testid={`button-advise-yellow-${clearance.id}`}
+                              title="Yellow Status"
                             />
                             <button
+                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 3)}
                               className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendClearedEntryStatusIndicator === 2
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                              }`}
-                              data-testid={`button-cleared-progress-${clearance.id}`}
-                            />
-                            <button
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendClearedEntryStatusIndicator === 3
+                                clearance.adviseAgentStatusIndicator === 3
                                   ? 'bg-green-400 border-green-500 scale-110'
                                   : 'bg-green-200 border-green-300 hover-elevate'
                               }`}
-                              data-testid={`button-cleared-complete-${clearance.id}`}
+                              data-testid={`button-advise-green-${clearance.id}`}
+                              title="Green Status"
                             />
                           </div>
                         </div>
-                      )}
+
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Send className="h-3.5 w-3.5 text-muted-foreground" />
+                            <p className={`text-xs ${getStatusColor(clearance.sendEntryToCustomerStatusIndicator)} font-medium`} data-testid={`todo-send-entry-${clearance.id}`}>
+                              Send Entry/EAD to Customer
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 2)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendEntryToCustomerStatusIndicator === 2 || clearance.sendEntryToCustomerStatusIndicator === null
+                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              }`}
+                              data-testid={`button-entry-yellow-${clearance.id}`}
+                              title="Yellow Status"
+                            />
+                            <button
+                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 3)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendEntryToCustomerStatusIndicator === 3
+                                  ? 'bg-green-400 border-green-500 scale-110'
+                                  : 'bg-green-200 border-green-300 hover-elevate'
+                              }`}
+                              data-testid={`button-entry-green-${clearance.id}`}
+                              title="Green Status"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                            <p className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium`} data-testid={`todo-invoice-${clearance.id}`}>
+                              Invoice Customer
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleInvoiceStatusUpdate(clearance.id, 2)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.invoiceCustomerStatusIndicator === 2 || clearance.invoiceCustomerStatusIndicator === null
+                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              }`}
+                              data-testid={`button-invoice-yellow-${clearance.id}`}
+                              title="Yellow Status"
+                            />
+                            <button
+                              onClick={() => handleInvoiceStatusUpdate(clearance.id, 3)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.invoiceCustomerStatusIndicator === 3
+                                  ? 'bg-green-400 border-green-500 scale-110'
+                                  : 'bg-green-200 border-green-300 hover-elevate'
+                              }`}
+                              data-testid={`button-invoice-green-${clearance.id}`}
+                              title="Green Status"
+                            />
+                          </div>
+                        </div>
+
+                        {clearance.jobType === "import" && (
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                              <p className={`text-xs ${getStatusColor(clearance.sendClearedEntryStatusIndicator)} font-medium`} data-testid={`todo-cleared-entry-${clearance.id}`}>
+                                Send Cleared Entry to Customer
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 2)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendClearedEntryStatusIndicator === 2 || clearance.sendClearedEntryStatusIndicator === null
+                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                    : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                }`}
+                                data-testid={`button-cleared-yellow-${clearance.id}`}
+                                title="Yellow Status"
+                              />
+                              <button
+                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 3)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendClearedEntryStatusIndicator === 3
+                                    ? 'bg-green-400 border-green-500 scale-110'
+                                    : 'bg-green-200 border-green-300 hover-elevate'
+                                }`}
+                                data-testid={`button-cleared-green-${clearance.id}`}
+                                title="Green Status"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Files Section */}

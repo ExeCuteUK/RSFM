@@ -837,6 +837,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update advise agent status indicator
+  app.patch("/api/custom-clearances/:id/advise-agent-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.updateCustomClearance(req.params.id, { 
+        adviseAgentStatusIndicator: status 
+      });
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
+  // Update send entry to customer status indicator
+  app.patch("/api/custom-clearances/:id/send-entry-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.updateCustomClearance(req.params.id, { 
+        sendEntryToCustomerStatusIndicator: status 
+      });
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
+  // Update invoice customer status indicator
+  app.patch("/api/custom-clearances/:id/invoice-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.updateCustomClearance(req.params.id, { 
+        invoiceCustomerStatusIndicator: status 
+      });
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
+  // Update send cleared entry status indicator
+  app.patch("/api/custom-clearances/:id/send-cleared-entry-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.getCustomClearance(req.params.id);
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      if (clearance.jobType !== "import") {
+        return res.status(400).json({ error: "This status is only for import clearances" });
+      }
+      const updated = await storage.updateCustomClearance(req.params.id, { 
+        sendClearedEntryStatusIndicator: status 
+      });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
   // ========== Object Storage Routes ==========
 
   // Get presigned upload URL for file uploads
