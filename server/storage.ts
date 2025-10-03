@@ -565,8 +565,8 @@ export class MemStorage implements IStorage {
       attachments: updates.attachments !== undefined ? updates.attachments ?? null : existing.attachments,
     };
 
-    // If rsToClear is being changed from false to true, create a linked clearance
-    if (!existing.rsToClear && updated.rsToClear === true && !existing.linkedClearanceId) {
+    // If rsToClear is true and there's no linked clearance, create one
+    if (updated.rsToClear === true && !existing.linkedClearanceId) {
       const clearanceId = randomUUID();
       const clearance: CustomClearance = {
         id: clearanceId,
@@ -1079,9 +1079,10 @@ export class DatabaseStorage implements IStorage {
       updates.linkedClearanceId = null;
     }
 
-    // If rsToClear is being changed from false to true, create a linked clearance
-    if (!existing.rsToClear && updates.rsToClear === true && !existing.linkedClearanceId) {
-      console.log('[DEBUG-STORAGE] Creating linked clearance');
+    // If rsToClear is true and there's no linked clearance, create one
+    const finalRsToClear = updates.rsToClear !== undefined ? updates.rsToClear : existing.rsToClear;
+    if (finalRsToClear === true && !existing.linkedClearanceId) {
+      console.log('[DEBUG-STORAGE] Creating linked clearance for rsToClear=true');
       const updatedShipment = { ...existing, ...updates };
       
       const [clearance] = await db.insert(customClearances).values({
