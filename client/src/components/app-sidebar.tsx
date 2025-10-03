@@ -7,7 +7,8 @@ import {
   Settings, 
   Bell,
   FileCheck,
-  BookOpen
+  BookOpen,
+  Database
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 
@@ -66,6 +67,11 @@ const secondaryItems = [
     title: "Notifications",
     url: "/notifications",
     icon: Bell,
+  },
+  {
+    title: "Backups",
+    url: "/backups",
+    icon: Database,
   },
   {
     title: "Settings",

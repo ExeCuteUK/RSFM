@@ -897,6 +897,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Backup Routes ==========
+
+  // Create backup of all contact databases
+  app.post("/api/backups/create", async (_req, res) => {
+    try {
+      const { execSync } = await import("child_process");
+      const result = execSync("tsx scripts/backup-contact-databases.ts", {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      
+      // Parse the output to get backup statistics
+      const lines = result.split("\n");
+      const tables = [];
+      let totalRecords = 0;
+      
+      for (const line of lines) {
+        const match = line.match(/✓ (.+) backed up: (\d+) records/);
+        if (match) {
+          const count = parseInt(match[2]);
+          tables.push({
+            name: match[1],
+            count: count,
+          });
+          totalRecords += count;
+        }
+      }
+      
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        tables,
+        totalRecords,
+      });
+    } catch (error) {
+      console.error("Backup error:", error);
+      res.status(500).json({ error: "Failed to create backup" });
+    }
+  });
+
+  // Restore from backup
+  app.post("/api/backups/restore", async (_req, res) => {
+    try {
+      const { execSync } = await import("child_process");
+      const result = execSync("tsx scripts/restore-contact-databases.ts", {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      
+      // Parse the output to get restore statistics
+      const lines = result.split("\n");
+      const tables = [];
+      let totalRecords = 0;
+      
+      for (const line of lines) {
+        const match = line.match(/✓ (.+) restored: (\d+) records/);
+        if (match) {
+          const count = parseInt(match[2]);
+          tables.push({
+            name: match[1],
+            count: count,
+          });
+          totalRecords += count;
+        }
+      }
+      
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        tables,
+        totalRecords,
+      });
+    } catch (error) {
+      console.error("Restore error:", error);
+      res.status(500).json({ error: "Failed to restore backup" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
