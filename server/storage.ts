@@ -1067,14 +1067,21 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getImportShipment(id);
     if (!existing) return undefined;
 
+    console.log('[DEBUG-STORAGE] Update import shipment:', id);
+    console.log('[DEBUG-STORAGE] Existing rsToClear:', existing.rsToClear);
+    console.log('[DEBUG-STORAGE] Update rsToClear:', updates.rsToClear);
+    console.log('[DEBUG-STORAGE] Existing linkedClearanceId:', existing.linkedClearanceId);
+
     // If rsToClear is being changed from true to false, delete the linked clearance
     if (existing.rsToClear && updates.rsToClear === false && existing.linkedClearanceId) {
+      console.log('[DEBUG-STORAGE] Deleting linked clearance');
       await db.delete(customClearances).where(eq(customClearances.id, existing.linkedClearanceId));
       updates.linkedClearanceId = null;
     }
 
     // If rsToClear is being changed from false to true, create a linked clearance
     if (!existing.rsToClear && updates.rsToClear === true && !existing.linkedClearanceId) {
+      console.log('[DEBUG-STORAGE] Creating linked clearance');
       const updatedShipment = { ...existing, ...updates };
       
       const [clearance] = await db.insert(customClearances).values({

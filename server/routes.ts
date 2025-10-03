@@ -391,12 +391,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/import-shipments/:id", async (req, res) => {
     try {
       // For updates, we make the validation less strict by not requiring all fields
+      console.log('[DEBUG] Update import shipment:', req.params.id, 'rsToClear:', req.body.rsToClear);
       const shipment = await storage.updateImportShipment(req.params.id, req.body);
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
       }
+      console.log('[DEBUG] Updated shipment rsToClear:', shipment.rsToClear, 'linkedClearanceId:', shipment.linkedClearanceId);
       res.json(shipment);
     } catch (error: any) {
+      console.error('[ERROR] Failed to update import shipment:', error);
       if (error.name === "ZodError") {
         return res.status(400).json({ 
           error: "Invalid import shipment data",
