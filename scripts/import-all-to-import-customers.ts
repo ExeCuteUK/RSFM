@@ -1,66 +1,81 @@
 import { db } from "../server/db";
-import { importCustomers, exportCustomers, exportReceivers } from "../shared/schema";
+import { importCustomers } from "../shared/schema";
 import { readFileSync } from "fs";
 import { join } from "path";
 
-async function clearAndImportAll() {
-  console.log("Clearing existing data...");
-  
-  // Clear all tables
-  await db.delete(importCustomers);
-  await db.delete(exportCustomers);
-  await db.delete(exportReceivers);
-  
-  console.log("✓ Database cleared");
-  console.log("\nStarting import into Import Customers table...");
+async function importToImportCustomers() {
+  console.log("Starting import into Import Customers table...");
 
-  const filePath = join(process.cwd(), "attached_assets", "imports_1759499032593.txt");
+  const filePath = join(process.cwd(), "attached_assets", "imports_1759502485774.txt");
   const fileContent = readFileSync(filePath, "utf-8");
   const lines = fileContent.split("\n").filter(line => line.trim());
 
-  console.log(`Processing ${lines.length} contacts...`);
+  console.log(`Processing ${lines.length} customers...`);
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const fields = line.split("##!");
 
+    // Contact Information Card (Fields 0-11)
     const companyName = fields[0]?.trim() || "";
-    const contactNameRaw = fields[1]?.trim() || "";
+    const contactName = fields[1]?.trim() || null;
     const vatNumber = fields[2]?.trim() || null;
     const telephone = fields[3]?.trim() || null;
+    // Field 4 is IGNORED
     const emailRaw = fields[5]?.trim() || "";
     const addressLine1 = fields[6]?.trim() || "";
     const addressLine2 = fields[7]?.trim() || "";
-    const addressLine3 = fields[8]?.trim() || "";
+    const town = fields[8]?.trim() || "";
+    const county = fields[9]?.trim() || "";
+    const postcode = fields[10]?.trim() || "";
+    const country = fields[11]?.trim() || "";
+
+    // Agent Contact Card (Fields 12-22)
+    const agentName = fields[12]?.trim() || null;
+    const agentContactName = fields[13]?.trim() || null;
+    const agentTelephone = fields[14]?.trim() || null;
+    // Field 15 is IGNORED
+    const agentEmailRaw = fields[16]?.trim() || "";
+    const agentAddressLine1 = fields[17]?.trim() || "";
+    const agentAddressLine2 = fields[18]?.trim() || "";
+    const agentTown = fields[19]?.trim() || "";
+    const agentCounty = fields[20]?.trim() || "";
+    const agentPostcode = fields[21]?.trim() || "";
+    const agentCountry = fields[22]?.trim() || "";
+
+    // Import Information Card (Fields 23-31)
     const rsProcessFlag = fields[23]?.trim() || "0";
     const customerDefermentFlag = fields[24]?.trim() || "0";
     const pvaFlag = fields[25]?.trim() || "0";
-    const agentInDover = fields[27]?.trim() || null;
-    const clearanceAgentDetails = fields[28]?.trim() || null;
-    const defaultDeliveryAddress = fields[29]?.trim() || null;
-    const defaultSuppliersName = fields[30]?.trim() || null;
-    const accountsEmail = fields[31]?.trim() || null;
-    const bookingInDetails = fields[32]?.trim() || null;
+    const clearanceAgent = fields[26]?.trim() || null;
+    // Field 27 is IGNORED
+    const defaultDeliveryAddress = fields[28]?.trim() || null;
+    const defaultSuppliersName = fields[29]?.trim() || null;
+    const clearanceAgentDetails = fields[30]?.trim() || null;
+    const bookingInDetails = fields[31]?.trim() || null;
 
     if (!companyName) continue;
 
-    const contactNames = contactNameRaw
-      ? contactNameRaw.split("/").map(n => n.trim()).filter(n => n)
-      : [];
-
+    // Parse emails
     const emails = emailRaw
       ? emailRaw.split(",").map(e => e.trim()).filter(e => e)
       : [];
 
-    const accountsEmails = accountsEmail
-      ? accountsEmail.split(",").map(e => e.trim()).filter(e => e)
+    const agentEmails = agentEmailRaw
+      ? agentEmailRaw.split(",").map(e => e.trim()).filter(e => e)
       : [];
 
+    // Combine address fields with line breaks
     const addressParts = [
-      addressLine1, addressLine2, addressLine3
+      addressLine1, addressLine2, town, county, postcode, country
     ].filter(part => part);
-    
     const address = addressParts.length > 0 ? addressParts.join(",\n") : null;
+
+    // Combine agent address fields with line breaks
+    const agentAddressParts = [
+      agentAddressLine1, agentAddressLine2, agentTown, agentCounty, agentPostcode, agentCountry
+    ].filter(part => part);
+    const agentAddress = agentAddressParts.length > 0 ? agentAddressParts.join(",\n") : null;
 
     // VAT Payment Method logic based on fields 24 and 25
     let vatPaymentMethod = "R.S Deferment";
@@ -74,33 +89,35 @@ async function clearAndImportAll() {
     const rsProcessCustomsClearance = rsProcessFlag === "1";
 
     try {
-      // Import ALL customers into import_customers table
       await db.insert(importCustomers).values({
         companyName,
-        contactName: contactNames.length > 0 ? contactNames : null,
+        contactName: contactName || null,
         vatNumber: vatNumber || null,
         telephone: telephone || null,
         email: emails.length > 0 ? emails : null,
-        accountsEmail: accountsEmails.length > 0 ? accountsEmails : null,
+        accountsEmail: null, // Not in import file
         address: address,
-        agentName: null,
-        agentContactName: null,
-        agentVatNumber: null,
-        agentTelephone: null,
-        agentEmail: null,
-        agentAccountsEmail: null,
-        agentAddress: null,
+        agentName: agentName,
+        agentContactName: agentContactName,
+        agentVatNumber: null, // Not in import file
+        agentTelephone: agentTelephone,
+        agentEmail: agentEmails.length > 0 ? agentEmails : null,
+        agentAccountsEmail: null, // Not in import file
+        agentAddress: agentAddress,
         rsProcessCustomsClearance: rsProcessCustomsClearance,
-        agentInDover: agentInDover || null,
+        agentInDover: clearanceAgent, // Field 26
         vatPaymentMethod: vatPaymentMethod,
         clearanceAgentDetails: clearanceAgentDetails || null,
         defaultDeliveryAddress: defaultDeliveryAddress || null,
         defaultSuppliersName: defaultSuppliersName || null,
         bookingInDetails: bookingInDetails || null,
       });
-      console.log(`✓ ${companyName} (VAT: ${vatPaymentMethod}, R.S Clear: ${rsProcessCustomsClearance})`);
+
+      if ((i + 1) % 100 === 0 || i === 0) {
+        console.log(`✓ Processed ${i + 1}/${lines.length}: ${companyName}`);
+      }
     } catch (error) {
-      console.error(`Error: ${companyName}:`, error);
+      console.error(`Error importing ${companyName}:`, error);
     }
   }
 
@@ -108,7 +125,7 @@ async function clearAndImportAll() {
   process.exit(0);
 }
 
-clearAndImportAll().catch((error) => {
+importToImportCustomers().catch((error) => {
   console.error("Import failed:", error);
   process.exit(1);
 });
