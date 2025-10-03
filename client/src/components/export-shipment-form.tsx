@@ -191,11 +191,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       const selectedReceiver = exportReceivers.find(r => r.id === receiverId)
       if (selectedReceiver) {
         const addressParts = [
-          selectedReceiver.addressLine1,
-          selectedReceiver.addressLine2,
-          selectedReceiver.town,
-          selectedReceiver.county,
-          selectedReceiver.postcode,
+          selectedReceiver.address,
           selectedReceiver.country
         ].filter(part => part && part.trim() !== "")
         
