@@ -76,6 +76,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       trailerOrContainerNumber: "",
       departureCountry: "",
       containerShipment: "",
+      handoverContainerAtPort: false,
       vesselName: "",
       shippingLine: "",
       deliveryRelease: "",
@@ -156,6 +157,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const selectedCustomerId = form.watch("importCustomerId")
   const rsToClear = form.watch("rsToClear")
   const containerShipment = form.watch("containerShipment")
+  const handoverContainerAtPort = form.watch("handoverContainerAtPort")
   const status = form.watch("status")
   const haulierEmails = form.watch("haulierEmail") || []
   const haulierContactNames = form.watch("haulierContactName") || []
@@ -209,6 +211,22 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       }
     }
   }, [additionalCommodityCodes, form])
+
+  useEffect(() => {
+    const currentExpenses = (form.getValues("expensesToChargeOut") || []) as Array<{ description: string; amount: string }>
+    const handoverFeeExists = currentExpenses.some((exp) => exp.description === "Handover Fee")
+    
+    if (handoverContainerAtPort && !handoverFeeExists) {
+      form.setValue("expensesToChargeOut", [
+        ...currentExpenses,
+        { description: "Handover Fee", amount: "30" }
+      ])
+    } else if (!handoverContainerAtPort && handoverFeeExists) {
+      form.setValue("expensesToChargeOut", 
+        currentExpenses.filter((exp) => exp.description !== "Handover Fee")
+      )
+    }
+  }, [handoverContainerAtPort, form])
 
   const handleFormSubmit = async (data: InsertImportShipment) => {
     const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
@@ -375,6 +393,27 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     </FormItem>
                   )}
                 />
+
+                {containerShipment === "Container Shipment" && (
+                  <FormField
+                    control={form.control}
+                    name="handoverContainerAtPort"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value || false} 
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-handover-container"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Handover Container to Customer at Port</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 {status === "Delivered" && (
                   <FormField
@@ -673,7 +712,9 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     name="deliveryRelease"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Delivery Release</FormLabel>
+                        <FormLabel>
+                          {handoverContainerAtPort ? "Handover Notes" : "Delivery Release"}
+                        </FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-delivery-release" />
                         </FormControl>
@@ -1469,7 +1510,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     <FormItem className="col-span-2">
                       <FormLabel>Expenses To Charge Out</FormLabel>
                       <div className="space-y-2">
-                        {(field.value || []).map((expense: { description: string; amount: string }, index) => (
+                        {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
                           <div key={index} className="flex gap-2 items-start">
                             <Input
                               value={expense.description}
@@ -1601,7 +1642,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       <FormItem className="col-span-2">
                         <FormLabel>Additional Expenses In</FormLabel>
                         <div className="space-y-2">
-                          {(field.value || []).map((expense: { description: string; amount: string }, index) => (
+                          {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
                             <div key={index} className="flex gap-2 items-start">
                               <Input
                                 value={expense.description}
