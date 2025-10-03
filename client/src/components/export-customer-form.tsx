@@ -14,6 +14,16 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { X, Plus } from "lucide-react"
 import { useState } from "react"
 
@@ -30,6 +40,7 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
   const [newAgentAccountsEmail, setNewAgentAccountsEmail] = useState("")
   const [newContactName, setNewContactName] = useState("")
   const [newAgentContactName, setNewAgentContactName] = useState("")
+  const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
   
   const form = useForm<InsertExportCustomer>({
     resolver: zodResolver(insertExportCustomerSchema),
@@ -143,9 +154,35 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
     form.setValue("agentAccountsEmail", currentAgentAccountsEmails.filter(e => e !== email))
   }
 
+  const hasUnsavedFields = () => {
+    return (
+      newContactName.trim() !== "" ||
+      newAgentContactName.trim() !== "" ||
+      newEmail.trim() !== "" ||
+      newAccountsEmail.trim() !== "" ||
+      newAgentEmail.trim() !== "" ||
+      newAgentAccountsEmail.trim() !== ""
+    )
+  }
+
+  const handleFormSubmit = (data: InsertExportCustomer) => {
+    if (hasUnsavedFields()) {
+      setShowUnsavedFieldsWarning(true)
+    } else {
+      onSubmit(data)
+    }
+  }
+
+  const handleContinueWithoutSaving = () => {
+    setShowUnsavedFieldsWarning(false)
+    const data = form.getValues()
+    onSubmit(data)
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Contact Information */}
           <Card>
@@ -659,5 +696,24 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
         </div>
       </form>
     </Form>
+
+    <AlertDialog open={showUnsavedFieldsWarning} onOpenChange={setShowUnsavedFieldsWarning}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Unsaved Field Information</AlertDialogTitle>
+          <AlertDialogDescription>
+            You have entered information in one or more fields but haven't added it using the + button. 
+            Do you want to continue without saving these entries?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid="button-go-back">Go Back</AlertDialogCancel>
+          <AlertDialogAction onClick={handleContinueWithoutSaving} data-testid="button-continue">
+            Continue Without Saving
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
