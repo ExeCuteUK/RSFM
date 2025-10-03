@@ -11,6 +11,8 @@ import {
   type InsertHaulier,
   type ShippingLine,
   type InsertShippingLine,
+  type ClearanceAgent,
+  type InsertClearanceAgent,
   type ImportShipment,
   type InsertImportShipment,
   type ExportShipment,
@@ -22,6 +24,7 @@ import {
   exportReceivers,
   hauliers,
   shippingLines,
+  clearanceAgents,
   importShipments,
   exportShipments,
   customClearances,
@@ -71,6 +74,13 @@ export interface IStorage {
   createShippingLine(shippingLine: InsertShippingLine): Promise<ShippingLine>;
   updateShippingLine(id: string, shippingLine: Partial<InsertShippingLine>): Promise<ShippingLine | undefined>;
   deleteShippingLine(id: string): Promise<boolean>;
+
+  // Clearance Agent methods
+  getAllClearanceAgents(): Promise<ClearanceAgent[]>;
+  getClearanceAgent(id: string): Promise<ClearanceAgent | undefined>;
+  createClearanceAgent(agent: InsertClearanceAgent): Promise<ClearanceAgent>;
+  updateClearanceAgent(id: string, agent: Partial<InsertClearanceAgent>): Promise<ClearanceAgent | undefined>;
+  deleteClearanceAgent(id: string): Promise<boolean>;
 
   // Job Reference methods
   getNextJobRef(): number;
@@ -418,6 +428,35 @@ export class MemStorage implements IStorage {
   }
 
   async deleteShippingLine(id: string): Promise<boolean> {
+    return false;
+  }
+
+  // Clearance Agent methods
+  async getAllClearanceAgents(): Promise<ClearanceAgent[]> {
+    return [];
+  }
+
+  async getClearanceAgent(id: string): Promise<ClearanceAgent | undefined> {
+    return undefined;
+  }
+
+  async createClearanceAgent(agent: InsertClearanceAgent): Promise<ClearanceAgent> {
+    const created: ClearanceAgent = {
+      id: randomUUID(),
+      agentName: agent.agentName,
+      agentTelephone: agent.agentTelephone ?? null,
+      agentImportEmail: agent.agentImportEmail ?? null,
+      agentExportEmail: agent.agentExportEmail ?? null,
+      agentAccountingEmail: agent.agentAccountingEmail ?? null,
+    };
+    return created;
+  }
+
+  async updateClearanceAgent(id: string, agent: Partial<InsertClearanceAgent>): Promise<ClearanceAgent | undefined> {
+    return undefined;
+  }
+
+  async deleteClearanceAgent(id: string): Promise<boolean> {
     return false;
   }
 
@@ -992,6 +1031,31 @@ export class DatabaseStorage implements IStorage {
 
   async deleteShippingLine(id: string): Promise<boolean> {
     const result = await db.delete(shippingLines).where(eq(shippingLines.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Clearance Agent methods
+  async getAllClearanceAgents(): Promise<ClearanceAgent[]> {
+    return await db.select().from(clearanceAgents);
+  }
+
+  async getClearanceAgent(id: string): Promise<ClearanceAgent | undefined> {
+    const [agent] = await db.select().from(clearanceAgents).where(eq(clearanceAgents.id, id));
+    return agent;
+  }
+
+  async createClearanceAgent(agent: InsertClearanceAgent): Promise<ClearanceAgent> {
+    const [created] = await db.insert(clearanceAgents).values(agent).returning();
+    return created;
+  }
+
+  async updateClearanceAgent(id: string, agent: Partial<InsertClearanceAgent>): Promise<ClearanceAgent | undefined> {
+    const [updated] = await db.update(clearanceAgents).set(agent).where(eq(clearanceAgents.id, id)).returning();
+    return updated;
+  }
+
+  async deleteClearanceAgent(id: string): Promise<boolean> {
+    const result = await db.delete(clearanceAgents).where(eq(clearanceAgents.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 

@@ -173,6 +173,25 @@ export const insertShippingLineSchema = createInsertSchema(shippingLines).omit({
 export type InsertShippingLine = z.infer<typeof insertShippingLineSchema>;
 export type ShippingLine = typeof shippingLines.$inferSelect;
 
+// Clearance Agents Database
+export const clearanceAgents = pgTable("clearance_agents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Agent Information
+  agentName: text("agent_name").notNull(),
+  agentTelephone: text("agent_telephone"),
+  agentImportEmail: text("agent_import_email").array(),
+  agentExportEmail: text("agent_export_email").array(),
+  agentAccountingEmail: text("agent_accounting_email").array(),
+});
+
+export const insertClearanceAgentSchema = createInsertSchema(clearanceAgents).omit({
+  id: true,
+});
+
+export type InsertClearanceAgent = z.infer<typeof insertClearanceAgentSchema>;
+export type ClearanceAgent = typeof clearanceAgents.$inferSelect;
+
 // Import Shipments Database
 export const importShipments = pgTable("import_shipments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
