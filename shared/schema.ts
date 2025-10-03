@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, integer, jsonb, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -191,6 +191,27 @@ export const insertClearanceAgentSchema = createInsertSchema(clearanceAgents).om
 
 export type InsertClearanceAgent = z.infer<typeof insertClearanceAgentSchema>;
 export type ClearanceAgent = typeof clearanceAgents.$inferSelect;
+
+// Settings Database
+export const settings = pgTable("settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Financial Charges
+  importClearanceFee: numeric("import_clearance_fee", { precision: 10, scale: 2 }),
+  inventoryLinkedFee: numeric("inventory_linked_fee", { precision: 10, scale: 2 }),
+  commodityCodesIncludedFree: integer("commodity_codes_included_free"),
+  additionalCommodityCodeCharge: numeric("additional_commodity_code_charge", { precision: 10, scale: 2 }),
+  defermentChargeMinimum: numeric("deferment_charge_minimum", { precision: 10, scale: 2 }),
+  defermentChargePercentage: numeric("deferment_charge_percentage", { precision: 5, scale: 2 }),
+  handoverFee: numeric("handover_fee", { precision: 10, scale: 2 }),
+});
+
+export const insertSettingsSchema = createInsertSchema(settings).omit({
+  id: true,
+});
+
+export type InsertSettings = z.infer<typeof insertSettingsSchema>;
+export type Settings = typeof settings.$inferSelect;
 
 // Import Shipments Database
 export const importShipments = pgTable("import_shipments", {
