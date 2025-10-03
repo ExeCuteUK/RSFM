@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Database, Download, Upload, AlertCircle, CheckCircle2, Trash2, Clock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -180,7 +181,8 @@ export default function BackupsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    const date = new Date(dateString);
+    return format(date, "dd/MM/yy HH:mm");
   };
 
   return (
