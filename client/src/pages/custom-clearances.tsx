@@ -158,11 +158,11 @@ export default function CustomClearances() {
           Waiting Arrival
         </Button>
         <Button
-          variant={statusFilter === "Port Health Hold" ? "default" : "outline"}
-          onClick={() => setStatusFilter("Port Health Hold")}
-          data-testid="filter-port-health-hold"
+          variant={statusFilter === "P.H Hold" ? "default" : "outline"}
+          onClick={() => setStatusFilter("P.H Hold")}
+          data-testid="filter-ph-hold"
         >
-          Port Health Hold
+          P.H Hold
         </Button>
         <Button
           variant={statusFilter === "Customs Issue" ? "default" : "outline"}
@@ -218,7 +218,7 @@ export default function CustomClearances() {
                             ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
                             : clearance.status === "Waiting Arrival"
                             ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
-                            : clearance.status === "Port Health Hold" || clearance.status === "Customs Issue"
+                            : clearance.status === "P.H Hold" || clearance.status === "Customs Issue"
                             ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
                             : "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
                         }`}
