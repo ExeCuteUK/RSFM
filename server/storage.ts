@@ -564,6 +564,60 @@ export class MemStorage implements IStorage {
       supplierName: updates.supplierName !== undefined ? updates.supplierName ?? null : existing.supplierName,
       attachments: updates.attachments !== undefined ? updates.attachments ?? null : existing.attachments,
     };
+
+    // If rsToClear is being changed from false to true, create a linked clearance
+    if (!existing.rsToClear && updated.rsToClear === true && !existing.linkedClearanceId) {
+      const clearanceId = randomUUID();
+      const clearance: CustomClearance = {
+        id: clearanceId,
+        jobRef: existing.jobRef,
+        jobType: "import",
+        createdAt: new Date().toISOString(),
+        status: "Awaiting Entry",
+        importCustomerId: updated.importCustomerId,
+        exportCustomerId: null,
+        receiverId: null,
+        etaPort: updated.importDateEtaPort,
+        portOfArrival: updated.portOfArrival,
+        trailerOrContainerNumber: updated.trailerOrContainerNumber,
+        departureFrom: updated.departureCountry,
+        containerShipment: updated.containerShipment,
+        vesselName: updated.vesselName,
+        numberOfPieces: updated.numberOfPieces,
+        packaging: updated.packaging,
+        weight: updated.weight,
+        cube: updated.cube,
+        goodsDescription: updated.goodsDescription,
+        invoiceValue: updated.invoiceValue,
+        transportCosts: updated.freightCharge,
+        clearanceCharge: updated.clearanceCharge,
+        currency: updated.currency,
+        additionalCommodityCodes: updated.additionalCommodityCodes,
+        vatZeroRated: updated.vatZeroRated,
+        clearanceType: updated.clearanceType,
+        incoterms: null,
+        customerReferenceNumber: updated.customerReferenceNumber,
+        supplierName: updated.supplierName,
+        attachments: null,
+        createdFromType: "import",
+        createdFromId: existing.id,
+        deliveryAddress: null,
+        shippingLine: null,
+        additionalCommodityCodeCharge: null,
+        dutiesAndVat: null,
+        customsOfficerName: null,
+        customsClearanceCharge: null,
+        entryNumber: null,
+        additionalNotes: null,
+        localImpChargesIn: null,
+        localImpChargesOut: null,
+        clearanceStatusBooked: 0,
+        deliveryBooked: 0,
+      };
+
+      this.customClearances.set(clearanceId, clearance);
+      updated.linkedClearanceId = clearanceId;
+    }
     
     this.importShipments.set(id, updated);
     return updated;
@@ -1017,6 +1071,47 @@ export class DatabaseStorage implements IStorage {
     if (existing.rsToClear && updates.rsToClear === false && existing.linkedClearanceId) {
       await db.delete(customClearances).where(eq(customClearances.id, existing.linkedClearanceId));
       updates.linkedClearanceId = null;
+    }
+
+    // If rsToClear is being changed from false to true, create a linked clearance
+    if (!existing.rsToClear && updates.rsToClear === true && !existing.linkedClearanceId) {
+      const updatedShipment = { ...existing, ...updates };
+      
+      const [clearance] = await db.insert(customClearances).values({
+        jobRef: existing.jobRef,
+        jobType: "import",
+        createdAt: new Date().toISOString(),
+        status: "Awaiting Entry",
+        importCustomerId: updatedShipment.importCustomerId,
+        exportCustomerId: null,
+        receiverId: null,
+        etaPort: updatedShipment.importDateEtaPort,
+        portOfArrival: updatedShipment.portOfArrival,
+        trailerOrContainerNumber: updatedShipment.trailerOrContainerNumber,
+        departureFrom: updatedShipment.departureCountry,
+        containerShipment: updatedShipment.containerShipment,
+        vesselName: updatedShipment.vesselName,
+        numberOfPieces: updatedShipment.numberOfPieces,
+        packaging: updatedShipment.packaging,
+        weight: updatedShipment.weight,
+        cube: updatedShipment.cube,
+        goodsDescription: updatedShipment.goodsDescription,
+        invoiceValue: updatedShipment.invoiceValue,
+        transportCosts: updatedShipment.freightCharge,
+        clearanceCharge: updatedShipment.clearanceCharge,
+        currency: updatedShipment.currency,
+        additionalCommodityCodes: updatedShipment.additionalCommodityCodes,
+        vatZeroRated: updatedShipment.vatZeroRated,
+        clearanceType: updatedShipment.clearanceType,
+        incoterms: null,
+        customerReferenceNumber: updatedShipment.customerReferenceNumber,
+        supplierName: updatedShipment.supplierName,
+        attachments: null,
+        createdFromType: "import",
+        createdFromId: existing.id,
+      }).returning();
+
+      updates.linkedClearanceId = clearance.id;
     }
 
     const [updated] = await db.update(importShipments)
