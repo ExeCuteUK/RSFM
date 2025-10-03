@@ -8,6 +8,7 @@ import {
   insertExportReceiverSchema,
   insertHaulierSchema,
   insertShippingLineSchema,
+  insertClearanceAgentSchema,
   insertImportShipmentSchema,
   insertExportShipmentSchema,
   insertCustomClearanceSchema
@@ -342,6 +343,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete shipping line" });
+    }
+  });
+
+  // ========== Clearance Agents Routes ==========
+  
+  // Get all clearance agents
+  app.get("/api/clearance-agents", async (_req, res) => {
+    try {
+      const agents = await storage.getAllClearanceAgents();
+      res.json(agents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch clearance agents" });
+    }
+  });
+
+  // Get single clearance agent
+  app.get("/api/clearance-agents/:id", async (req, res) => {
+    try {
+      const agent = await storage.getClearanceAgent(req.params.id);
+      if (!agent) {
+        return res.status(404).json({ error: "Clearance agent not found" });
+      }
+      res.json(agent);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch clearance agent" });
+    }
+  });
+
+  // Create clearance agent
+  app.post("/api/clearance-agents", async (req, res) => {
+    try {
+      const validatedData = insertClearanceAgentSchema.parse(req.body);
+      const agent = await storage.createClearanceAgent(validatedData);
+      res.status(201).json(agent);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid clearance agent data" });
+    }
+  });
+
+  // Update clearance agent
+  app.patch("/api/clearance-agents/:id", async (req, res) => {
+    try {
+      const validatedData = insertClearanceAgentSchema.partial().parse(req.body);
+      const agent = await storage.updateClearanceAgent(req.params.id, validatedData);
+      if (!agent) {
+        return res.status(404).json({ error: "Clearance agent not found" });
+      }
+      res.json(agent);
+    } catch (error) {
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid clearance agent data" });
+      }
+      res.status(500).json({ error: "Failed to update clearance agent" });
+    }
+  });
+
+  // Delete clearance agent
+  app.delete("/api/clearance-agents/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteClearanceAgent(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Clearance agent not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete clearance agent" });
     }
   });
 
