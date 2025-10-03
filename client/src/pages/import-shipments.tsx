@@ -1249,7 +1249,7 @@ export default function ImportShipments() {
                           <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.collectionAddress}</p>
                         </div>
                       )}
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-3 gap-3">
                         {viewingShipment.collectionContactName && (
                           <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                             <p className="text-xs text-muted-foreground mb-1">Collection Contact Name</p>
@@ -1273,39 +1273,42 @@ export default function ImportShipments() {
                             </a>
                           </div>
                         )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
                         {viewingShipment.collectionReference && (
                           <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                             <p className="text-xs text-muted-foreground mb-1">Collection Reference</p>
                             <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.collectionReference}</p>
                           </div>
                         )}
+                        {viewingShipment.collectionNotes && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Collection Notes</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.collectionNotes}</p>
+                          </div>
+                        )}
                       </div>
-                      {viewingShipment.collectionNotes && (
+                      <div className="border-t border-blue-200 dark:border-blue-800 my-3"></div>
+                      {viewingShipment.deliveryAddress && (
                         <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Collection Notes</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.collectionNotes}</p>
+                          <p className="text-xs text-muted-foreground mb-1">Delivery Address</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryAddress}</p>
                         </div>
                       )}
                       <div className="grid grid-cols-2 gap-3">
-                        {viewingShipment.deliveryAddress && (
-                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                            <p className="text-xs text-muted-foreground mb-1">Delivery Address</p>
-                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryAddress}</p>
-                          </div>
-                        )}
                         {viewingShipment.deliveryReference && (
                           <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                             <p className="text-xs text-muted-foreground mb-1">Delivery Reference</p>
                             <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.deliveryReference}</p>
                           </div>
                         )}
+                        {viewingShipment.deliveryTimeNotes && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="text-xs text-muted-foreground mb-1">Delivery Notes</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.deliveryTimeNotes}</p>
+                          </div>
+                        )}
                       </div>
-                      {viewingShipment.deliveryTimeNotes && (
-                        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Delivery Notes</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">{viewingShipment.deliveryTimeNotes}</p>
-                        </div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
