@@ -18,6 +18,7 @@ import Customers from "@/pages/customers";
 import Invoices from "@/pages/invoices";
 import JobJournals from "@/pages/job-journals";
 import ShippingLines from "@/pages/shipping-lines";
+import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -33,7 +34,7 @@ function Router() {
       <Route path="/job-journals" component={JobJournals} />
       <Route path="/shipping-lines" component={ShippingLines} />
       <Route path="/notifications" component={() => <div className="p-6">Notifications page coming soon...</div>} />
-      <Route path="/settings" component={() => <div className="p-6">Settings page coming soon...</div>} />
+      <Route path="/settings" component={SettingsPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
