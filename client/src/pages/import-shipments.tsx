@@ -39,6 +39,20 @@ export default function ImportShipments() {
     queryKey: ["/api/import-shipments"],
   })
 
+  const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
+    queryKey: ["/api/import-customers"],
+  })
+
+  const { data: customClearances = [] } = useQuery<CustomClearance[]>({
+    queryKey: ["/api/custom-clearances"],
+  })
+
+  const getCustomerName = (customerId: string | null) => {
+    if (!customerId) return "N/A"
+    const customer = importCustomers.find(c => c.id === customerId)
+    return customer?.companyName || "N/A"
+  }
+
   const filteredByStatus = selectedStatuses.length === 0
     ? allShipments 
     : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
@@ -57,20 +71,6 @@ export default function ImportShipments() {
                trailer.includes(searchLower) ||
                vessel.includes(searchLower)
       })
-
-  const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
-    queryKey: ["/api/import-customers"],
-  })
-
-  const { data: customClearances = [] } = useQuery<CustomClearance[]>({
-    queryKey: ["/api/custom-clearances"],
-  })
-
-  const getCustomerName = (customerId: string | null) => {
-    if (!customerId) return "N/A"
-    const customer = importCustomers.find(c => c.id === customerId)
-    return customer?.companyName || "N/A"
-  }
 
   const createShipment = useMutation({
     mutationFn: async (data: InsertImportShipment) => {
