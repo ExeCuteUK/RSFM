@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X } from "lucide-react"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -27,6 +28,8 @@ export default function CustomClearances() {
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
   const [searchText, setSearchText] = useState("")
+  const [notesClearanceId, setNotesClearanceId] = useState<string | null>(null)
+  const [notesValue, setNotesValue] = useState("")
   const { toast } = useToast()
   const [location] = useLocation()
 
@@ -84,6 +87,32 @@ export default function CustomClearances() {
       toast({ title: "Custom clearance deleted successfully" })
     },
   })
+
+  const updateNotes = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}`, { additionalNotes: notes })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      setNotesClearanceId(null)
+      toast({ title: "Notes updated successfully" })
+    },
+  })
+
+  const handleOpenNotes = (clearance: CustomClearance) => {
+    setNotesClearanceId(clearance.id)
+    setNotesValue(clearance.additionalNotes || "")
+  }
+
+  const handleCloseNotes = () => {
+    setNotesClearanceId(null)
+    setNotesValue("")
+  }
+
+  const handleSaveNotes = () => {
+    if (!notesClearanceId) return
+    updateNotes.mutate({ id: notesClearanceId, notes: notesValue })
+  }
 
   const handleCreateNew = () => {
     setEditingClearance(null)
@@ -334,12 +363,23 @@ export default function CustomClearances() {
                         {getCustomerName(clearance)}
                       </p>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-0.5">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleOpenNotes(clearance)}
+                        data-testid={`button-notes-${clearance.id}`}
+                        title={clearance.additionalNotes || "Additional Notes"}
+                        className="h-7 w-7"
+                      >
+                        <StickyNote className={`h-4 w-4 ${clearance.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => handleEdit(clearance)}
                         data-testid={`button-edit-${clearance.id}`}
+                        className="h-7 w-7"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -348,6 +388,7 @@ export default function CustomClearances() {
                         variant="ghost"
                         onClick={() => handleDelete(clearance.id)}
                         data-testid={`button-delete-${clearance.id}`}
+                        className="h-7 w-7"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -623,6 +664,48 @@ export default function CustomClearances() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!notesClearanceId} onOpenChange={(open) => !open && handleCloseNotes()}>
+        <DialogContent className="max-w-3xl h-[400px] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle>Additional Notes</DialogTitle>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleCloseNotes}
+              className="h-6 w-6"
+              data-testid="button-close-notes"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 py-4">
+            <Textarea
+              value={notesValue}
+              onChange={(e) => setNotesValue(e.target.value)}
+              className="h-full resize-none !border-2 !border-yellow-500 dark:!border-yellow-600 focus-visible:!ring-yellow-500"
+              placeholder="Add notes for this custom clearance..."
+              data-testid="textarea-notes"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t">
+            <Button
+              variant="ghost"
+              onClick={handleCloseNotes}
+              data-testid="button-cancel-notes"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveNotes}
+              disabled={updateNotes.isPending}
+              data-testid="button-save-notes"
+            >
+              {updateNotes.isPending ? "Saving..." : "Save Notes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
