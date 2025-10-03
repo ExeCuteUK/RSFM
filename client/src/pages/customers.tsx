@@ -749,8 +749,10 @@ export default function Customers() {
                         >
                           {haulier.haulierName}
                         </h3>
-                        {haulier.homeCountry && (
-                          <p className="text-sm text-muted-foreground" data-testid={`text-home-country-${haulier.id}`}>{haulier.homeCountry}</p>
+                        {haulier.contactNames && haulier.contactNames.length > 0 && (
+                          <p className="text-sm text-muted-foreground" data-testid={`text-contact-names-${haulier.id}`}>
+                            {haulier.contactNames.join(' / ')}
+                          </p>
                         )}
                       </div>
                       <div className="flex gap-1">
@@ -773,25 +775,34 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {haulier.email && (
-                        <p data-testid={`text-email-${haulier.id}`}>
-                          <a href={`mailto:${haulier.email}`} className="text-muted-foreground hover:underline">{haulier.email}</a>
-                        </p>
+                      {haulier.email && haulier.email.length > 0 && (
+                        <div className="space-y-0.5">
+                          {haulier.email.map((email, idx) => (
+                            <p key={idx} data-testid={`text-email-${haulier.id}-${idx}`}>
+                              <a href={`mailto:${email}`} className="text-muted-foreground hover:underline">{email}</a>
+                            </p>
+                          ))}
+                        </div>
                       )}
                       {haulier.telephone && <p data-testid={`text-telephone-${haulier.id}`}>{haulier.telephone}</p>}
                       {haulier.mobile && <p data-testid={`text-mobile-${haulier.id}`}>{haulier.mobile}</p>}
+                      {haulier.address && (
+                        <p className="text-muted-foreground whitespace-pre-wrap text-xs" data-testid={`text-address-${haulier.id}`}>
+                          {haulier.address}
+                        </p>
+                      )}
                       {haulier.destinationCountries && haulier.destinationCountries.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs text-muted-foreground mb-1">Services:</p>
+                        <div className="mt-3 pt-2 border-t">
                           <div className="flex flex-wrap gap-1">
-                            {haulier.destinationCountries.slice(0, 3).map((country) => (
-                              <span key={country} className="text-xs bg-secondary px-2 py-0.5 rounded" data-testid={`badge-country-${country}`}>
+                            {haulier.destinationCountries.map((country) => (
+                              <span 
+                                key={country} 
+                                className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md" 
+                                data-testid={`badge-country-${country}`}
+                              >
                                 {country}
                               </span>
                             ))}
-                            {haulier.destinationCountries.length > 3 && (
-                              <span className="text-xs text-muted-foreground">+{haulier.destinationCountries.length - 3} more</span>
-                            )}
                           </div>
                         </div>
                       )}
