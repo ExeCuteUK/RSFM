@@ -347,7 +347,7 @@ export default function CustomClearances() {
                       </Button>
                     </div>
                   </div>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-1 text-xs">
                     {clearance.trailerOrContainerNumber && (
                       <p data-testid={`text-trailer-${clearance.id}`}>
                         <span className="font-medium">Container/Trailer:</span> {clearance.trailerOrContainerNumber}
@@ -423,30 +423,66 @@ export default function CustomClearances() {
                     </div>
 
                     {/* Files Section */}
-                    {totalFiles > 0 && (
-                      <div className="pt-2 mt-2 border-t" data-testid={`files-section-${clearance.id}`}>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div>
-                            <div className="flex items-center gap-1 mb-1">
-                              <FileText className="h-3 w-3 text-muted-foreground" />
-                              <span className="font-medium text-muted-foreground">Transport</span>
+                    <div className="pt-2 mt-2 border-t" data-testid={`files-section-${clearance.id}`}>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">Transport</p>
+                          {transportDocs.length > 0 ? (
+                            <div className="space-y-0.5">
+                              {transportDocs.map((filePath, idx) => {
+                                const fileName = filePath.split('/').pop() || filePath
+                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                return (
+                                  <div key={idx} className="flex items-center gap-1 group">
+                                    <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    <a
+                                      href={downloadPath}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs truncate hover:text-primary"
+                                      title={fileName}
+                                      data-testid={`link-transport-doc-${clearance.id}-${idx}`}
+                                    >
+                                      {fileName}
+                                    </a>
+                                  </div>
+                                )
+                              })}
                             </div>
-                            <span className="text-muted-foreground">
-                              {transportDocs.length} {transportDocs.length === 1 ? 'file' : 'files'}
-                            </span>
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1 mb-1">
-                              <FileText className="h-3 w-3 text-muted-foreground" />
-                              <span className="font-medium text-muted-foreground">Clearance</span>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">No documents</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">Clearance</p>
+                          {clearanceDocs.length > 0 ? (
+                            <div className="space-y-0.5">
+                              {clearanceDocs.map((filePath, idx) => {
+                                const fileName = filePath.split('/').pop() || filePath
+                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                return (
+                                  <div key={idx} className="flex items-center gap-1 group">
+                                    <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    <a
+                                      href={downloadPath}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs truncate hover:text-primary"
+                                      title={fileName}
+                                      data-testid={`link-clearance-doc-${clearance.id}-${idx}`}
+                                    >
+                                      {fileName}
+                                    </a>
+                                  </div>
+                                )
+                              })}
                             </div>
-                            <span className="text-muted-foreground">
-                              {clearanceDocs.length} {clearanceDocs.length === 1 ? 'file' : 'files'}
-                            </span>
-                          </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">No documents</p>
+                          )}
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
