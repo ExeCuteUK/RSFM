@@ -356,29 +356,54 @@ export default function Customers() {
 
   const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers || isLoadingShippingLines || isLoadingClearanceAgents
 
-  // Filter function for all contact types
+  // Filter and sort function for all contact types
   const filterContacts = <T extends ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent>(
     contacts: T[]
   ): T[] => {
-    if (searchText.trim() === "") return contacts
+    let filtered = contacts
     
-    const searchLower = searchText.toLowerCase()
-    return contacts.filter((contact) => {
-      // Search in all text fields
-      const searchableFields: string[] = []
-      
-      // Add all fields from the contact object
-      Object.entries(contact).forEach(([key, value]) => {
-        if (typeof value === 'string') {
-          searchableFields.push(value)
-        } else if (Array.isArray(value)) {
-          value.forEach(item => {
-            if (typeof item === 'string') searchableFields.push(item)
-          })
-        }
+    if (searchText.trim() !== "") {
+      const searchLower = searchText.toLowerCase()
+      filtered = contacts.filter((contact) => {
+        // Search in all text fields
+        const searchableFields: string[] = []
+        
+        // Add all fields from the contact object
+        Object.entries(contact).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            searchableFields.push(value)
+          } else if (Array.isArray(value)) {
+            value.forEach(item => {
+              if (typeof item === 'string') searchableFields.push(item)
+            })
+          }
+        })
+        
+        return searchableFields.some(field => field.toLowerCase().includes(searchLower))
       })
-      
-      return searchableFields.some(field => field.toLowerCase().includes(searchLower))
+    }
+    
+    // Sort alphabetically by name
+    return filtered.sort((a, b) => {
+      const nameA = 'companyName' in a 
+        ? a.companyName 
+        : 'haulierName' in a 
+        ? a.haulierName 
+        : 'shippingLineName' in a
+        ? a.shippingLineName
+        : 'agentName' in a
+        ? a.agentName
+        : ''
+      const nameB = 'companyName' in b 
+        ? b.companyName 
+        : 'haulierName' in b 
+        ? b.haulierName 
+        : 'shippingLineName' in b
+        ? b.shippingLineName
+        : 'agentName' in b
+        ? b.agentName
+        : ''
+      return nameA.localeCompare(nameB)
     })
   }
 
