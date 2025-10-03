@@ -65,6 +65,7 @@ interface HaulierFormProps {
 export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormProps) {
   const [newContactName, setNewContactName] = useState("")
   const [newContactEmail, setNewContactEmail] = useState("")
+  const [newExportType, setNewExportType] = useState<"Exports To" | "Exports From" | "Exports To & From">("Exports To")
   const [newCountry, setNewCountry] = useState("")
   const [filteredCountries, setFilteredCountries] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -106,12 +107,14 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
       ...currentContacts, 
       { 
         contactName: newContactName.trim(), 
-        contactEmail: newContactEmail.trim(), 
+        contactEmail: newContactEmail.trim(),
+        exportType: newExportType,
         countryServiced: country.trim() 
       }
     ])
     setNewContactName("")
     setNewContactEmail("")
+    setNewExportType("Exports To")
     setNewCountry("")
     setShowSuggestions(false)
     setFilteredCountries([])
@@ -152,7 +155,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                   <FormLabel>Contacts</FormLabel>
                   <div className="space-y-3">
                     <div className="grid grid-cols-12 gap-2">
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <Input
                           placeholder="Contact Name"
                           value={newContactName}
@@ -160,7 +163,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                           data-testid="input-new-contact-name"
                         />
                       </div>
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <Input
                           placeholder="Contact Email"
                           type="email"
@@ -168,6 +171,18 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                           onChange={(e) => setNewContactEmail(e.target.value)}
                           data-testid="input-new-contact-email"
                         />
+                      </div>
+                      <div className="col-span-2">
+                        <Select value={newExportType} onValueChange={(value) => setNewExportType(value as typeof newExportType)}>
+                          <SelectTrigger data-testid="select-export-type">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Exports To">Exports To</SelectItem>
+                            <SelectItem value="Exports From">Exports From</SelectItem>
+                            <SelectItem value="Exports To & From">Exports To & From</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="col-span-3 relative">
                         <Input
@@ -217,12 +232,15 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                             className="flex items-center justify-between p-3 bg-secondary/50 rounded-md"
                             data-testid={`contact-${index}`}
                           >
-                            <div className="grid grid-cols-3 gap-4 flex-1 text-sm">
+                            <div className="grid grid-cols-4 gap-4 flex-1 text-sm">
                               <div>
                                 <div className="font-medium">{contact.contactName}</div>
                               </div>
                               <div>
                                 <div className="text-muted-foreground">{contact.contactEmail}</div>
+                              </div>
+                              <div>
+                                <div className="text-muted-foreground">{contact.exportType}</div>
                               </div>
                               <div>
                                 <div className="text-muted-foreground">{contact.countryServiced}</div>

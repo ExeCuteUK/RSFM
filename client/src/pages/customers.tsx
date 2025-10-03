@@ -1386,7 +1386,7 @@ export default function Customers() {
                   <div className="space-y-3">
                     {viewingCustomer.contacts.map((contact, idx) => (
                       <div key={idx} className="p-3 bg-secondary/50 rounded-md">
-                        <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-4 gap-4 text-sm">
                           <div>
                             <p className="text-muted-foreground text-xs">Contact Name</p>
                             <p className="font-medium">{contact.contactName}</p>
@@ -1394,6 +1394,10 @@ export default function Customers() {
                           <div>
                             <p className="text-muted-foreground text-xs">Email</p>
                             <p><a href={`mailto:${contact.contactEmail}`} className="hover:underline">{contact.contactEmail}</a></p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Export Type</p>
+                            <p>{contact.exportType}</p>
                           </div>
                           <div>
                             <p className="text-muted-foreground text-xs">Country Serviced</p>

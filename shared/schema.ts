@@ -107,6 +107,7 @@ export type ExportReceiver = typeof exportReceivers.$inferSelect;
 export const haulierContactSchema = z.object({
   contactName: z.string(),
   contactEmail: z.string(),
+  exportType: z.enum(["Exports To", "Exports From", "Exports To & From"]),
   countryServiced: z.string(),
 });
 
