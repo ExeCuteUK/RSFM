@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
-import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
+import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 
@@ -43,6 +43,10 @@ export default function ImportShipments() {
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
+  })
+
+  const { data: customClearances = [] } = useQuery<CustomClearance[]>({
+    queryKey: ["/api/custom-clearances"],
   })
 
   const createShipment = useMutation({
@@ -225,6 +229,23 @@ export default function ImportShipments() {
   const getCustomer = (customerId: string | null) => {
     if (!customerId) return null
     return importCustomers.find(c => c.id === customerId) || null
+  }
+
+  const getLinkedClearance = (linkedClearanceId: string | null) => {
+    if (!linkedClearanceId) return null
+    return customClearances.find(c => c.id === linkedClearanceId) || null
+  }
+
+  const getClearanceStatusBadgeClass = (status: string) => {
+    if (status === "Fully Cleared") {
+      return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+    } else if (status === "Waiting Arrival") {
+      return "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
+    } else if (status === "P.H Hold" || status === "Customs Issue") {
+      return "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
+    } else {
+      return "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+    }
   }
 
   const toggleStatus = (currentStatus: string, id: string) => {
@@ -568,9 +589,22 @@ export default function ImportShipments() {
                       {getCustomerName(shipment.importCustomerId)}
                     </p>
                   </div>
-                  <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
-                    {shipment.status}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
+                      {shipment.status}
+                    </Badge>
+                    {shipment.linkedClearanceId && (() => {
+                      const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
+                      return linkedClearance ? (
+                        <Badge 
+                          className={getClearanceStatusBadgeClass(linkedClearance.status)} 
+                          data-testid={`badge-clearance-status-${shipment.id}`}
+                        >
+                          {linkedClearance.status}
+                        </Badge>
+                      ) : null
+                    })()}
+                  </div>
                 </div>
                 <div className="space-y-1 text-xs">
                   {shipment.trailerOrContainerNumber && (

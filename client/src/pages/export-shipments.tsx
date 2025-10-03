@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
-import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer } from "@shared/schema"
+import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 
 export default function ExportShipments() {
@@ -44,6 +44,10 @@ export default function ExportShipments() {
 
   const { data: exportCustomers = [] } = useQuery<ExportCustomer[]>({
     queryKey: ["/api/export-customers"],
+  })
+
+  const { data: customClearances = [] } = useQuery<CustomClearance[]>({
+    queryKey: ["/api/custom-clearances"],
   })
 
   const createShipment = useMutation({
@@ -151,6 +155,23 @@ export default function ExportShipments() {
     if (!receiverId) return "N/A"
     const receiver = exportReceivers.find(r => r.id === receiverId)
     return receiver?.companyName || "N/A"
+  }
+
+  const getLinkedClearance = (linkedClearanceId: string | null) => {
+    if (!linkedClearanceId) return null
+    return customClearances.find(c => c.id === linkedClearanceId) || null
+  }
+
+  const getClearanceStatusBadgeClass = (status: string) => {
+    if (status === "Fully Cleared") {
+      return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+    } else if (status === "Waiting Arrival") {
+      return "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
+    } else if (status === "P.H Hold" || status === "Customs Issue") {
+      return "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
+    } else {
+      return "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+    }
   }
 
   const toggleStatus = (currentStatus: string, id: string) => {
@@ -290,13 +311,26 @@ export default function ExportShipments() {
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
                         {shipment.jobRef}
                       </h3>
-                      <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
-                        {shipment.status}
-                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
                       {getReceiverName(shipment.receiverId)}
                     </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
+                      {shipment.status}
+                    </Badge>
+                    {shipment.linkedClearanceId && (() => {
+                      const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
+                      return linkedClearance ? (
+                        <Badge 
+                          className={getClearanceStatusBadgeClass(linkedClearance.status)} 
+                          data-testid={`badge-clearance-status-${shipment.id}`}
+                        >
+                          {linkedClearance.status}
+                        </Badge>
+                      ) : null
+                    })()}
                   </div>
                   <div className="flex gap-1">
                     <Button
