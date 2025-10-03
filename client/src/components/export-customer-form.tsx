@@ -4,6 +4,7 @@ import { insertExportCustomerSchema, type InsertExportCustomer } from "@shared/s
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Form,
   FormControl,
@@ -39,24 +40,14 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
       telephone: "",
       email: [],
       accountsEmail: [],
-      addressLine1: "",
-      addressLine2: "",
-      town: "",
-      county: "",
-      postcode: "",
-      country: "",
+      address: "",
       agentName: "",
       agentContactName: [],
       agentVatNumber: "",
       agentTelephone: "",
       agentEmail: [],
       agentAccountsEmail: [],
-      agentAddressLine1: "",
-      agentAddressLine2: "",
-      agentTown: "",
-      agentCounty: "",
-      agentPostcode: "",
-      agentCountry: "",
+      agentAddress: "",
       ...defaultValues
     },
   })
@@ -385,82 +376,17 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
               
               <FormField
                 control={form.control}
-                name="addressLine1"
+                name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address Line 1</FormLabel>
+                    <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-address-line-1" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="addressLine2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Address Line 2</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-address-line-2" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="town"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Town</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-town" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="county"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>County</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-county" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="postcode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Postcode</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-postcode" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-country" />
+                      <Textarea 
+                        {...field} 
+                        value={field.value || ""} 
+                        placeholder="Enter full address"
+                        data-testid="input-address" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -698,82 +624,17 @@ export function ExportCustomerForm({ onSubmit, onCancel, defaultValues }: Export
               
               <FormField
                 control={form.control}
-                name="agentAddressLine1"
+                name="agentAddress"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address Line 1</FormLabel>
+                    <FormLabel>Agent Address</FormLabel>
                     <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-address-line-1" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="agentAddressLine2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Address Line 2</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-address-line-2" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="agentTown"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Town</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-town" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="agentCounty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>County</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-county" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="agentPostcode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Postcode</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-postcode" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="agentCountry"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-agent-country" />
+                      <Textarea 
+                        {...field} 
+                        value={field.value || ""} 
+                        placeholder="Enter full address"
+                        data-testid="input-agent-address" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
