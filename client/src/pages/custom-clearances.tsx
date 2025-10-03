@@ -31,7 +31,7 @@ export default function CustomClearances() {
   const [location] = useLocation()
 
   useEffect(() => {
-    const params = new URLSearchParams(location.split('?')[1])
+    const params = new URLSearchParams(window.location.search)
     const searchParam = params.get('search')
     if (searchParam) {
       setSearchText(searchParam)
