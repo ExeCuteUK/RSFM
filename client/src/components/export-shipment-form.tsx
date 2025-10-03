@@ -383,6 +383,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         <SelectContent>
                           <SelectItem value="Awaiting Collection">Awaiting Collection</SelectItem>
                           <SelectItem value="Dispatched">Dispatched</SelectItem>
+                          <SelectItem value="Delivered">Delivered</SelectItem>
                           <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
