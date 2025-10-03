@@ -36,6 +36,24 @@ export default function ExportShipments() {
     queryKey: ["/api/export-shipments"],
   })
 
+  const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
+    queryKey: ["/api/export-receivers"],
+  })
+
+  const { data: exportCustomers = [] } = useQuery<ExportCustomer[]>({
+    queryKey: ["/api/export-customers"],
+  })
+
+  const { data: customClearances = [] } = useQuery<CustomClearance[]>({
+    queryKey: ["/api/custom-clearances"],
+  })
+
+  const getReceiverName = (receiverId: string | null) => {
+    if (!receiverId) return "N/A"
+    const receiver = exportReceivers.find(r => r.id === receiverId)
+    return receiver?.companyName || "N/A"
+  }
+
   const filteredByStatus = selectedStatuses.length === 0
     ? allShipments 
     : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
@@ -54,18 +72,6 @@ export default function ExportShipments() {
                trailer.includes(searchLower) ||
                vessel.includes(searchLower)
       })
-
-  const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
-    queryKey: ["/api/export-receivers"],
-  })
-
-  const { data: exportCustomers = [] } = useQuery<ExportCustomer[]>({
-    queryKey: ["/api/export-customers"],
-  })
-
-  const { data: customClearances = [] } = useQuery<CustomClearance[]>({
-    queryKey: ["/api/custom-clearances"],
-  })
 
   const createShipment = useMutation({
     mutationFn: async (data: InsertExportShipment) => {
@@ -166,12 +172,6 @@ export default function ExportShipments() {
     } else {
       createShipment.mutate(data)
     }
-  }
-
-  const getReceiverName = (receiverId: string | null) => {
-    if (!receiverId) return "N/A"
-    const receiver = exportReceivers.find(r => r.id === receiverId)
-    return receiver?.companyName || "N/A"
   }
 
   const getLinkedClearance = (linkedClearanceId: string | null) => {
