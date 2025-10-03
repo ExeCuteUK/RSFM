@@ -523,54 +523,54 @@ export default function ImportShipments() {
                       >
                         {shipment.jobRef}
                       </h3>
-                      <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
-                        {shipment.status}
-                      </Badge>
+                      <div className="flex -space-x-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleOpenNotes(shipment)}
+                          data-testid={`button-notes-${shipment.id}`}
+                          title={shipment.additionalNotes || "Additional Notes"}
+                          className="h-7 w-7"
+                        >
+                          <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => toggleStatus(shipment.status, shipment.id)}
+                          data-testid={`button-toggle-status-${shipment.id}`}
+                          title="Toggle status"
+                          className="h-7 w-7"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(shipment)}
+                          data-testid={`button-edit-${shipment.id}`}
+                          className="h-7 w-7"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDelete(shipment.id)}
+                          data-testid={`button-delete-${shipment.id}`}
+                          className="h-7 w-7"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid={`text-customer-${shipment.id}`}>
                       {getCustomerName(shipment.importCustomerId)}
                     </p>
                   </div>
-                  <div className="flex gap-0">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleOpenNotes(shipment)}
-                      data-testid={`button-notes-${shipment.id}`}
-                      title={shipment.additionalNotes || "Additional Notes"}
-                      className="h-8 w-8"
-                    >
-                      <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => toggleStatus(shipment.status, shipment.id)}
-                      data-testid={`button-toggle-status-${shipment.id}`}
-                      title="Toggle status"
-                      className="h-8 w-8"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleEdit(shipment)}
-                      data-testid={`button-edit-${shipment.id}`}
-                      className="h-8 w-8"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleDelete(shipment.id)}
-                      data-testid={`button-delete-${shipment.id}`}
-                      className="h-8 w-8"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Badge className={getStatusColor(shipment.status)} data-testid={`badge-status-${shipment.id}`}>
+                    {shipment.status}
+                  </Badge>
                 </div>
                 <div className="space-y-1 text-xs">
                   {shipment.trailerOrContainerNumber && (
