@@ -40,7 +40,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     resolver: zodResolver(insertCustomClearanceSchema),
     defaultValues: {
       jobType: "import",
-      status: "Waiting Entry",
+      status: "Awaiting Entry",
       importCustomerId: "",
       exportCustomerId: "",
       receiverId: "",
@@ -130,7 +130,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Waiting Entry">Waiting Entry</SelectItem>
+                        <SelectItem value="Awaiting Entry">Awaiting Entry</SelectItem>
                         <SelectItem value="Waiting Arrival">Waiting Arrival</SelectItem>
                         <SelectItem value="Fully Cleared">Fully Cleared</SelectItem>
                       </SelectContent>
@@ -704,9 +704,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   <FormItem>
                     <FormControl>
                       <FileUpload
-                        value={field.value ? JSON.parse(field.value) : []}
+                        value={Array.isArray(field.value) ? field.value.map(url => ({ url, name: url.split('/').pop() || '' })) : []}
                         onChange={(files: FileMetadata[]) => {
-                          field.onChange(JSON.stringify(files));
+                          field.onChange(files.map(f => f.url));
                         }}
                         testId="file-upload-attachments"
                       />

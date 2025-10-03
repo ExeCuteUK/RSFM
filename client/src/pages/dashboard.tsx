@@ -69,7 +69,7 @@ export default function Dashboard() {
     ? Math.round(((clearanceJobsThisMonth - clearanceJobsPreviousMonth) / clearanceJobsPreviousMonth) * 100)
     : 0
 
-  const awaitingEntries = customClearances.filter((c) => c.status === "Waiting Entry").length
+  const awaitingEntries = customClearances.filter((c) => c.status === "Awaiting Entry").length
 
   // Calculate Quick Stats metrics
   const importsAwaitingDeparture = importShipments.filter((s) => s.status === "Pending").length

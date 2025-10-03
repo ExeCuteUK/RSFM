@@ -464,7 +464,7 @@ export const customClearances = pgTable("custom_clearances", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
   
   // Status (Customs-specific)
-  status: text("status").notNull().default("Waiting Entry"),
+  status: text("status").notNull().default("Awaiting Entry"),
   
   // Customer References
   importCustomerId: varchar("import_customer_id"),

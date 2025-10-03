@@ -144,11 +144,11 @@ export default function CustomClearances() {
           All
         </Button>
         <Button
-          variant={statusFilter === "Waiting Entry" ? "default" : "outline"}
-          onClick={() => setStatusFilter("Waiting Entry")}
-          data-testid="filter-waiting-entry"
+          variant={statusFilter === "Awaiting Entry" ? "default" : "outline"}
+          onClick={() => setStatusFilter("Awaiting Entry")}
+          data-testid="filter-awaiting-entry"
         >
-          Waiting Entry
+          Awaiting Entry
         </Button>
         <Button
           variant={statusFilter === "Waiting Arrival" ? "default" : "outline"}
