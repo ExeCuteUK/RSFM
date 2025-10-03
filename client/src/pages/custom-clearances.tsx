@@ -17,7 +17,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -135,6 +141,15 @@ export default function CustomClearances() {
     },
   })
 
+  const updateClearanceStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
   const handleAdviseAgentStatusUpdate = (id: string, status: number) => {
     updateAdviseAgentStatus.mutate({ id, status })
   }
@@ -236,6 +251,20 @@ export default function CustomClearances() {
     if (indicator === 3) return "text-green-600 dark:text-green-400"
     if (indicator === 2) return "text-yellow-600 dark:text-yellow-400"
     return "text-gray-500 dark:text-gray-400"
+  }
+
+  const getClearanceStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case "Fully Cleared":
+        return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700"
+      case "Waiting Arrival":
+        return "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
+      case "P.H Hold":
+      case "Customs Issue":
+        return "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700"
+      default:
+        return "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
+    }
   }
 
   const handleAllClick = () => {
@@ -426,22 +455,36 @@ export default function CustomClearances() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button 
+                            className={`${getClearanceStatusBadgeColor(clearance.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                            data-testid={`badge-status-${clearance.id}`}
+                          >
+                            {clearance.status}
+                            <ChevronDown className="h-3 w-3" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
+                            Awaiting Entry
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
+                            Waiting Arrival
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
+                            P.H Hold
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Customs Issue" })}>
+                            Customs Issue
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Fully Cleared" })}>
+                            Fully Cleared
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
                         {clearance.jobType}
-                      </span>
-                      <span 
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          clearance.status === "Fully Cleared" 
-                            ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                            : clearance.status === "Waiting Arrival"
-                            ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
-                            : clearance.status === "P.H Hold" || clearance.status === "Customs Issue"
-                            ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-                            : "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                        }`}
-                        data-testid={`text-status-${clearance.id}`}
-                      >
-                        {clearance.status}
                       </span>
                     </div>
                   </div>
