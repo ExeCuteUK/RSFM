@@ -510,7 +510,7 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {!customer.agentName && customer.email && customer.email.length > 0 && (
+                      {customer.email && customer.email.length > 0 && (
                         <div className="space-y-0.5">
                           {customer.email.map((email, idx) => (
                             <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
@@ -611,7 +611,7 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {!customer.agentName && customer.email && customer.email.length > 0 && (
+                      {customer.email && customer.email.length > 0 && (
                         <div className="space-y-0.5">
                           {customer.email.map((email, idx) => (
                             <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
