@@ -26,7 +26,7 @@ export default function ImportShipments() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingShipment, setEditingShipment] = useState<ImportShipment | null>(null)
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched"])
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
   const [viewingShipment, setViewingShipment] = useState<ImportShipment | null>(null)
