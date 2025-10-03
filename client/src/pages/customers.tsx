@@ -375,7 +375,16 @@ export default function Customers() {
             searchableFields.push(value)
           } else if (Array.isArray(value)) {
             value.forEach(item => {
-              if (typeof item === 'string') searchableFields.push(item)
+              if (typeof item === 'string') {
+                searchableFields.push(item)
+              } else if (typeof item === 'object' && item !== null) {
+                // Handle arrays of objects (like contacts in Haulier)
+                Object.values(item).forEach(objValue => {
+                  if (typeof objValue === 'string') {
+                    searchableFields.push(objValue)
+                  }
+                })
+              }
             })
           }
         })
