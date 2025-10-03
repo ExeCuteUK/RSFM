@@ -1550,25 +1550,27 @@ export default function ImportShipments() {
                         ) : null;
                       })()}
                     </div>
-                    <div className="grid grid-cols-1 gap-3">
-                      {viewingShipment.haulierFreightRateIn && (
-                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                          <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
-                        </div>
-                      )}
-                      {viewingShipment.exportClearanceChargeIn && (
-                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
-                        </div>
-                      )}
-                      {viewingShipment.destinationClearanceCostIn && (
-                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                          <p className="text-xs text-muted-foreground mb-1">Destination Clearance Cost</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.destinationClearanceCostIn}</p>
-                        </div>
-                      )}
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        {viewingShipment.haulierFreightRateIn && (
+                          <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate</p>
+                            <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
+                          </div>
+                        )}
+                        {viewingShipment.exportClearanceChargeIn && (
+                          <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <p className="text-xs text-muted-foreground mb-1">Export Clearance</p>
+                            <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
+                          </div>
+                        )}
+                        {viewingShipment.destinationClearanceCostIn && (
+                          <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <p className="text-xs text-muted-foreground mb-1">Import Clearance</p>
+                            <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.destinationClearanceCostIn}</p>
+                          </div>
+                        )}
+                      </div>
                       {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-2">Additional Charges In</p>
