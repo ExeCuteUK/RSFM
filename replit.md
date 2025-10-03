@@ -23,6 +23,13 @@ Preferred communication style: Simple, everyday language.
 - Export Receivers: 2,147 records imported via `scripts/import-export-receivers.ts`
 - All imports use ##! delimiter and combine address fields with line breaks for readability
 
+**Database Backups:**
+- Contact databases are backed up in the `backups/` directory
+- Backup includes: import_customers, export_customers, export_receivers, hauliers, shipping_lines, clearance_agents
+- Run backup: `tsx scripts/backup-contact-databases.ts`
+- Run restore: `tsx scripts/restore-contact-databases.ts`
+- Backup files are SQL INSERT statements ready for production rollout
+
 ## System Architecture
 
 ### Frontend Architecture
