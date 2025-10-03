@@ -159,6 +159,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const status = form.watch("status")
   const haulierEmails = form.watch("haulierEmail") || []
   const haulierContactNames = form.watch("haulierContactName") || []
+  const additionalCommodityCodes = form.watch("additionalCommodityCodes")
 
   const addHaulierContactName = () => {
     if (!newHaulierContactName.trim()) return
@@ -199,6 +200,15 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       }
     }
   }, [selectedCustomerId, importCustomers, form])
+
+  useEffect(() => {
+    if (additionalCommodityCodes && additionalCommodityCodes > 1) {
+      const currentCharge = form.getValues("additionalCommodityCodeCharge")
+      if (!currentCharge || currentCharge === "") {
+        form.setValue("additionalCommodityCodeCharge", "5")
+      }
+    }
+  }, [additionalCommodityCodes, form])
 
   const handleFormSubmit = async (data: InsertImportShipment) => {
     const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
@@ -1436,7 +1446,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   />
                 )}
 
-                {rsToClear && (
+                {rsToClear && additionalCommodityCodes && additionalCommodityCodes > 1 && (
                   <FormField
                     control={form.control}
                     name="additionalCommodityCodeCharge"
