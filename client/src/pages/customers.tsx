@@ -440,7 +440,7 @@ export default function Customers() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as CustomerType)}>
-        <TabsList className="grid w-full max-w-3xl grid-cols-6 gap-3">
+        <TabsList className="grid w-full max-w-3xl grid-cols-6 gap-3 px-3">
           <TabsTrigger value="import" data-testid="tab-import-customers">Import Customers</TabsTrigger>
           <TabsTrigger value="export" data-testid="tab-export-customers">Export Customers</TabsTrigger>
           <TabsTrigger value="receiver" data-testid="tab-export-receivers">Export Receivers</TabsTrigger>
@@ -1409,6 +1409,112 @@ export default function Customers() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {viewingCustomer && 'shippingLineName' in viewingCustomer && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingCustomer.telephone && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Telephone</p>
+                      <p>{viewingCustomer.telephone}</p>
+                    </div>
+                  )}
+                  {viewingCustomer.shippingLineAddress && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Address</p>
+                      <p className="whitespace-pre-wrap">{viewingCustomer.shippingLineAddress}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Email Contacts</h3>
+                <div className="space-y-3">
+                  {viewingCustomer.importEmail && viewingCustomer.importEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Import Emails</p>
+                      {viewingCustomer.importEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                  {viewingCustomer.exportEmail && viewingCustomer.exportEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Export Emails</p>
+                      {viewingCustomer.exportEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                  {viewingCustomer.releasesEmail && viewingCustomer.releasesEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Releases Emails</p>
+                      {viewingCustomer.releasesEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                  {viewingCustomer.accountingEmail && viewingCustomer.accountingEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Accounting Emails</p>
+                      {viewingCustomer.accountingEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {viewingCustomer && 'agentImportEmail' in viewingCustomer && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingCustomer.agentTelephone && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Telephone</p>
+                      <p>{viewingCustomer.agentTelephone}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Email Contacts</h3>
+                <div className="space-y-3">
+                  {viewingCustomer.agentImportEmail && viewingCustomer.agentImportEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Import Emails</p>
+                      {viewingCustomer.agentImportEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                  {viewingCustomer.agentExportEmail && viewingCustomer.agentExportEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Export Emails</p>
+                      {viewingCustomer.agentExportEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                  {viewingCustomer.agentAccountingEmail && viewingCustomer.agentAccountingEmail.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Accounting Emails</p>
+                      {viewingCustomer.agentAccountingEmail.map((email, idx) => (
+                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
