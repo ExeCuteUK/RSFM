@@ -1,6 +1,6 @@
 -- Backup for export_receivers
 -- 2147 records
--- Generated: 2025-10-03T18:26:48.663Z
+-- Generated: 2025-10-03T18:36:02.652Z
 
 INSERT INTO export_receivers ("id", "companyName", "address", "country") VALUES ('50f5c2f3-ae15-478c-a413-7c2fb37812de', 'Yorum Otomatik Kontrol', 'Malzemeleri San. Ve Tic. AS,
 Perpa Ticaret Merkezi 8. Kat B Blok No: 1023,

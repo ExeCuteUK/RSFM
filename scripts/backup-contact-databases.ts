@@ -5,7 +5,12 @@ import {
   exportReceivers, 
   hauliers, 
   shippingLines, 
-  clearanceAgents 
+  clearanceAgents,
+  importShipments,
+  exportShipments,
+  customClearances,
+  settings,
+  users
 } from "../shared/schema";
 import { writeFileSync } from "fs";
 import { mkdirSync } from "fs";
@@ -17,7 +22,7 @@ async function backupContactDatabases() {
     const backupDir = `backups/backup_${timestamp}`;
     mkdirSync(backupDir, { recursive: true });
 
-    console.log(`Starting backup of contact databases...`);
+    console.log(`Starting backup of all database tables...`);
     console.log(`Backup directory: ${backupDir}`);
 
     // Backup Import Customers
@@ -62,7 +67,48 @@ async function backupContactDatabases() {
     writeFileSync(`${backupDir}/clearance_agents_backup.sql`, clearanceAgentsSQL);
     console.log(`✓ Clearance Agents backed up: ${clearanceAgentsData.length} records`);
 
+    // Backup Import Shipments
+    console.log("Backing up Import Shipments...");
+    const importShipmentsData = await db.select().from(importShipments);
+    const importShipmentsSQL = generateInsertSQL("import_shipments", importShipmentsData);
+    writeFileSync(`${backupDir}/import_shipments_backup.sql`, importShipmentsSQL);
+    console.log(`✓ Import Shipments backed up: ${importShipmentsData.length} records`);
+
+    // Backup Export Shipments
+    console.log("Backing up Export Shipments...");
+    const exportShipmentsData = await db.select().from(exportShipments);
+    const exportShipmentsSQL = generateInsertSQL("export_shipments", exportShipmentsData);
+    writeFileSync(`${backupDir}/export_shipments_backup.sql`, exportShipmentsSQL);
+    console.log(`✓ Export Shipments backed up: ${exportShipmentsData.length} records`);
+
+    // Backup Custom Clearances
+    console.log("Backing up Custom Clearances...");
+    const customClearancesData = await db.select().from(customClearances);
+    const customClearancesSQL = generateInsertSQL("custom_clearances", customClearancesData);
+    writeFileSync(`${backupDir}/custom_clearances_backup.sql`, customClearancesSQL);
+    console.log(`✓ Custom Clearances backed up: ${customClearancesData.length} records`);
+
+    // Backup Settings
+    console.log("Backing up Settings...");
+    const settingsData = await db.select().from(settings);
+    const settingsSQL = generateInsertSQL("settings", settingsData);
+    writeFileSync(`${backupDir}/settings_backup.sql`, settingsSQL);
+    console.log(`✓ Settings backed up: ${settingsData.length} records`);
+
+    // Backup Users
+    console.log("Backing up Users...");
+    const usersData = await db.select().from(users);
+    const usersSQL = generateInsertSQL("users", usersData);
+    writeFileSync(`${backupDir}/users_backup.sql`, usersSQL);
+    console.log(`✓ Users backed up: ${usersData.length} records`);
+
     // Create metadata file
+    const totalRecords = importCustomersData.length + exportCustomersData.length + 
+                         exportReceiversData.length + hauliersData.length + 
+                         shippingLinesData.length + clearanceAgentsData.length +
+                         importShipmentsData.length + exportShipmentsData.length +
+                         customClearancesData.length + settingsData.length + usersData.length;
+    
     const metadata = {
       timestamp: new Date().toISOString(),
       backupName: `backup_${timestamp}`,
@@ -73,17 +119,20 @@ async function backupContactDatabases() {
         { name: "hauliers", count: hauliersData.length },
         { name: "shipping_lines", count: shippingLinesData.length },
         { name: "clearance_agents", count: clearanceAgentsData.length },
+        { name: "import_shipments", count: importShipmentsData.length },
+        { name: "export_shipments", count: exportShipmentsData.length },
+        { name: "custom_clearances", count: customClearancesData.length },
+        { name: "settings", count: settingsData.length },
+        { name: "users", count: usersData.length },
       ],
-      totalRecords: importCustomersData.length + exportCustomersData.length + 
-                    exportReceiversData.length + hauliersData.length + 
-                    shippingLinesData.length + clearanceAgentsData.length,
+      totalRecords,
     };
     
     writeFileSync(`${backupDir}/metadata.json`, JSON.stringify(metadata, null, 2));
 
-    console.log("\n✓ All contact databases backed up successfully!");
+    console.log("\n✓ All database tables backed up successfully!");
     console.log(`\nBackup name: backup_${timestamp}`);
-    console.log(`Total records: ${metadata.totalRecords}`);
+    console.log(`Total records: ${totalRecords}`);
 
     process.exit(0);
   } catch (error) {

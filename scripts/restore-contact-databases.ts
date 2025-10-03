@@ -27,20 +27,25 @@ async function restoreContactDatabases() {
       }
     }
     
-    console.log(`Starting restore of contact databases from: ${backupName}`);
+    console.log(`Starting restore of database tables from: ${backupName}`);
     if (selectedTables.length > 0) {
       console.log(`Selected tables: ${selectedTables.join(", ")}`);
     }
     console.log("WARNING: This will DELETE all existing data in selected tables!");
     
-    // All available tables
+    // All available tables (in dependency order for deletion)
     const allTables = [
-      { name: "import_customers", file: `${backupDir}/import_customers_backup.sql` },
-      { name: "export_customers", file: `${backupDir}/export_customers_backup.sql` },
-      { name: "export_receivers", file: `${backupDir}/export_receivers_backup.sql` },
-      { name: "hauliers", file: `${backupDir}/hauliers_backup.sql` },
-      { name: "shipping_lines", file: `${backupDir}/shipping_lines_backup.sql` },
+      { name: "custom_clearances", file: `${backupDir}/custom_clearances_backup.sql` },
+      { name: "import_shipments", file: `${backupDir}/import_shipments_backup.sql` },
+      { name: "export_shipments", file: `${backupDir}/export_shipments_backup.sql` },
       { name: "clearance_agents", file: `${backupDir}/clearance_agents_backup.sql` },
+      { name: "shipping_lines", file: `${backupDir}/shipping_lines_backup.sql` },
+      { name: "hauliers", file: `${backupDir}/hauliers_backup.sql` },
+      { name: "export_receivers", file: `${backupDir}/export_receivers_backup.sql` },
+      { name: "export_customers", file: `${backupDir}/export_customers_backup.sql` },
+      { name: "import_customers", file: `${backupDir}/import_customers_backup.sql` },
+      { name: "settings", file: `${backupDir}/settings_backup.sql` },
+      { name: "users", file: `${backupDir}/users_backup.sql` },
     ];
 
     // Filter tables based on selection (if provided)

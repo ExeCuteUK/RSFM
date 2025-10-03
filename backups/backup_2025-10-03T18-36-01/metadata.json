@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-10-03T18:26:48.870Z",
-  "backupName": "backup_2025-10-03T18-26-47",
+  "timestamp": "2025-10-03T18:36:03.182Z",
+  "backupName": "backup_2025-10-03T18-36-01",
   "tables": [
     {
       "name": "import_customers",
@@ -24,6 +24,26 @@
     },
     {
       "name": "clearance_agents",
+      "count": 0
+    },
+    {
+      "name": "import_shipments",
+      "count": 0
+    },
+    {
+      "name": "export_shipments",
+      "count": 0
+    },
+    {
+      "name": "custom_clearances",
+      "count": 0
+    },
+    {
+      "name": "settings",
+      "count": 0
+    },
+    {
+      "name": "users",
       "count": 0
     }
   ],

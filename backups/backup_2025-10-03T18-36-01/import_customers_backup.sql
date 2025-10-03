@@ -1,6 +1,6 @@
 -- Backup for import_customers
 -- 1424 records
--- Generated: 2025-10-03T18:26:48.379Z
+-- Generated: 2025-10-03T18:36:02.401Z
 
 INSERT INTO import_customers ("id", "companyName", "contactName", "vatNumber", "telephone", "email", "accountsEmail", "address", "agentName", "agentContactName", "agentVatNumber", "agentTelephone", "agentEmail", "agentAccountsEmail", "agentAddress", "rsProcessCustomsClearance", "agentInDover", "vatPaymentMethod", "clearanceAgentDetails", "defaultDeliveryAddress", "defaultSuppliersName", "bookingInDetails") VALUES ('41350eb9-34bf-4c6d-aa19-219caffbeeda', 'Multibelt Conveyor Belting', ARRAY["Paul & Martin"], NULL, '020 8310 9400', ARRAY["info@multibelt.co.uk"], NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, TRUE, NULL, 'R.S Deferment', NULL, NULL, NULL, NULL);
 INSERT INTO import_customers ("id", "companyName", "contactName", "vatNumber", "telephone", "email", "accountsEmail", "address", "agentName", "agentContactName", "agentVatNumber", "agentTelephone", "agentEmail", "agentAccountsEmail", "agentAddress", "rsProcessCustomsClearance", "agentInDover", "vatPaymentMethod", "clearanceAgentDetails", "defaultDeliveryAddress", "defaultSuppliersName", "bookingInDetails") VALUES ('735058e1-9bd8-45f2-9c2f-0403f9ef825e', 'Hannas Tom Hammah Agencies', NULL, NULL, '01505 32 1131', ARRAY["marylin@hannahssweets.co.uk"], NULL, 'Walkinshaw Works,,

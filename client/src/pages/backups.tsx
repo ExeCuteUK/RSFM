@@ -73,12 +73,17 @@ export default function BackupsPage() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/backups"] });
+      // Invalidate all data queries
       queryClient.invalidateQueries({ queryKey: ["/api/import-customers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/export-customers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/export-receivers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/hauliers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] });
       queryClient.invalidateQueries({ queryKey: ["/api/clearance-agents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       
       toast({
         title: "Backup restored successfully",
@@ -201,14 +206,7 @@ export default function BackupsPage() {
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>What gets backed up</AlertTitle>
         <AlertDescription>
-          <ul className="list-disc list-inside space-y-1 mt-2">
-            <li>Import Customers</li>
-            <li>Export Customers</li>
-            <li>Export Receivers</li>
-            <li>Hauliers</li>
-            <li>Shipping Lines</li>
-            <li>Clearance Agents</li>
-          </ul>
+          All database tables including contacts, shipments, clearances, settings, and users.
         </AlertDescription>
       </Alert>
 
