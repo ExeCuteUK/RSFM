@@ -74,7 +74,17 @@ export default function SettingsPage() {
   });
 
   const onSubmit = (data: InsertSettings) => {
-    updateSettings.mutate(data);
+    // Convert numeric values to strings for PostgreSQL numeric type
+    const processedData = {
+      importClearanceFee: data.importClearanceFee !== null ? String(data.importClearanceFee) : null,
+      inventoryLinkedFee: data.inventoryLinkedFee !== null ? String(data.inventoryLinkedFee) : null,
+      commodityCodesIncludedFree: data.commodityCodesIncludedFree,
+      additionalCommodityCodeCharge: data.additionalCommodityCodeCharge !== null ? String(data.additionalCommodityCodeCharge) : null,
+      defermentChargeMinimum: data.defermentChargeMinimum !== null ? String(data.defermentChargeMinimum) : null,
+      defermentChargePercentage: data.defermentChargePercentage !== null ? String(data.defermentChargePercentage) : null,
+      handoverFee: data.handoverFee !== null ? String(data.handoverFee) : null,
+    };
+    updateSettings.mutate(processedData);
   };
 
   if (isLoading) {
@@ -120,15 +130,19 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Import Clearance Fee</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              {...field}
-                              value={field.value ?? ""}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                              data-testid="input-import-clearance-fee"
-                            />
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="pl-7"
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                                data-testid="input-import-clearance-fee"
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -142,15 +156,19 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Inventory Linked Fee</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              {...field}
-                              value={field.value ?? ""}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                              data-testid="input-inventory-linked-fee"
-                            />
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="pl-7"
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                                data-testid="input-inventory-linked-fee"
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -185,15 +203,19 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Additional Commodity Code Charge</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              {...field}
-                              value={field.value ?? ""}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                              data-testid="input-additional-commodity-code-charge"
-                            />
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="pl-7"
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                                data-testid="input-additional-commodity-code-charge"
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -207,15 +229,19 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Deferment Charge Minimum</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              {...field}
-                              value={field.value ?? ""}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                              data-testid="input-deferment-charge-minimum"
-                            />
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="pl-7"
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                                data-testid="input-deferment-charge-minimum"
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -251,15 +277,19 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Handover Fee</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              {...field}
-                              value={field.value ?? ""}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                              data-testid="input-handover-fee"
-                            />
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="pl-7"
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                                data-testid="input-handover-fee"
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
