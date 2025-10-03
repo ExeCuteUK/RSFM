@@ -229,6 +229,20 @@ export default function ExportShipments() {
               Dispatched
             </Button>
             <Button
+              variant={selectedStatuses.includes("Delivered") ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setSelectedStatuses(prev => 
+                  prev.includes("Delivered") 
+                    ? prev.filter(s => s !== "Delivered")
+                    : [...prev, "Delivered"]
+                )
+              }}
+              data-testid="filter-delivered"
+            >
+              Delivered
+            </Button>
+            <Button
               variant={selectedStatuses.includes("Completed") ? "default" : "outline"}
               size="sm"
               onClick={() => {
