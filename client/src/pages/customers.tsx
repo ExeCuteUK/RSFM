@@ -692,9 +692,14 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {receiver.addressLine1 && (
-                        <p className="text-muted-foreground" data-testid={`text-address-${receiver.id}`}>
-                          {[receiver.addressLine1, receiver.town, receiver.postcode].filter(Boolean).join(", ")}
+                      {receiver.address && (
+                        <p className="text-muted-foreground whitespace-pre-line" data-testid={`text-address-${receiver.id}`}>
+                          {receiver.address}
+                        </p>
+                      )}
+                      {receiver.country && (
+                        <p className="text-muted-foreground" data-testid={`text-country-${receiver.id}`}>
+                          {receiver.country}
                         </p>
                       )}
                     </div>
@@ -1363,30 +1368,12 @@ export default function Customers() {
 
           {viewingCustomer && !('rsProcessCustomsClearance' in viewingCustomer) && !('contactName' in viewingCustomer || (viewingCustomer as any).contactName === undefined) && !('haulierName' in viewingCustomer) && !('shippingLineName' in viewingCustomer) && !('agentName' in viewingCustomer) && (
             <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {'email' in viewingCustomer && viewingCustomer.email && viewingCustomer.email.length > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      {viewingCustomer.email.map((email: string, idx: number) => (
-                        <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {'addressLine1' in viewingCustomer && viewingCustomer.addressLine1 && (
+              {'address' in viewingCustomer && viewingCustomer.address && (
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Address</h3>
                   <div className="space-y-1">
-                    {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
-                    {'addressLine2' in viewingCustomer && viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
-                    {'town' in viewingCustomer && viewingCustomer.town && <p>{viewingCustomer.town}</p>}
-                    {'county' in viewingCustomer && viewingCustomer.county && <p>{viewingCustomer.county}</p>}
-                    {'postcode' in viewingCustomer && viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
-                    {'country' in viewingCustomer && viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+                    <p className="whitespace-pre-line">{viewingCustomer.address}</p>
+                    {'country' in viewingCustomer && viewingCustomer.country && <p className="font-medium mt-2">{viewingCustomer.country}</p>}
                   </div>
                 </div>
               )}

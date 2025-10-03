@@ -92,12 +92,7 @@ export const exportReceivers = pgTable("export_receivers", {
   
   // Contact Information
   companyName: text("company_name").notNull(),
-  email: text("email").array(),
-  addressLine1: text("address_line_1"),
-  addressLine2: text("address_line_2"),
-  town: text("town"),
-  county: text("county"),
-  postcode: text("postcode"),
+  address: text("address"),
   country: text("country"),
 });
 
