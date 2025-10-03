@@ -492,9 +492,9 @@ export default function Customers() {
                         </div>
                       )}
                       {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
-                      {customer.addressLine1 && (
-                        <p className="text-muted-foreground" data-testid={`text-address-${customer.id}`}>
-                          {[customer.addressLine1, customer.town, customer.postcode].filter(Boolean).join(", ")}
+                      {customer.address && (
+                        <p className="text-muted-foreground whitespace-pre-wrap text-xs" data-testid={`text-address-${customer.id}`}>
+                          {customer.address}
                         </p>
                       )}
                       {customer.agentName && (
@@ -589,9 +589,9 @@ export default function Customers() {
                         </div>
                       )}
                       {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
-                      {customer.addressLine1 && (
-                        <p className="text-muted-foreground" data-testid={`text-address-${customer.id}`}>
-                          {[customer.addressLine1, customer.town, customer.postcode].filter(Boolean).join(", ")}
+                      {customer.address && (
+                        <p className="text-muted-foreground whitespace-pre-wrap text-xs" data-testid={`text-address-${customer.id}`}>
+                          {customer.address}
                         </p>
                       )}
                       {customer.agentName && (
@@ -1020,7 +1020,13 @@ export default function Customers() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-2xl">
-              {viewingCustomer && 'haulierName' in viewingCustomer ? viewingCustomer.haulierName : viewingCustomer?.companyName}
+              {viewingCustomer && 'haulierName' in viewingCustomer 
+                ? viewingCustomer.haulierName 
+                : viewingCustomer && 'shippingLineName' in viewingCustomer
+                ? viewingCustomer.shippingLineName
+                : viewingCustomer && 'agentName' in viewingCustomer
+                ? viewingCustomer.agentName
+                : viewingCustomer?.companyName}
             </DialogTitle>
           </DialogHeader>
           
@@ -1066,17 +1072,14 @@ export default function Customers() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Address</h3>
-                <div className="space-y-1">
-                  {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
-                  {viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
-                  {viewingCustomer.town && <p>{viewingCustomer.town}</p>}
-                  {viewingCustomer.county && <p>{viewingCustomer.county}</p>}
-                  {viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
-                  {viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+              {viewingCustomer.address && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Address</h3>
+                  <div className="whitespace-pre-wrap">
+                    {viewingCustomer.address}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {viewingCustomer.agentName && (
                 <div>
@@ -1121,17 +1124,14 @@ export default function Customers() {
                       </div>
                     )}
                   </div>
-                  <div className="mt-3">
-                    <h4 className="text-sm text-muted-foreground mb-2">Agent Address</h4>
-                    <div className="space-y-1">
-                      {viewingCustomer.agentAddressLine1 && <p>{viewingCustomer.agentAddressLine1}</p>}
-                      {viewingCustomer.agentAddressLine2 && <p>{viewingCustomer.agentAddressLine2}</p>}
-                      {viewingCustomer.agentTown && <p>{viewingCustomer.agentTown}</p>}
-                      {viewingCustomer.agentCounty && <p>{viewingCustomer.agentCounty}</p>}
-                      {viewingCustomer.agentPostcode && <p>{viewingCustomer.agentPostcode}</p>}
-                      {viewingCustomer.agentCountry && <p>{viewingCustomer.agentCountry}</p>}
+                  {viewingCustomer.agentAddress && (
+                    <div className="mt-3">
+                      <h4 className="text-sm text-muted-foreground mb-2">Agent Address</h4>
+                      <div className="whitespace-pre-wrap">
+                        {viewingCustomer.agentAddress}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -1225,17 +1225,14 @@ export default function Customers() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Address</h3>
-                <div className="space-y-1">
-                  {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
-                  {viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
-                  {viewingCustomer.town && <p>{viewingCustomer.town}</p>}
-                  {viewingCustomer.county && <p>{viewingCustomer.county}</p>}
-                  {viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
-                  {viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+              {viewingCustomer.address && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Address</h3>
+                  <div className="whitespace-pre-wrap">
+                    {viewingCustomer.address}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {viewingCustomer.agentName && (
                 <div>
@@ -1280,17 +1277,14 @@ export default function Customers() {
                       </div>
                     )}
                   </div>
-                  <div className="mt-3">
-                    <h4 className="text-sm text-muted-foreground mb-2">Agent Address</h4>
-                    <div className="space-y-1">
-                      {viewingCustomer.agentAddressLine1 && <p>{viewingCustomer.agentAddressLine1}</p>}
-                      {viewingCustomer.agentAddressLine2 && <p>{viewingCustomer.agentAddressLine2}</p>}
-                      {viewingCustomer.agentTown && <p>{viewingCustomer.agentTown}</p>}
-                      {viewingCustomer.agentCounty && <p>{viewingCustomer.agentCounty}</p>}
-                      {viewingCustomer.agentPostcode && <p>{viewingCustomer.agentPostcode}</p>}
-                      {viewingCustomer.agentCountry && <p>{viewingCustomer.agentCountry}</p>}
+                  {viewingCustomer.agentAddress && (
+                    <div className="mt-3">
+                      <h4 className="text-sm text-muted-foreground mb-2">Agent Address</h4>
+                      <div className="whitespace-pre-wrap">
+                        {viewingCustomer.agentAddress}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1342,15 +1336,15 @@ export default function Customers() {
             </div>
           )}
 
-          {viewingCustomer && !('rsProcessCustomsClearance' in viewingCustomer) && !('contactName' in viewingCustomer || (viewingCustomer as any).contactName === undefined) && !('haulierName' in viewingCustomer) && (
+          {viewingCustomer && !('rsProcessCustomsClearance' in viewingCustomer) && !('contactName' in viewingCustomer || (viewingCustomer as any).contactName === undefined) && !('haulierName' in viewingCustomer) && !('shippingLineName' in viewingCustomer) && !('agentName' in viewingCustomer) && (
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {viewingCustomer.email && viewingCustomer.email.length > 0 && (
+                  {'email' in viewingCustomer && viewingCustomer.email && viewingCustomer.email.length > 0 && (
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
-                      {viewingCustomer.email.map((email, idx) => (
+                      {viewingCustomer.email.map((email: string, idx: number) => (
                         <p key={idx}><a href={`mailto:${email}`} className="hover:underline">{email}</a></p>
                       ))}
                     </div>
@@ -1358,17 +1352,19 @@ export default function Customers() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Address</h3>
-                <div className="space-y-1">
-                  {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
-                  {viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
-                  {viewingCustomer.town && <p>{viewingCustomer.town}</p>}
-                  {viewingCustomer.county && <p>{viewingCustomer.county}</p>}
-                  {viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
-                  {viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+              {'addressLine1' in viewingCustomer && viewingCustomer.addressLine1 && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Address</h3>
+                  <div className="space-y-1">
+                    {viewingCustomer.addressLine1 && <p>{viewingCustomer.addressLine1}</p>}
+                    {'addressLine2' in viewingCustomer && viewingCustomer.addressLine2 && <p>{viewingCustomer.addressLine2}</p>}
+                    {'town' in viewingCustomer && viewingCustomer.town && <p>{viewingCustomer.town}</p>}
+                    {'county' in viewingCustomer && viewingCustomer.county && <p>{viewingCustomer.county}</p>}
+                    {'postcode' in viewingCustomer && viewingCustomer.postcode && <p>{viewingCustomer.postcode}</p>}
+                    {'country' in viewingCustomer && viewingCustomer.country && <p>{viewingCustomer.country}</p>}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </DialogContent>
