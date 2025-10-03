@@ -875,6 +875,12 @@ export default function ImportShipments() {
                             )}
                           </div>
                         </div>
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">R.S Invoices</p>
+                            <p className="text-xs text-muted-foreground italic">None</p>
+                          </div>
+                        </div>
                       </div>
                     )
                   })()}
