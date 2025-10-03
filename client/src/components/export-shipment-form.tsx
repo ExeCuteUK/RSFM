@@ -175,6 +175,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const dispatchDate = form.watch("dispatchDate")
   const status = form.watch("status")
   const receiverId = form.watch("receiverId")
+  const additionalCommodityCodes = form.watch("additionalCommodityCodes")
 
   useEffect(() => {
     if (dispatchDate && status === "Pending") {
@@ -203,6 +204,15 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       }
     }
   }, [receiverId, exportReceivers, form])
+
+  useEffect(() => {
+    if (additionalCommodityCodes && additionalCommodityCodes > 1) {
+      const currentCharge = form.getValues("additionalCommodityCodeCharge")
+      if (!currentCharge || currentCharge === "") {
+        form.setValue("additionalCommodityCodeCharge", "5")
+      }
+    }
+  }, [additionalCommodityCodes, form])
 
   const handleFormSubmit = async (data: InsertExportShipment) => {
     const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
@@ -1236,7 +1246,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   />
                 )}
 
-                {(exportClearanceAgent === "R.S" || (exportClearanceAgent && arrivalClearanceAgent && !((exportClearanceAgent === "N/A" || exportClearanceAgent === "Customer") && arrivalClearanceAgent === "Customer"))) && (
+                {(exportClearanceAgent === "R.S" || (exportClearanceAgent && arrivalClearanceAgent && !((exportClearanceAgent === "N/A" || exportClearanceAgent === "Customer") && arrivalClearanceAgent === "Customer"))) && additionalCommodityCodes && additionalCommodityCodes > 1 && (
                   <FormField
                     control={form.control}
                     name="additionalCommodityCodeCharge"
