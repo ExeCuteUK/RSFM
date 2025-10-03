@@ -210,7 +210,7 @@ export default function ShippingLines() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                          <span className="font-medium text-orange-600 dark:text-orange-400">Email Contacts:</span>
+                          <span className="font-medium text-white dark:text-white">Email Contacts:</span>
                         </div>
                         <div className="flex flex-wrap gap-1 ml-6" data-testid={`list-all-emails-${shippingLine.id}`}>
                           {uniqueEmails.map((email, idx) => (
