@@ -424,31 +424,115 @@
 
 /* Print Styles */
 @media print {
-  /* Remove scrollbars and overflow constraints for dialogs */
-  [role="dialog"] {
-    max-height: none !important;
-    overflow: visible !important;
+  /* Set page margins */
+  @page {
+    margin: 0.75in;
   }
   
-  /* Allow dialog content to span multiple pages */
-  [role="dialog"] > * {
-    max-height: none !important;
-    overflow: visible !important;
+  /* Reset Radix Dialog portal structure for print */
+  [data-radix-portal] {
+    position: static !important;
+    transform: none !important;
+    inset: auto !important;
   }
   
-  /* Hide scrollbars globally when printing */
+  /* Reset dialog overlay */
+  [data-radix-dialog-overlay] {
+    display: none !important;
+  }
+  
+  /* Reset dialog content wrapper */
+  [data-radix-dialog-content] {
+    position: static !important;
+    transform: none !important;
+    max-height: none !important;
+    max-width: none !important;
+    overflow: visible !important;
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  
+  /* Hide all interactive buttons */
+  button[data-testid="button-print-shipment"],
+  button[data-testid="button-edit-shipment"],
+  button[data-testid^="button-"] {
+    display: none !important;
+  }
+  
+  /* Convert colored cards to black and white with borders */
+  .bg-blue-50\/50,
+  .bg-blue-50,
+  .bg-green-50\/50,
+  .bg-green-50,
+  .bg-orange-50\/50,
+  .bg-orange-50,
+  .bg-purple-50\/50,
+  .bg-purple-50,
+  .bg-white {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  /* Convert nested card elements */
+  [class*="bg-blue-"],
+  [class*="bg-green-"],
+  [class*="bg-orange-"],
+  [class*="bg-purple-"] {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  /* Ensure borders are visible */
+  [class*="border-blue-"],
+  [class*="border-green-"],
+  [class*="border-orange-"],
+  [class*="border-purple-"],
+  .border {
+    border-color: #000 !important;
+    border-width: 1px !important;
+  }
+  
+  /* Remove shadows and dark mode styles */
   * {
-    overflow: visible !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
   }
   
-  /* Ensure page breaks work properly */
-  .space-y-4 > * {
+  /* Ensure text is black */
+  [class*="text-blue-"],
+  [class*="text-green-"],
+  [class*="text-orange-"],
+  [class*="text-purple-"],
+  [class*="text-muted-"],
+  p, span, div, h1, h2, h3, h4, h5, h6 {
+    color: black !important;
+  }
+  
+  /* Keep icon visibility but make them black */
+  svg {
+    color: black !important;
+    fill: black !important;
+  }
+  
+  /* Page break rules - allow natural breaks */
+  .space-y-4 {
+    page-break-inside: auto !important;
+  }
+  
+  /* Prevent breaks inside individual cards */
+  [class*="Card"] {
     page-break-inside: avoid;
   }
   
-  /* Hide interactive elements when printing */
-  button[data-testid="button-print-shipment"],
-  button[data-testid="button-edit-shipment"] {
-    display: none !important;
+  /* Hide badges for cleaner print */
+  [class*="Badge"],
+  .inline-flex.items-center.rounded-full {
+    display: inline !important;
+    background: transparent !important;
+    border: 1px solid black !important;
+    padding: 2px 6px !important;
   }
 }
