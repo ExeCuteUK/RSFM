@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
+import { useLocation } from "wouter"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -40,6 +41,7 @@ export default function ImportShipments() {
   const [viewingShipment, setViewingShipment] = useState<ImportShipment | null>(null)
   const [statusPrompt, setStatusPrompt] = useState<{ show: boolean; newStatus: string; message: string }>({ show: false, newStatus: '', message: '' })
   const { toast } = useToast()
+  const [, setLocation] = useLocation()
 
   const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -649,12 +651,13 @@ export default function ImportShipments() {
                     {shipment.linkedClearanceId && (() => {
                       const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
                       return linkedClearance ? (
-                        <Badge 
-                          className={getClearanceStatusBadgeClass(linkedClearance.status)} 
+                        <button
+                          onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
+                          className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
                           data-testid={`badge-clearance-status-${shipment.id}`}
                         >
                           {linkedClearance.status}
-                        </Badge>
+                        </button>
                       ) : null
                     })()}
                   </div>

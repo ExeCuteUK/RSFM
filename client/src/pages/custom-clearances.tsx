@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
+import { useLocation } from "wouter"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -27,6 +28,16 @@ export default function CustomClearances() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
   const [searchText, setSearchText] = useState("")
   const { toast } = useToast()
+  const [location] = useLocation()
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.split('?')[1])
+    const searchParam = params.get('search')
+    if (searchParam) {
+      setSearchText(searchParam)
+      setSelectedStatuses([])
+    }
+  }, [location])
 
   const { data: clearances = [], isLoading } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
