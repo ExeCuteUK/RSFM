@@ -484,8 +484,10 @@ export default function Customers() {
                         >
                           {customer.companyName}
                         </h3>
-                        {customer.contactName && (
-                          <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>{customer.contactName}</p>
+                        {customer.contactName && customer.contactName.length > 0 && (
+                          <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>
+                            {customer.contactName.join(' / ')}
+                          </p>
                         )}
                       </div>
                       <div className="flex gap-1">
@@ -526,8 +528,10 @@ export default function Customers() {
                       {customer.agentName && (
                         <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
                           <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
-                          {customer.agentContactName && (
-                            <p className="text-sm text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
+                          {customer.agentContactName && customer.agentContactName.length > 0 && (
+                            <p className="text-sm text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>
+                              {customer.agentContactName.join(' / ')}
+                            </p>
                           )}
                           {customer.agentTelephone && (
                             <p className="mt-1" data-testid={`text-agent-telephone-${customer.id}`}>{customer.agentTelephone}</p>
@@ -581,8 +585,10 @@ export default function Customers() {
                         >
                           {customer.companyName}
                         </h3>
-                        {customer.contactName && (
-                          <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>{customer.contactName}</p>
+                        {customer.contactName && customer.contactName.length > 0 && (
+                          <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>
+                            {customer.contactName.join(' / ')}
+                          </p>
                         )}
                       </div>
                       <div className="flex gap-1">
@@ -623,8 +629,10 @@ export default function Customers() {
                       {customer.agentName && (
                         <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
                           <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
-                          {customer.agentContactName && (
-                            <p className="text-sm text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>{customer.agentContactName}</p>
+                          {customer.agentContactName && customer.agentContactName.length > 0 && (
+                            <p className="text-sm text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>
+                              {customer.agentContactName.join(' / ')}
+                            </p>
                           )}
                           {customer.agentTelephone && (
                             <p className="mt-1" data-testid={`text-agent-telephone-${customer.id}`}>{customer.agentTelephone}</p>
