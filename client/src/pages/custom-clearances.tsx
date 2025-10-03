@@ -4,6 +4,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search } from "lucide-react"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -24,6 +25,7 @@ export default function CustomClearances() {
   const [editingClearance, setEditingClearance] = useState<CustomClearance | null>(null)
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
+  const [searchText, setSearchText] = useState("")
   const { toast } = useToast()
 
   const { data: clearances = [], isLoading } = useQuery<CustomClearance[]>({
@@ -130,9 +132,24 @@ export default function CustomClearances() {
     })
   }
 
-  const filteredClearances = selectedStatuses.length === 0
+  const filteredByStatus = selectedStatuses.length === 0
     ? clearances 
     : clearances.filter(c => selectedStatuses.includes(c.status))
+
+  const filteredClearances = searchText.trim() === ""
+    ? filteredByStatus
+    : filteredByStatus.filter(c => {
+        const searchLower = searchText.toLowerCase()
+        const customerName = getCustomerName(c).toLowerCase()
+        const jobRef = c.jobRef.toString()
+        const trailer = (c.trailerOrContainerNumber || "").toLowerCase()
+        const vessel = (c.vesselName || "").toLowerCase()
+        
+        return jobRef.includes(searchLower) ||
+               customerName.includes(searchLower) ||
+               trailer.includes(searchLower) ||
+               vessel.includes(searchLower)
+      })
 
   return (
     <div className="p-6 space-y-6">
@@ -149,7 +166,19 @@ export default function CustomClearances() {
         </Button>
       </div>
 
-      <div className="flex gap-2 flex-wrap" data-testid="status-filters">
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search by job ref, customer, trailer, vessel..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="pl-9"
+            data-testid="input-search"
+          />
+        </div>
+        <div className="flex gap-2 flex-wrap" data-testid="status-filters">
         <Button
           variant={selectedStatuses.length === 0 ? "default" : "outline"}
           onClick={handleAllClick}
@@ -192,6 +221,7 @@ export default function CustomClearances() {
         >
           Fully Cleared
         </Button>
+        </div>
       </div>
 
       {isLoading ? (

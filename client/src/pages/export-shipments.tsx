@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -26,17 +27,33 @@ export default function ExportShipments() {
   const [editingShipment, setEditingShipment] = useState<ExportShipment | null>(null)
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
+  const [searchText, setSearchText] = useState("")
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
-  const { toast } = useToast()
+  const { toast} = useToast()
 
   const { data: allShipments = [], isLoading } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
   })
 
-  const shipments = selectedStatuses.length === 0
+  const filteredByStatus = selectedStatuses.length === 0
     ? allShipments 
     : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
+
+  const shipments = searchText.trim() === ""
+    ? filteredByStatus
+    : filteredByStatus.filter(s => {
+        const searchLower = searchText.toLowerCase()
+        const receiverName = getReceiverName(s.receiverId).toLowerCase()
+        const jobRef = s.jobRef.toString()
+        const trailer = (s.trailerNo || "").toLowerCase()
+        const vessel = (s.vesselName || "").toLowerCase()
+        
+        return jobRef.includes(searchLower) ||
+               receiverName.includes(searchLower) ||
+               trailer.includes(searchLower) ||
+               vessel.includes(searchLower)
+      })
 
   const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
     queryKey: ["/api/export-receivers"],
@@ -213,76 +230,88 @@ export default function ExportShipments() {
             Manage outgoing shipments and export clearances
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2">
-            <Button
-              variant={selectedStatuses.length === 0 ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedStatuses([])}
-              data-testid="filter-all"
-            >
-              All
-            </Button>
-            <Button
-              variant={selectedStatuses.includes("Awaiting Collection") ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setSelectedStatuses(prev => 
-                  prev.includes("Awaiting Collection") 
-                    ? prev.filter(s => s !== "Awaiting Collection")
-                    : [...prev, "Awaiting Collection"]
-                )
-              }}
-              data-testid="filter-awaiting-collection"
-            >
-              Awaiting Collection
-            </Button>
-            <Button
-              variant={selectedStatuses.includes("Dispatched") ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setSelectedStatuses(prev => 
-                  prev.includes("Dispatched") 
-                    ? prev.filter(s => s !== "Dispatched")
-                    : [...prev, "Dispatched"]
-                )
-              }}
-              data-testid="filter-dispatched"
-            >
-              Dispatched
-            </Button>
-            <Button
-              variant={selectedStatuses.includes("Delivered") ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setSelectedStatuses(prev => 
-                  prev.includes("Delivered") 
-                    ? prev.filter(s => s !== "Delivered")
-                    : [...prev, "Delivered"]
-                )
-              }}
-              data-testid="filter-delivered"
-            >
-              Delivered
-            </Button>
-            <Button
-              variant={selectedStatuses.includes("Completed") ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setSelectedStatuses(prev => 
-                  prev.includes("Completed") 
-                    ? prev.filter(s => s !== "Completed")
-                    : [...prev, "Completed"]
-                )
-              }}
-              data-testid="filter-completed"
-            >
-              Completed
-            </Button>
-          </div>
-          <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Export Shipment
+        <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Export Shipment
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search by job ref, receiver, trailer, vessel..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="pl-9"
+            data-testid="input-search"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={selectedStatuses.length === 0 ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedStatuses([])}
+            data-testid="filter-all"
+          >
+            All
+          </Button>
+          <Button
+            variant={selectedStatuses.includes("Awaiting Collection") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedStatuses(prev => 
+                prev.includes("Awaiting Collection") 
+                  ? prev.filter(s => s !== "Awaiting Collection")
+                  : [...prev, "Awaiting Collection"]
+              )
+            }}
+            data-testid="filter-awaiting-collection"
+          >
+            Awaiting Collection
+          </Button>
+          <Button
+            variant={selectedStatuses.includes("Dispatched") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedStatuses(prev => 
+                prev.includes("Dispatched") 
+                  ? prev.filter(s => s !== "Dispatched")
+                  : [...prev, "Dispatched"]
+              )
+            }}
+            data-testid="filter-dispatched"
+          >
+            Dispatched
+          </Button>
+          <Button
+            variant={selectedStatuses.includes("Delivered") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedStatuses(prev => 
+                prev.includes("Delivered") 
+                  ? prev.filter(s => s !== "Delivered")
+                  : [...prev, "Delivered"]
+              )
+            }}
+            data-testid="filter-delivered"
+          >
+            Delivered
+          </Button>
+          <Button
+            variant={selectedStatuses.includes("Completed") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedStatuses(prev => 
+                prev.includes("Completed") 
+                  ? prev.filter(s => s !== "Completed")
+                  : [...prev, "Completed"]
+              )
+            }}
+            data-testid="filter-completed"
+          >
+            Completed
           </Button>
         </div>
       </div>
