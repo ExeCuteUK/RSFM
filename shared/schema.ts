@@ -28,12 +28,7 @@ export const importCustomers = pgTable("import_customers", {
   telephone: text("telephone"),
   email: text("email").array(),
   accountsEmail: text("accounts_email").array(),
-  addressLine1: text("address_line_1"),
-  addressLine2: text("address_line_2"),
-  town: text("town"),
-  county: text("county"),
-  postcode: text("postcode"),
-  country: text("country"),
+  address: text("address"),
   
   // Agent Information
   agentName: text("agent_name"),
@@ -42,12 +37,7 @@ export const importCustomers = pgTable("import_customers", {
   agentTelephone: text("agent_telephone"),
   agentEmail: text("agent_email").array(),
   agentAccountsEmail: text("agent_accounts_email").array(),
-  agentAddressLine1: text("agent_address_line_1"),
-  agentAddressLine2: text("agent_address_line_2"),
-  agentTown: text("agent_town"),
-  agentCounty: text("agent_county"),
-  agentPostcode: text("agent_postcode"),
-  agentCountry: text("agent_country"),
+  agentAddress: text("agent_address"),
   
   // Import Information
   rsProcessCustomsClearance: boolean("rs_process_customs_clearance").default(false),
@@ -77,12 +67,7 @@ export const exportCustomers = pgTable("export_customers", {
   telephone: text("telephone"),
   email: text("email").array(),
   accountsEmail: text("accounts_email").array(),
-  addressLine1: text("address_line_1"),
-  addressLine2: text("address_line_2"),
-  town: text("town"),
-  county: text("county"),
-  postcode: text("postcode"),
-  country: text("country"),
+  address: text("address"),
   
   // Agent Information
   agentName: text("agent_name"),
@@ -91,12 +76,7 @@ export const exportCustomers = pgTable("export_customers", {
   agentTelephone: text("agent_telephone"),
   agentEmail: text("agent_email").array(),
   agentAccountsEmail: text("agent_accounts_email").array(),
-  agentAddressLine1: text("agent_address_line_1"),
-  agentAddressLine2: text("agent_address_line_2"),
-  agentTown: text("agent_town"),
-  agentCounty: text("agent_county"),
-  agentPostcode: text("agent_postcode"),
-  agentCountry: text("agent_country"),
+  agentAddress: text("agent_address"),
 });
 
 export const insertExportCustomerSchema = createInsertSchema(exportCustomers).omit({
