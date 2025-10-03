@@ -13,6 +13,8 @@ import {
   type InsertShippingLine,
   type ClearanceAgent,
   type InsertClearanceAgent,
+  type Settings,
+  type InsertSettings,
   type ImportShipment,
   type InsertImportShipment,
   type ExportShipment,
@@ -25,6 +27,7 @@ import {
   hauliers,
   shippingLines,
   clearanceAgents,
+  settings,
   importShipments,
   exportShipments,
   customClearances,
@@ -81,6 +84,11 @@ export interface IStorage {
   createClearanceAgent(agent: InsertClearanceAgent): Promise<ClearanceAgent>;
   updateClearanceAgent(id: string, agent: Partial<InsertClearanceAgent>): Promise<ClearanceAgent | undefined>;
   deleteClearanceAgent(id: string): Promise<boolean>;
+
+  // Settings methods
+  getSettings(): Promise<Settings | undefined>;
+  updateSettings(id: string, settingsData: Partial<InsertSettings>): Promise<Settings | undefined>;
+  createSettings(settingsData: InsertSettings): Promise<Settings>;
 
   // Job Reference methods
   getNextJobRef(): number;
@@ -458,6 +466,29 @@ export class MemStorage implements IStorage {
 
   async deleteClearanceAgent(id: string): Promise<boolean> {
     return false;
+  }
+
+  // Settings methods
+  async getSettings(): Promise<Settings | undefined> {
+    return undefined;
+  }
+
+  async updateSettings(id: string, settingsData: Partial<InsertSettings>): Promise<Settings | undefined> {
+    return undefined;
+  }
+
+  async createSettings(settingsData: InsertSettings): Promise<Settings> {
+    const created: Settings = {
+      id: randomUUID(),
+      importClearanceFee: settingsData.importClearanceFee ?? null,
+      inventoryLinkedFee: settingsData.inventoryLinkedFee ?? null,
+      commodityCodesIncludedFree: settingsData.commodityCodesIncludedFree ?? null,
+      additionalCommodityCodeCharge: settingsData.additionalCommodityCodeCharge ?? null,
+      defermentChargeMinimum: settingsData.defermentChargeMinimum ?? null,
+      defermentChargePercentage: settingsData.defermentChargePercentage ?? null,
+      handoverFee: settingsData.handoverFee ?? null,
+    };
+    return created;
   }
 
   // Job Reference methods
@@ -1057,6 +1088,22 @@ export class DatabaseStorage implements IStorage {
   async deleteClearanceAgent(id: string): Promise<boolean> {
     const result = await db.delete(clearanceAgents).where(eq(clearanceAgents.id, id));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Settings methods
+  async getSettings(): Promise<Settings | undefined> {
+    const [settingsRecord] = await db.select().from(settings).limit(1);
+    return settingsRecord;
+  }
+
+  async updateSettings(id: string, settingsData: Partial<InsertSettings>): Promise<Settings | undefined> {
+    const [updated] = await db.update(settings).set(settingsData).where(eq(settings.id, id)).returning();
+    return updated;
+  }
+
+  async createSettings(settingsData: InsertSettings): Promise<Settings> {
+    const [created] = await db.insert(settings).values(settingsData).returning();
+    return created;
   }
 
   // Import Shipment methods
