@@ -229,21 +229,21 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                         {contacts.map((contact, index) => (
                           <div 
                             key={index} 
-                            className="flex items-center justify-between p-3 bg-secondary/50 rounded-md"
+                            className="flex items-center gap-3 p-3 bg-secondary/50 rounded-md"
                             data-testid={`contact-${index}`}
                           >
-                            <div className="grid grid-cols-4 gap-4 flex-1 text-sm">
-                              <div>
-                                <div className="font-medium">{contact.contactName}</div>
+                            <div className="grid grid-cols-12 gap-3 flex-1 text-sm">
+                              <div className="col-span-3">
+                                <div className="font-medium truncate">{contact.contactName}</div>
                               </div>
-                              <div>
-                                <div className="text-muted-foreground">{contact.contactEmail}</div>
+                              <div className="col-span-3">
+                                <div className="text-muted-foreground truncate">{contact.contactEmail}</div>
                               </div>
-                              <div>
-                                <div className="text-muted-foreground">{contact.exportType}</div>
+                              <div className="col-span-3">
+                                <div className="text-muted-foreground truncate">{contact.exportType}</div>
                               </div>
-                              <div>
-                                <div className="text-muted-foreground">{contact.countryServiced}</div>
+                              <div className="col-span-3">
+                                <div className="text-muted-foreground truncate">{contact.countryServiced}</div>
                               </div>
                             </div>
                             <Button
@@ -251,6 +251,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                               size="icon"
                               variant="ghost"
                               onClick={() => removeContact(index)}
+                              className="flex-shrink-0"
                               data-testid={`button-remove-contact-${index}`}
                             >
                               <X className="h-4 w-4" />
