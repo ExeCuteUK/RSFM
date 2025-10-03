@@ -188,15 +188,6 @@ export default function ShippingLines() {
                 </div>
 
                 <div className="space-y-3 text-sm">
-                  {shippingLine.shippingLineAddress && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground" data-testid={`text-address-${shippingLine.id}`}>
-                        {shippingLine.shippingLineAddress}
-                      </span>
-                    </div>
-                  )}
-                  
                   {shippingLine.telephone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
