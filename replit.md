@@ -14,6 +14,12 @@ Preferred communication style: Simple, everyday language.
 - Address fields should be formatted with line breaks (newlines) between components for better readability in textareas
 - Example format: "Moreley Way,\nPeterborough,\nPE2 9JJ" instead of "Moreley Way, Peterborough, PE2 9JJ"
 
+**Database Population:**
+- Import Customers: 1,424 records imported via `scripts/import-all-to-import-customers.ts`
+- Export Customers: 2,007 records imported via `scripts/import-export-customers.ts`  
+- Export Receivers: 2,147 records imported via `scripts/import-export-receivers.ts`
+- All imports use ##! delimiter and combine address fields with line breaks for readability
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -23,6 +29,8 @@ The frontend is built with React 18 and TypeScript, using Vite for development a
 ### Backend Architecture
 
 The backend is developed with Express.js and TypeScript on Node.js, utilizing an ESM module system. It provides a RESTful API under the `/api` prefix for CRUD operations on all major entities. Zod schemas are shared between frontend and backend for validation. The storage layer uses PostgreSQL via Drizzle ORM (`DatabaseStorage`) for permanent data persistence. The system includes data models for `importCustomers`, `exportCustomers`, `exportReceivers`, `hauliers`, `shippingLines`, `clearanceAgents`, `settings`, `importShipments`, `exportShipments`, and `customClearances`, with automatic custom clearance job generation logic. All contact forms support multi-email functionality using array fields for `email`, `agentEmail`, and `accountsEmail` (Import/Export Customers only). Fax fields have been completely removed from the system. The `customClearances` table now includes a `deliveryAddress` field for better destination tracking in job journals.
+
+**Export Receivers Database:** Uses a simplified structure with combined address field (multiline) and separate country field. Email field has been removed from this entity.
 
 ### API Endpoints
 
