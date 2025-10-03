@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -564,9 +564,12 @@ export default function ImportShipments() {
                       To-Do List
                     </h3>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
-                        Advise Clearance to Agent
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
+                          Advise Clearance to Agent
+                        </p>
+                      </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleClearanceStatusUpdate(shipment.id, 1)}
@@ -593,9 +596,12 @@ export default function ImportShipments() {
                   </div>
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
-                        Book Delivery Customer
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
+                          Book Delivery Customer
+                        </p>
+                      </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 2)}
@@ -642,9 +648,12 @@ export default function ImportShipments() {
                   </div>
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
-                        Book Delivery Haulier
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
+                          Book Delivery Haulier
+                        </p>
+                      </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 2)}
@@ -692,9 +701,12 @@ export default function ImportShipments() {
                   {shipment.containerShipment === "Container Shipment" && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
-                          Release Container to : {shipment.deliveryRelease || "N/A"}
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <Unlock className="h-3.5 w-3.5 text-muted-foreground" />
+                          <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
+                            Release Container to : {shipment.deliveryRelease || "N/A"}
+                          </p>
+                        </div>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 2)}
@@ -742,9 +754,12 @@ export default function ImportShipments() {
                   )}
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
-                        Invoice Customer
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
+                          Invoice Customer
+                        </p>
+                      </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 2)}
@@ -771,9 +786,12 @@ export default function ImportShipments() {
                   </div>
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
-                        Send POD to Customer
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <Send className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
+                          Send POD to Customer
+                        </p>
+                      </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 2)}
