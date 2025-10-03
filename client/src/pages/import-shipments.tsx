@@ -664,18 +664,24 @@ export default function ImportShipments() {
                 </div>
                 <div className="space-y-1 text-xs">
                   {shipment.trailerOrContainerNumber && (
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className="font-semibold text-lg" data-testid={`text-truck-container-${shipment.id}`}>
-                        {shipment.trailerOrContainerNumber}
-                        {shipment.containerShipment === "Container Shipment" && shipment.shippingLine && ` / ${shipment.shippingLine}`}
-                      </p>
-                      <p className="font-semibold text-lg" data-testid={`text-eta-port-${shipment.id}`}>
-                        <span>ETA Port:</span>{' '}
-                        {formatDate(shipment.importDateEtaPort) || (
-                          <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
-                        )}
-                      </p>
-                    </div>
+                    <>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <p className="font-semibold text-lg" data-testid={`text-truck-container-${shipment.id}`}>
+                          {shipment.trailerOrContainerNumber}
+                        </p>
+                        <p className="font-semibold text-lg" data-testid={`text-eta-port-${shipment.id}`}>
+                          <span>ETA Port:</span>{' '}
+                          {formatDate(shipment.importDateEtaPort) || (
+                            <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
+                          )}
+                        </p>
+                      </div>
+                      {shipment.containerShipment === "Container Shipment" && shipment.shippingLine && (
+                        <p className="font-semibold text-lg" data-testid={`text-shipping-line-${shipment.id}`}>
+                          {shipment.shippingLine}
+                        </p>
+                      )}
+                    </>
                   )}
                   {shipment.containerShipment === "Container Shipment" && shipment.vesselName && (
                     <p data-testid={`text-vessel-name-${shipment.id}`}>

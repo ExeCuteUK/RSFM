@@ -27,7 +27,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
-import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
+import { InlineUploader } from "./InlineUploader"
+import type { UploadResult } from "@uppy/core"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -66,7 +67,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       supplierName: "",
       createdFromType: "",
       createdFromId: "",
-      attachments: [],
+      additionalNotes: "",
+      transportDocuments: [],
+      clearanceDocuments: [],
       ...defaultValues
     },
   })
@@ -696,21 +699,21 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
           <Card>
             <CardHeader>
-              <CardTitle>File Attachments</CardTitle>
+              <CardTitle>Additional Notes</CardTitle>
             </CardHeader>
             <CardContent>
               <FormField
                 control={form.control}
-                name="attachments"
+                name="additionalNotes"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FileUpload
-                        value={Array.isArray(field.value) ? field.value.map(url => ({ url, name: url.split('/').pop() || '' })) : []}
-                        onChange={(files: FileMetadata[]) => {
-                          field.onChange(files.map(f => f.url));
-                        }}
-                        testId="file-upload-attachments"
+                      <Textarea 
+                        {...field} 
+                        value={field.value || ""} 
+                        placeholder="Enter any additional notes or comments..."
+                        className="min-h-[120px]"
+                        data-testid="textarea-additional-notes" 
                       />
                     </FormControl>
                     <FormMessage />
@@ -719,6 +722,88 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               />
             </CardContent>
           </Card>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Transport Documents</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="transportDocuments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="space-y-3">
+                        <InlineUploader
+                          maxNumberOfFiles={10}
+                          maxFileSize={20 * 1024 * 1024}
+                          onGetUploadParameters={async (file) => {
+                            const response = await fetch("/api/objects/upload", { 
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ filename: file?.name })
+                            });
+                            const data = await response.json();
+                            return { method: "PUT" as const, url: data.uploadURL };
+                          }}
+                          onUploadComplete={(result: UploadResult) => {
+                            if (result.successful && result.successful.length > 0) {
+                              const urls = result.successful.map((file: any) => file.uploadURL?.split('?')[0]);
+                              const currentUrls = field.value || [];
+                              field.onChange([...currentUrls, ...urls]);
+                            }
+                          }}
+                          testId="uploader-transport-documents"
+                        />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Clearance Documents</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="clearanceDocuments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="space-y-3">
+                        <InlineUploader
+                          maxNumberOfFiles={10}
+                          maxFileSize={20 * 1024 * 1024}
+                          onGetUploadParameters={async (file) => {
+                            const response = await fetch("/api/objects/upload", { 
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ filename: file?.name })
+                            });
+                            const data = await response.json();
+                            return { method: "PUT" as const, url: data.uploadURL };
+                          }}
+                          onUploadComplete={(result: UploadResult) => {
+                            if (result.successful && result.successful.length > 0) {
+                              const urls = result.successful.map((file: any) => file.uploadURL?.split('?')[0]);
+                              const currentUrls = field.value || [];
+                              field.onChange([...currentUrls, ...urls]);
+                            }
+                          }}
+                          testId="uploader-clearance-documents"
+                        />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <div className="flex justify-end gap-2">
