@@ -1016,129 +1016,131 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="deliveryDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Date</FormLabel>
-                      <div className="flex gap-2">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                                data-testid="button-delivery-date"
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
-                              onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                              initialFocus
+              {!handoverContainerAtPort && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="deliveryDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Date</FormLabel>
+                        <div className="flex gap-2">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                  data-testid="button-delivery-date"
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          {field.value && field.value !== "" && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => field.onChange("")}
+                              data-testid="button-clear-delivery-date"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="deliveryTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Time</FormLabel>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input
+                              type="time"
+                              {...field}
+                              value={field.value || ""}
+                              className="w-full"
+                              data-testid="input-delivery-time"
                             />
-                          </PopoverContent>
-                        </Popover>
-                        {field.value && field.value !== "" && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => field.onChange("")}
-                            data-testid="button-clear-delivery-date"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          </FormControl>
+                          {field.value && field.value !== "" && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => field.onChange("")}
+                              data-testid="button-clear-delivery-time"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="deliveryTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Time</FormLabel>
-                      <div className="flex gap-2">
+                  <FormField
+                    control={form.control}
+                    name="deliveryReference"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Reference</FormLabel>
                         <FormControl>
-                          <Input
-                            type="time"
-                            {...field}
-                            value={field.value || ""}
-                            className="w-full"
-                            data-testid="input-delivery-time"
-                          />
+                          <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
                         </FormControl>
-                        {field.value && field.value !== "" && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => field.onChange("")}
-                            data-testid="button-clear-delivery-time"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="deliveryReference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Reference</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-delivery-reference" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="deliveryTimeNotes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Notes</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="deliveryTimeNotes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Notes</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-delivery-time-notes" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="deliveryAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Address</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="deliveryAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Address</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} value={field.value || ""} data-testid="input-delivery-address" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
