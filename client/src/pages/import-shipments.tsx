@@ -599,16 +599,6 @@ export default function ImportShipments() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => toggleStatus(shipment.status, shipment.id)}
-                          data-testid={`button-toggle-status-${shipment.id}`}
-                          title="Toggle status"
-                          className="h-7 w-7"
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
                           onClick={() => handleEdit(shipment)}
                           data-testid={`button-edit-${shipment.id}`}
                           className="h-7 w-7"
