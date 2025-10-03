@@ -383,7 +383,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         <SelectContent>
                           <SelectItem value="Pending">Pending</SelectItem>
                           <SelectItem value="In Transit">In Transit</SelectItem>
-                          <SelectItem value="Delivered">Delivered</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -868,7 +868,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 />
               </div>
 
-              {status === "Delivered" && (
+              {status === "Completed" && (
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
