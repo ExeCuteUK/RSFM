@@ -72,10 +72,10 @@ export default function Dashboard() {
   const awaitingEntries = customClearances.filter((c) => c.status === "Awaiting Entry").length
 
   // Calculate Quick Stats metrics
-  const importsAwaitingDeparture = importShipments.filter((s) => s.status === "Pending").length
-  const importsInTransit = importShipments.filter((s) => s.status === "In Transit").length
-  const exportsAwaitingDeparture = exportShipments.filter((s) => s.status === "Pending").length
-  const exportsInTransit = exportShipments.filter((s) => s.status === "In Transit").length
+  const importsAwaitingDeparture = importShipments.filter((s) => s.status === "Awaiting Collection").length
+  const importsDispatched = importShipments.filter((s) => s.status === "Dispatched").length
+  const exportsAwaitingDeparture = exportShipments.filter((s) => s.status === "Awaiting Collection").length
+  const exportsDispatched = exportShipments.filter((s) => s.status === "Dispatched").length
   
   const shipmentsBookedToday = [...importShipments, ...exportShipments].filter((s) => {
     try {
@@ -115,9 +115,9 @@ export default function Dashboard() {
   // Helper to get status badge variant
   const getStatusVariant = (status: string): "default" | "secondary" => {
     switch (status) {
-      case "Pending":
+      case "Awaiting Collection":
         return "secondary"
-      case "In Transit":
+      case "Dispatched":
       case "Completed":
       default:
         return "default"
@@ -278,8 +278,8 @@ export default function Dashboard() {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Imports In Transit</span>
-                <span className="text-xl font-bold" data-testid="text-imports-in-transit">{importsInTransit}</span>
+                <span className="text-sm text-muted-foreground">Imports Dispatched</span>
+                <span className="text-xl font-bold" data-testid="text-imports-dispatched">{importsDispatched}</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -288,8 +288,8 @@ export default function Dashboard() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Exports In Transit</span>
-                <span className="text-xl font-bold" data-testid="text-exports-in-transit">{exportsInTransit}</span>
+                <span className="text-sm text-muted-foreground">Exports Dispatched</span>
+                <span className="text-xl font-bold" data-testid="text-exports-dispatched">{exportsDispatched}</span>
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t">
