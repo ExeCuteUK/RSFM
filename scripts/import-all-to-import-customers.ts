@@ -18,7 +18,7 @@ async function importToImportCustomers() {
 
     // Contact Information Card (Fields 0-11)
     const companyName = fields[0]?.trim() || "";
-    const contactName = fields[1]?.trim() || null;
+    const contactNameRaw = fields[1]?.trim() || "";
     const vatNumber = fields[2]?.trim() || null;
     const telephone = fields[3]?.trim() || null;
     // Field 4 is IGNORED
@@ -32,7 +32,7 @@ async function importToImportCustomers() {
 
     // Agent Contact Card (Fields 12-22)
     const agentName = fields[12]?.trim() || null;
-    const agentContactName = fields[13]?.trim() || null;
+    const agentContactNameRaw = fields[13]?.trim() || "";
     const agentTelephone = fields[14]?.trim() || null;
     // Field 15 is IGNORED
     const agentEmailRaw = fields[16]?.trim() || "";
@@ -55,6 +55,16 @@ async function importToImportCustomers() {
     const bookingInDetails = fields[31]?.trim() || null;
 
     if (!companyName) continue;
+
+    // Parse contact names (can be separated by /)
+    const contactNames = contactNameRaw
+      ? contactNameRaw.split("/").map(n => n.trim()).filter(n => n)
+      : [];
+
+    // Parse agent contact names (can be separated by /)
+    const agentContactNames = agentContactNameRaw
+      ? agentContactNameRaw.split("/").map(n => n.trim()).filter(n => n)
+      : [];
 
     // Parse emails
     const emails = emailRaw
@@ -91,14 +101,14 @@ async function importToImportCustomers() {
     try {
       await db.insert(importCustomers).values({
         companyName,
-        contactName: contactName || null,
+        contactName: contactNames.length > 0 ? contactNames : null,
         vatNumber: vatNumber || null,
         telephone: telephone || null,
         email: emails.length > 0 ? emails : null,
         accountsEmail: null, // Not in import file
         address: address,
         agentName: agentName,
-        agentContactName: agentContactName,
+        agentContactName: agentContactNames.length > 0 ? agentContactNames : null,
         agentVatNumber: null, // Not in import file
         agentTelephone: agentTelephone,
         agentEmail: agentEmails.length > 0 ? agentEmails : null,
