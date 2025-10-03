@@ -173,7 +173,12 @@ export default function CustomClearances() {
             type="text"
             placeholder="Search by job ref, customer, trailer, vessel..."
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => {
+              setSearchText(e.target.value)
+              if (e.target.value.trim()) {
+                setSelectedStatuses([])
+              }
+            }}
             className="pl-9"
             data-testid="input-search"
           />
@@ -181,6 +186,7 @@ export default function CustomClearances() {
         <div className="flex gap-2 flex-wrap" data-testid="status-filters">
         <Button
           variant={selectedStatuses.length === 0 ? "default" : "outline"}
+          size="sm"
           onClick={handleAllClick}
           data-testid="filter-all"
         >
@@ -188,6 +194,7 @@ export default function CustomClearances() {
         </Button>
         <Button
           variant={selectedStatuses.includes("Awaiting Entry") ? "default" : "outline"}
+          size="sm"
           onClick={() => handleStatusToggle("Awaiting Entry")}
           data-testid="filter-awaiting-entry"
         >
@@ -195,6 +202,7 @@ export default function CustomClearances() {
         </Button>
         <Button
           variant={selectedStatuses.includes("Waiting Arrival") ? "default" : "outline"}
+          size="sm"
           onClick={() => handleStatusToggle("Waiting Arrival")}
           data-testid="filter-waiting-arrival"
         >
@@ -202,6 +210,7 @@ export default function CustomClearances() {
         </Button>
         <Button
           variant={selectedStatuses.includes("P.H Hold") ? "default" : "outline"}
+          size="sm"
           onClick={() => handleStatusToggle("P.H Hold")}
           data-testid="filter-ph-hold"
         >
@@ -209,6 +218,7 @@ export default function CustomClearances() {
         </Button>
         <Button
           variant={selectedStatuses.includes("Customs Issue") ? "default" : "outline"}
+          size="sm"
           onClick={() => handleStatusToggle("Customs Issue")}
           data-testid="filter-customs-issue"
         >
@@ -216,6 +226,7 @@ export default function CustomClearances() {
         </Button>
         <Button
           variant={selectedStatuses.includes("Fully Cleared") ? "default" : "outline"}
+          size="sm"
           onClick={() => handleStatusToggle("Fully Cleared")}
           data-testid="filter-fully-cleared"
         >

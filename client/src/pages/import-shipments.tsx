@@ -465,7 +465,12 @@ export default function ImportShipments() {
             type="text"
             placeholder="Search by job ref, customer, trailer, vessel..."
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => {
+              setSearchText(e.target.value)
+              if (e.target.value.trim()) {
+                setSelectedStatuses([])
+              }
+            }}
             className="pl-9"
             data-testid="input-search"
           />

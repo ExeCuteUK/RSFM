@@ -243,7 +243,12 @@ export default function ExportShipments() {
             type="text"
             placeholder="Search by job ref, receiver, trailer, vessel..."
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => {
+              setSearchText(e.target.value)
+              if (e.target.value.trim()) {
+                setSelectedStatuses([])
+              }
+            }}
             className="pl-9"
             data-testid="input-search"
           />
