@@ -971,23 +971,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/backups/restore/:backupName", async (req, res) => {
     try {
       const { backupName } = req.params;
+      const { tables } = req.body;
       const { execSync } = await import("child_process");
       
-      const result = execSync(`tsx scripts/restore-contact-databases.ts ${backupName}`, {
+      // Validate tables array
+      if (!tables || !Array.isArray(tables) || tables.length === 0) {
+        return res.status(400).json({ error: "tables array is required and must not be empty" });
+      }
+      
+      // Pass tables as JSON string argument
+      const tablesJson = JSON.stringify(tables);
+      const result = execSync(`tsx scripts/restore-contact-databases.ts ${backupName} '${tablesJson}'`, {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
       });
       
       // Parse the output to get restore statistics
       const lines = result.split("\n");
-      const tables = [];
+      const restoredTables = [];
       let totalRecords = 0;
       
       for (const line of lines) {
         const match = line.match(/✓ (.+) restored: (\d+) records/);
         if (match) {
           const count = parseInt(match[2]);
-          tables.push({
+          restoredTables.push({
             name: match[1],
             count: count,
           });
@@ -999,7 +1007,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         backupName,
         timestamp: new Date().toISOString(),
-        tables,
+        tables: restoredTables,
         totalRecords,
       });
     } catch (error) {

@@ -4,22 +4,37 @@ import { sql } from "drizzle-orm";
 
 async function restoreContactDatabases() {
   try {
-    // Get backup name from command line argument
+    // Get backup name and optional tables list from command line arguments
     const backupName = process.argv[2];
+    const tablesJson = process.argv[3];
     
     if (!backupName) {
       console.error("Error: Backup name is required");
-      console.log("Usage: tsx scripts/restore-contact-databases.ts <backup_name>");
+      console.log("Usage: tsx scripts/restore-contact-databases.ts <backup_name> [tables_json]");
       process.exit(1);
     }
 
     const backupDir = `backups/${backupName}`;
     
-    console.log(`Starting restore of contact databases from: ${backupName}`);
-    console.log("WARNING: This will DELETE all existing data in contact tables!");
+    // Parse selected tables if provided
+    let selectedTables: string[] = [];
+    if (tablesJson) {
+      try {
+        selectedTables = JSON.parse(tablesJson);
+      } catch (error) {
+        console.error("Error: Invalid tables JSON");
+        process.exit(1);
+      }
+    }
     
-    // Read and execute each backup file
-    const tables = [
+    console.log(`Starting restore of contact databases from: ${backupName}`);
+    if (selectedTables.length > 0) {
+      console.log(`Selected tables: ${selectedTables.join(", ")}`);
+    }
+    console.log("WARNING: This will DELETE all existing data in selected tables!");
+    
+    // All available tables
+    const allTables = [
       { name: "import_customers", file: `${backupDir}/import_customers_backup.sql` },
       { name: "export_customers", file: `${backupDir}/export_customers_backup.sql` },
       { name: "export_receivers", file: `${backupDir}/export_receivers_backup.sql` },
@@ -28,15 +43,22 @@ async function restoreContactDatabases() {
       { name: "clearance_agents", file: `${backupDir}/clearance_agents_backup.sql` },
     ];
 
-    // Clear existing data
-    console.log("\nClearing existing data...");
-    await db.execute(sql`DELETE FROM clearance_agents`);
-    await db.execute(sql`DELETE FROM shipping_lines`);
-    await db.execute(sql`DELETE FROM hauliers`);
-    await db.execute(sql`DELETE FROM export_receivers`);
-    await db.execute(sql`DELETE FROM export_customers`);
-    await db.execute(sql`DELETE FROM import_customers`);
-    console.log("✓ Existing data cleared");
+    // Filter tables based on selection (if provided)
+    const tables = selectedTables.length > 0
+      ? allTables.filter(t => selectedTables.includes(t.name))
+      : allTables;
+
+    if (tables.length === 0) {
+      console.error("Error: No valid tables selected");
+      process.exit(1);
+    }
+
+    // Clear existing data only for selected tables
+    console.log("\nClearing existing data for selected tables...");
+    for (const table of tables) {
+      await db.execute(sql.raw(`DELETE FROM ${table.name}`));
+      console.log(`✓ Cleared ${table.name}`);
+    }
 
     // Restore each table
     console.log("\nRestoring data...");
@@ -66,27 +88,14 @@ async function restoreContactDatabases() {
       }
     }
 
-    console.log("\n✓ All contact databases restored successfully!");
+    console.log("\n✓ Selected tables restored successfully!");
     
-    // Verify final counts
+    // Verify final counts for restored tables
     console.log("\nFinal counts:");
-    const counts = await db.execute(sql`
-      SELECT 'import_customers' as table_name, COUNT(*) as record_count FROM import_customers
-      UNION ALL
-      SELECT 'export_customers', COUNT(*) FROM export_customers
-      UNION ALL
-      SELECT 'export_receivers', COUNT(*) FROM export_receivers
-      UNION ALL
-      SELECT 'hauliers', COUNT(*) FROM hauliers
-      UNION ALL
-      SELECT 'shipping_lines', COUNT(*) FROM shipping_lines
-      UNION ALL
-      SELECT 'clearance_agents', COUNT(*) FROM clearance_agents
-    `);
-    
-    counts.rows.forEach((row: any) => {
-      console.log(`  ${row.table_name}: ${row.record_count} records`);
-    });
+    for (const table of tables) {
+      const result = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table.name}`));
+      console.log(`  ${table.name}: ${result.rows[0].count} records`);
+    }
 
     process.exit(0);
   } catch (error) {

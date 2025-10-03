@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Database, Download, Upload, AlertCircle, CheckCircle2, Trash2, Clock } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -39,6 +40,7 @@ export default function BackupsPage() {
   const [showRestoreWarning, setShowRestoreWarning] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
+  const [selectedTables, setSelectedTables] = useState<string[]>([]);
 
   // Fetch all backups
   const { data: backups, isLoading } = useQuery<Backup[]>({
@@ -66,8 +68,8 @@ export default function BackupsPage() {
   });
 
   const restoreBackupMutation = useMutation({
-    mutationFn: async (backupName: string) => {
-      return apiRequest("POST", `/api/backups/restore/${backupName}`, {});
+    mutationFn: async ({ backupName, tables }: { backupName: string; tables: string[] }) => {
+      return apiRequest("POST", `/api/backups/restore/${backupName}`, { tables });
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/backups"] });
@@ -122,7 +124,31 @@ export default function BackupsPage() {
 
   const handleRestore = (backupName: string) => {
     setSelectedBackup(backupName);
+    // Get table names from the selected backup
+    const backup = backups?.find(b => b.backupName === backupName);
+    if (backup) {
+      // Select all tables by default
+      setSelectedTables(backup.tables.map(t => t.name));
+    }
     setShowRestoreWarning(true);
+  };
+
+  const toggleTable = (tableName: string) => {
+    setSelectedTables(prev => 
+      prev.includes(tableName)
+        ? prev.filter(t => t !== tableName)
+        : [...prev, tableName]
+    );
+  };
+
+  const toggleAllTables = () => {
+    const backup = backups?.find(b => b.backupName === selectedBackup);
+    if (!backup) return;
+    
+    const allTableNames = backup.tables.map(t => t.name);
+    setSelectedTables(prev => 
+      prev.length === allTableNames.length ? [] : allTableNames
+    );
   };
 
   const handleDelete = (backupName: string) => {
@@ -131,8 +157,14 @@ export default function BackupsPage() {
   };
 
   const confirmRestore = () => {
-    if (selectedBackup) {
-      restoreBackupMutation.mutate(selectedBackup);
+    if (selectedBackup && selectedTables.length > 0) {
+      restoreBackupMutation.mutate({ backupName: selectedBackup, tables: selectedTables });
+    } else if (selectedTables.length === 0) {
+      toast({
+        title: "No tables selected",
+        description: "Please select at least one table to restore.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -276,71 +308,76 @@ export default function BackupsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Backup Information</CardTitle>
-          <CardDescription>
-            Understanding the backup and restore process
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-semibold mb-2">Backup Files Location</h3>
-            <p className="text-sm text-muted-foreground">
-              Backup files are stored in the <code className="px-1 py-0.5 bg-muted rounded">backups/</code> directory
-              as SQL files that can be used for production rollout. Each backup is stored in its own timestamped directory.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2">What Happens During Backup</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-              <li>All contact database records are exported to SQL INSERT statements</li>
-              <li>Each table gets its own backup file in a timestamped directory</li>
-              <li>A metadata file is created with backup information</li>
-              <li>No data is modified in your database</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2">What Happens During Restore</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-              <li>All existing data in contact tables is deleted</li>
-              <li>Data from the selected backup is imported</li>
-              <li>Record counts are verified</li>
-              <li>Process runs in a transaction for safety</li>
-            </ul>
-          </div>
-
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Production Rollout</AlertTitle>
-            <AlertDescription>
-              The backup SQL files are ready to use for production deployment. You can use them
-              to populate your production database with the same contact data.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-
       <AlertDialog open={showRestoreWarning} onOpenChange={setShowRestoreWarning}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Restore from backup?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete all current data in your contact databases and replace
-              it with data from <code className="px-1 py-0.5 bg-muted rounded">{selectedBackup}</code>.
-              This action cannot be undone.
+              Select which tables to restore from <code className="px-1 py-0.5 bg-muted rounded">{selectedBackup}</code>.
+              This will permanently delete current data in the selected tables.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          <div className="py-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold">Select Tables to Restore</h4>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={toggleAllTables}
+                data-testid="button-toggle-all-tables"
+              >
+                {selectedTables.length === backups?.find(b => b.backupName === selectedBackup)?.tables.length
+                  ? "Deselect All"
+                  : "Select All"}
+              </Button>
+            </div>
+            
+            <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+              {backups?.find(b => b.backupName === selectedBackup)?.tables.map((table) => (
+                <div
+                  key={table.name}
+                  className="flex items-center space-x-3 p-2 hover-elevate rounded-md"
+                >
+                  <Checkbox
+                    id={`table-${table.name}`}
+                    checked={selectedTables.includes(table.name)}
+                    onCheckedChange={() => toggleTable(table.name)}
+                    data-testid={`checkbox-table-${table.name}`}
+                  />
+                  <label
+                    htmlFor={`table-${table.name}`}
+                    className="flex-1 text-sm font-medium cursor-pointer"
+                  >
+                    {table.name.replace(/_/g, ' ')}
+                  </label>
+                  <Badge variant="secondary" className="text-xs">
+                    {table.count} records
+                  </Badge>
+                </div>
+              ))}
+            </div>
+            
+            {selectedTables.length === 0 && (
+              <Alert variant="destructive" className="mt-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Please select at least one table to restore.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-restore">Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmRestore}
+              disabled={selectedTables.length === 0}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               data-testid="button-confirm-restore"
             >
-              Yes, Restore Backup
+              Restore {selectedTables.length} {selectedTables.length === 1 ? 'Table' : 'Tables'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
