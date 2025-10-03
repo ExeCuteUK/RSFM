@@ -21,25 +21,27 @@ import { ExportCustomerForm } from "@/components/export-customer-form"
 import { ExportReceiverForm } from "@/components/export-receiver-form"
 import { HaulierForm } from "@/components/haulier-form"
 import { ShippingLineForm } from "@/components/shipping-line-form"
-import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, ShippingLine, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier, InsertShippingLine } from "@shared/schema"
+import { ClearanceAgentForm } from "@/components/clearance-agent-form"
+import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, ShippingLine, ClearanceAgent, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier, InsertShippingLine, InsertClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 
-type CustomerType = "import" | "export" | "receiver" | "haulier" | "shippingline"
+type CustomerType = "import" | "export" | "receiver" | "haulier" | "shippingline" | "clearanceagent"
 
 export default function Customers() {
   const [selectedTab, setSelectedTab] = useState<CustomerType>("import")
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | null>(null)
+  const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null>(null)
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
-  const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | null>(null)
+  const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null>(null)
   const { toast } = useToast()
 
   // Helper to determine customer type from entity properties
-  const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | null): CustomerType => {
+  const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null): CustomerType => {
     if (!customer) return selectedTab
     if ('rsProcessCustomsClearance' in customer) return "import"
     if ('haulierName' in customer) return "haulier"
     if ('shippingLineName' in customer) return "shippingline"
+    if ('agentName' in customer) return "clearanceagent"
     if ('contactName' in customer && customer.contactName !== undefined) return "export"
     return "receiver"
   }
@@ -63,6 +65,10 @@ export default function Customers() {
 
   const { data: shippingLines = [], isLoading: isLoadingShippingLines } = useQuery<ShippingLine[]>({
     queryKey: ["/api/shipping-lines"],
+  })
+
+  const { data: clearanceAgents = [], isLoading: isLoadingClearanceAgents } = useQuery<ClearanceAgent[]>({
+    queryKey: ["/api/clearance-agents"],
   })
 
   // Mutations
@@ -236,12 +242,46 @@ export default function Customers() {
     },
   })
 
+  const createClearanceAgent = useMutation({
+    mutationFn: async (data: InsertClearanceAgent) => {
+      return apiRequest("POST", "/api/clearance-agents", data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clearance-agents"] })
+      setIsFormOpen(false)
+      setEditingCustomer(null)
+      toast({ title: "Clearance agent created successfully" })
+    },
+  })
+
+  const updateClearanceAgent = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: InsertClearanceAgent }) => {
+      return apiRequest("PATCH", `/api/clearance-agents/${id}`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clearance-agents"] })
+      setIsFormOpen(false)
+      setEditingCustomer(null)
+      toast({ title: "Clearance agent updated successfully" })
+    },
+  })
+
+  const deleteClearanceAgent = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/clearance-agents/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clearance-agents"] })
+      toast({ title: "Clearance agent deleted successfully" })
+    },
+  })
+
   const handleCreateNew = () => {
     setEditingCustomer(null)
     setIsFormOpen(true)
   }
 
-  const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine) => {
+  const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent) => {
     setEditingCustomer(customer)
     setIsFormOpen(true)
   }
@@ -250,7 +290,7 @@ export default function Customers() {
     setDeletingCustomerId(id)
   }
 
-  const handleViewDetails = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine) => {
+  const handleViewDetails = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent) => {
     setViewingCustomer(customer)
   }
 
@@ -265,13 +305,15 @@ export default function Customers() {
       deleteExportReceiver.mutate(deletingCustomerId)
     } else if (selectedTab === "shippingline") {
       deleteShippingLine.mutate(deletingCustomerId)
+    } else if (selectedTab === "clearanceagent") {
+      deleteClearanceAgent.mutate(deletingCustomerId)
     } else {
       deleteHaulier.mutate(deletingCustomerId)
     }
     setDeletingCustomerId(null)
   }
 
-  const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver | InsertHaulier | InsertShippingLine) => {
+  const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver | InsertHaulier | InsertShippingLine | InsertClearanceAgent) => {
     if (editingCustomer) {
       // Determine type from editingCustomer properties rather than selectedTab
       if ('rsProcessCustomsClearance' in editingCustomer) {
@@ -280,6 +322,9 @@ export default function Customers() {
       } else if ('haulierName' in editingCustomer) {
         // Haulier
         updateHaulier.mutate({ id: editingCustomer.id, data: data as InsertHaulier })
+      } else if ('agentName' in editingCustomer) {
+        // Clearance Agent
+        updateClearanceAgent.mutate({ id: editingCustomer.id, data: data as InsertClearanceAgent })
       } else if ('shippingLineName' in editingCustomer) {
         // Shipping Line
         updateShippingLine.mutate({ id: editingCustomer.id, data: data as InsertShippingLine })
@@ -299,13 +344,15 @@ export default function Customers() {
         createExportReceiver.mutate(data as InsertExportReceiver)
       } else if (selectedTab === "shippingline") {
         createShippingLine.mutate(data as InsertShippingLine)
+      } else if (selectedTab === "clearanceagent") {
+        createClearanceAgent.mutate(data as InsertClearanceAgent)
       } else {
         createHaulier.mutate(data as InsertHaulier)
       }
     }
   }
 
-  const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers || isLoadingShippingLines
+  const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers || isLoadingShippingLines || isLoadingClearanceAgents
 
   return (
     <div className="p-6 space-y-6">
@@ -313,22 +360,23 @@ export default function Customers() {
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Contacts</h1>
           <p className="text-muted-foreground">
-            Manage import customers, export customers, export receivers, hauliers and shipping lines
+            Manage import customers, export customers, export receivers, hauliers, shipping lines, and clearance agents
           </p>
         </div>
         <Button data-testid="button-new-customer" onClick={handleCreateNew}>
           <Plus className="h-4 w-4 mr-2" />
-          New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : selectedTab === "receiver" ? "Receiver" : selectedTab === "shippingline" ? "Shipping Line" : "Haulier"}
+          New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : selectedTab === "receiver" ? "Receiver" : selectedTab === "shippingline" ? "Shipping Line" : selectedTab === "clearanceagent" ? "Clearance Agent" : "Haulier"}
         </Button>
       </div>
 
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as CustomerType)}>
-        <TabsList className="grid w-full max-w-3xl grid-cols-5">
+        <TabsList className="grid w-full max-w-3xl grid-cols-6">
           <TabsTrigger value="import" data-testid="tab-import-customers">Import Customers</TabsTrigger>
           <TabsTrigger value="export" data-testid="tab-export-customers">Export Customers</TabsTrigger>
           <TabsTrigger value="receiver" data-testid="tab-export-receivers">Export Receivers</TabsTrigger>
           <TabsTrigger value="haulier" data-testid="tab-hauliers">Hauliers</TabsTrigger>
           <TabsTrigger value="shippingline" data-testid="tab-shipping-lines">Shipping Lines</TabsTrigger>
+          <TabsTrigger value="clearanceagent" data-testid="tab-clearance-agents">Clearance Agents</TabsTrigger>
         </TabsList>
 
         <TabsContent value="import" className="space-y-4">
@@ -724,6 +772,94 @@ export default function Customers() {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="clearanceagent" className="space-y-4">
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          ) : clearanceAgents.length === 0 ? (
+            <div className="text-center py-12" data-testid="empty-state">
+              <p className="text-lg text-muted-foreground">No clearance agents yet</p>
+              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                Create your first clearance agent
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {clearanceAgents.map((agent) => (
+                <Card key={agent.id} data-testid={`card-clearance-agent-${agent.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 
+                          className="font-semibold text-lg cursor-pointer hover:underline" 
+                          data-testid={`text-agent-name-${agent.id}`}
+                          onClick={() => handleViewDetails(agent)}
+                        >
+                          {agent.agentName}
+                        </h3>
+                        {agent.agentTelephone && (
+                          <p className="text-sm text-muted-foreground" data-testid={`text-telephone-${agent.id}`}>{agent.agentTelephone}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(agent)}
+                          data-testid={`button-edit-${agent.id}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDelete(agent.id)}
+                          data-testid={`button-delete-${agent.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      {agent.agentImportEmail && agent.agentImportEmail.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground">Import Emails:</p>
+                          <div className="space-y-0.5">
+                            {agent.agentImportEmail.slice(0, 2).map((email, idx) => (
+                              <p key={idx} data-testid={`text-import-email-${agent.id}-${idx}`}>
+                                <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
+                              </p>
+                            ))}
+                            {agent.agentImportEmail.length > 2 && (
+                              <span className="text-xs text-muted-foreground">+{agent.agentImportEmail.length - 2} more</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {agent.agentExportEmail && agent.agentExportEmail.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground">Export Emails:</p>
+                          <div className="space-y-0.5">
+                            {agent.agentExportEmail.slice(0, 2).map((email, idx) => (
+                              <p key={idx} data-testid={`text-export-email-${agent.id}-${idx}`}>
+                                <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
+                              </p>
+                            ))}
+                            {agent.agentExportEmail.length > 2 && (
+                              <span className="text-xs text-muted-foreground">+{agent.agentExportEmail.length - 2} more</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -733,7 +869,7 @@ export default function Customers() {
               {editingCustomer ? "Edit" : "Create New"}{" "}
               {(() => {
                 const formType = getCustomerType(editingCustomer)
-                return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : formType === "haulier" ? "Haulier" : formType === "shippingline" ? "Shipping Line" : "Export Receiver"
+                return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : formType === "haulier" ? "Haulier" : formType === "shippingline" ? "Shipping Line" : formType === "clearanceagent" ? "Clearance Agent" : "Export Receiver"
               })()}
             </DialogTitle>
           </DialogHeader>
@@ -771,6 +907,14 @@ export default function Customers() {
                   defaultValues={editingCustomer as ShippingLine}
                 />
               )
+            } else if (formType === "clearanceagent") {
+              return (
+                <ClearanceAgentForm
+                  onSubmit={handleFormSubmit}
+                  onCancel={() => setIsFormOpen(false)}
+                  defaultValues={editingCustomer as ClearanceAgent}
+                />
+              )
             } else {
               return (
                 <ExportReceiverForm
@@ -789,7 +933,7 @@ export default function Customers() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this {selectedTab === "import" ? "import customer" : selectedTab === "export" ? "export customer" : selectedTab === "receiver" ? "export receiver" : selectedTab === "shippingline" ? "shipping line" : "haulier"}.
+              This action cannot be undone. This will permanently delete this {selectedTab === "import" ? "import customer" : selectedTab === "export" ? "export customer" : selectedTab === "receiver" ? "export receiver" : selectedTab === "shippingline" ? "shipping line" : selectedTab === "clearanceagent" ? "clearance agent" : "haulier"}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
