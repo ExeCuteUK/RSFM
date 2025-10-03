@@ -10,6 +10,10 @@ The application now includes comprehensive file upload functionality integrated 
 
 Preferred communication style: Simple, everyday language.
 
+**Data Import Format:**
+- Address fields should be formatted with line breaks (newlines) between components for better readability in textareas
+- Example format: "Moreley Way,\nPeterborough,\nPE2 9JJ" instead of "Moreley Way, Peterborough, PE2 9JJ"
+
 ## System Architecture
 
 ### Frontend Architecture
