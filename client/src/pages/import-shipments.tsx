@@ -16,7 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer } from "@shared/schema"
@@ -27,7 +26,7 @@ export default function ImportShipments() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingShipment, setEditingShipment] = useState<ImportShipment | null>(null)
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string>("ALL")
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
   const [viewingShipment, setViewingShipment] = useState<ImportShipment | null>(null)
@@ -38,9 +37,9 @@ export default function ImportShipments() {
     queryKey: ["/api/import-shipments"],
   })
 
-  const shipments = statusFilter === "ALL" 
+  const shipments = selectedStatuses.length === 0
     ? allShipments 
-    : allShipments.filter(s => s.status === statusFilter)
+    : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
@@ -413,17 +412,58 @@ export default function ImportShipments() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40" data-testid="select-status-filter">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL" data-testid="filter-all">ALL</SelectItem>
-              <SelectItem value="Pending" data-testid="filter-pending">PENDING</SelectItem>
-              <SelectItem value="In Transit" data-testid="filter-in-transit">IN TRANSIT</SelectItem>
-              <SelectItem value="Completed" data-testid="filter-completed">COMPLETED</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Button
+              variant={selectedStatuses.length === 0 ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedStatuses([])}
+              data-testid="filter-all"
+            >
+              All
+            </Button>
+            <Button
+              variant={selectedStatuses.includes("Awaiting Collection") ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setSelectedStatuses(prev => 
+                  prev.includes("Awaiting Collection") 
+                    ? prev.filter(s => s !== "Awaiting Collection")
+                    : [...prev, "Awaiting Collection"]
+                )
+              }}
+              data-testid="filter-awaiting-collection"
+            >
+              Awaiting Collection
+            </Button>
+            <Button
+              variant={selectedStatuses.includes("Dispatched") ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setSelectedStatuses(prev => 
+                  prev.includes("Dispatched") 
+                    ? prev.filter(s => s !== "Dispatched")
+                    : [...prev, "Dispatched"]
+                )
+              }}
+              data-testid="filter-dispatched"
+            >
+              Dispatched
+            </Button>
+            <Button
+              variant={selectedStatuses.includes("Completed") ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setSelectedStatuses(prev => 
+                  prev.includes("Completed") 
+                    ? prev.filter(s => s !== "Completed")
+                    : [...prev, "Completed"]
+                )
+              }}
+              data-testid="filter-completed"
+            >
+              Completed
+            </Button>
+          </div>
           <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
             <Plus className="h-4 w-4 mr-2" />
             New Import Shipment
