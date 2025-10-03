@@ -1505,10 +1505,18 @@ export default function ImportShipments() {
                           </div>
                         )}
                       </div>
-                      {viewingShipment.additionalCommodityCodeCharge && (
-                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                          <p className="text-xs text-muted-foreground mb-1">Commodity Code Charge</p>
-                          <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
+                      {viewingShipment.additionalCommodityCodes !== null && viewingShipment.additionalCommodityCodes > 1 && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Total Commodity Codes</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{viewingShipment.additionalCommodityCodes}</p>
+                          </div>
+                          {viewingShipment.additionalCommodityCodeCharge && (
+                            <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                              <p className="text-xs text-muted-foreground mb-1">Additional Charge Per HS Code</p>
+                              <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency)}{viewingShipment.additionalCommodityCodeCharge}</p>
+                            </div>
+                          )}
                         </div>
                       )}
                       {viewingShipment.expensesToChargeOut && viewingShipment.expensesToChargeOut.length > 0 && (
