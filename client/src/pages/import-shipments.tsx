@@ -531,13 +531,14 @@ export default function ImportShipments() {
                       {getCustomerName(shipment.importCustomerId)}
                     </p>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-0">
                     <Button
                       size="icon"
                       variant="ghost"
                       onClick={() => handleOpenNotes(shipment)}
                       data-testid={`button-notes-${shipment.id}`}
                       title={shipment.additionalNotes || "Additional Notes"}
+                      className="h-8 w-8"
                     >
                       <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
                     </Button>
@@ -547,6 +548,7 @@ export default function ImportShipments() {
                       onClick={() => toggleStatus(shipment.status, shipment.id)}
                       data-testid={`button-toggle-status-${shipment.id}`}
                       title="Toggle status"
+                      className="h-8 w-8"
                     >
                       <RefreshCw className="h-4 w-4" />
                     </Button>
@@ -555,6 +557,7 @@ export default function ImportShipments() {
                       variant="ghost"
                       onClick={() => handleEdit(shipment)}
                       data-testid={`button-edit-${shipment.id}`}
+                      className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -563,6 +566,7 @@ export default function ImportShipments() {
                       variant="ghost"
                       onClick={() => handleDelete(shipment.id)}
                       data-testid={`button-delete-${shipment.id}`}
+                      className="h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
