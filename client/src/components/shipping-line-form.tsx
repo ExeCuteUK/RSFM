@@ -14,6 +14,16 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { X, Plus } from "lucide-react"
 import { useState } from "react"
 
@@ -28,6 +38,7 @@ export function ShippingLineForm({ onSubmit, onCancel, defaultValues }: Shipping
   const [newExportEmail, setNewExportEmail] = useState("")
   const [newReleasesEmail, setNewReleasesEmail] = useState("")
   const [newAccountingEmail, setNewAccountingEmail] = useState("")
+  const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
   
   const form = useForm<InsertShippingLine>({
     resolver: zodResolver(insertShippingLineSchema),
@@ -104,9 +115,33 @@ export function ShippingLineForm({ onSubmit, onCancel, defaultValues }: Shipping
     form.setValue("accountingEmail", currentEmails.filter(e => e !== email))
   }
 
+  const hasUnsavedFields = () => {
+    return (
+      newImportEmail.trim() !== "" ||
+      newExportEmail.trim() !== "" ||
+      newReleasesEmail.trim() !== "" ||
+      newAccountingEmail.trim() !== ""
+    )
+  }
+
+  const handleFormSubmit = (data: InsertShippingLine) => {
+    if (hasUnsavedFields()) {
+      setShowUnsavedFieldsWarning(true)
+    } else {
+      onSubmit(data)
+    }
+  }
+
+  const handleContinueWithoutSaving = () => {
+    setShowUnsavedFieldsWarning(false)
+    const data = form.getValues()
+    onSubmit(data)
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
@@ -423,5 +458,24 @@ export function ShippingLineForm({ onSubmit, onCancel, defaultValues }: Shipping
         </div>
       </form>
     </Form>
+
+    <AlertDialog open={showUnsavedFieldsWarning} onOpenChange={setShowUnsavedFieldsWarning}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Unsaved Field Information</AlertDialogTitle>
+          <AlertDialogDescription>
+            You have entered information in one or more fields but haven't added it using the + button. 
+            Do you want to continue without saving these entries?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid="button-go-back">Go Back</AlertDialogCancel>
+          <AlertDialogAction onClick={handleContinueWithoutSaving} data-testid="button-continue">
+            Continue Without Saving
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
