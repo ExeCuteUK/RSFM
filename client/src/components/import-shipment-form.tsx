@@ -61,7 +61,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
     resolver: zodResolver(insertImportShipmentSchema),
     defaultValues: {
       jobType: "import",
-      status: "Pending",
+      status: "Awaiting Collection",
       importCustomerId: "",
       bookingDate: defaultValues?.bookingDate || format(new Date(), "yyyy-MM-dd"),
       collectionDate: "",
@@ -361,8 +361,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                          <SelectItem value="In Transit">In Transit</SelectItem>
+                          <SelectItem value="Awaiting Collection">Awaiting Collection</SelectItem>
+                          <SelectItem value="Dispatched">Dispatched</SelectItem>
                           <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
