@@ -43,7 +43,8 @@ export default function Customers() {
     if ('rsProcessCustomsClearance' in customer) return "import"
     if ('haulierName' in customer) return "haulier"
     if ('shippingLineName' in customer) return "shippingline"
-    if ('agentName' in customer) return "clearanceagent"
+    // Clearance agents have agentImportEmail or agentExportEmail, not accountsEmail
+    if ('agentImportEmail' in customer || 'agentExportEmail' in customer) return "clearanceagent"
     if ('contactName' in customer && customer.contactName !== undefined) return "export"
     return "receiver"
   }
