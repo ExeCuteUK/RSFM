@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail } from "lucide-react"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -149,6 +149,12 @@ export default function CustomClearances() {
       case 3: return "completed"
       default: return "pending"
     }
+  }
+
+  const getStatusColor = (indicator: number | null) => {
+    if (indicator === 3) return "text-green-600 dark:text-green-400"
+    if (indicator === 2) return "text-yellow-600 dark:text-yellow-400"
+    return "text-gray-500 dark:text-gray-400"
   }
 
   const handleAllClick = () => {
@@ -349,13 +355,13 @@ export default function CustomClearances() {
                   </div>
                   <div className="space-y-1 text-xs">
                     {clearance.trailerOrContainerNumber && (
-                      <p data-testid={`text-trailer-${clearance.id}`}>
-                        <span className="font-medium">Container/Trailer:</span> {clearance.trailerOrContainerNumber}
+                      <p className="text-lg font-semibold" data-testid={`text-trailer-${clearance.id}`}>
+                        {clearance.trailerOrContainerNumber}
                       </p>
                     )}
                     {clearance.clearanceType && (
                       <p data-testid={`text-clearance-type-${clearance.id}`}>
-                        <span className="font-medium">Type:</span> {clearance.clearanceType}
+                        {clearance.clearanceType}
                       </p>
                     )}
                     {clearance.portOfArrival && (
@@ -375,51 +381,148 @@ export default function CustomClearances() {
                     )}
 
                     {/* To Do List */}
-                    <div className="pt-2 mt-2 border-t">
-                      <div className="flex items-center gap-1 mb-2">
-                        <ListTodo className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs font-medium text-muted-foreground">To Do</span>
-                      </div>
-                      <div className="space-y-1 text-xs">
-                        <div className="flex items-center gap-2" data-testid={`todo-advise-agent-${clearance.id}`}>
-                          <div className={`h-2 w-2 rounded-full ${
-                            clearance.adviseAgentStatusIndicator === 3 ? "bg-green-500" :
-                            clearance.adviseAgentStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
-                          }`} />
-                          <span className={clearance.adviseAgentStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
+                    <div className="pt-2 mt-2 border-t space-y-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                          <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium`} data-testid={`todo-advise-agent-${clearance.id}`}>
                             Advise Clearance To Agent
-                          </span>
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2" data-testid={`todo-send-entry-${clearance.id}`}>
-                          <div className={`h-2 w-2 rounded-full ${
-                            clearance.sendEntryToCustomerStatusIndicator === 3 ? "bg-green-500" :
-                            clearance.sendEntryToCustomerStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
-                          }`} />
-                          <span className={clearance.sendEntryToCustomerStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
-                            Send Entry/EAD to Customer
-                          </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.adviseAgentStatusIndicator === 1
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-advise-pending-${clearance.id}`}
+                          />
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.adviseAgentStatusIndicator === 2
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-advise-progress-${clearance.id}`}
+                          />
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.adviseAgentStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-advise-complete-${clearance.id}`}
+                          />
                         </div>
-                        <div className="flex items-center gap-2" data-testid={`todo-invoice-${clearance.id}`}>
-                          <div className={`h-2 w-2 rounded-full ${
-                            clearance.invoiceCustomerStatusIndicator === 3 ? "bg-green-500" :
-                            clearance.invoiceCustomerStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
-                          }`} />
-                          <span className={clearance.invoiceCustomerStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
-                            Invoice Customer
-                          </span>
-                        </div>
-                        {clearance.jobType === "import" && (
-                          <div className="flex items-center gap-2" data-testid={`todo-cleared-entry-${clearance.id}`}>
-                            <div className={`h-2 w-2 rounded-full ${
-                              clearance.sendClearedEntryStatusIndicator === 3 ? "bg-green-500" :
-                              clearance.sendClearedEntryStatusIndicator === 2 ? "bg-yellow-500" : "bg-gray-300"
-                            }`} />
-                            <span className={clearance.sendClearedEntryStatusIndicator === 3 ? "line-through text-muted-foreground" : ""}>
-                              Send Cleared Entry to Customer
-                            </span>
-                          </div>
-                        )}
                       </div>
+
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <Send className="h-3.5 w-3.5 text-muted-foreground" />
+                          <p className={`text-xs ${getStatusColor(clearance.sendEntryToCustomerStatusIndicator)} font-medium`} data-testid={`todo-send-entry-${clearance.id}`}>
+                            Send Entry/EAD to Customer
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.sendEntryToCustomerStatusIndicator === 1
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-entry-pending-${clearance.id}`}
+                          />
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.sendEntryToCustomerStatusIndicator === 2
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-entry-progress-${clearance.id}`}
+                          />
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.sendEntryToCustomerStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-entry-complete-${clearance.id}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                          <p className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium`} data-testid={`todo-invoice-${clearance.id}`}>
+                            Invoice Customer
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.invoiceCustomerStatusIndicator === 1
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-invoice-pending-${clearance.id}`}
+                          />
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.invoiceCustomerStatusIndicator === 2
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-invoice-progress-${clearance.id}`}
+                          />
+                          <button
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              clearance.invoiceCustomerStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-invoice-complete-${clearance.id}`}
+                          />
+                        </div>
+                      </div>
+
+                      {clearance.jobType === "import" && (
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                            <p className={`text-xs ${getStatusColor(clearance.sendClearedEntryStatusIndicator)} font-medium`} data-testid={`todo-cleared-entry-${clearance.id}`}>
+                              Send Cleared Entry to Customer
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendClearedEntryStatusIndicator === 1
+                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              }`}
+                              data-testid={`button-cleared-pending-${clearance.id}`}
+                            />
+                            <button
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendClearedEntryStatusIndicator === 2
+                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              }`}
+                              data-testid={`button-cleared-progress-${clearance.id}`}
+                            />
+                            <button
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendClearedEntryStatusIndicator === 3
+                                  ? 'bg-green-400 border-green-500 scale-110'
+                                  : 'bg-green-200 border-green-300 hover-elevate'
+                              }`}
+                              data-testid={`button-cleared-complete-${clearance.id}`}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Files Section */}
