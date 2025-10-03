@@ -231,8 +231,8 @@ export default function ImportShipments() {
   const toggleStatus = (currentStatus: string, id: string) => {
     const statusCycle: { [key: string]: string } = {
       "Pending": "In Transit",
-      "In Transit": "Delivered",
-      "Delivered": "Pending"
+      "In Transit": "Completed",
+      "Completed": "Pending"
     }
     const nextStatus = statusCycle[currentStatus] || "Pending"
     updateStatus.mutate({ id, status: nextStatus })
@@ -281,8 +281,8 @@ export default function ImportShipments() {
       if (deliveryDate < today) {
         setStatusPrompt({
           show: true,
-          newStatus: "Delivered",
-          message: "The Delivery Date has passed. Would you like to update the job status to 'Delivered'?"
+          newStatus: "Completed",
+          message: "The Delivery Date has passed. Would you like to update the job status to 'Completed'?"
         })
         return
       }
@@ -380,7 +380,7 @@ export default function ImportShipments() {
     switch (status) {
       case "Pending": return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20"
       case "In Transit": return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
-      case "Delivered": return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
+      case "Completed": return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
       default: return "bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20"
     }
   }
@@ -421,7 +421,7 @@ export default function ImportShipments() {
               <SelectItem value="ALL" data-testid="filter-all">ALL</SelectItem>
               <SelectItem value="Pending" data-testid="filter-pending">PENDING</SelectItem>
               <SelectItem value="In Transit" data-testid="filter-in-transit">IN TRANSIT</SelectItem>
-              <SelectItem value="Delivered" data-testid="filter-delivered">DELIVERED</SelectItem>
+              <SelectItem value="Completed" data-testid="filter-completed">COMPLETED</SelectItem>
             </SelectContent>
           </Select>
           <Button data-testid="button-new-shipment" onClick={handleCreateNew}>
