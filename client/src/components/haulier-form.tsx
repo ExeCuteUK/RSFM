@@ -65,7 +65,7 @@ interface HaulierFormProps {
 export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormProps) {
   const [newContactName, setNewContactName] = useState("")
   const [newContactEmail, setNewContactEmail] = useState("")
-  const [newExportType, setNewExportType] = useState<"Exports To" | "Exports From" | "Exports To & From">("Exports To")
+  const [newExportType, setNewExportType] = useState<"To" | "From" | "To & From">("To")
   const [newCountry, setNewCountry] = useState("")
   const [filteredCountries, setFilteredCountries] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -114,7 +114,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
     ])
     setNewContactName("")
     setNewContactEmail("")
-    setNewExportType("Exports To")
+    setNewExportType("To")
     setNewCountry("")
     setShowSuggestions(false)
     setFilteredCountries([])
@@ -178,9 +178,9 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Exports To">Exports To</SelectItem>
-                            <SelectItem value="Exports From">Exports From</SelectItem>
-                            <SelectItem value="Exports To & From">Exports To & From</SelectItem>
+                            <SelectItem value="To">To</SelectItem>
+                            <SelectItem value="From">From</SelectItem>
+                            <SelectItem value="To & From">To & From</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
