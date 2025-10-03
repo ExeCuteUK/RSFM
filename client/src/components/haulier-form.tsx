@@ -20,6 +20,16 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { X, Plus } from "lucide-react"
 import { useState } from "react"
 
@@ -69,6 +79,7 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
   const [newCountry, setNewCountry] = useState("")
   const [filteredCountries, setFilteredCountries] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showUnsavedContactWarning, setShowUnsavedContactWarning] = useState(false)
   
   const form = useForm<InsertHaulier>({
     resolver: zodResolver(insertHaulierSchema),
@@ -125,9 +136,28 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
     form.setValue("contacts", currentContacts.filter((_, i) => i !== index))
   }
 
+  const hasUnsavedContact = () => {
+    return newContactName.trim() !== "" || newContactEmail.trim() !== "" || newCountry.trim() !== ""
+  }
+
+  const handleFormSubmit = (data: InsertHaulier) => {
+    if (hasUnsavedContact()) {
+      setShowUnsavedContactWarning(true)
+    } else {
+      onSubmit(data)
+    }
+  }
+
+  const handleContinueWithoutSaving = () => {
+    setShowUnsavedContactWarning(false)
+    const data = form.getValues()
+    onSubmit(data)
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Haulier Information</CardTitle>
@@ -325,5 +355,24 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
         </div>
       </form>
     </Form>
+
+    <AlertDialog open={showUnsavedContactWarning} onOpenChange={setShowUnsavedContactWarning}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Unsaved Contact Information</AlertDialogTitle>
+          <AlertDialogDescription>
+            You have entered contact information (Name, Email, or Country) but haven't added it using the + button. 
+            Do you want to continue without saving this contact?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid="button-go-back">Go Back</AlertDialogCancel>
+          <AlertDialogAction onClick={handleContinueWithoutSaving} data-testid="button-continue">
+            Continue Without Saving
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
