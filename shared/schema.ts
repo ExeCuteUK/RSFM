@@ -208,6 +208,14 @@ export const settings = pgTable("settings", {
 
 export const insertSettingsSchema = createInsertSchema(settings).omit({
   id: true,
+}).extend({
+  importClearanceFee: z.union([z.string(), z.number()]).nullable().optional(),
+  inventoryLinkedFee: z.union([z.string(), z.number()]).nullable().optional(),
+  commodityCodesIncludedFree: z.number().nullable().optional(),
+  additionalCommodityCodeCharge: z.union([z.string(), z.number()]).nullable().optional(),
+  defermentChargeMinimum: z.union([z.string(), z.number()]).nullable().optional(),
+  defermentChargePercentage: z.union([z.string(), z.number()]).nullable().optional(),
+  handoverFee: z.union([z.string(), z.number()]).nullable().optional(),
 });
 
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
