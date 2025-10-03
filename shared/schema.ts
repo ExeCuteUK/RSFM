@@ -530,8 +530,18 @@ export const customClearances = pgTable("custom_clearances", {
   supplierName: text("supplier_name"),
   deliveryAddress: text("delivery_address"),
   
+  // Additional Notes
+  additionalNotes: text("additional_notes"),
+  
   // File Attachments (stored as array of file paths from object storage)
-  attachments: text("attachments").array(),
+  transportDocuments: text("transport_documents").array(),
+  clearanceDocuments: text("clearance_documents").array(),
+  
+  // Status Indicators (1=pending, 2=in-progress, 3=completed)
+  adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(1),
+  sendEntryToCustomerStatusIndicator: integer("send_entry_to_customer_status_indicator").default(1),
+  invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
+  sendClearedEntryStatusIndicator: integer("send_cleared_entry_status_indicator").default(1),
   
   // Link to source shipment
   createdFromType: text("created_from_type"),
