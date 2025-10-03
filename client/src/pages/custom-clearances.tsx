@@ -23,7 +23,7 @@ export default function CustomClearances() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingClearance, setEditingClearance] = useState<CustomClearance | null>(null)
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string>("All")
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const { toast } = useToast()
 
   const { data: clearances = [], isLoading } = useQuery<CustomClearance[]>({
@@ -116,9 +116,23 @@ export default function CustomClearances() {
     return attachments
   }
 
-  const filteredClearances = statusFilter === "All" 
+  const handleAllClick = () => {
+    setSelectedStatuses([])
+  }
+
+  const handleStatusToggle = (status: string) => {
+    setSelectedStatuses(prev => {
+      if (prev.includes(status)) {
+        return prev.filter(s => s !== status)
+      } else {
+        return [...prev, status]
+      }
+    })
+  }
+
+  const filteredClearances = selectedStatuses.length === 0
     ? clearances 
-    : clearances.filter(c => c.status === statusFilter)
+    : clearances.filter(c => selectedStatuses.includes(c.status))
 
   return (
     <div className="p-6 space-y-6">
@@ -137,43 +151,43 @@ export default function CustomClearances() {
 
       <div className="flex gap-2 flex-wrap" data-testid="status-filters">
         <Button
-          variant={statusFilter === "All" ? "default" : "outline"}
-          onClick={() => setStatusFilter("All")}
+          variant={selectedStatuses.length === 0 ? "default" : "outline"}
+          onClick={handleAllClick}
           data-testid="filter-all"
         >
           All
         </Button>
         <Button
-          variant={statusFilter === "Awaiting Entry" ? "default" : "outline"}
-          onClick={() => setStatusFilter("Awaiting Entry")}
+          variant={selectedStatuses.includes("Awaiting Entry") ? "default" : "outline"}
+          onClick={() => handleStatusToggle("Awaiting Entry")}
           data-testid="filter-awaiting-entry"
         >
           Awaiting Entry
         </Button>
         <Button
-          variant={statusFilter === "Waiting Arrival" ? "default" : "outline"}
-          onClick={() => setStatusFilter("Waiting Arrival")}
+          variant={selectedStatuses.includes("Waiting Arrival") ? "default" : "outline"}
+          onClick={() => handleStatusToggle("Waiting Arrival")}
           data-testid="filter-waiting-arrival"
         >
           Waiting Arrival
         </Button>
         <Button
-          variant={statusFilter === "P.H Hold" ? "default" : "outline"}
-          onClick={() => setStatusFilter("P.H Hold")}
+          variant={selectedStatuses.includes("P.H Hold") ? "default" : "outline"}
+          onClick={() => handleStatusToggle("P.H Hold")}
           data-testid="filter-ph-hold"
         >
           P.H Hold
         </Button>
         <Button
-          variant={statusFilter === "Customs Issue" ? "default" : "outline"}
-          onClick={() => setStatusFilter("Customs Issue")}
+          variant={selectedStatuses.includes("Customs Issue") ? "default" : "outline"}
+          onClick={() => handleStatusToggle("Customs Issue")}
           data-testid="filter-customs-issue"
         >
           Customs Issue
         </Button>
         <Button
-          variant={statusFilter === "Fully Cleared" ? "default" : "outline"}
-          onClick={() => setStatusFilter("Fully Cleared")}
+          variant={selectedStatuses.includes("Fully Cleared") ? "default" : "outline"}
+          onClick={() => handleStatusToggle("Fully Cleared")}
           data-testid="filter-fully-cleared"
         >
           Fully Cleared
