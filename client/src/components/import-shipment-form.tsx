@@ -27,6 +27,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useQuery, useMutation } from "@tanstack/react-query"
@@ -56,6 +66,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [pendingAttachments, setPendingAttachments] = useState<string[]>([])
   const [newHaulierEmail, setNewHaulierEmail] = useState("")
   const [newHaulierContactName, setNewHaulierContactName] = useState("")
+  const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
 
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(insertImportShipmentSchema),
@@ -228,7 +239,25 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
     }
   }, [handoverContainerAtPort, form])
 
+  const hasUnsavedFields = () => {
+    return newHaulierContactName.trim() !== "" || newHaulierEmail.trim() !== ""
+  }
+
+  const handleContinueWithoutSaving = async () => {
+    setShowUnsavedFieldsWarning(false)
+    const data = form.getValues()
+    await submitForm(data)
+  }
+
   const handleFormSubmit = async (data: InsertImportShipment) => {
+    if (hasUnsavedFields()) {
+      setShowUnsavedFieldsWarning(true)
+      return
+    }
+    await submitForm(data)
+  }
+
+  const submitForm = async (data: InsertImportShipment) => {
     const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
     const normalizedAttachments: string[] = [...(data.attachments || [])];
 
@@ -2059,6 +2088,24 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showUnsavedFieldsWarning} onOpenChange={setShowUnsavedFieldsWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Field Information</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have entered information in one or more fields but haven't added it using the + button. 
+              Do you want to continue without saving these entries?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-go-back">Go Back</AlertDialogCancel>
+            <AlertDialogAction onClick={handleContinueWithoutSaving} data-testid="button-continue">
+              Continue Without Saving
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Form>
   )
 }
