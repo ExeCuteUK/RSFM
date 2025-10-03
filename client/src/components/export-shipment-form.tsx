@@ -59,7 +59,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
     resolver: zodResolver(insertExportShipmentSchema),
     defaultValues: {
       jobType: "export",
-      status: "Pending",
+      status: "Awaiting Collection",
       receiverId: "",
       destinationCustomerId: "",
       customerReferenceNumber: "",
@@ -178,10 +178,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const additionalCommodityCodes = form.watch("additionalCommodityCodes")
 
   useEffect(() => {
-    if (dispatchDate && status === "Pending") {
+    if (dispatchDate && status === "Awaiting Collection") {
       const today = format(new Date(), "yyyy-MM-dd")
       if (today > dispatchDate) {
-        form.setValue("status", "In Transit")
+        form.setValue("status", "Dispatched")
       }
     }
   }, [dispatchDate, status, form])
@@ -381,8 +381,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                          <SelectItem value="In Transit">In Transit</SelectItem>
+                          <SelectItem value="Awaiting Collection">Awaiting Collection</SelectItem>
+                          <SelectItem value="Dispatched">Dispatched</SelectItem>
                           <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
