@@ -749,9 +749,9 @@ export default function Customers() {
                         >
                           {haulier.haulierName}
                         </h3>
-                        {haulier.contactNames && haulier.contactNames.length > 0 && (
+                        {haulier.contacts && haulier.contacts.length > 0 && (
                           <p className="text-sm text-muted-foreground" data-testid={`text-contact-names-${haulier.id}`}>
-                            {haulier.contactNames.join(' / ')}
+                            {haulier.contacts.map(c => c.contactName).join(' / ')}
                           </p>
                         )}
                       </div>
@@ -775,11 +775,13 @@ export default function Customers() {
                       </div>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {haulier.email && haulier.email.length > 0 && (
+                      {haulier.contacts && haulier.contacts.length > 0 && (
                         <div className="space-y-0.5">
-                          {haulier.email.map((email, idx) => (
+                          {haulier.contacts.map((contact, idx) => (
                             <p key={idx} data-testid={`text-email-${haulier.id}-${idx}`}>
-                              <a href={`mailto:${email}`} className="text-muted-foreground hover:underline">{email}</a>
+                              <a href={`mailto:${contact.contactEmail}`} className="text-muted-foreground hover:underline">
+                                {contact.contactEmail}
+                              </a>
                             </p>
                           ))}
                         </div>
@@ -791,10 +793,10 @@ export default function Customers() {
                           {haulier.address}
                         </p>
                       )}
-                      {haulier.destinationCountries && haulier.destinationCountries.length > 0 && (
+                      {haulier.contacts && haulier.contacts.length > 0 && (
                         <div className="mt-3 pt-2 border-t">
                           <div className="flex flex-wrap gap-1">
-                            {haulier.destinationCountries.map((country) => (
+                            {Array.from(new Set(haulier.contacts.map(c => c.countryServiced))).map((country) => (
                               <span 
                                 key={country} 
                                 className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md" 
@@ -1015,11 +1017,15 @@ export default function Customers() {
                 />
               )
             } else if (formType === "haulier") {
+              const haulier = editingCustomer as Haulier
               return (
                 <HaulierForm
                   onSubmit={handleFormSubmit}
                   onCancel={() => setIsFormOpen(false)}
-                  defaultValues={editingCustomer as Haulier}
+                  defaultValues={{
+                    ...haulier,
+                    contacts: haulier.contacts || []
+                  }}
                 />
               )
             } else if (formType === "shippingline") {
@@ -1345,12 +1351,6 @@ export default function Customers() {
               <div>
                 <h3 className="font-semibold text-lg mb-3">Contact Information</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {viewingCustomer.homeCountry && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Home Country</p>
-                      <p>{viewingCustomer.homeCountry}</p>
-                    </div>
-                  )}
                   {viewingCustomer.telephone && (
                     <div>
                       <p className="text-sm text-muted-foreground">Telephone</p>
@@ -1363,26 +1363,39 @@ export default function Customers() {
                       <p>{viewingCustomer.mobile}</p>
                     </div>
                   )}
-                  {viewingCustomer.email && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p><a href={`mailto:${viewingCustomer.email}`} className="hover:underline">{viewingCustomer.email}</a></p>
-                    </div>
-                  )}
-                  {viewingCustomer.destinationCountries && viewingCustomer.destinationCountries.length > 0 && (
+                  {viewingCustomer.address && (
                     <div className="col-span-2">
-                      <p className="text-sm text-muted-foreground mb-2">Destination Countries</p>
-                      <div className="flex flex-wrap gap-2">
-                        {viewingCustomer.destinationCountries.map((country) => (
-                          <span key={country} className="px-3 py-1 rounded bg-secondary text-sm">
-                            {country}
-                          </span>
-                        ))}
-                      </div>
+                      <p className="text-sm text-muted-foreground">Address</p>
+                      <p className="whitespace-pre-wrap">{viewingCustomer.address}</p>
                     </div>
                   )}
                 </div>
               </div>
+              {'contacts' in viewingCustomer && viewingCustomer.contacts && viewingCustomer.contacts.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Contacts</h3>
+                  <div className="space-y-3">
+                    {viewingCustomer.contacts.map((contact, idx) => (
+                      <div key={idx} className="p-3 bg-secondary/50 rounded-md">
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <p className="text-muted-foreground text-xs">Contact Name</p>
+                            <p className="font-medium">{contact.contactName}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Email</p>
+                            <p><a href={`mailto:${contact.contactEmail}`} className="hover:underline">{contact.contactEmail}</a></p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Country Serviced</p>
+                            <p>{contact.countryServiced}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

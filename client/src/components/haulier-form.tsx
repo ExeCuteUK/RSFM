@@ -1,10 +1,9 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertHaulierSchema, type InsertHaulier } from "@shared/schema"
+import { insertHaulierSchema, type InsertHaulier, type HaulierContact } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import {
   Form,
   FormControl,
@@ -64,29 +63,25 @@ interface HaulierFormProps {
 }
 
 export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormProps) {
+  const [newContactName, setNewContactName] = useState("")
+  const [newContactEmail, setNewContactEmail] = useState("")
   const [newCountry, setNewCountry] = useState("")
   const [filteredCountries, setFilteredCountries] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [newEmail, setNewEmail] = useState("")
-  const [newContactName, setNewContactName] = useState("")
   
   const form = useForm<InsertHaulier>({
     resolver: zodResolver(insertHaulierSchema),
     defaultValues: {
       haulierName: "",
-      contactNames: [],
-      homeCountry: "",
+      contacts: [],
       address: "",
       telephone: "",
       mobile: "",
-      email: [],
-      destinationCountries: [],
       ...defaultValues
     },
   })
 
-  const destinationCountries = form.watch("destinationCountries") || []
-  const contactNames = form.watch("contactNames") || []
+  const contacts = form.watch("contacts") || []
 
   const handleCountryInput = (value: string) => {
     setNewCountry(value)
@@ -102,59 +97,37 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
     }
   }
 
-  const addCountry = (countryToAdd?: string) => {
+  const addContact = (countryToAdd?: string) => {
     const country = countryToAdd || newCountry
-    if (!country.trim()) return
-    const currentCountries = form.getValues("destinationCountries") || []
-    if (!currentCountries.includes(country.trim())) {
-      form.setValue("destinationCountries", [...currentCountries, country.trim()])
-      setNewCountry("")
-      setShowSuggestions(false)
-      setFilteredCountries([])
-    }
+    if (!newContactName.trim() || !newContactEmail.trim() || !country.trim()) return
+    
+    const currentContacts = form.getValues("contacts") || []
+    form.setValue("contacts", [
+      ...currentContacts, 
+      { 
+        contactName: newContactName.trim(), 
+        contactEmail: newContactEmail.trim(), 
+        countryServiced: country.trim() 
+      }
+    ])
+    setNewContactName("")
+    setNewContactEmail("")
+    setNewCountry("")
+    setShowSuggestions(false)
+    setFilteredCountries([])
   }
 
-  const removeCountry = (country: string) => {
-    const currentCountries = form.getValues("destinationCountries") || []
-    form.setValue("destinationCountries", currentCountries.filter(c => c !== country))
+  const removeContact = (index: number) => {
+    const currentContacts = form.getValues("contacts") || []
+    form.setValue("contacts", currentContacts.filter((_, i) => i !== index))
   }
-
-  const addContactName = () => {
-    if (!newContactName.trim()) return
-    const currentNames = form.getValues("contactNames") || []
-    if (!currentNames.includes(newContactName.trim())) {
-      form.setValue("contactNames", [...currentNames, newContactName.trim()])
-      setNewContactName("")
-    }
-  }
-
-  const removeContactName = (name: string) => {
-    const currentNames = form.getValues("contactNames") || []
-    form.setValue("contactNames", currentNames.filter(n => n !== name))
-  }
-
-  const addEmail = () => {
-    if (!newEmail.trim()) return
-    const currentEmails = form.getValues("email") || []
-    if (!currentEmails.includes(newEmail.trim())) {
-      form.setValue("email", [...currentEmails, newEmail.trim()])
-      setNewEmail("")
-    }
-  }
-
-  const removeEmail = (email: string) => {
-    const currentEmails = form.getValues("email") || []
-    form.setValue("email", currentEmails.filter(e => e !== email))
-  }
-
-  const emails = form.watch("email") || []
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
+            <CardTitle>Haulier Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
@@ -173,83 +146,102 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
             
             <FormField
               control={form.control}
-              name="contactNames"
+              name="contacts"
               render={() => (
                 <FormItem>
-                  <FormLabel>Haulier Contact Name</FormLabel>
+                  <FormLabel>Contacts</FormLabel>
                   <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter contact name"
-                        value={newContactName}
-                        onChange={(e) => setNewContactName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault()
-                            addContactName()
-                          }
-                        }}
-                        data-testid="input-new-contact-name"
-                      />
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="outline"
-                        onClick={addContactName}
-                        data-testid="button-add-contact-name"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                    <div className="grid grid-cols-12 gap-2">
+                      <div className="col-span-4">
+                        <Input
+                          placeholder="Contact Name"
+                          value={newContactName}
+                          onChange={(e) => setNewContactName(e.target.value)}
+                          data-testid="input-new-contact-name"
+                        />
+                      </div>
+                      <div className="col-span-4">
+                        <Input
+                          placeholder="Contact Email"
+                          type="email"
+                          value={newContactEmail}
+                          onChange={(e) => setNewContactEmail(e.target.value)}
+                          data-testid="input-new-contact-email"
+                        />
+                      </div>
+                      <div className="col-span-3 relative">
+                        <Input
+                          placeholder="Country Serviced"
+                          value={newCountry}
+                          onChange={(e) => handleCountryInput(e.target.value)}
+                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                          data-testid="input-new-country"
+                        />
+                        {showSuggestions && filteredCountries.length > 0 && (
+                          <div className="absolute top-full left-0 z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto" data-testid="dropdown-country-suggestions">
+                            {filteredCountries.map((country) => (
+                              <button
+                                key={country}
+                                type="button"
+                                onClick={() => {
+                                  setNewCountry(country)
+                                  setShowSuggestions(false)
+                                }}
+                                className="w-full text-left px-3 py-2 hover-elevate text-sm"
+                                data-testid={`suggestion-${country}`}
+                              >
+                                {country}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="col-span-1">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={() => addContact()}
+                          data-testid="button-add-contact"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     
-                    {contactNames.length > 0 && (
-                      <div className="flex flex-wrap gap-2" data-testid="list-contact-names">
-                        {contactNames.map((name) => (
-                          <Badge
-                            key={name}
-                            variant="secondary"
-                            className="gap-1"
-                            data-testid={`badge-contact-name-${name}`}
+                    {contacts.length > 0 && (
+                      <div className="space-y-2" data-testid="list-contacts">
+                        {contacts.map((contact, index) => (
+                          <div 
+                            key={index} 
+                            className="flex items-center justify-between p-3 bg-secondary/50 rounded-md"
+                            data-testid={`contact-${index}`}
                           >
-                            {name}
-                            <button
+                            <div className="grid grid-cols-3 gap-4 flex-1 text-sm">
+                              <div>
+                                <div className="font-medium">{contact.contactName}</div>
+                              </div>
+                              <div>
+                                <div className="text-muted-foreground">{contact.contactEmail}</div>
+                              </div>
+                              <div>
+                                <div className="text-muted-foreground">{contact.countryServiced}</div>
+                              </div>
+                            </div>
+                            <Button
                               type="button"
-                              onClick={() => removeContactName(name)}
-                              className="hover:bg-destructive/20 rounded-sm"
-                              data-testid={`button-remove-contact-name-${name}`}
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => removeContact(index)}
+                              data-testid={`button-remove-contact-${index}`}
                             >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         ))}
                       </div>
                     )}
                   </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="homeCountry"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Home Country</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-home-country">
-                        <SelectValue placeholder="Select a country" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="max-h-60">
-                      {COUNTRIES.map((country) => (
-                        <SelectItem key={country} value={country}>
-                          {country}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -297,152 +289,6 @@ export function HaulierForm({ onSubmit, onCancel, defaultValues }: HaulierFormPr
                   <FormControl>
                     <Input {...field} value={field.value || ""} data-testid="input-mobile" />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter email address"
-                        value={newEmail}
-                        onChange={(e) => setNewEmail(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault()
-                            addEmail()
-                          }
-                        }}
-                        type="email"
-                        data-testid="input-new-email"
-                      />
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="outline"
-                        onClick={addEmail}
-                        data-testid="button-add-email"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    {emails.length > 0 && (
-                      <div className="flex flex-wrap gap-2" data-testid="list-emails">
-                        {emails.map((email) => (
-                          <Badge
-                            key={email}
-                            variant="secondary"
-                            className="gap-1"
-                            data-testid={`badge-email-${email}`}
-                          >
-                            {email}
-                            <button
-                              type="button"
-                              onClick={() => removeEmail(email)}
-                              className="hover:bg-destructive/20 rounded-sm"
-                              data-testid={`button-remove-email-${email}`}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Countries Serviced</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="destinationCountries"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Destination Countries Serviced</FormLabel>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          placeholder="Enter country name"
-                          value={newCountry}
-                          onChange={(e) => handleCountryInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault()
-                              addCountry()
-                            } else if (e.key === "Escape") {
-                              setShowSuggestions(false)
-                            }
-                          }}
-                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                          data-testid="input-new-country"
-                        />
-                        {showSuggestions && filteredCountries.length > 0 && (
-                          <div className="absolute top-full left-0 z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto" data-testid="dropdown-country-suggestions">
-                            {filteredCountries.map((country) => (
-                              <button
-                                key={country}
-                                type="button"
-                                onClick={() => addCountry(country)}
-                                className="w-full text-left px-3 py-2 hover-elevate text-sm"
-                                data-testid={`suggestion-${country}`}
-                              >
-                                {country}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="outline"
-                        onClick={() => addCountry()}
-                        data-testid="button-add-country"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    {destinationCountries.length > 0 && (
-                      <div className="flex flex-wrap gap-2" data-testid="list-countries">
-                        {destinationCountries.map((country) => (
-                          <Badge
-                            key={country}
-                            variant="secondary"
-                            className="gap-1"
-                            data-testid={`badge-country-${country}`}
-                          >
-                            {country}
-                            <button
-                              type="button"
-                              onClick={() => removeCountry(country)}
-                              className="hover:bg-destructive/20 rounded-sm"
-                              data-testid={`button-remove-country-${country}`}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                   <FormMessage />
                 </FormItem>
               )}
