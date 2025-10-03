@@ -15,7 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Pencil, Trash2, Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
 import { ImportCustomerForm } from "@/components/import-customer-form"
 import { ExportCustomerForm } from "@/components/export-customer-form"
 import { ExportReceiverForm } from "@/components/export-receiver-form"
@@ -33,6 +34,7 @@ export default function Customers() {
   const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null>(null)
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
   const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null>(null)
+  const [searchText, setSearchText] = useState("")
   const { toast } = useToast()
 
   // Helper to determine customer type from entity properties
@@ -354,6 +356,39 @@ export default function Customers() {
 
   const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers || isLoadingShippingLines || isLoadingClearanceAgents
 
+  // Filter function for all contact types
+  const filterContacts = <T extends ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent>(
+    contacts: T[]
+  ): T[] => {
+    if (searchText.trim() === "") return contacts
+    
+    const searchLower = searchText.toLowerCase()
+    return contacts.filter((contact) => {
+      // Search in all text fields
+      const searchableFields: string[] = []
+      
+      // Add all fields from the contact object
+      Object.entries(contact).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          searchableFields.push(value)
+        } else if (Array.isArray(value)) {
+          value.forEach(item => {
+            if (typeof item === 'string') searchableFields.push(item)
+          })
+        }
+      })
+      
+      return searchableFields.some(field => field.toLowerCase().includes(searchLower))
+    })
+  }
+
+  const filteredImportCustomers = filterContacts(importCustomers)
+  const filteredExportCustomers = filterContacts(exportCustomers)
+  const filteredExportReceivers = filterContacts(exportReceivers)
+  const filteredHauliers = filterContacts(hauliers)
+  const filteredShippingLines = filterContacts(shippingLines)
+  const filteredClearanceAgents = filterContacts(clearanceAgents)
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -379,21 +414,39 @@ export default function Customers() {
           <TabsTrigger value="clearanceagent" data-testid="tab-clearance-agents">Clearance Agents</TabsTrigger>
         </TabsList>
 
+        <div className="my-4">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search all contacts..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="pl-9"
+              data-testid="input-search"
+            />
+          </div>
+        </div>
+
         <TabsContent value="import" className="space-y-4">
           {isLoading ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading...</p>
             </div>
-          ) : importCustomers.length === 0 ? (
+          ) : filteredImportCustomers.length === 0 ? (
             <div className="text-center py-12" data-testid="empty-state">
-              <p className="text-lg text-muted-foreground">No import customers yet</p>
-              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
-                Create your first import customer
-              </Button>
+              <p className="text-lg text-muted-foreground">
+                {searchText.trim() ? "No import customers match your search" : "No import customers yet"}
+              </p>
+              {!searchText.trim() && (
+                <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                  Create your first import customer
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {importCustomers.map((customer) => (
+              {filteredImportCustomers.map((customer) => (
                 <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-blue-50/50 dark:bg-blue-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -477,16 +530,20 @@ export default function Customers() {
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading...</p>
             </div>
-          ) : exportCustomers.length === 0 ? (
+          ) : filteredExportCustomers.length === 0 ? (
             <div className="text-center py-12" data-testid="empty-state">
-              <p className="text-lg text-muted-foreground">No export customers yet</p>
-              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
-                Create your first export customer
-              </Button>
+              <p className="text-lg text-muted-foreground">
+                {searchText.trim() ? "No export customers match your search" : "No export customers yet"}
+              </p>
+              {!searchText.trim() && (
+                <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                  Create your first export customer
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {exportCustomers.map((customer) => (
+              {filteredExportCustomers.map((customer) => (
                 <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-green-50/50 dark:bg-green-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -570,16 +627,20 @@ export default function Customers() {
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading...</p>
             </div>
-          ) : exportReceivers.length === 0 ? (
+          ) : filteredExportReceivers.length === 0 ? (
             <div className="text-center py-12" data-testid="empty-state">
-              <p className="text-lg text-muted-foreground">No export receivers yet</p>
-              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
-                Create your first export receiver
-              </Button>
+              <p className="text-lg text-muted-foreground">
+                {searchText.trim() ? "No export receivers match your search" : "No export receivers yet"}
+              </p>
+              {!searchText.trim() && (
+                <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                  Create your first export receiver
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {exportReceivers.map((receiver) => (
+              {filteredExportReceivers.map((receiver) => (
                 <Card key={receiver.id} data-testid={`card-receiver-${receiver.id}`}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -624,16 +685,20 @@ export default function Customers() {
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading...</p>
             </div>
-          ) : hauliers.length === 0 ? (
+          ) : filteredHauliers.length === 0 ? (
             <div className="text-center py-12" data-testid="empty-state">
-              <p className="text-lg text-muted-foreground">No hauliers yet</p>
-              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
-                Create your first haulier
-              </Button>
+              <p className="text-lg text-muted-foreground">
+                {searchText.trim() ? "No hauliers match your search" : "No hauliers yet"}
+              </p>
+              {!searchText.trim() && (
+                <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                  Create your first haulier
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {hauliers.map((haulier) => (
+              {filteredHauliers.map((haulier) => (
                 <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -704,16 +769,20 @@ export default function Customers() {
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading...</p>
             </div>
-          ) : shippingLines.length === 0 ? (
+          ) : filteredShippingLines.length === 0 ? (
             <div className="text-center py-12" data-testid="empty-state">
-              <p className="text-lg text-muted-foreground">No shipping lines yet</p>
-              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
-                Create your first shipping line
-              </Button>
+              <p className="text-lg text-muted-foreground">
+                {searchText.trim() ? "No shipping lines match your search" : "No shipping lines yet"}
+              </p>
+              {!searchText.trim() && (
+                <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                  Create your first shipping line
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {shippingLines.map((line) => (
+              {filteredShippingLines.map((line) => (
                 <Card key={line.id} data-testid={`card-shipping-line-${line.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -778,16 +847,20 @@ export default function Customers() {
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading...</p>
             </div>
-          ) : clearanceAgents.length === 0 ? (
+          ) : filteredClearanceAgents.length === 0 ? (
             <div className="text-center py-12" data-testid="empty-state">
-              <p className="text-lg text-muted-foreground">No clearance agents yet</p>
-              <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
-                Create your first clearance agent
-              </Button>
+              <p className="text-lg text-muted-foreground">
+                {searchText.trim() ? "No clearance agents match your search" : "No clearance agents yet"}
+              </p>
+              {!searchText.trim() && (
+                <Button variant="outline" className="mt-4" onClick={handleCreateNew} data-testid="button-create-first">
+                  Create your first clearance agent
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {clearanceAgents.map((agent) => (
+              {filteredClearanceAgents.map((agent) => (
                 <Card key={agent.id} data-testid={`card-clearance-agent-${agent.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
