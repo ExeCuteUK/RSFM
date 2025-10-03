@@ -23,7 +23,7 @@ export default function CustomClearances() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingClearance, setEditingClearance] = useState<CustomClearance | null>(null)
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
   const { toast } = useToast()
 
   const { data: clearances = [], isLoading } = useQuery<CustomClearance[]>({
