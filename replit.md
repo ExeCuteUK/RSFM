@@ -18,7 +18,7 @@ The frontend is built with React 18 and TypeScript, using Vite for development a
 
 ### Backend Architecture
 
-The backend is developed with Express.js and TypeScript on Node.js, utilizing an ESM module system. It provides a RESTful API under the `/api` prefix for CRUD operations on all major entities. Zod schemas are shared between frontend and backend for validation. The storage layer uses PostgreSQL via Drizzle ORM (`DatabaseStorage`) for permanent data persistence. The system includes data models for `importCustomers`, `exportCustomers`, `exportReceivers`, `hauliers`, `importShipments`, `exportShipments`, and `customClearances`, with automatic custom clearance job generation logic. All contact forms support multi-email functionality using array fields for `email`, `agentEmail`, and `accountsEmail` (Import/Export Customers only). Fax fields have been completely removed from the system. The `customClearances` table now includes a `deliveryAddress` field for better destination tracking in job journals.
+The backend is developed with Express.js and TypeScript on Node.js, utilizing an ESM module system. It provides a RESTful API under the `/api` prefix for CRUD operations on all major entities. Zod schemas are shared between frontend and backend for validation. The storage layer uses PostgreSQL via Drizzle ORM (`DatabaseStorage`) for permanent data persistence. The system includes data models for `importCustomers`, `exportCustomers`, `exportReceivers`, `hauliers`, `shippingLines`, `clearanceAgents`, `settings`, `importShipments`, `exportShipments`, and `customClearances`, with automatic custom clearance job generation logic. All contact forms support multi-email functionality using array fields for `email`, `agentEmail`, and `accountsEmail` (Import/Export Customers only). Fax fields have been completely removed from the system. The `customClearances` table now includes a `deliveryAddress` field for better destination tracking in job journals.
 
 ### API Endpoints
 
@@ -26,6 +26,10 @@ The API provides standard RESTful endpoints for managing:
 -   **Import Customers**: GET, POST, PATCH, DELETE `/api/import-customers`
 -   **Export Customers**: GET, POST, PATCH, DELETE `/api/export-customers`
 -   **Export Receivers**: GET, POST, PATCH, DELETE `/api/export-receivers`
+-   **Hauliers**: GET, POST, PATCH, DELETE `/api/hauliers`
+-   **Shipping Lines**: GET, POST, PATCH, DELETE `/api/shipping-lines`
+-   **Clearance Agents**: GET, POST, PATCH, DELETE `/api/clearance-agents`
+-   **Settings**: GET, POST, PATCH `/api/settings` (single record for financial settings)
 -   **Import Shipments**: GET, POST, PATCH, DELETE `/api/import-shipments` (auto-creates Custom Clearance if `rsToClear=true`)
 -   **Export Shipments**: GET, POST, PATCH, DELETE `/api/export-shipments`
 -   **Custom Clearances**: GET, POST, PATCH, DELETE `/api/custom-clearances`
@@ -39,9 +43,9 @@ Key routes include:
 -   `/import-shipments`
 -   `/export-shipments`
 -   `/custom-clearances`
--   `/customers`
+-   `/contacts` (Import Customers, Export Customers, Export Receivers, Hauliers, Shipping Lines, Clearance Agents)
 -   `/invoices`
--   `/rates`
+-   `/settings` (Financial & Charges configuration)
 
 ## External Dependencies
 
