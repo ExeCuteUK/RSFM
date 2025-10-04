@@ -32,7 +32,7 @@ export default function SettingsPage() {
   const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState("financials");
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<Omit<User, 'password'> | null>(null);
   const [userToEdit, setUserToEdit] = useState<Omit<User, 'password'> | null>(null);
   
   // Fetch Gmail connection status
@@ -400,8 +400,9 @@ export default function SettingsPage() {
                   <Button
                     onClick={async () => {
                       try {
-                        const response = await apiRequest("GET", "/api/gmail/auth-url", {}) as { authUrl: string };
-                        window.location.href = response.authUrl;
+                        const response = await apiRequest("GET", "/api/gmail/auth-url");
+                        const data = await response.json() as { authUrl: string };
+                        window.location.href = data.authUrl;
                       } catch (error) {
                         toast({
                           title: "Error",
@@ -462,8 +463,8 @@ function UsersManagement({
 }: {
   isAddUserOpen: boolean;
   setIsAddUserOpen: (open: boolean) => void;
-  userToDelete: User | null;
-  setUserToDelete: (user: User | null) => void;
+  userToDelete: Omit<User, 'password'> | null;
+  setUserToDelete: (user: Omit<User, 'password'> | null) => void;
   userToEdit: Omit<User, 'password'> | null;
   setUserToEdit: (user: Omit<User, 'password'> | null) => void;
 }) {
