@@ -403,8 +403,6 @@ export default function JobJournals() {
                         const purchaseAmount = parseFloat(entry.purchaseInvoiceAmount || "0") || 0
                         const profitLoss = salesAmount - purchaseAmount
                         
-                        if (profitLoss === 0) return ""
-                        
                         const formatted = profitLoss.toLocaleString('en-GB', {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2
