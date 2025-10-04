@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import path from "path";
+import multer from "multer";
+import fs from "fs/promises";
 import { 
   insertImportCustomerSchema,
   insertExportCustomerSchema,
@@ -22,6 +24,12 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import passport from "passport";
 import { registerUser } from "./auth";
 import bcrypt from "bcryptjs";
+
+// Configure multer for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 
 // Auth middleware
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -1202,6 +1210,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.join(process.cwd(), "attached_assets", "rs-logo.jpg"));
   });
 
+  // ========== Signature Template & Logo Management ==========
+  
+  // Upload signature HTML template
+  app.post("/api/signature/upload-template", requireAuth, upload.single("template"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      if (req.file.mimetype !== "text/html") {
+        return res.status(400).json({ error: "Only HTML files are allowed" });
+      }
+      
+      const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+      await fs.writeFile(templatePath, req.file.buffer);
+      
+      res.json({ message: "Template uploaded successfully" });
+    } catch (error) {
+      console.error("Error uploading template:", error);
+      res.status(500).json({ error: "Failed to upload template" });
+    }
+  });
+  
+  // Download signature HTML template
+  app.get("/api/signature/download-template", requireAuth, async (_req, res) => {
+    try {
+      const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+      res.download(templatePath, "signature-template.html");
+    } catch (error) {
+      res.status(404).json({ error: "Template not found" });
+    }
+  });
+  
+  // Upload signature logo
+  app.post("/api/signature/upload-logo", requireAuth, upload.single("logo"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      if (!req.file.mimetype.startsWith("image/")) {
+        return res.status(400).json({ error: "Only image files are allowed" });
+      }
+      
+      const logoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
+      await fs.writeFile(logoPath, req.file.buffer);
+      
+      res.json({ message: "Logo uploaded successfully" });
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      res.status(500).json({ error: "Failed to upload logo" });
+    }
+  });
+  
+  // Download signature logo
+  app.get("/api/signature/download-logo", requireAuth, (_req, res) => {
+    const logoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
+    res.download(logoPath, "rs-logo.jpg");
+  });
+
   // ========== Object Storage Routes ==========
 
   // Get presigned upload URL for file uploads
@@ -1890,66 +1958,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build email body with signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
       
-      // Determine the base URL for the logo
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : process.env.REPL_SLUG 
-          ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-          : 'http://localhost:5000';
-      const logoUrl = `${baseUrl}/assets/rs-logo.jpg`;
-      
-      // Add default company signature with user's name
-      const signatureTemplate = `<br>
-<div class="moz-signature">-- <br>
-  <div class="moz-signature">
-    <div class="moz-signature"><br>
-      <div class="moz-signature">Kind Regards,<br><br>
-        ${user.fullName}
-        <div class="moz-signature">
-          <div class="moz-signature">
-            <div class="moz-signature">
-              <div class="moz-signature">
-                <div class="moz-signature">
-                  <div class="moz-signature">
-                    <div class="moz-signature">
-                      <div class="moz-signature">
-                        <div class="moz-signature">
-                          <div class="moz-signature">
-                            <div class="moz-signature">
-                              <div class="moz-signature"><br>
-                                <table style="border-collapse: collapse;" cellpadding="5" border="0">
-                                  <tbody>
-                                    <tr>
-                                      <td style="vertical-align: top;"><img src="${logoUrl}" alt="R.S. International Freight Ltd" style="display: block;"><br>
-                                      </td>
-                                      <td style="vertical-align: top; padding-left: 10px;"><span style="color: #993366;"><em><strong>R.S. International Freight Ltd</strong></em></span><br>
-                                        10b Hornsby Square, Southfields Business Park, Laindon, Essex, SS15 6SD<br>
-                                        Telephone: +44 (0)1708 865000<br>
-                                        Fax: +44 (0)1708 865010<br>
-                                        <a href="http://www.rs-international.com">http://www.rs-international.com</a></td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                                <b><em><span style="color:red;"><br></span></em><span style="color:red;"><a href="http://rs-international.com/rs_terms_v4.pdf"><u>Please click here for our Tariff guide, authorisation forms, terms &amp; CDS Switchover information</u></a></span></b><b><em><span style="color:red;"><br></span></em></b></div>
-                              <div class="moz-signature"><em><br></em></div>
-                              <div class="moz-signature"><em>This email and the information it contains may be privileged and/or confidential. It is for the intended addressee(s) only. The unauthorised use, disclosure or copying of this email, or any information it contains is prohibited and could in certain circumstances be a criminal offence. If you are not the intended recipient, please notify the sender and delete the message from your system. RS International Freight Limited monitors emails to ensure its systems operate effectively and to minimise the risk of viruses. Whilst it has taken reasonable steps to scan this email, it does not accept liability for any virus that it may contain. All Business transacted subject the BIFA standard trading conditions 2017 edition.</em></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>`;
-      
-      messageText += signatureTemplate;
+      // Add signature if enabled
+      if (user.useSignature) {
+        // Determine the base URL for the logo
+        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+          : process.env.REPL_SLUG 
+            ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+            : 'http://localhost:5000';
+        const logoUrl = `${baseUrl}/assets/rs-logo.jpg`;
+        
+        // Read signature template from file
+        const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+        let signatureTemplate = await fs.readFile(templatePath, 'utf-8');
+        
+        // Replace placeholders
+        signatureTemplate = signatureTemplate
+          .replace(/{{USER_NAME}}/g, user.fullName)
+          .replace(/{{LOGO_URL}}/g, logoUrl);
+        
+        messageText += signatureTemplate;
+      }
       
       // Wrap in proper HTML structure with email-friendly styles
       const htmlBody = `<!DOCTYPE html>
