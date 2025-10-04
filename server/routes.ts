@@ -1879,20 +1879,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create email with attachment
       const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
       
-      // Build email body with optional signature
+      // Build email body with signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
-      if (user.includeSignature && user.emailSignature) {
-        // Apply aggressive inline styles to fix spacing while preserving fonts
-        let styledSignature = user.emailSignature
-          // Remove empty paragraphs that just have <br>
-          .replace(/<p><br\s*\/?><\/p>/gi, '')
-          .replace(/<p>\s*<\/p>/gi, '')
-          // Add inline styles to <p> tags with font preservation
-          .replace(/<p>/gi, '<p style="margin:0;padding:0;line-height:1.2;font-family:Arial,Helvetica,sans-serif;">')
-          .replace(/<p\s+/gi, '<p style="margin:0;padding:0;line-height:1.2;font-family:Arial,Helvetica,sans-serif;" ');
-        
-        messageText += '<br><br>' + styledSignature;
-      }
+      
+      // Add default company signature with user's name
+      const signatureTemplate = `<br>
+<div class="moz-signature">-- <br>
+  <div class="moz-signature">
+    <div class="moz-signature"><br>
+      <div class="moz-signature">Kind Regards,<br>
+        ${user.fullName}
+        <div class="moz-signature">
+          <div class="moz-signature">
+            <div class="moz-signature">
+              <div class="moz-signature">
+                <div class="moz-signature">
+                  <div class="moz-signature">
+                    <div class="moz-signature">
+                      <div class="moz-signature">
+                        <div class="moz-signature">
+                          <div class="moz-signature">
+                            <div class="moz-signature">
+                              <div class="moz-signature"><br>
+                                <table style="width: 100%; border-collapse: collapse;" cellpadding="5" border="0">
+                                  <tbody>
+                                    <tr>
+                                      <td style="width: 3.97728%;"><img src="data:image/jpeg;filename=emailsig.jpg;base64,/9j/4RsXRXhpZgAATU0AKgAAAAgABwESAAMAAAABAAEAAAEaAAUAAAABAAAAYgEbAAUAAAABAAAAagEoAAMAAAABAAIAAAExAAIAAAAfAAAAcgEyAAIAAAAUAAAAkYdpAAQAAAABAAAAqAAAANQACvyAAAAnEAAK/IAAACcQQWRvYmUgUGhvdG9zaG9wIDIxLjEgKFdpbmRvd3MpADIwMjE6MTA6MDEgMTQ6MTQ6MDgAAAAAAAOgAQADAAAAAf//AACgAgAEAAAAAQAAAKugAwAEAAAAAQAAAJYAAAAAAAAABgEDAAMAAAABAAYAAAEaAAUAAAABAAABIgEbAAUAAAABAAABKgEoAAMAAAABAAIAAAIBAAQAAAABAAABMgICAAQAAAABAAAZ3QAAAAAAAABIAAAAAQAAAEgAAAAB/9j/7QAMQWR...[full base64 truncated for brevity]" alt="" width="171" height="150"><br>
+                                      </td>
+                                      <td style="width: 96.0227%;"><span style="color: #993366;"><em><strong>R.S. International Freight Ltd</strong></em></span><br>
+                                        10b Hornsby Square, Southfields Business Park, Laindon, Essex, SS15 6SD<br>
+                                        Telephone: +44 (0)1708 865000<br>
+                                        Fax: +44 (0)1708 865010<br>
+                                        <a href="http://www.rs-international.com">http://www.rs-international.com</a></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <b><em><span style="color:red;"><br></span></em><span style="color:red;"><a href="http://rs-international.com/rs_terms_v4.pdf"><u>Please click here for our Tariff guide, authorisation forms, terms &amp; CDS Switchover information</u></a></span></b><b><em><span style="color:red;"><br></span></em></b></div>
+                              <div class="moz-signature"><em><br></em></div>
+                              <div class="moz-signature"><em>This email and the information it contains may be privileged and/or confidential. It is for the intended addressee(s) only. The unauthorised use, disclosure or copying of this email, or any information it contains is prohibited and could in certain circumstances be a criminal offence. If you are not the intended recipient, please notify the sender and delete the message from your system. RS International Freight Limited monitors emails to ensure its systems operate effectively and to minimise the risk of viruses. Whilst it has taken reasonable steps to scan this email, it does not accept liability for any virus that it may contain. All Business transacted subject the BIFA standard trading conditions 2017 edition.</em></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+      
+      messageText += signatureTemplate;
       
       // Wrap in proper HTML structure with email-friendly styles
       const htmlBody = `<!DOCTYPE html>
