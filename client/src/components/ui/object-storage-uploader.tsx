@@ -57,7 +57,11 @@ export function ObjectStorageUploader({
         uploadedPaths.push(data.uploadURL);
       }
 
-      setPendingFiles((prev) => [...prev, ...uploadedPaths]);
+      if (onPendingFilesChange) {
+        onPendingFilesChange([...pendingFiles, ...uploadedPaths]);
+      } else {
+        setInternalPendingFiles((prev) => [...prev, ...uploadedPaths]);
+      }
     } catch (error) {
       console.error("Upload failed:", error);
     } finally {
@@ -113,9 +117,13 @@ export function ObjectStorageUploader({
 
   const removePendingFile = useCallback(
     (index: number) => {
-      setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+      if (onPendingFilesChange) {
+        onPendingFilesChange(pendingFiles.filter((_, i) => i !== index));
+      } else {
+        setInternalPendingFiles((prev) => prev.filter((_, i) => i !== index));
+      }
     },
-    []
+    [pendingFiles, onPendingFilesChange]
   );
 
   const removeSavedFile = useCallback(
