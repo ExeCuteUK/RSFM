@@ -1108,16 +1108,6 @@ export default function ImportShipments() {
                           title="Yellow Status (1)"
                         />
                         <button
-                          onClick={() => handleClearanceStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.clearanceStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-status-orange-${shipment.id}`}
-                          title="Orange Status (2)"
-                        />
-                        <button
                           onClick={() => handleClearanceStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.clearanceStatusIndicator === 3
@@ -1126,16 +1116,6 @@ export default function ImportShipments() {
                           }`}
                           data-testid={`button-status-green-${shipment.id}`}
                           title="Green Status (3)"
-                        />
-                        <button
-                          onClick={() => handleClearanceStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.clearanceStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-status-red-${shipment.id}`}
-                          title="Red Status (4)"
                         />
                       </div>
                     </div>
@@ -1179,16 +1159,6 @@ export default function ImportShipments() {
                           data-testid={`button-delivery-status-green-${shipment.id}`}
                           title="Green Status (3)"
                         />
-                        <button
-                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.deliveryBookedStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-delivery-status-red-${shipment.id}`}
-                          title="Red Status (4)"
-                        />
                       </div>
                     </div>
                   </div>
@@ -1230,16 +1200,6 @@ export default function ImportShipments() {
                           }`}
                           data-testid={`button-haulier-status-green-${shipment.id}`}
                           title="Green Status (3)"
-                        />
-                        <button
-                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.haulierBookingStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-haulier-status-red-${shipment.id}`}
-                          title="Red Status"
                         />
                       </div>
                     </div>
@@ -1320,16 +1280,6 @@ export default function ImportShipments() {
                           title="Yellow Status (Default)"
                         />
                         <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-invoice-status-orange-${shipment.id}`}
-                          title="Orange Status (2)"
-                        />
-                        <button
                           onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.invoiceCustomerStatusIndicator === 3
@@ -1360,16 +1310,6 @@ export default function ImportShipments() {
                           }`}
                           data-testid={`button-send-pod-status-yellow-${shipment.id}`}
                           title="Yellow Status (Default)"
-                        />
-                        <button
-                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-send-pod-status-orange-${shipment.id}`}
-                          title="Orange Status (2)"
                         />
                         <button
                           onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
