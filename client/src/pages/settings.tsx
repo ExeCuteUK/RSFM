@@ -492,7 +492,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Use the formatting tools to style your signature. You can use <code className="px-1 bg-muted rounded">{'{USER_NAME}'}</code> to insert your name and <code className="px-1 bg-muted rounded">{'{LOGO_URL}'}</code> to insert the company logo URL. The signature will be automatically included in your emails.
+                  Use the formatting tools to style your signature. It will be automatically included in your emails.
                 </p>
               </div>
 
