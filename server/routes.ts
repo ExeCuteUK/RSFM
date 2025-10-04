@@ -1270,6 +1270,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.download(logoPath, "rs-logo.jpg");
   });
 
+  // Restore default signature template and logo
+  app.post("/api/signature/restore-defaults", requireAuth, async (_req, res) => {
+    try {
+      const defaultTemplatePath = path.join(process.cwd(), "attached_assets", "signature-template-default.html");
+      const defaultLogoPath = path.join(process.cwd(), "attached_assets", "rs-logo-default.jpg");
+      const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+      const logoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
+
+      // Copy defaults to active files
+      await fs.copyFile(defaultTemplatePath, templatePath);
+      await fs.copyFile(defaultLogoPath, logoPath);
+
+      res.json({ message: "Default signature restored successfully" });
+    } catch (error) {
+      console.error("Error restoring defaults:", error);
+      res.status(500).json({ error: "Failed to restore defaults" });
+    }
+  });
+
   // ========== Object Storage Routes ==========
 
   // Get presigned upload URL for file uploads
