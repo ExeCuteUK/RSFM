@@ -402,7 +402,12 @@ export default function SettingsPage() {
                       try {
                         const response = await apiRequest("GET", "/api/gmail/auth-url");
                         const data = await response.json() as { authUrl: string };
-                        window.location.href = data.authUrl;
+                        // Open in new window to avoid iframe restrictions
+                        window.open(data.authUrl, '_blank', 'noopener,noreferrer');
+                        toast({
+                          title: "Opening Google authorization",
+                          description: "Complete the authorization in the new window, then return here.",
+                        });
                       } catch (error) {
                         toast({
                           title: "Error",
