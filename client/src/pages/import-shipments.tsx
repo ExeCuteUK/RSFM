@@ -217,8 +217,13 @@ export default function ImportShipments() {
         fetchTrackingData.mutate(response.data.relationships.shipment.data.id)
       }
     },
-    onError: () => {
-      toast({ title: "Failed to track container", variant: "destructive" })
+    onError: (error: any) => {
+      const errorDetails = error?.details?.errors?.[0]?.detail || error?.message || "Failed to track container"
+      toast({ 
+        title: "Container Tracking Error", 
+        description: errorDetails,
+        variant: "destructive" 
+      })
     },
   })
 

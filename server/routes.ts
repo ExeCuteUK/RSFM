@@ -1169,6 +1169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = await response.json();
       
       if (!response.ok) {
+        console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
         return res.status(response.status).json({ 
           error: "Terminal49 API error", 
           details: data 
@@ -1202,6 +1203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = await response.json();
       
       if (!response.ok) {
+        console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
         return res.status(response.status).json({ 
           error: "Terminal49 API error", 
           details: data 
@@ -1235,6 +1237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = await response.json();
       
       if (!response.ok) {
+        console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
         return res.status(response.status).json({ 
           error: "Terminal49 API error", 
           details: data 
