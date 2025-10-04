@@ -1903,7 +1903,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 <div class="moz-signature">-- <br>
   <div class="moz-signature">
     <div class="moz-signature"><br>
-      <div class="moz-signature">Kind Regards,<br>
+      <div class="moz-signature">Kind Regards,<br><br>
         ${user.fullName}
         <div class="moz-signature">
           <div class="moz-signature">
@@ -1917,12 +1917,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           <div class="moz-signature">
                             <div class="moz-signature">
                               <div class="moz-signature"><br>
-                                <table style="width: 100%; border-collapse: collapse;" cellpadding="5" border="0">
+                                <table style="border-collapse: collapse;" cellpadding="5" border="0">
                                   <tbody>
                                     <tr>
-                                      <td style="width: 3.97728%;"><img src="${logoUrl}" alt="R.S. International Freight Ltd" width="240" height="210"><br>
+                                      <td style="vertical-align: top;"><img src="${logoUrl}" alt="R.S. International Freight Ltd" width="200" height="175" style="display: block; max-width: 200px; height: auto;"><br>
                                       </td>
-                                      <td style="width: 96.0227%;"><span style="color: #993366;"><em><strong>R.S. International Freight Ltd</strong></em></span><br>
+                                      <td style="vertical-align: top; padding-left: 10px;"><span style="color: #993366;"><em><strong>R.S. International Freight Ltd</strong></em></span><br>
                                         10b Hornsby Square, Southfields Business Park, Laindon, Essex, SS15 6SD<br>
                                         Telephone: +44 (0)1708 865000<br>
                                         Fax: +44 (0)1708 865010<br>
