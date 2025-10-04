@@ -43,6 +43,7 @@ export default function ImportShipments() {
   const [trackingShipment, setTrackingShipment] = useState<ImportShipment | null>(null)
   const [trackingData, setTrackingData] = useState<any>(null)
   const [etaUpdateDialog, setEtaUpdateDialog] = useState<{ show: boolean; newEta: string; daysDiff: number; shipmentId: string } | null>(null)
+  const [etdUpdateDialog, setEtdUpdateDialog] = useState<{ show: boolean; newEtd: string; daysDiff: number; shipmentId: string } | null>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
@@ -280,6 +281,27 @@ export default function ImportShipments() {
           })
         }
       }
+      
+      // Compare tracking ETD with job dispatch date
+      if (trackingShipment && data?.data?.attributes?.pol_atd_at) {
+        const trackingEtd = data.data.attributes.pol_atd_at.split('T')[0] // Get YYYY-MM-DD
+        const jobDispatch = trackingShipment.dispatchDate
+        
+        if (jobDispatch && trackingEtd !== jobDispatch) {
+          // Calculate difference in days
+          const trackingDate = new Date(trackingEtd)
+          const jobDate = new Date(jobDispatch)
+          const diffTime = trackingDate.getTime() - jobDate.getTime()
+          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+          
+          setEtdUpdateDialog({
+            show: true,
+            newEtd: trackingEtd,
+            daysDiff: diffDays,
+            shipmentId: trackingShipment.id
+          })
+        }
+      }
     },
     onError: (error: any) => {
       // Don't show toast for 404 - the dialog will show a helpful message
@@ -308,6 +330,24 @@ export default function ImportShipments() {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       toast({ title: "ETA updated successfully" })
       setEtaUpdateDialog(null)
+    },
+  })
+
+  const updateEtd = useMutation({
+    mutationFn: async ({ id, etd }: { id: string; etd: string }) => {
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
+        ...shipment,
+        dispatchDate: etd
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({ title: "Dispatch date updated successfully" })
+      setEtdUpdateDialog(null)
     },
   })
 
@@ -2130,22 +2170,22 @@ export default function ImportShipments() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Update ETA Date?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription asChild>
               {etaUpdateDialog && (
-                <>
-                  The tracking system shows a different ETA date than what's recorded in the job.
+                <div>
+                  <div>The tracking system shows a different ETA date than what's recorded in the job.</div>
                   <div className="mt-4 space-y-2">
-                    <p className="font-medium">Current Job ETA: {trackingShipment?.importDateEtaPort ? format(new Date(trackingShipment.importDateEtaPort), 'dd MMM yyyy') : 'Not set'}</p>
-                    <p className="font-medium">Tracking ETA: {format(new Date(etaUpdateDialog.newEta), 'dd MMM yyyy')}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <div className="font-medium">Current Job ETA: {trackingShipment?.importDateEtaPort ? format(new Date(trackingShipment.importDateEtaPort), 'dd MMM yyyy') : 'Not set'}</div>
+                    <div className="font-medium">Tracking ETA: {format(new Date(etaUpdateDialog.newEta), 'dd MMM yyyy')}</div>
+                    <div className="text-sm text-muted-foreground">
                       {etaUpdateDialog.daysDiff > 0 
                         ? `The new ETA is ${etaUpdateDialog.daysDiff} day${etaUpdateDialog.daysDiff === 1 ? '' : 's'} later than expected.`
                         : `The new ETA is ${Math.abs(etaUpdateDialog.daysDiff)} day${Math.abs(etaUpdateDialog.daysDiff) === 1 ? '' : 's'} earlier than expected.`
                       }
-                    </p>
+                    </div>
                   </div>
-                  <p className="mt-4">Would you like to update the job with the new ETA date?</p>
-                </>
+                  <div className="mt-4">Would you like to update the job with the new ETA date?</div>
+                </div>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -2156,6 +2196,40 @@ export default function ImportShipments() {
                 updateEta.mutate({ id: etaUpdateDialog.shipmentId, eta: etaUpdateDialog.newEta })
               }
             }}>Yes, update ETA</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={etdUpdateDialog?.show || false} onOpenChange={(open) => !open && setEtdUpdateDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Dispatch Date?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              {etdUpdateDialog && (
+                <div>
+                  <div>The tracking system shows a different actual departure date than the dispatch date recorded in the job.</div>
+                  <div className="mt-4 space-y-2">
+                    <div className="font-medium">Current Job Dispatch Date: {trackingShipment?.dispatchDate ? format(new Date(trackingShipment.dispatchDate), 'dd MMM yyyy') : 'Not set'}</div>
+                    <div className="font-medium">Tracking Departure Date: {format(new Date(etdUpdateDialog.newEtd), 'dd MMM yyyy')}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {etdUpdateDialog.daysDiff > 0 
+                        ? `The actual departure was ${etdUpdateDialog.daysDiff} day${etdUpdateDialog.daysDiff === 1 ? '' : 's'} later than recorded.`
+                        : `The actual departure was ${Math.abs(etdUpdateDialog.daysDiff)} day${Math.abs(etdUpdateDialog.daysDiff) === 1 ? '' : 's'} earlier than recorded.`
+                      }
+                    </div>
+                  </div>
+                  <div className="mt-4">Would you like to update the job with the actual dispatch date?</div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setEtdUpdateDialog(null)}>No, keep current date</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (etdUpdateDialog) {
+                updateEtd.mutate({ id: etdUpdateDialog.shipmentId, etd: etdUpdateDialog.newEtd })
+              }
+            }}>Yes, update dispatch date</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
