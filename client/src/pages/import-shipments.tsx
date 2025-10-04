@@ -42,6 +42,7 @@ export default function ImportShipments() {
   const [statusPrompt, setStatusPrompt] = useState<{ show: boolean; newStatus: string; message: string }>({ show: false, newStatus: '', message: '' })
   const [trackingShipment, setTrackingShipment] = useState<ImportShipment | null>(null)
   const [trackingData, setTrackingData] = useState<any>(null)
+  const [etaUpdateDialog, setEtaUpdateDialog] = useState<{ show: boolean; newEta: string; daysDiff: number; shipmentId: string } | null>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
@@ -212,10 +213,8 @@ export default function ImportShipments() {
       return res.json()
     },
     onSuccess: (response: any) => {
-      console.log("Track container response:", response)
       const status = response?.data?.attributes?.status
       const shipmentId = response?.data?.relationships?.tracked_object?.data?.id
-      console.log("Status:", status, "Shipment ID:", shipmentId)
       
       if (status === "view_on_terminal49") {
         // API limitations - direct to Terminal49 website
@@ -228,7 +227,6 @@ export default function ImportShipments() {
         })
       } else if (shipmentId) {
         // Shipment found, fetch tracking data
-        console.log("Fetching tracking data for shipment:", shipmentId)
         toast({ 
           title: "Loading Tracking Data", 
           description: "Retrieving container tracking information..." 
@@ -236,7 +234,6 @@ export default function ImportShipments() {
         fetchTrackingData.mutate(shipmentId)
       } else {
         // Tracking request created
-        console.log("No shipment ID, showing pending message")
         toast({ 
           title: "Container Tracking Request Created", 
           description: status === "pending" 
@@ -262,6 +259,27 @@ export default function ImportShipments() {
     },
     onSuccess: (data) => {
       setTrackingData(data)
+      
+      // Compare tracking ETA with job ETA
+      if (trackingShipment && data?.data?.attributes?.pod_eta_at) {
+        const trackingEta = data.data.attributes.pod_eta_at.split('T')[0] // Get YYYY-MM-DD
+        const jobEta = trackingShipment.importDateEtaPort
+        
+        if (jobEta && trackingEta !== jobEta) {
+          // Calculate difference in days
+          const trackingDate = new Date(trackingEta)
+          const jobDate = new Date(jobEta)
+          const diffTime = trackingDate.getTime() - jobDate.getTime()
+          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+          
+          setEtaUpdateDialog({
+            show: true,
+            newEta: trackingEta,
+            daysDiff: diffDays,
+            shipmentId: trackingShipment.id
+          })
+        }
+      }
     },
     onError: (error: any) => {
       // Don't show toast for 404 - the dialog will show a helpful message
@@ -272,6 +290,24 @@ export default function ImportShipments() {
           variant: "destructive" 
         })
       }
+    },
+  })
+
+  const updateEta = useMutation({
+    mutationFn: async ({ id, eta }: { id: string; eta: string }) => {
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
+        ...shipment,
+        importDateEtaPort: eta
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({ title: "ETA updated successfully" })
+      setEtaUpdateDialog(null)
     },
   })
 
@@ -2086,6 +2122,40 @@ export default function ImportShipments() {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleStatusPromptCancel}>No, keep current status</AlertDialogCancel>
             <AlertDialogAction onClick={handleStatusPromptConfirm}>Yes, update status</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={etaUpdateDialog?.show || false} onOpenChange={(open) => !open && setEtaUpdateDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update ETA Date?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {etaUpdateDialog && (
+                <>
+                  The tracking system shows a different ETA date than what's recorded in the job.
+                  <div className="mt-4 space-y-2">
+                    <p className="font-medium">Current Job ETA: {trackingShipment?.importDateEtaPort ? format(new Date(trackingShipment.importDateEtaPort), 'dd MMM yyyy') : 'Not set'}</p>
+                    <p className="font-medium">Tracking ETA: {format(new Date(etaUpdateDialog.newEta), 'dd MMM yyyy')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {etaUpdateDialog.daysDiff > 0 
+                        ? `The new ETA is ${etaUpdateDialog.daysDiff} day${etaUpdateDialog.daysDiff === 1 ? '' : 's'} later than expected.`
+                        : `The new ETA is ${Math.abs(etaUpdateDialog.daysDiff)} day${Math.abs(etaUpdateDialog.daysDiff) === 1 ? '' : 's'} earlier than expected.`
+                      }
+                    </p>
+                  </div>
+                  <p className="mt-4">Would you like to update the job with the new ETA date?</p>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setEtaUpdateDialog(null)}>No, keep current ETA</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (etaUpdateDialog) {
+                updateEta.mutate({ id: etaUpdateDialog.shipmentId, eta: etaUpdateDialog.newEta })
+              }
+            }}>Yes, update ETA</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
