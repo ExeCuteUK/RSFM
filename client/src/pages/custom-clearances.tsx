@@ -193,6 +193,29 @@ export default function CustomClearances() {
     }
   })
 
+  const deleteFile = useMutation({
+    mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "transport" | "clearance" }) => {
+      const clearance = clearances.find(c => c.id === id)
+      if (!clearance) throw new Error("Clearance not found")
+      
+      const currentFiles = fileType === "transport" ? (clearance.transportDocuments || []) : (clearance.clearanceDocuments || [])
+      const updatedFiles = currentFiles.filter(f => f !== filePath)
+      
+      const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
+        ...clearance,
+        [fileType === "transport" ? "transportDocuments" : "clearanceDocuments"]: updatedFiles
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      toast({ title: "File deleted successfully" })
+    },
+    onError: () => {
+      toast({ title: "File deletion failed", variant: "destructive" })
+    }
+  })
+
   const handleAdviseAgentStatusUpdate = (id: string, status: number) => {
     updateAdviseAgentStatus.mutate({ id, status })
   }
@@ -743,12 +766,19 @@ export default function CustomClearances() {
                                       href={downloadPath}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-xs truncate hover:text-primary"
+                                      className="text-xs truncate hover:text-primary flex-1"
                                       title={fileName}
                                       data-testid={`link-transport-doc-${clearance.id}-${idx}`}
                                     >
                                       {fileName}
                                     </a>
+                                    <button
+                                      onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "transport" })}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                      data-testid={`button-delete-transport-${clearance.id}-${idx}`}
+                                    >
+                                      <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
+                                    </button>
                                   </div>
                                 )
                               })}
@@ -780,12 +810,19 @@ export default function CustomClearances() {
                                       href={downloadPath}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-xs truncate hover:text-primary"
+                                      className="text-xs truncate hover:text-primary flex-1"
                                       title={fileName}
                                       data-testid={`link-clearance-doc-${clearance.id}-${idx}`}
                                     >
                                       {fileName}
                                     </a>
+                                    <button
+                                      onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "clearance" })}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                      data-testid={`button-delete-clearance-${clearance.id}-${idx}`}
+                                    >
+                                      <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
+                                    </button>
                                   </div>
                                 )
                               })}
