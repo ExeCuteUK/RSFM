@@ -28,6 +28,8 @@ import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle } from
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -471,17 +473,26 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="emailSignature">Signature</Label>
-                <Textarea
-                  id="emailSignature"
-                  placeholder="Enter your email signature..."
-                  value={emailSignature}
-                  onChange={(e) => setEmailSignature(e.target.value)}
-                  rows={6}
-                  data-testid="textarea-email-signature"
-                  className="font-sans"
-                />
+                <div className="border rounded-md" data-testid="editor-email-signature">
+                  <ReactQuill
+                    theme="snow"
+                    value={emailSignature}
+                    onChange={setEmailSignature}
+                    modules={{
+                      toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'color': [] }],
+                        ['link'],
+                        ['clean']
+                      ]
+                    }}
+                    formats={['bold', 'italic', 'underline', 'color', 'link']}
+                    placeholder="Enter your email signature..."
+                    style={{ minHeight: '150px' }}
+                  />
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  This signature will be added to the end of your emails. Use line breaks to format your signature.
+                  Use the formatting tools to style your signature. It will be automatically included in your emails.
                 </p>
               </div>
 
