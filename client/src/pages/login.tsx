@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,11 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if registration is allowed
+  const { data: registrationStatus } = useQuery<{ allowed: boolean }>({
+    queryKey: ["/api/auth/registration-allowed"],
+  });
 
   // Redirect if already logged in
   useEffect(() => {
@@ -80,18 +86,20 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-login">
               {isLoading ? "Logging in..." : "Login"}
             </Button>
-            <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Button
-                type="button"
-                variant="link"
-                className="p-0 h-auto"
-                onClick={() => setLocation("/signup")}
-                data-testid="link-signup"
-              >
-                Sign up
-              </Button>
-            </div>
+            {registrationStatus?.allowed && (
+              <div className="text-center text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 h-auto"
+                  onClick={() => setLocation("/signup")}
+                  data-testid="link-signup"
+                >
+                  Sign up
+                </Button>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

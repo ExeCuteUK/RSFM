@@ -70,9 +70,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })(req, res, next);
   });
 
-  // Register
+  // Register (only if no users exist)
   app.post("/api/auth/register", async (req, res) => {
     try {
+      // Check if any users already exist
+      const users = await storage.getAllUsers();
+      if (users.length > 0) {
+        return res.status(403).json({ error: "Registration is closed. Please contact an administrator." });
+      }
+
       const validatedData = insertUserSchema.parse(req.body);
       const user = await registerUser(storage, validatedData);
       
@@ -101,6 +107,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ success: true });
     });
+  });
+
+  // Check if registration is allowed (no users exist)
+  app.get("/api/auth/registration-allowed", async (_req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json({ allowed: users.length === 0 });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to check registration status" });
+    }
   });
 
   // ========== User Management Routes (Admin only) ==========

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,12 +21,24 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check if registration is allowed
+  const { data: registrationStatus } = useQuery<{ allowed: boolean }>({
+    queryKey: ["/api/auth/registration-allowed"],
+  });
+
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
       setLocation("/");
     }
   }, [user, authLoading, setLocation]);
+
+  // Redirect to login if registration is not allowed
+  useEffect(() => {
+    if (registrationStatus && !registrationStatus.allowed) {
+      setLocation("/login");
+    }
+  }, [registrationStatus, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
