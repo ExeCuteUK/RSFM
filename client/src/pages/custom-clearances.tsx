@@ -980,12 +980,26 @@ export default function CustomClearances() {
           </DialogHeader>
           <div className="flex-1 px-6 pb-6">
             {viewingPdf && (
-              <embed
-                src={viewingPdf.url}
+              <object
+                data={viewingPdf.url}
                 type="application/pdf"
                 className="w-full h-full border rounded"
                 title={viewingPdf.name}
-              />
+              >
+                <div className="flex flex-col items-center justify-center h-full gap-4">
+                  <FileText className="h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">Unable to display PDF in browser</p>
+                  <Button
+                    onClick={() => {
+                      if (viewingPdf) {
+                        window.open(viewingPdf.url, '_blank')
+                      }
+                    }}
+                  >
+                    Open in New Tab
+                  </Button>
+                </div>
+              </object>
             )}
           </div>
         </DialogContent>
