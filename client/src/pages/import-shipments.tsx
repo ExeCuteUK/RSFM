@@ -1105,7 +1105,7 @@ export default function ImportShipments() {
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
                           data-testid={`button-status-yellow-${shipment.id}`}
-                          title="Yellow Status (1)"
+                          title="To Do"
                         />
                         <button
                           onClick={() => handleClearanceStatusUpdate(shipment.id, 3)}
@@ -1115,7 +1115,7 @@ export default function ImportShipments() {
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-status-green-${shipment.id}`}
-                          title="Green Status (3)"
+                          title="Completed"
                         />
                       </div>
                     </div>
@@ -1137,7 +1137,7 @@ export default function ImportShipments() {
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
                           data-testid={`button-delivery-status-yellow-${shipment.id}`}
-                          title="Yellow Status (1)"
+                          title="To Do"
                         />
                         <button
                           onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 2)}
@@ -1147,7 +1147,7 @@ export default function ImportShipments() {
                               : 'bg-orange-200 border-orange-300 hover-elevate'
                           }`}
                           data-testid={`button-delivery-status-orange-${shipment.id}`}
-                          title="Orange Status (2)"
+                          title="Waiting for Reply"
                         />
                         <button
                           onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 3)}
@@ -1157,7 +1157,7 @@ export default function ImportShipments() {
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-delivery-status-green-${shipment.id}`}
-                          title="Green Status (3)"
+                          title="Completed"
                         />
                       </div>
                     </div>
@@ -1179,7 +1179,7 @@ export default function ImportShipments() {
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
                           data-testid={`button-haulier-status-yellow-${shipment.id}`}
-                          title="Yellow Status (1)"
+                          title="To Do"
                         />
                         <button
                           onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 2)}
@@ -1189,7 +1189,7 @@ export default function ImportShipments() {
                               : 'bg-orange-200 border-orange-300 hover-elevate'
                           }`}
                           data-testid={`button-haulier-status-orange-${shipment.id}`}
-                          title="Orange Status (2)"
+                          title="Waiting for Reply"
                         />
                         <button
                           onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 3)}
@@ -1199,7 +1199,7 @@ export default function ImportShipments() {
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-haulier-status-green-${shipment.id}`}
-                          title="Green Status (3)"
+                          title="Completed"
                         />
                       </div>
                     </div>
@@ -1224,7 +1224,7 @@ export default function ImportShipments() {
                                 : 'bg-yellow-200 border-yellow-300 hover-elevate'
                             }`}
                             data-testid={`button-container-status-yellow-${shipment.id}`}
-                            title="Yellow Status (1)"
+                            title="To Do"
                           />
                           <button
                             onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 2)}
@@ -1234,7 +1234,7 @@ export default function ImportShipments() {
                                 : 'bg-orange-200 border-orange-300 hover-elevate'
                             }`}
                             data-testid={`button-container-status-orange-${shipment.id}`}
-                            title="Orange Status (2)"
+                            title="Waiting for Reply"
                           />
                           <button
                             onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 3)}
@@ -1244,7 +1244,7 @@ export default function ImportShipments() {
                                 : 'bg-green-200 border-green-300 hover-elevate'
                             }`}
                             data-testid={`button-container-status-green-${shipment.id}`}
-                            title="Green Status (3)"
+                            title="Completed"
                           />
                           <button
                             onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 4)}
@@ -1254,7 +1254,7 @@ export default function ImportShipments() {
                                 : 'bg-red-200 border-red-300 hover-elevate'
                             }`}
                             data-testid={`button-container-status-red-${shipment.id}`}
-                            title="Red Status (4)"
+                            title="Issue, Check Notes?"
                           />
                         </div>
                       </div>
@@ -1277,7 +1277,7 @@ export default function ImportShipments() {
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
                           data-testid={`button-invoice-status-yellow-${shipment.id}`}
-                          title="Yellow Status (Default)"
+                          title="To Do"
                         />
                         <button
                           onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
@@ -1287,7 +1287,7 @@ export default function ImportShipments() {
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-invoice-status-green-${shipment.id}`}
-                          title="Green Status (3)"
+                          title="Completed"
                         />
                       </div>
                     </div>
@@ -1309,7 +1309,7 @@ export default function ImportShipments() {
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
                           data-testid={`button-send-pod-status-yellow-${shipment.id}`}
-                          title="Yellow Status (Default)"
+                          title="To Do"
                         />
                         <button
                           onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
@@ -1319,7 +1319,7 @@ export default function ImportShipments() {
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-send-pod-status-green-${shipment.id}`}
-                          title="Green Status (3)"
+                          title="Completed"
                         />
                       </div>
                     </div>
