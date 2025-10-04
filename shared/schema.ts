@@ -576,3 +576,26 @@ export const insertCustomClearanceSchema = createInsertSchema(customClearances).
 
 export type InsertCustomClearance = z.infer<typeof insertCustomClearanceSchema>;
 export type CustomClearance = typeof customClearances.$inferSelect;
+
+// Job File Groups - Shared file storage for linked jobs (import/export + their custom clearances)
+export const jobFileGroups = pgTable("job_file_groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobRef: integer("job_ref").notNull().unique(), // Unique constraint ensures one record per jobRef
+  
+  // Shared Documents and Invoices
+  documents: text("documents").array().default([]),
+  rsInvoices: text("rs_invoices").array().default([]),
+  
+  // Timestamps
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertJobFileGroupSchema = createInsertSchema(jobFileGroups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertJobFileGroup = z.infer<typeof insertJobFileGroupSchema>;
+export type JobFileGroup = typeof jobFileGroups.$inferSelect;
