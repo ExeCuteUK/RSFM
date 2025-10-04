@@ -399,9 +399,9 @@ export default function JobJournals() {
                     </td>
                     <td className="p-2 text-center bg-muted border-l-2 font-semibold" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {(() => {
-                        const rsCharges = entry.rsChargesReserve || 0
-                        const jobExpenses = entry.jobExpensesReserve || 0
-                        const profitLoss = rsCharges - jobExpenses
+                        const salesAmount = parseFloat(entry.salesInvoiceAmount || "0") || 0
+                        const purchaseAmount = parseFloat(entry.purchaseInvoiceAmount || "0") || 0
+                        const profitLoss = salesAmount - purchaseAmount
                         
                         if (profitLoss === 0) return ""
                         
