@@ -408,7 +408,16 @@ export default function JobJournals() {
                           maximumFractionDigits: 2
                         })
                         
-                        return `£${formatted}`
+                        let colorClass = ""
+                        if (profitLoss > 0) {
+                          colorClass = "text-green-600 dark:text-green-400"
+                        } else if (profitLoss < 0) {
+                          colorClass = "text-red-600 dark:text-red-400"
+                        } else {
+                          colorClass = "text-orange-400 dark:text-orange-400"
+                        }
+                        
+                        return <span className={colorClass}>£{formatted}</span>
                       })()}
                     </td>
                   </tr>
