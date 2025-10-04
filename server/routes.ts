@@ -1974,7 +1974,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Replace placeholders
         signatureTemplate = signatureTemplate
-          .replace(/{{USER_NAME}}/g, user.fullName)
+          .replace(/{{USER_NAME}}/g, user.fullName || user.username)
           .replace(/{{LOGO_URL}}/g, logoUrl);
         
         messageText += signatureTemplate;

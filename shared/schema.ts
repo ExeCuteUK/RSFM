@@ -17,9 +17,8 @@ export const users = pgTable("users", {
   gmailTokenExpiry: text("gmail_token_expiry"),
   gmailEmail: text("gmail_email"),
   
-  // Email signature
-  emailSignature: text("email_signature"),
-  includeSignature: boolean("include_signature").default(false).notNull(),
+  // Email signature (uses file upload)
+  useSignature: boolean("use_signature").default(false).notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -30,7 +29,10 @@ export const insertUserSchema = createInsertSchema(users).omit({
   gmailEmail: true,
 });
 
-export const updateUserSchema = insertUserSchema.partial();
+// Update schema allows all fields except id
+export const updateUserSchema = createInsertSchema(users).omit({
+  id: true,
+}).partial();
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
