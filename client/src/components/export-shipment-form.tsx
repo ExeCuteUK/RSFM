@@ -8,8 +8,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon, Plus, Download, X, FileText } from "lucide-react"
-import { InlineUploader } from "@/components/InlineUploader"
-import type { UploadResult } from "@uppy/core"
+import { ObjectStorageUploader } from "@/components/ui/object-storage-uploader"
 import {
   Form,
   FormControl,
@@ -866,93 +865,28 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               </div>
 
               {status === "Completed" && (
-                <div className="grid gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="proofOfDelivery"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Proof Of Delivery</FormLabel>
-                        <div className="space-y-3">
-                          <InlineUploader
-                            maxNumberOfFiles={5}
-                            maxFileSize={20 * 1024 * 1024}
-                            height={100}
-                            onGetUploadParameters={async (file) => {
-                              const response = await fetch("/api/objects/upload", { 
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ filename: file?.name })
-                              });
-                              const data = await response.json();
-                              return { method: "PUT" as const, url: data.uploadURL };
-                            }}
-                            onComplete={(result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-                              const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
-                              setPendingProofOfDelivery((prev) => [...prev, ...uploadedUrls]);
-                            }}
-                            note="Drag and drop proof of delivery files here (up to 5 files, 20MB each)"
-                          />
-                          
-                          {(pendingProofOfDelivery.length > 0 || (field.value && field.value.length > 0)) && (
-                            <div className="space-y-2">
-                              {pendingProofOfDelivery.map((url, index) => (
-                                <div key={`pending-${index}`} className="flex items-center justify-between p-2 border rounded-md">
-                                  <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4" />
-                                    <span className="text-sm">{url.split('/').pop()?.split('?')[0] || 'File'}</span>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setPendingProofOfDelivery((prev) => prev.filter((_, i) => i !== index))}
-                                    data-testid={`button-remove-pending-pod-${index}`}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              ))}
-                              {field.value && field.value.map((path: string, index: number) => (
-                                <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
-                                  <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4" />
-                                    <span className="text-sm">{path.split('/').pop() || 'File'}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <a href={path} target="_blank" rel="noopener noreferrer">
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        data-testid={`button-download-pod-${index}`}
-                                      >
-                                        <Download className="h-4 w-4" />
-                                      </Button>
-                                    </a>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => {
-                                        const newFiles = field.value?.filter((_, i) => i !== index) || [];
-                                        form.setValue('proofOfDelivery', newFiles);
-                                      }}
-                                      data-testid={`button-delete-pod-${index}`}
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="proofOfDelivery"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Proof Of Delivery</FormLabel>
+                      <FormControl>
+                        <ObjectStorageUploader
+                          value={field.value || []}
+                          onChange={field.onChange}
+                          pendingFiles={pendingProofOfDelivery}
+                          onPendingFilesChange={setPendingProofOfDelivery}
+                          maxFiles={10}
+                          testId="pod-uploader"
+                          label="Proof Of Delivery Files:"
+                          dragDropLabel="Drop POD files here or click to browse"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               )}
             </CardContent>
           </Card>
@@ -1438,80 +1372,18 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 name="attachments"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="space-y-3">
-                      <InlineUploader
-                        maxNumberOfFiles={5}
-                        maxFileSize={20 * 1024 * 1024}
-                        onGetUploadParameters={async (file) => {
-                          const response = await fetch("/api/objects/upload", { 
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ filename: file?.name })
-                          });
-                          const data = await response.json();
-                          return { method: "PUT" as const, url: data.uploadURL };
-                        }}
-                        onComplete={(result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-                          const uploadedUrls = result.successful?.map((file: any) => file.uploadURL) || [];
-                          setPendingAttachments((prev) => [...prev, ...uploadedUrls]);
-                        }}
-                        note="Drag and drop attachment files here (up to 5 files, 20MB each)"
+                    <FormControl>
+                      <ObjectStorageUploader
+                        value={field.value || []}
+                        onChange={field.onChange}
+                        pendingFiles={pendingAttachments}
+                        onPendingFilesChange={setPendingAttachments}
+                        maxFiles={10}
+                        testId="attachments-uploader"
+                        label="Attached Files:"
+                        dragDropLabel="Drop files here or click to browse"
                       />
-                      
-                      {(pendingAttachments.length > 0 || (field.value && field.value.length > 0)) && (
-                        <div className="space-y-2">
-                          {pendingAttachments.map((url, index) => (
-                            <div key={`pending-${index}`} className="flex items-center justify-between p-2 border rounded-md">
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                <span className="text-sm">{url.split('/').pop()?.split('?')[0] || 'File'}</span>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== index))}
-                                data-testid={`button-remove-pending-attachment-${index}`}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                          {field.value && field.value.map((path: string, index: number) => (
-                            <div key={`saved-${index}`} className="flex items-center justify-between p-2 border rounded-md">
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                <span className="text-sm">{path.split('/').pop() || 'File'}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <a href={path} target="_blank" rel="noopener noreferrer">
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    data-testid={`button-download-attachment-${index}`}
-                                  >
-                                    <Download className="h-4 w-4" />
-                                  </Button>
-                                </a>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    const newFiles = field.value?.filter((_, i) => i !== index) || [];
-                                    form.setValue('attachments', newFiles);
-                                  }}
-                                  data-testid={`button-delete-attachment-${index}`}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
