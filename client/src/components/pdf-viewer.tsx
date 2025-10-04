@@ -93,9 +93,6 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Send Email with Attachment</DialogTitle>
-            <DialogDescription>
-              Send this PDF as an email attachment via Gmail
-            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
