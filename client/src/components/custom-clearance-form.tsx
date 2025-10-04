@@ -31,6 +31,7 @@ import { ObjectStorageUploader } from "@/components/ui/object-storage-uploader"
 import { useJobFileGroup } from "@/hooks/use-job-file-group"
 import { FileText, Download, X } from "lucide-react"
 import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -39,6 +40,7 @@ interface CustomClearanceFormProps {
 }
 
 export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: CustomClearanceFormProps) {
+  const { toast } = useToast()
   const [pendingTransportDocuments, setPendingTransportDocuments] = useState<string[]>([])
   const [pendingClearanceDocuments, setPendingClearanceDocuments] = useState<string[]>([])
   
