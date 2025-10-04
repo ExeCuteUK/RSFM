@@ -572,15 +572,6 @@ export default function SettingsPage() {
                   >
                     {uploadTemplateMutation.isPending ? "Uploading..." : "Upload"}
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      window.location.href = '/api/signature/download-template';
-                    }}
-                    data-testid="button-download-template"
-                  >
-                    Download
-                  </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Upload an HTML file for your signature. Use {'{{USER_NAME}}'} and {'{{LOGO_URL}}'} as placeholders.
@@ -612,15 +603,6 @@ export default function SettingsPage() {
                   >
                     {uploadLogoMutation.isPending ? "Uploading..." : "Upload"}
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      window.location.href = '/api/signature/download-logo';
-                    }}
-                    data-testid="button-download-logo"
-                  >
-                    Download
-                  </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Upload an image file for your signature logo. Only one logo can be hosted at a time.
@@ -644,16 +626,36 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-between items-center">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    restoreDefaultsMutation.mutate();
-                  }}
-                  disabled={restoreDefaultsMutation.isPending}
-                  data-testid="button-restore-defaults"
-                >
-                  {restoreDefaultsMutation.isPending ? "Restoring..." : "Restore Default"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      restoreDefaultsMutation.mutate();
+                    }}
+                    disabled={restoreDefaultsMutation.isPending}
+                    data-testid="button-restore-defaults"
+                  >
+                    {restoreDefaultsMutation.isPending ? "Restoring..." : "Restore Default"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      window.location.href = '/api/signature/download-template';
+                    }}
+                    data-testid="button-download-template"
+                  >
+                    Download Current HTML Template
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      window.location.href = '/api/signature/download-logo';
+                    }}
+                    data-testid="button-download-logo"
+                  >
+                    Download Template Logo
+                  </Button>
+                </div>
                 <Button
                   onClick={() => {
                     saveSignatureMutation.mutate({
