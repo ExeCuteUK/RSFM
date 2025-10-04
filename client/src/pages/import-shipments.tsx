@@ -1356,7 +1356,7 @@ export default function ImportShipments() {
                       <div className="flex items-center gap-1.5">
                         <Send className="h-3.5 w-3.5 text-muted-foreground" />
                         <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
-                          Send POD to Customer
+                          {shipment.rsToClear ? "Send POD & Import Entry to Customer" : "Send POD to Customer"}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
