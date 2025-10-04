@@ -433,6 +433,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const importCustomers = await storage.getAllImportCustomers();
       const exportCustomers = await storage.getAllExportCustomers();
       
+      console.log(`Found ${importCustomers.length} import customers, ${exportCustomers.length} export customers`);
+      
       const emails: Array<{ email: string; name: string; type: string }> = [];
       
       // Collect import customer emails
@@ -471,12 +473,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
+      console.log(`Collected ${emails.length} total emails before deduplication`);
+      
       // Remove duplicates and sort
       const uniqueEmails = Array.from(new Map(emails.map(item => [item.email, item])).values());
       uniqueEmails.sort((a, b) => a.email.localeCompare(b.email));
       
+      console.log(`Returning ${uniqueEmails.length} unique emails`);
+      
       res.json(uniqueEmails);
     } catch (error) {
+      console.error("Error fetching contact emails:", error);
       res.status(500).json({ error: "Failed to fetch contact emails" });
     }
   });

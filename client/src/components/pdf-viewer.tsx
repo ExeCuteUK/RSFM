@@ -44,6 +44,12 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
     staleTime: 5 * 60 * 1000 // Cache for 5 minutes
   })
 
+  useEffect(() => {
+    if (contactEmails.length > 0) {
+      console.log(`Loaded ${contactEmails.length} contact emails:`, contactEmails.slice(0, 5));
+    }
+  }, [contactEmails])
+
   // Load recent emails from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('recentEmails')
@@ -147,7 +153,7 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0" align="start">
-                  <Command>
+                  <Command shouldFilter={false}>
                     <CommandInput
                       placeholder="Type email address..."
                       value={emailTo}
@@ -156,11 +162,13 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
                     />
                     <CommandList>
                       <CommandEmpty>
-                        {emailTo ? `Use: ${emailTo}` : 'No emails found'}
+                        {emailTo ? `Press Enter to use: ${emailTo}` : 'No emails found'}
                       </CommandEmpty>
                       {recentEmails.length > 0 && (
                         <CommandGroup heading="Recent">
-                          {recentEmails.map((email) => (
+                          {recentEmails
+                            .filter(email => !emailTo || email.toLowerCase().includes(emailTo.toLowerCase()))
+                            .map((email) => (
                             <CommandItem
                               key={`recent-${email}`}
                               value={email}
@@ -182,8 +190,13 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
                         </CommandGroup>
                       )}
                       {contactEmails.length > 0 && (
-                        <CommandGroup heading="Contacts">
-                          {contactEmails.map((contact) => (
+                        <CommandGroup heading={`Contacts (${contactEmails.length})`}>
+                          {contactEmails
+                            .filter(contact => !emailTo || 
+                              contact.email.toLowerCase().includes(emailTo.toLowerCase()) ||
+                              contact.name.toLowerCase().includes(emailTo.toLowerCase()))
+                            .slice(0, 50)
+                            .map((contact) => (
                             <CommandItem
                               key={`contact-${contact.email}`}
                               value={contact.email}
