@@ -2495,21 +2495,36 @@ export default function ImportShipments() {
                 <FileText className="h-5 w-5" />
                 {viewingPdf?.name}
               </span>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => setViewingPdf(null)}
-                className="h-8 w-8"
-                data-testid="button-close-pdf"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (viewingPdf) {
+                      window.open(viewingPdf.url, '_blank')
+                    }
+                  }}
+                  data-testid="button-open-new-tab"
+                >
+                  Open in New Tab
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setViewingPdf(null)}
+                  className="h-8 w-8"
+                  data-testid="button-close-pdf"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6">
             {viewingPdf && (
-              <iframe
+              <embed
                 src={viewingPdf.url}
+                type="application/pdf"
                 className="w-full h-full border rounded"
                 title={viewingPdf.name}
               />
