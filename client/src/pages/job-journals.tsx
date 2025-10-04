@@ -320,8 +320,8 @@ export default function JobJournals() {
         </CardHeader>
         <CardContent className="flex-1 overflow-auto">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
+            <table className="w-full border-collapse">
+              <thead className="text-xs">
                 <tr className="border-b">
                   <th className="text-center p-2 font-semibold underline border-r border-border">#</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border">Job Ref</th>
