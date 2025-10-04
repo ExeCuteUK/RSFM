@@ -20,6 +20,7 @@ import {
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import passport from "passport";
 import { registerUser } from "./auth";
+import bcrypt from "bcryptjs";
 
 // Auth middleware
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -103,6 +104,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========== User Management Routes (Admin only) ==========
+  
+  // Create new user (Admin only)
+  app.post("/api/users", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      const newUser = await storage.createUser({
+        ...validatedData,
+        password: hashedPassword,
+      });
+      
+      const { password, ...userWithoutPassword } = newUser;
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: "Failed to create user" });
+      }
+    }
+  });
   
   // Get all users
   app.get("/api/users", requireAuth, requireAdmin, async (_req, res) => {

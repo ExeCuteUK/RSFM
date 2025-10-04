@@ -8,14 +8,30 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertSettingsSchema, type Settings, type InsertSettings } from "@shared/schema";
+import { insertSettingsSchema, insertUserSchema, type Settings, type InsertSettings, type User } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, CheckCircle, XCircle } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { UserPlus, Pencil, Trash2, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState("financials");
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   
   // Fetch Gmail connection status
   const { data: gmailStatus, isLoading: gmailLoading } = useQuery<{ connected: boolean; email: string | null }>({
@@ -320,19 +336,319 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="users" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage user accounts and permissions (Administrator access required)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Users management coming soon...</p>
-            </CardContent>
-          </Card>
+          {currentUser?.isAdmin ? (
+            <UsersManagement 
+              isAddUserOpen={isAddUserOpen}
+              setIsAddUserOpen={setIsAddUserOpen}
+              userToDelete={userToDelete}
+              setUserToDelete={setUserToDelete}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Access Denied</CardTitle>
+                <CardDescription>
+                  Administrator access is required to manage users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  You don't have permission to view this page. Please contact your administrator.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function UsersManagement({ 
+  isAddUserOpen, 
+  setIsAddUserOpen,
+  userToDelete,
+  setUserToDelete 
+}: {
+  isAddUserOpen: boolean;
+  setIsAddUserOpen: (open: boolean) => void;
+  userToDelete: User | null;
+  setUserToDelete: (user: User | null) => void;
+}) {
+  const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+
+  const { data: users, isLoading } = useQuery<Omit<User, 'password'>[]>({
+    queryKey: ["/api/users"],
+  });
+
+  const addUserForm = useForm({
+    resolver: zodResolver(insertUserSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      fullName: "",
+      email: "",
+      isAdmin: false,
+    },
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/users", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setIsAddUserOpen(false);
+      addUserForm.reset();
+      toast({
+        title: "User created",
+        description: "The new user has been created successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to create user",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest("DELETE", `/api/users/${userId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setUserToDelete(null);
+      toast({
+        title: "User deleted",
+        description: "The user has been removed from the system.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to delete user",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateUser = (data: any) => {
+    createUserMutation.mutate(data);
+  };
+
+  const handleDeleteUser = () => {
+    if (userToDelete) {
+      deleteUserMutation.mutate(userToDelete.id);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">Loading users...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>User Management</CardTitle>
+              <CardDescription>
+                Manage user accounts and permissions
+              </CardDescription>
+            </div>
+            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-add-user">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New User</DialogTitle>
+                  <DialogDescription>
+                    Add a new user to the system
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...addUserForm}>
+                  <form onSubmit={addUserForm.handleSubmit(handleCreateUser)} className="space-y-4">
+                    <FormField
+                      control={addUserForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username *</FormLabel>
+                          <FormControl>
+                            <Input {...field} data-testid="input-new-username" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addUserForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password *</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} data-testid="input-new-password" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addUserForm.control}
+                      name="fullName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-new-fullname" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addUserForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" {...field} value={field.value || ""} data-testid="input-new-email" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addUserForm.control}
+                      name="isAdmin"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center gap-2 space-y-0">
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="h-4 w-4"
+                              data-testid="checkbox-new-admin"
+                            />
+                          </FormControl>
+                          <FormLabel className="!mt-0">Administrator</FormLabel>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsAddUserOpen(false)}
+                        data-testid="button-cancel-add-user"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={createUserMutation.isPending}
+                        data-testid="button-create-user"
+                      >
+                        {createUserMutation.isPending ? "Creating..." : "Create User"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Username</TableHead>
+                <TableHead>Full Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users && users.length > 0 ? (
+                users.map((user) => (
+                  <TableRow key={user.id} data-testid={`row-user-${user.id}`}>
+                    <TableCell className="font-medium">{user.username}</TableCell>
+                    <TableCell>{user.fullName || "-"}</TableCell>
+                    <TableCell>{user.email || "-"}</TableCell>
+                    <TableCell>
+                      {user.isAdmin && (
+                        <Badge variant="default" className="gap-1">
+                          <Shield className="h-3 w-3" />
+                          Admin
+                        </Badge>
+                      )}
+                      {!user.isAdmin && <span className="text-muted-foreground">User</span>}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setUserToDelete(user)}
+                        disabled={user.id === currentUser?.id}
+                        data-testid={`button-delete-user-${user.id}`}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    No users found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete user "{userToDelete?.username}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
