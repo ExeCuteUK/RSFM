@@ -44,6 +44,8 @@ export default function ImportShipments() {
   const [trackingData, setTrackingData] = useState<any>(null)
   const [etaUpdateDialog, setEtaUpdateDialog] = useState<{ show: boolean; newEta: string; daysDiff: number; shipmentId: string } | null>(null)
   const [etdUpdateDialog, setEtdUpdateDialog] = useState<{ show: boolean; newEtd: string; daysDiff: number; shipmentId: string } | null>(null)
+  const [vesselUpdateDialog, setVesselUpdateDialog] = useState<{ show: boolean; newVessel: string; shipmentId: string } | null>(null)
+  const [portUpdateDialog, setPortUpdateDialog] = useState<{ show: boolean; newPort: string; shipmentId: string } | null>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
@@ -302,6 +304,34 @@ export default function ImportShipments() {
           })
         }
       }
+      
+      // Compare tracking vessel name with job vessel name
+      if (trackingShipment && data?.data?.attributes?.pod_vessel_name) {
+        const trackingVessel = data.data.attributes.pod_vessel_name
+        const jobVessel = trackingShipment.vesselName
+        
+        if (jobVessel && trackingVessel !== jobVessel) {
+          setVesselUpdateDialog({
+            show: true,
+            newVessel: trackingVessel,
+            shipmentId: trackingShipment.id
+          })
+        }
+      }
+      
+      // Compare tracking port of discharge with job port of arrival
+      if (trackingShipment && data?.data?.attributes?.port_of_discharge_name) {
+        const trackingPort = data.data.attributes.port_of_discharge_name
+        const jobPort = trackingShipment.portOfArrival
+        
+        if (jobPort && trackingPort !== jobPort) {
+          setPortUpdateDialog({
+            show: true,
+            newPort: trackingPort,
+            shipmentId: trackingShipment.id
+          })
+        }
+      }
     },
     onError: (error: any) => {
       // Don't show toast for 404 - the dialog will show a helpful message
@@ -348,6 +378,42 @@ export default function ImportShipments() {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       toast({ title: "Dispatch date updated successfully" })
       setEtdUpdateDialog(null)
+    },
+  })
+
+  const updateVessel = useMutation({
+    mutationFn: async ({ id, vessel }: { id: string; vessel: string }) => {
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
+        ...shipment,
+        vesselName: vessel
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({ title: "Vessel name updated successfully" })
+      setVesselUpdateDialog(null)
+    },
+  })
+
+  const updatePort = useMutation({
+    mutationFn: async ({ id, port }: { id: string; port: string }) => {
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
+        ...shipment,
+        portOfArrival: port
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({ title: "Port of arrival updated successfully" })
+      setPortUpdateDialog(null)
     },
   })
 
@@ -2230,6 +2296,62 @@ export default function ImportShipments() {
                 updateEtd.mutate({ id: etdUpdateDialog.shipmentId, etd: etdUpdateDialog.newEtd })
               }
             }}>Yes, update dispatch date</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={vesselUpdateDialog?.show || false} onOpenChange={(open) => !open && setVesselUpdateDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Vessel Name?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              {vesselUpdateDialog && (
+                <div>
+                  <div>The tracking system shows a different vessel name than what's recorded in the job.</div>
+                  <div className="mt-4 space-y-2">
+                    <div className="font-medium">Current Job Vessel: {trackingShipment?.vesselName || 'Not set'}</div>
+                    <div className="font-medium">Tracking Vessel: {vesselUpdateDialog.newVessel}</div>
+                  </div>
+                  <div className="mt-4">Would you like to update the job with the tracking vessel name?</div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setVesselUpdateDialog(null)}>No, keep current vessel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (vesselUpdateDialog) {
+                updateVessel.mutate({ id: vesselUpdateDialog.shipmentId, vessel: vesselUpdateDialog.newVessel })
+              }
+            }}>Yes, update vessel name</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={portUpdateDialog?.show || false} onOpenChange={(open) => !open && setPortUpdateDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Port of Arrival?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              {portUpdateDialog && (
+                <div>
+                  <div>The tracking system shows a different port of arrival than what's recorded in the job.</div>
+                  <div className="mt-4 space-y-2">
+                    <div className="font-medium">Current Job Port: {trackingShipment?.portOfArrival || 'Not set'}</div>
+                    <div className="font-medium">Tracking Port: {portUpdateDialog.newPort}</div>
+                  </div>
+                  <div className="mt-4">Would you like to update the job with the tracking port of arrival?</div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPortUpdateDialog(null)}>No, keep current port</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (portUpdateDialog) {
+                updatePort.mutate({ id: portUpdateDialog.shipmentId, port: portUpdateDialog.newPort })
+              }
+            }}>Yes, update port of arrival</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
