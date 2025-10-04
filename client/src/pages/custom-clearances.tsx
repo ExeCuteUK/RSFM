@@ -36,6 +36,7 @@ export default function CustomClearances() {
   const [searchText, setSearchText] = useState("")
   const [notesClearanceId, setNotesClearanceId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
+  const [dragOver, setDragOver] = useState<{ clearanceId: string; type: "transport" | "clearance" } | null>(null)
   const { toast } = useToast()
   const [location] = useLocation()
 
@@ -151,6 +152,47 @@ export default function CustomClearances() {
     },
   })
 
+  const uploadFile = useMutation({
+    mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "transport" | "clearance" }) => {
+      // Get upload URL
+      const uploadResponse = await fetch("/api/objects/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name })
+      })
+      const { uploadURL } = await uploadResponse.json()
+      
+      // Upload file to storage
+      await fetch(uploadURL, {
+        method: "PUT",
+        body: file
+      })
+      
+      // Get the file path (remove query params)
+      const filePath = uploadURL.split('?')[0]
+      
+      // Update clearance with new file
+      const clearance = clearances.find(c => c.id === id)
+      if (!clearance) throw new Error("Clearance not found")
+      
+      const currentFiles = fileType === "transport" ? (clearance.transportDocuments || []) : (clearance.clearanceDocuments || [])
+      const updatedFiles = [...currentFiles, filePath]
+      
+      const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
+        ...clearance,
+        [fileType === "transport" ? "transportDocuments" : "clearanceDocuments"]: updatedFiles
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      toast({ title: "File uploaded successfully" })
+    },
+    onError: () => {
+      toast({ title: "File upload failed", variant: "destructive" })
+    }
+  })
+
   const handleAdviseAgentStatusUpdate = (id: string, status: number) => {
     updateAdviseAgentStatus.mutate({ id, status })
   }
@@ -165,6 +207,31 @@ export default function CustomClearances() {
 
   const handleSendClearedEntryStatusUpdate = (id: string, status: number) => {
     updateSendClearedEntryStatus.mutate({ id, status })
+  }
+
+  const handleFileDragOver = (e: React.DragEvent, clearanceId: string, type: "transport" | "clearance") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver({ clearanceId, type })
+  }
+
+  const handleFileDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver(null)
+  }
+
+  const handleFileDrop = async (e: React.DragEvent, clearanceId: string, type: "transport" | "clearance") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver(null)
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length === 0) return
+
+    for (const file of files) {
+      uploadFile.mutate({ id: clearanceId, file, fileType: type })
+    }
   }
 
   const handleOpenNotes = (clearance: CustomClearance) => {
@@ -653,8 +720,17 @@ export default function CustomClearances() {
                     {/* Files Section */}
                     <div className="pt-2 mt-2 border-t" data-testid={`files-section-${clearance.id}`}>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">Transport</p>
+                        <div 
+                          className={`space-y-1 p-2 rounded border-2 border-dashed transition-colors ${
+                            dragOver?.clearanceId === clearance.id && dragOver?.type === "transport"
+                              ? "border-blue-500 bg-blue-50 dark:bg-blue-950"
+                              : "border-transparent hover:border-blue-300 dark:hover:border-blue-700"
+                          }`}
+                          onDragOver={(e) => handleFileDragOver(e, clearance.id, "transport")}
+                          onDragLeave={handleFileDragLeave}
+                          onDrop={(e) => handleFileDrop(e, clearance.id, "transport")}
+                        >
+                          <p className="text-xs font-medium text-muted-foreground">Transport Documents</p>
                           {transportDocs.length > 0 ? (
                             <div className="space-y-0.5">
                               {transportDocs.map((filePath, idx) => {
@@ -678,11 +754,20 @@ export default function CustomClearances() {
                               })}
                             </div>
                           ) : (
-                            <p className="text-xs text-muted-foreground italic">No documents</p>
+                            <p className="text-xs text-muted-foreground italic">Drop files here</p>
                           )}
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">Clearance</p>
+                        <div 
+                          className={`space-y-1 p-2 rounded border-2 border-dashed transition-colors ${
+                            dragOver?.clearanceId === clearance.id && dragOver?.type === "clearance"
+                              ? "border-green-500 bg-green-50 dark:bg-green-950"
+                              : "border-transparent hover:border-green-300 dark:hover:border-green-700"
+                          }`}
+                          onDragOver={(e) => handleFileDragOver(e, clearance.id, "clearance")}
+                          onDragLeave={handleFileDragLeave}
+                          onDrop={(e) => handleFileDrop(e, clearance.id, "clearance")}
+                        >
+                          <p className="text-xs font-medium text-muted-foreground">Clearance Documents</p>
                           {clearanceDocs.length > 0 ? (
                             <div className="space-y-0.5">
                               {clearanceDocs.map((filePath, idx) => {
@@ -706,7 +791,7 @@ export default function CustomClearances() {
                               })}
                             </div>
                           ) : (
-                            <p className="text-xs text-muted-foreground italic">No documents</p>
+                            <p className="text-xs text-muted-foreground italic">Drop files here</p>
                           )}
                         </div>
                       </div>
