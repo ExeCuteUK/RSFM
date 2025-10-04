@@ -673,7 +673,7 @@ export default function ImportShipments() {
                         {shipment.jobRef}
                       </h3>
                       <div className="flex -space-x-1">
-                        {shipment.trailerOrContainerNumber && (
+                        {shipment.trailerOrContainerNumber && shipment.containerShipment === "Container Shipment" && (
                           <Button
                             size="icon"
                             variant="ghost"
@@ -682,7 +682,7 @@ export default function ImportShipments() {
                             title="Track Container"
                             className="h-7 w-7"
                           >
-                            <MapPinned className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <MapPinned className="h-4 w-4 text-white" />
                           </Button>
                         )}
                         <Button
