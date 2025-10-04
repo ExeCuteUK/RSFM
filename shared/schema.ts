@@ -514,7 +514,7 @@ export const customClearances = pgTable("custom_clearances", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
   
   // Status (Customs-specific)
-  status: text("status").notNull().default("Awaiting Entry"),
+  status: text("status").notNull().default("Request CC"),
   
   // Customer References
   importCustomerId: varchar("import_customer_id"),
@@ -559,7 +559,6 @@ export const customClearances = pgTable("custom_clearances", {
   clearanceDocuments: text("clearance_documents").array(),
   
   // Status Indicators (1=yellow, 2=orange, 3=green, 4=red)
-  requestClearanceStatusIndicator: integer("request_clearance_status_indicator").default(1),
   adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(1),
   sendEntryToCustomerStatusIndicator: integer("send_entry_to_customer_status_indicator").default(1),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),

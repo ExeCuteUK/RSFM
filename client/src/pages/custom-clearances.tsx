@@ -33,7 +33,7 @@ export default function CustomClearances() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingClearance, setEditingClearance] = useState<CustomClearance | null>(null)
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
   const [searchText, setSearchText] = useState("")
   const [notesClearanceId, setNotesClearanceId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
@@ -134,15 +134,6 @@ export default function CustomClearances() {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       setNotesClearanceId(null)
       toast({ title: "Notes updated successfully" })
-    },
-  })
-
-  const updateRequestClearanceStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/custom-clearances/${id}/request-clearance-status`, { status })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
@@ -260,14 +251,6 @@ export default function CustomClearances() {
     }
   })
 
-  const handleRequestClearanceStatusUpdate = (id: string, status: number) => {
-    if (status === 4) {
-      setRedButtonPrompt({ clearanceId: id, statusType: 'requestClearance', statusValue: status })
-    } else {
-      updateRequestClearanceStatus.mutate({ id, status })
-    }
-  }
-
   const handleAdviseAgentStatusUpdate = (id: string, status: number) => {
     if (status === 4) {
       setRedButtonPrompt({ clearanceId: id, statusType: 'adviseAgent', statusValue: status })
@@ -306,9 +289,6 @@ export default function CustomClearances() {
     // Update the status
     const { clearanceId, statusType, statusValue } = redButtonPrompt
     switch (statusType) {
-      case 'requestClearance':
-        updateRequestClearanceStatus.mutate({ id: clearanceId, status: statusValue })
-        break
       case 'adviseAgent':
         updateAdviseAgentStatus.mutate({ id: clearanceId, status: statusValue })
         break
@@ -566,6 +546,14 @@ export default function CustomClearances() {
           All
         </Button>
         <Button
+          variant={selectedStatuses.includes("Request CC") ? "default" : "outline"}
+          size="sm"
+          onClick={() => handleStatusToggle("Request CC")}
+          data-testid="filter-request-cc"
+        >
+          Request CC
+        </Button>
+        <Button
           variant={selectedStatuses.includes("Awaiting Entry") ? "default" : "outline"}
           size="sm"
           onClick={() => handleStatusToggle("Awaiting Entry")}
@@ -692,6 +680,9 @@ export default function CustomClearances() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Request CC" })}>
+                            Request CC
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
                             Awaiting Entry
                           </DropdownMenuItem>
@@ -747,27 +738,6 @@ export default function CustomClearances() {
                         To-Do List
                       </h3>
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <ListTodo className="h-3.5 w-3.5 text-muted-foreground" />
-                            <p className={`text-xs ${getStatusColor(clearance.requestClearanceStatusIndicator)} font-medium`} data-testid={`todo-request-clearance-${clearance.id}`}>
-                              Request Clearance
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleRequestClearanceStatusUpdate(clearance.id, 1)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.requestClearanceStatusIndicator === 1 || clearance.requestClearanceStatusIndicator === null
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                              }`}
-                              data-testid={`button-request-yellow-${clearance.id}`}
-                              title="To Do"
-                            />
-                          </div>
-                        </div>
-
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
                             <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
