@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Session configuration
+// Session configuration - MUST be set up before routes
 app.use(
   session({
     store: storage.sessionStore,
@@ -25,7 +25,7 @@ app.use(
   })
 );
 
-// Initialize Passport
+// Initialize Passport - MUST be set up before routes
 setupAuth(storage);
 app.use(passport.initialize());
 app.use(passport.session());

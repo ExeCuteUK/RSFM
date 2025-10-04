@@ -39,14 +39,14 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // ========== Auth Routes ==========
   
-  // Check auth status
+  // Check auth status - returns 200 with user:null when not authenticated to avoid redirect loops
   app.get("/api/auth/me", (req, res) => {
     if (req.isAuthenticated()) {
       const user = req.user as User;
       const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      res.json({ user: userWithoutPassword });
     } else {
-      res.status(401).json({ error: "Not authenticated" });
+      res.json({ user: null });
     }
   });
 

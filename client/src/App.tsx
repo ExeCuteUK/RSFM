@@ -7,6 +7,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/components/protected-route";
+import { UserMenu } from "@/components/user-menu";
 
 // Pages
 import Dashboard from "@/pages/dashboard";
@@ -20,53 +23,136 @@ import JobJournals from "@/pages/job-journals";
 import ShippingLines from "@/pages/shipping-lines";
 import SettingsPage from "@/pages/settings";
 import BackupsPage from "@/pages/backups";
+import Login from "@/pages/login";
+import Signup from "@/pages/signup";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/shipments" component={Shipments} />
-      <Route path="/import-shipments" component={ImportShipments} />
-      <Route path="/export-shipments" component={ExportShipments} />
-      <Route path="/custom-clearances" component={CustomClearances} />
-      <Route path="/contacts" component={Customers} />
-      <Route path="/invoices" component={Invoices} />
-      <Route path="/job-journals" component={JobJournals} />
-      <Route path="/shipping-lines" component={ShippingLines} />
-      <Route path="/backups" component={BackupsPage} />
-      <Route path="/settings" component={SettingsPage} />
-      {/* Fallback to 404 */}
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
+      <Route path="/">
+        {() => (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/shipments">
+        {() => (
+          <ProtectedRoute>
+            <Shipments />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/import-shipments">
+        {() => (
+          <ProtectedRoute>
+            <ImportShipments />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/export-shipments">
+        {() => (
+          <ProtectedRoute>
+            <ExportShipments />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/custom-clearances">
+        {() => (
+          <ProtectedRoute>
+            <CustomClearances />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/contacts">
+        {() => (
+          <ProtectedRoute>
+            <Customers />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/invoices">
+        {() => (
+          <ProtectedRoute>
+            <Invoices />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/job-journals">
+        {() => (
+          <ProtectedRoute>
+            <JobJournals />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/shipping-lines">
+        {() => (
+          <ProtectedRoute>
+            <ShippingLines />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/backups">
+        {() => (
+          <ProtectedRoute>
+            <BackupsPage />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/settings">
+        {() => (
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        )}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
+function AppContent() {
+  const { user } = useAuth();
   const style = {
     "--sidebar-width": "18rem",       // 288px for freight management
     "--sidebar-width-icon": "3rem",   // default icon width
   };
 
   return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        {user && <AppSidebar />}
+        <div className="flex flex-col flex-1">
+          {user && (
+            <header className="flex items-center justify-between p-4 border-b border-border gap-4">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <div className="flex items-center gap-4">
+                <ThemeToggle />
+                <UserMenu />
+              </div>
+            </header>
+          )}
+          <main className="flex-1 overflow-auto">
+            <Router />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
-          <SidebarProvider style={style as React.CSSProperties}>
-            <div className="flex h-screen w-full">
-              <AppSidebar />
-              <div className="flex flex-col flex-1">
-                <header className="flex items-center justify-between p-4 border-b border-border">
-                  <SidebarTrigger data-testid="button-sidebar-toggle" />
-                  <ThemeToggle />
-                </header>
-                <main className="flex-1 overflow-auto">
-                  <Router />
-                </main>
-              </div>
-            </div>
-          </SidebarProvider>
-          <Toaster />
+          <AuthProvider>
+            <AppContent />
+            <Toaster />
+          </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
