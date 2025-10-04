@@ -1203,6 +1203,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Job File Groups (Shared document storage) ==========
+  
+  // Get job file group by jobRef
+  app.get("/api/job-file-groups/:jobRef", async (req, res) => {
+    try {
+      const jobRef = parseInt(req.params.jobRef);
+      if (isNaN(jobRef)) {
+        return res.status(400).json({ error: "Invalid job reference" });
+      }
+      
+      const group = await storage.getJobFileGroupByJobRef(jobRef);
+      if (!group) {
+        return res.status(404).json({ error: "Job file group not found" });
+      }
+      
+      res.json(group);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch job file group" });
+    }
+  });
+
+  // Update job file group documents
+  app.patch("/api/job-file-groups/:jobRef/documents", async (req, res) => {
+    try {
+      const jobRef = parseInt(req.params.jobRef);
+      if (isNaN(jobRef)) {
+        return res.status(400).json({ error: "Invalid job reference" });
+      }
+      
+      const { documents } = req.body;
+      if (!Array.isArray(documents)) {
+        return res.status(400).json({ error: "Documents must be an array" });
+      }
+      
+      // Check if group exists, create if not
+      let group = await storage.getJobFileGroupByJobRef(jobRef);
+      
+      if (!group) {
+        group = await storage.createJobFileGroup({
+          jobRef,
+          documents,
+          rsInvoices: [],
+        });
+      } else {
+        group = await storage.updateJobFileGroup(jobRef, { documents });
+      }
+      
+      if (!group) {
+        return res.status(404).json({ error: "Failed to update job file group" });
+      }
+      
+      res.json(group);
+    } catch (error) {
+      console.error("Error updating documents:", error);
+      res.status(500).json({ error: "Failed to update documents" });
+    }
+  });
+
+  // Update job file group R.S invoices
+  app.patch("/api/job-file-groups/:jobRef/rs-invoices", async (req, res) => {
+    try {
+      const jobRef = parseInt(req.params.jobRef);
+      if (isNaN(jobRef)) {
+        return res.status(400).json({ error: "Invalid job reference" });
+      }
+      
+      const { rsInvoices } = req.body;
+      if (!Array.isArray(rsInvoices)) {
+        return res.status(400).json({ error: "R.S Invoices must be an array" });
+      }
+      
+      // Check if group exists, create if not
+      let group = await storage.getJobFileGroupByJobRef(jobRef);
+      
+      if (!group) {
+        group = await storage.createJobFileGroup({
+          jobRef,
+          documents: [],
+          rsInvoices,
+        });
+      } else {
+        group = await storage.updateJobFileGroup(jobRef, { rsInvoices });
+      }
+      
+      if (!group) {
+        return res.status(404).json({ error: "Failed to update job file group" });
+      }
+      
+      res.json(group);
+    } catch (error) {
+      console.error("Error updating R.S invoices:", error);
+      res.status(500).json({ error: "Failed to update R.S invoices" });
+    }
+  });
+
   // ========== Static Assets ==========
   
   // Serve company logo for email signatures
