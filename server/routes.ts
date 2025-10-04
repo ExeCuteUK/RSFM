@@ -1883,9 +1883,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
       if (user.includeSignature && user.emailSignature) {
         // Apply inline styles to paragraph tags for email client compatibility
-        const styledSignature = user.emailSignature
-          .replace(/<p>/g, '<p style="margin: 0; padding: 0; line-height: 1.4;">')
-          .replace(/<p ([^>]*)>/g, '<p $1 style="margin: 0; padding: 0; line-height: 1.4;">');
+        let styledSignature = user.emailSignature
+          // Remove empty paragraphs that just contain <br>
+          .replace(/<p><br><\/p>/g, '')
+          .replace(/<p>\s*<br\s*\/?>\s*<\/p>/g, '')
+          // Apply inline styles to all paragraph tags
+          .replace(/<p(\s+[^>]*)?>/g, '<p style="margin: 0; padding: 0; line-height: 1.4;"$1>');
         messageText += '<br><br>' + styledSignature;
       }
       
