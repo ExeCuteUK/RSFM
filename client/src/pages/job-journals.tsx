@@ -21,6 +21,8 @@ interface JobJournalEntry {
   salesInvoiceDate?: string
   salesInvoiceAmount?: string
   profitLoss?: number
+  jobExpensesReserve?: number
+  rsChargesReserve?: number
 }
 
 const MONTHS = [
@@ -113,6 +115,33 @@ export default function JobJournals() {
     return dateMonth === selectedMonth && dateYear === selectedYear
   }
 
+  const calculateJobExpensesReserve = (shipment: ImportShipment): number => {
+    const total = [
+      shipment.haulierFreightRateIn,
+      shipment.exportClearanceChargeIn,
+      shipment.destinationClearanceCostIn,
+      ...(shipment.additionalExpensesIn || []).map((e: { amount: string }) => e.amount)
+    ]
+      .filter(Boolean)
+      .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0)
+    
+    return total
+  }
+
+  const calculateRSChargesReserve = (shipment: ImportShipment): number => {
+    const total = [
+      shipment.freightRateOut,
+      shipment.clearanceCharge,
+      shipment.exportCustomsClearanceCharge,
+      shipment.additionalCommodityCodeCharge,
+      ...(shipment.expensesToChargeOut || []).map((e: { amount: string }) => e.amount)
+    ]
+      .filter(Boolean)
+      .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0)
+    
+    return total
+  }
+
   const allJournalEntries: JobJournalEntry[] = [
     ...importShipments.map(shipment => ({
       jobRef: shipment.jobRef,
@@ -123,6 +152,8 @@ export default function JobJournals() {
       regContainerFlight: shipment.trailerOrContainerNumber || "",
       supplier: shipment.supplierName || "",
       customer: getCustomerName(shipment.importCustomerId, "import"),
+      jobExpensesReserve: calculateJobExpensesReserve(shipment),
+      rsChargesReserve: calculateRSChargesReserve(shipment),
     })),
     ...exportShipments.map(shipment => ({
       jobRef: shipment.jobRef,
@@ -215,11 +246,13 @@ export default function JobJournals() {
                   <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border">Invoice From</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border">Invoice No</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r-2 border-border">Amount</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border">Amount</th>
+                  <th className="text-center p-2 font-semibold underline border-r-2 border-border">Reserve</th>
                   <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border">Invoice To</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border">Invoice No</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r-2 border-border">Amount</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border">Amount</th>
+                  <th className="text-center p-2 font-semibold underline border-r-2 border-border">Reserve</th>
                   <th className="text-center p-2 font-semibold underline border-l-2">P/L</th>
                 </tr>
               </thead>
@@ -257,8 +290,11 @@ export default function JobJournals() {
                     <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-date-${entry.jobRef}`}>
                       {entry.purchaseInvoiceDate || ""}
                     </td>
-                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r-2 border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
                       {entry.purchaseInvoiceAmount || ""}
+                    </td>
+                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r-2 border-border font-semibold" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
+                      {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
                     </td>
                     <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
                       
@@ -269,8 +305,11 @@ export default function JobJournals() {
                     <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
                       {entry.salesInvoiceDate || ""}
                     </td>
-                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r-2 border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
                       {entry.salesInvoiceAmount || ""}
+                    </td>
+                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r-2 border-border font-semibold" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
+                      {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
                     </td>
                     <td className="p-2 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {entry.profitLoss !== undefined ? `£${entry.profitLoss.toFixed(2)}` : ""}
