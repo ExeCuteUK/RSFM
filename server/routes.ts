@@ -995,7 +995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const fileGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
           if (fileGroup) {
             const updatedDocs = (fileGroup.documents || []).filter(f => f !== filePath);
-            await storage.updateJobFileGroupDocuments(shipment.jobRef, updatedDocs);
+            await storage.updateJobFileGroup(shipment.jobRef, { documents: updatedDocs });
           }
         }
       } else {
