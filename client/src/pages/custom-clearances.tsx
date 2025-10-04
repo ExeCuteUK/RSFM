@@ -317,15 +317,27 @@ export default function CustomClearances() {
     return attachments
   }
 
+  const normalizeFilePath = (filePath: string): string => {
+    if (filePath.startsWith('https://storage.googleapis.com/')) {
+      const url = new URL(filePath)
+      const pathname = decodeURIComponent(url.pathname)
+      const match = pathname.match(/\/.private\/(.+)$/)
+      if (match) {
+        return `/objects/${match[1]}`
+      }
+    }
+    return filePath.startsWith('http://') || filePath.startsWith('https://') 
+      ? filePath 
+      : filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+  }
+
   const handleFileClick = (e: React.MouseEvent, filePath: string) => {
     const fileName = filePath.split('/').pop() || filePath
     const fileExtension = fileName.split('.').pop()?.toLowerCase()
     
     if (fileExtension === 'pdf') {
       e.preventDefault()
-      const downloadPath = filePath.startsWith('http://') || filePath.startsWith('https://') 
-        ? filePath 
-        : filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+      const downloadPath = normalizeFilePath(filePath)
       setViewingPdf({ url: downloadPath, name: fileName })
     }
   }
@@ -773,9 +785,7 @@ export default function CustomClearances() {
                               <div className="space-y-0.5">
                                 {transportDocs.map((filePath, idx) => {
                                   const fileName = filePath.split('/').pop() || filePath
-                                  const downloadPath = filePath.startsWith('http://') || filePath.startsWith('https://') 
-                                    ? filePath 
-                                    : filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  const downloadPath = normalizeFilePath(filePath)
                                   return (
                                     <div key={idx} className="flex items-center gap-1 group">
                                       <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -822,9 +832,7 @@ export default function CustomClearances() {
                               <div className="space-y-0.5">
                                 {clearanceDocs.map((filePath, idx) => {
                                   const fileName = filePath.split('/').pop() || filePath
-                                  const downloadPath = filePath.startsWith('http://') || filePath.startsWith('https://') 
-                                    ? filePath 
-                                    : filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  const downloadPath = normalizeFilePath(filePath)
                                   return (
                                     <div key={idx} className="flex items-center gap-1 group">
                                       <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
