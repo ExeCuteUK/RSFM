@@ -218,10 +218,10 @@ export default function ImportShipments() {
       }
     },
     onError: (error: any) => {
-      const errorDetails = error?.details?.errors?.[0]?.detail || error?.message || "Failed to track container"
+      const errorMessage = error?.message || error?.details?.errors?.[0]?.detail || "Failed to track container"
       toast({ 
-        title: "Container Tracking Error", 
-        description: errorDetails,
+        title: error?.error || "Container Tracking Error", 
+        description: errorMessage,
         variant: "destructive" 
       })
     },

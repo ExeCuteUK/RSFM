@@ -1148,6 +1148,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requestNumber = billOfLading;
       }
 
+      // Extract SCAC code from first 4 characters of container number
+      const scacCode = containerNumber?.substring(0, 4)?.toUpperCase() || shippingLine || null;
+
       const response = await fetch(`${TERMINAL49_BASE_URL}/tracking_requests`, {
         method: "POST",
         headers: {
@@ -1160,7 +1163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             attributes: {
               request_type: requestType,
               request_number: requestNumber,
-              scac: shippingLine || null,
+              scac: scacCode,
             },
           },
         }),
@@ -1170,6 +1173,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!response.ok) {
         console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
+        
+        // Add helpful message for SCAC not recognized
+        const scacError = data.errors?.find((e: any) => e.code === 'not_recognized' && e.source?.pointer?.includes('scac'));
+        if (scacError) {
+          return res.status(response.status).json({ 
+            error: "Shipping line SCAC code not recognized", 
+            message: `The shipping line code '${scacCode}' (from container number) is not recognized by Terminal49. Common codes: MAEU (Maersk), MSCU (MSC), CMDU (CMA CGM), HLCU (Hapag-Lloyd)`,
+            details: data 
+          });
+        }
+        
         return res.status(response.status).json({ 
           error: "Terminal49 API error", 
           details: data 
