@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
-import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver } from "@shared/schema"
+import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver, JobFileGroup } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 
 export default function CustomClearances() {
@@ -61,6 +61,34 @@ export default function CustomClearances() {
 
   const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
     queryKey: ["/api/export-receivers"],
+  })
+
+  // Fetch shared documents for all clearances
+  const jobRefs = clearances.map(c => c.jobRef).filter((ref): ref is number => ref !== undefined)
+  const { data: sharedDocsMap = {} } = useQuery<Record<number, string[]>>({
+    queryKey: ["/api/job-file-groups/batch", jobRefs],
+    queryFn: async () => {
+      const map: Record<number, string[]> = {}
+      
+      // Fetch job file groups for each unique jobRef
+      const uniqueRefs = Array.from(new Set(jobRefs))
+      await Promise.all(
+        uniqueRefs.map(async (jobRef) => {
+          try {
+            const response = await fetch(`/api/job-file-groups/${jobRef}`)
+            if (response.ok) {
+              const data: JobFileGroup = await response.json()
+              map[jobRef] = data.documents || []
+            }
+          } catch (error) {
+            // Ignore errors - jobRef might not have shared docs yet
+          }
+        })
+      )
+      
+      return map
+    },
+    enabled: jobRefs.length > 0,
   })
 
   const createClearance = useMutation({
@@ -522,7 +550,9 @@ export default function CustomClearances() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredClearances.map((clearance) => {
-            const transportDocs = parseAttachments(clearance.transportDocuments || null)
+            // Use shared documents from job_file_groups if available, otherwise fall back to clearance's own documents
+            const sharedDocs = clearance.jobRef ? (sharedDocsMap[clearance.jobRef] || []) : []
+            const transportDocs = sharedDocs.length > 0 ? sharedDocs : parseAttachments(clearance.transportDocuments || null)
             const clearanceDocs = parseAttachments(clearance.clearanceDocuments || null)
             const totalFiles = transportDocs.length + clearanceDocs.length
             const hasNotes = clearance.additionalNotes && clearance.additionalNotes.trim().length > 0
