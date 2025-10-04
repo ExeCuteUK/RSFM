@@ -1570,8 +1570,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const objectStorageService = new ObjectStorageService();
       
+      // Normalize the path if it's a full URL
+      const normalizedPath = objectStorageService.normalizeObjectEntityPath(objectPath);
+      
       // Download the file from object storage
-      const fileBuffer = await objectStorageService.getObjectBuffer(objectPath);
+      const fileBuffer = await objectStorageService.getObjectBuffer(normalizedPath);
       
       // Import Tesseract.js
       const { createWorker } = await import("tesseract.js");
