@@ -1614,15 +1614,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Extract text using Scribe.js
           const result = await scribe.extractText([tempFilePath]);
           
-          console.log("[DEBUG-OCR] Scribe.js result:", JSON.stringify(result, null, 2));
-          
           // Clean up temp file
           fs.unlinkSync(tempFilePath);
           
-          // Scribe.js returns an object with pages, check if there's any text
+          // Scribe.js returns the extracted text directly as a string
           let extractedText = "";
-          if (result && typeof result === 'object') {
-            // Try different possible result structures
+          if (typeof result === 'string') {
+            extractedText = result;
+          } else if (result && typeof result === 'object') {
+            // Fallback: try different possible result structures
             if (result.text) {
               extractedText = result.text;
             } else if (result.pages && Array.isArray(result.pages)) {
