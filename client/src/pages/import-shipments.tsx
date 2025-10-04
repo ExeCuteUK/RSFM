@@ -27,7 +27,7 @@ import {
 import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
-import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance } from "@shared/schema"
+import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 
@@ -62,6 +62,34 @@ export default function ImportShipments() {
 
   const { data: customClearances = [] } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
+  })
+
+  // Fetch shared documents for all import shipments
+  const jobRefs = allShipments.map(s => s.jobRef).filter((ref): ref is number => ref !== undefined)
+  const { data: sharedDocsMap = {} } = useQuery<Record<number, string[]>>({
+    queryKey: ["/api/job-file-groups/batch", jobRefs],
+    queryFn: async () => {
+      const map: Record<number, string[]> = {}
+      
+      // Fetch job file groups for each unique jobRef
+      const uniqueRefs = Array.from(new Set(jobRefs))
+      await Promise.all(
+        uniqueRefs.map(async (jobRef) => {
+          try {
+            const response = await fetch(`/api/job-file-groups/${jobRef}`)
+            if (response.ok) {
+              const data: JobFileGroup = await response.json()
+              map[jobRef] = data.documents || []
+            }
+          } catch (error) {
+            // Ignore errors - jobRef might not have shared docs yet
+          }
+        })
+      )
+      
+      return map
+    },
+    enabled: jobRefs.length > 0,
   })
 
   const getCustomerName = (customerId: string | null) => {
@@ -1310,7 +1338,9 @@ export default function ImportShipments() {
                     </div>
                   </div>
                   {(() => {
-                    const attachmentFiles = parseAttachments(shipment.attachments)
+                    // Use shared documents from job_file_groups if available, otherwise fall back to shipment's own attachments
+                    const sharedDocs = shipment.jobRef ? (sharedDocsMap[shipment.jobRef] || []) : []
+                    const attachmentFiles = sharedDocs.length > 0 ? sharedDocs : parseAttachments(shipment.attachments)
                     const podFiles = parseAttachments(shipment.proofOfDelivery)
                     return (
                       <div className="mt-2 pt-2 border-t">
