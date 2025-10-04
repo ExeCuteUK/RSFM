@@ -687,14 +687,24 @@ export default function CustomClearances() {
                           </div>
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 2)}
+                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 1)}
                               className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.adviseAgentStatusIndicator === 2 || clearance.adviseAgentStatusIndicator === null
+                                clearance.adviseAgentStatusIndicator === 1 || clearance.adviseAgentStatusIndicator === null
                                   ? 'bg-yellow-400 border-yellow-500 scale-110'
                                   : 'bg-yellow-200 border-yellow-300 hover-elevate'
                               }`}
                               data-testid={`button-advise-yellow-${clearance.id}`}
-                              title="Yellow Status"
+                              title="Yellow Status (1)"
+                            />
+                            <button
+                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 2)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.adviseAgentStatusIndicator === 2
+                                  ? 'bg-orange-400 border-orange-500 scale-110'
+                                  : 'bg-orange-200 border-orange-300 hover-elevate'
+                              }`}
+                              data-testid={`button-advise-orange-${clearance.id}`}
+                              title="Orange Status (2)"
                             />
                             <button
                               onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 3)}
@@ -704,7 +714,17 @@ export default function CustomClearances() {
                                   : 'bg-green-200 border-green-300 hover-elevate'
                               }`}
                               data-testid={`button-advise-green-${clearance.id}`}
-                              title="Green Status"
+                              title="Green Status (3)"
+                            />
+                            <button
+                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 4)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.adviseAgentStatusIndicator === 4
+                                  ? 'bg-red-400 border-red-500 scale-110'
+                                  : 'bg-red-200 border-red-300 hover-elevate'
+                              }`}
+                              data-testid={`button-advise-red-${clearance.id}`}
+                              title="Red Status (4)"
                             />
                           </div>
                         </div>
@@ -718,14 +738,24 @@ export default function CustomClearances() {
                           </div>
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 2)}
+                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 1)}
                               className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendEntryToCustomerStatusIndicator === 2 || clearance.sendEntryToCustomerStatusIndicator === null
+                                clearance.sendEntryToCustomerStatusIndicator === 1 || clearance.sendEntryToCustomerStatusIndicator === null
                                   ? 'bg-yellow-400 border-yellow-500 scale-110'
                                   : 'bg-yellow-200 border-yellow-300 hover-elevate'
                               }`}
                               data-testid={`button-entry-yellow-${clearance.id}`}
-                              title="Yellow Status"
+                              title="Yellow Status (1)"
+                            />
+                            <button
+                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 2)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendEntryToCustomerStatusIndicator === 2
+                                  ? 'bg-orange-400 border-orange-500 scale-110'
+                                  : 'bg-orange-200 border-orange-300 hover-elevate'
+                              }`}
+                              data-testid={`button-entry-orange-${clearance.id}`}
+                              title="Orange Status (2)"
                             />
                             <button
                               onClick={() => handleSendEntryStatusUpdate(clearance.id, 3)}
@@ -735,7 +765,17 @@ export default function CustomClearances() {
                                   : 'bg-green-200 border-green-300 hover-elevate'
                               }`}
                               data-testid={`button-entry-green-${clearance.id}`}
-                              title="Green Status"
+                              title="Green Status (3)"
+                            />
+                            <button
+                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 4)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendEntryToCustomerStatusIndicator === 4
+                                  ? 'bg-red-400 border-red-500 scale-110'
+                                  : 'bg-red-200 border-red-300 hover-elevate'
+                              }`}
+                              data-testid={`button-entry-red-${clearance.id}`}
+                              title="Red Status (4)"
                             />
                           </div>
                         </div>
@@ -750,14 +790,24 @@ export default function CustomClearances() {
                             </div>
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 2)}
+                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 1)}
                                 className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.invoiceCustomerStatusIndicator === 2 || clearance.invoiceCustomerStatusIndicator === null
+                                  clearance.invoiceCustomerStatusIndicator === 1 || clearance.invoiceCustomerStatusIndicator === null
                                     ? 'bg-yellow-400 border-yellow-500 scale-110'
                                     : 'bg-yellow-200 border-yellow-300 hover-elevate'
                                 }`}
                                 data-testid={`button-invoice-yellow-${clearance.id}`}
-                                title="Yellow Status"
+                                title="Yellow Status (1)"
+                              />
+                              <button
+                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 2)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.invoiceCustomerStatusIndicator === 2
+                                    ? 'bg-orange-400 border-orange-500 scale-110'
+                                    : 'bg-orange-200 border-orange-300 hover-elevate'
+                                }`}
+                                data-testid={`button-invoice-orange-${clearance.id}`}
+                                title="Orange Status (2)"
                               />
                               <button
                                 onClick={() => handleInvoiceStatusUpdate(clearance.id, 3)}
@@ -767,7 +817,17 @@ export default function CustomClearances() {
                                     : 'bg-green-200 border-green-300 hover-elevate'
                                 }`}
                                 data-testid={`button-invoice-green-${clearance.id}`}
-                                title="Green Status"
+                                title="Green Status (3)"
+                              />
+                              <button
+                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 4)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.invoiceCustomerStatusIndicator === 4
+                                    ? 'bg-red-400 border-red-500 scale-110'
+                                    : 'bg-red-200 border-red-300 hover-elevate'
+                                }`}
+                                data-testid={`button-invoice-red-${clearance.id}`}
+                                title="Red Status (4)"
                               />
                             </div>
                           </div>
@@ -783,14 +843,24 @@ export default function CustomClearances() {
                             </div>
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 2)}
+                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 1)}
                                 className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendClearedEntryStatusIndicator === 2 || clearance.sendClearedEntryStatusIndicator === null
+                                  clearance.sendClearedEntryStatusIndicator === 1 || clearance.sendClearedEntryStatusIndicator === null
                                     ? 'bg-yellow-400 border-yellow-500 scale-110'
                                     : 'bg-yellow-200 border-yellow-300 hover-elevate'
                                 }`}
                                 data-testid={`button-cleared-yellow-${clearance.id}`}
-                                title="Yellow Status"
+                                title="Yellow Status (1)"
+                              />
+                              <button
+                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 2)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendClearedEntryStatusIndicator === 2
+                                    ? 'bg-orange-400 border-orange-500 scale-110'
+                                    : 'bg-orange-200 border-orange-300 hover-elevate'
+                                }`}
+                                data-testid={`button-cleared-orange-${clearance.id}`}
+                                title="Orange Status (2)"
                               />
                               <button
                                 onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 3)}
@@ -800,7 +870,17 @@ export default function CustomClearances() {
                                     : 'bg-green-200 border-green-300 hover-elevate'
                                 }`}
                                 data-testid={`button-cleared-green-${clearance.id}`}
-                                title="Green Status"
+                                title="Green Status (3)"
+                              />
+                              <button
+                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 4)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendClearedEntryStatusIndicator === 4
+                                    ? 'bg-red-400 border-red-500 scale-110'
+                                    : 'bg-red-200 border-red-300 hover-elevate'
+                                }`}
+                                data-testid={`button-cleared-red-${clearance.id}`}
+                                title="Red Status (4)"
                               />
                             </div>
                           </div>
