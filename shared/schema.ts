@@ -572,6 +572,20 @@ export const customClearances = pgTable("custom_clearances", {
 export const insertCustomClearanceSchema = createInsertSchema(customClearances).omit({
   id: true,
   jobRef: true,
+}).extend({
+  jobType: z.string().min(1, "Job Type is required"),
+  status: z.string().min(1, "Status is required"),
+  supplierName: z.string().min(1, "Supplier Name is required"),
+  portOfArrival: z.string().min(1, "Port Of Arrival is required"),
+  departureFrom: z.string().min(1, "Departure From is required"),
+  containerShipment: z.string().min(1, "Shipment Type is required"),
+  numberOfPieces: z.string().min(1, "Number Of Pieces is required"),
+  packaging: z.string().min(1, "Packaging is required"),
+  weight: z.string().min(1, "Weight is required"),
+  goodsDescription: z.string().min(1, "Goods Description is required"),
+  currency: z.string().min(1, "Currency is required"),
+  invoiceValue: z.string().min(1, "Invoice Value is required"),
+  clearanceType: z.string().min(1, "Clearance Type is required"),
 });
 
 export type InsertCustomClearance = z.infer<typeof insertCustomClearanceSchema>;
