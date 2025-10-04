@@ -3,6 +3,9 @@ import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Search } from "lucide-react"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from "@shared/schema"
 
 interface JobJournalEntry {
@@ -67,6 +70,8 @@ export default function JobJournals() {
   const currentDate = new Date()
   const [selectedMonth, setSelectedMonth] = useState((currentDate.getMonth() + 1).toString())
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString())
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(["Import", "Export", "Customs"])
+  const [searchText, setSearchText] = useState("")
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -185,7 +190,39 @@ export default function JobJournals() {
       })),
   ].sort((a, b) => b.jobRef - a.jobRef)
 
-  const journalEntries = allJournalEntries.filter(entry => matchesMonthYear(entry.date))
+  const filteredByMonth = allJournalEntries.filter(entry => matchesMonthYear(entry.date))
+  
+  const journalEntries = filteredByMonth.filter(entry => {
+    const matchesJobType = selectedJobTypes.length === 0 || selectedJobTypes.includes(entry.jobType)
+    
+    if (!searchText.trim()) return matchesJobType
+    
+    const searchLower = searchText.toLowerCase()
+    const matchesSearch = 
+      entry.jobRef.toString().includes(searchLower) ||
+      entry.customerName.toLowerCase().includes(searchLower) ||
+      entry.destination.toLowerCase().includes(searchLower) ||
+      entry.regContainerFlight.toLowerCase().includes(searchLower)
+    
+    return matchesJobType && matchesSearch
+  })
+
+  const handleJobTypeToggle = (jobType: string) => {
+    setSelectedJobTypes(prev => 
+      prev.includes(jobType)
+        ? prev.filter(t => t !== jobType)
+        : [...prev, jobType]
+    )
+  }
+
+  const handleAllClick = () => {
+    setSelectedJobTypes([])
+  }
+
+  const getMonthLabel = () => {
+    const month = MONTHS.find(m => m.value === selectedMonth)
+    return month ? month.label : ""
+  }
 
   return (
     <div className="h-full flex flex-col p-6 space-y-6">
@@ -228,9 +265,58 @@ export default function JobJournals() {
         </div>
       </div>
 
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by job ref, customer, destination, or identifier..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="pl-9"
+            data-testid="input-search"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={selectedJobTypes.length === 0 ? "default" : "outline"}
+            size="sm"
+            onClick={handleAllClick}
+            data-testid="filter-all"
+          >
+            All
+          </Button>
+          <Button
+            variant={selectedJobTypes.includes("Import") ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleJobTypeToggle("Import")}
+            data-testid="filter-import"
+          >
+            Import Jobs
+          </Button>
+          <Button
+            variant={selectedJobTypes.includes("Export") ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleJobTypeToggle("Export")}
+            data-testid="filter-export"
+          >
+            Export Jobs
+          </Button>
+          <Button
+            variant={selectedJobTypes.includes("Customs") ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleJobTypeToggle("Customs")}
+            data-testid="filter-customs"
+          >
+            Clearance Only Jobs
+          </Button>
+        </div>
+      </div>
+
       <Card className="flex-1 flex flex-col">
         <CardHeader>
-          <CardTitle>All Jobs</CardTitle>
+          <CardTitle>
+            Showing All Jobs - {getMonthLabel()}, {selectedYear} - {journalEntries.length} Records
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 overflow-auto">
           <div className="overflow-x-auto">
@@ -256,7 +342,7 @@ export default function JobJournals() {
                   <th className="text-center p-2 font-semibold underline border-l-2">P/L</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-xs">
                 {journalEntries.map((entry, index) => (
                   <tr 
                     key={`${entry.jobType}-${entry.jobRef}-${index}`}
