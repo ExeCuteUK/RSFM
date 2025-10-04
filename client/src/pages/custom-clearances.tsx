@@ -713,7 +713,7 @@ export default function CustomClearances() {
                           <div className="flex items-center gap-1.5">
                             <Send className="h-3.5 w-3.5 text-muted-foreground" />
                             <p className={`text-xs ${getStatusColor(clearance.sendEntryToCustomerStatusIndicator)} font-medium`} data-testid={`todo-send-entry-${clearance.id}`}>
-                              Send Entry/EAD to Customer
+                              {clearance.jobType === "import" ? "Send Import Entry to Customer" : "Send Export Entry to Customer"}
                             </p>
                           </div>
                           <div className="flex items-center gap-1">
@@ -740,36 +740,38 @@ export default function CustomClearances() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
-                            <p className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium`} data-testid={`todo-invoice-${clearance.id}`}>
-                              Invoice Customer
-                            </p>
+                        {!clearance.createdFromId && (
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                              <p className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium`} data-testid={`todo-invoice-${clearance.id}`}>
+                                Invoice Customer
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 2)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.invoiceCustomerStatusIndicator === 2 || clearance.invoiceCustomerStatusIndicator === null
+                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                    : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                }`}
+                                data-testid={`button-invoice-yellow-${clearance.id}`}
+                                title="Yellow Status"
+                              />
+                              <button
+                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 3)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.invoiceCustomerStatusIndicator === 3
+                                    ? 'bg-green-400 border-green-500 scale-110'
+                                    : 'bg-green-200 border-green-300 hover-elevate'
+                                }`}
+                                data-testid={`button-invoice-green-${clearance.id}`}
+                                title="Green Status"
+                              />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleInvoiceStatusUpdate(clearance.id, 2)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.invoiceCustomerStatusIndicator === 2 || clearance.invoiceCustomerStatusIndicator === null
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                              }`}
-                              data-testid={`button-invoice-yellow-${clearance.id}`}
-                              title="Yellow Status"
-                            />
-                            <button
-                              onClick={() => handleInvoiceStatusUpdate(clearance.id, 3)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.invoiceCustomerStatusIndicator === 3
-                                  ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover-elevate'
-                              }`}
-                              data-testid={`button-invoice-green-${clearance.id}`}
-                              title="Green Status"
-                            />
-                          </div>
-                        </div>
+                        )}
 
                         {clearance.jobType === "import" && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
