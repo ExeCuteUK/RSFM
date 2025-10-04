@@ -1835,6 +1835,9 @@ ${messageText}
 </body>
 </html>`;
       
+      // Base64 encode the HTML body
+      const htmlBodyBase64 = Buffer.from(htmlBody).toString('base64');
+      
       const boundary = '----=_Part_' + Date.now();
       const message = [
         `To: ${to}`,
@@ -1844,8 +1847,9 @@ ${messageText}
         '',
         `--${boundary}`,
         'Content-Type: text/html; charset=UTF-8',
+        'Content-Transfer-Encoding: base64',
         '',
-        htmlBody,
+        htmlBodyBase64,
         '',
         `--${boundary}`,
         'Content-Type: application/pdf',
