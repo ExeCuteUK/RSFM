@@ -1920,7 +1920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                                 <table style="border-collapse: collapse;" cellpadding="5" border="0">
                                   <tbody>
                                     <tr>
-                                      <td style="vertical-align: top;"><img src="${logoUrl}" alt="R.S. International Freight Ltd" width="200" height="175" style="display: block; max-width: 200px; height: auto;"><br>
+                                      <td style="vertical-align: top;"><img src="${logoUrl}" alt="R.S. International Freight Ltd" style="display: block;"><br>
                                       </td>
                                       <td style="vertical-align: top; padding-left: 10px;"><span style="color: #993366;"><em><strong>R.S. International Freight Ltd</strong></em></span><br>
                                         10b Hornsby Square, Southfields Business Park, Laindon, Essex, SS15 6SD<br>
