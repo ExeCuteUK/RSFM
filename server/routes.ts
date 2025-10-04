@@ -1638,10 +1638,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/gmail/auth-url", requireAuth, async (req, res) => {
     try {
       const { google } = await import("googleapis");
+      // Use REPLIT_DEV_DOMAIN for dev, or construct production URL
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : process.env.REPL_SLUG 
+          ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+          : 'http://localhost:5000';
+      
       const oauth2Client = new google.auth.OAuth2(
         process.env.GMAIL_CLIENT_ID,
         process.env.GMAIL_CLIENT_SECRET,
-        `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/gmail/callback`
+        `${baseUrl}/api/gmail/callback`
       );
 
       const authUrl = oauth2Client.generateAuthUrl({
@@ -1673,10 +1680,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { google } = await import("googleapis");
+      // Use REPLIT_DEV_DOMAIN for dev, or construct production URL
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : process.env.REPL_SLUG 
+          ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+          : 'http://localhost:5000';
+      
       const oauth2Client = new google.auth.OAuth2(
         process.env.GMAIL_CLIENT_ID,
         process.env.GMAIL_CLIENT_SECRET,
-        `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/gmail/callback`
+        `${baseUrl}/api/gmail/callback`
       );
 
       const { tokens } = await oauth2Client.getToken(code as string);
