@@ -1819,9 +1819,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
       
       // Build email body with optional signature
-      let emailBody = body || '';
+      let emailBody = body ? body.replace(/\n/g, '<br>') : '';
       if (user.includeSignature && user.emailSignature) {
-        emailBody += '\n\n' + user.emailSignature;
+        emailBody += '<br><br>' + user.emailSignature;
       }
       
       const boundary = '----=_Part_' + Date.now();
@@ -1834,7 +1834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `--${boundary}`,
         'Content-Type: text/html; charset=UTF-8',
         '',
-        emailBody.replace(/\n/g, '<br>'),
+        emailBody,
         '',
         `--${boundary}`,
         'Content-Type: application/pdf',
