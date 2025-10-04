@@ -111,6 +111,7 @@ export default function CustomClearances() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
     },
   })
 

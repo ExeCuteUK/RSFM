@@ -534,6 +534,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
       }
+      
+      // Sync to linked custom clearance if it exists
+      if (shipment.linkedClearanceId) {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+          adviseAgentStatusIndicator: status
+        });
+      }
+      
       res.json(shipment);
     } catch (error) {
       res.status(500).json({ error: "Failed to update clearance status" });
@@ -847,6 +855,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
+      
+      // Sync to linked import shipment if it was created from import
+      if (clearance.createdFromType === "import" && clearance.createdFromId) {
+        await storage.updateImportShipment(clearance.createdFromId, {
+          clearanceStatusIndicator: status
+        });
+      }
+      
       res.json(clearance);
     } catch (error) {
       res.status(500).json({ error: "Failed to update status" });
