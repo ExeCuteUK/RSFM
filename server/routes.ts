@@ -1632,14 +1632,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ========== Gmail Routes ==========
+  // ========== Gmail Routes (Per-User OAuth) ==========
   
-  // Get Gmail connection status
-  app.get("/api/gmail/status", async (_req, res) => {
+  // Get OAuth URL for Gmail connection
+  app.get("/api/gmail/auth-url", requireAuth, async (req, res) => {
     try {
-      const { getGmailConnectionStatus } = await import("./gmail");
-      const status = await getGmailConnectionStatus();
-      res.json(status);
+      const { google } = await import("googleapis");
+      const oauth2Client = new google.auth.OAuth2(
+        process.env.GMAIL_CLIENT_ID,
+        process.env.GMAIL_CLIENT_SECRET,
+        `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/gmail/callback`
+      );
+
+      const authUrl = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: [
+          'https://www.googleapis.com/auth/gmail.send',
+          'https://www.googleapis.com/auth/gmail.compose',
+          'https://www.googleapis.com/auth/userinfo.email',
+        ],
+        state: (req.user as User).id, // Pass user ID as state
+        prompt: 'consent', // Force consent to get refresh token
+      });
+
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Gmail auth URL error:", error);
+      res.status(500).json({ error: "Failed to generate authorization URL" });
+    }
+  });
+
+  // Handle OAuth callback
+  app.get("/api/gmail/callback", async (req, res) => {
+    try {
+      const { code, state } = req.query;
+      const userId = state as string;
+
+      if (!code || !userId) {
+        return res.status(400).send("Missing authorization code or user ID");
+      }
+
+      const { google } = await import("googleapis");
+      const oauth2Client = new google.auth.OAuth2(
+        process.env.GMAIL_CLIENT_ID,
+        process.env.GMAIL_CLIENT_SECRET,
+        `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'http://localhost:5000'}/api/gmail/callback`
+      );
+
+      const { tokens } = await oauth2Client.getToken(code as string);
+      oauth2Client.setCredentials(tokens);
+
+      // Get user's email address
+      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+      const { data } = await oauth2.userinfo.get();
+
+      // Store tokens in user record
+      await storage.updateUser(userId, {
+        gmailAccessToken: tokens.access_token || null,
+        gmailRefreshToken: tokens.refresh_token || null,
+        gmailTokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
+        gmailEmail: data.email || null,
+      });
+
+      // Redirect to settings page
+      res.send(`
+        <html>
+          <body>
+            <h1>Gmail Connected Successfully!</h1>
+            <p>Your Gmail account has been connected. You can close this window and return to the application.</p>
+            <script>
+              setTimeout(() => {
+                window.location.href = '/settings?tab=email';
+              }, 2000);
+            </script>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Gmail callback error:", error);
+      res.status(500).send("Failed to connect Gmail account");
+    }
+  });
+
+  // Disconnect Gmail
+  app.post("/api/gmail/disconnect", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      await storage.updateUser(user.id, {
+        gmailAccessToken: null,
+        gmailRefreshToken: null,
+        gmailTokenExpiry: null,
+        gmailEmail: null,
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Gmail disconnect error:", error);
+      res.status(500).json({ error: "Failed to disconnect Gmail" });
+    }
+  });
+  
+  // Get Gmail connection status (per-user)
+  app.get("/api/gmail/status", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      res.json({ 
+        connected: !!user.gmailEmail, 
+        email: user.gmailEmail 
+      });
     } catch (error) {
       res.json({ connected: false, email: null });
     }

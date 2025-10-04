@@ -24,7 +24,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { UserPlus, Pencil, Trash2, Shield } from "lucide-react";
+import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -132,6 +133,7 @@ export default function SettingsPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="financials" data-testid="tab-financials">Financials & Charges</TabsTrigger>
+          <TabsTrigger value="email" data-testid="tab-email">Email</TabsTrigger>
           <TabsTrigger value="users" data-testid="tab-users">Users</TabsTrigger>
         </TabsList>
 
@@ -332,6 +334,89 @@ export default function SettingsPage() {
                   </div>
                 </form>
               </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="email" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gmail Integration</CardTitle>
+              <CardDescription>
+                Connect your Gmail account to send emails directly from the application
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {currentUser?.gmailEmail ? (
+                <div className="space-y-4">
+                  <Alert className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <AlertTitle className="text-green-800 dark:text-green-200">Gmail Connected</AlertTitle>
+                    <AlertDescription className="text-green-700 dark:text-green-300">
+                      Your Gmail account <strong>{currentUser.gmailEmail}</strong> is connected and ready to send emails.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="flex items-center justify-between p-4 border rounded-md">
+                    <div>
+                      <p className="font-medium">{currentUser.gmailEmail}</p>
+                      <p className="text-sm text-muted-foreground">Connected Gmail account</p>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      onClick={async () => {
+                        try {
+                          await apiRequest("POST", "/api/gmail/disconnect", {});
+                          queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+                          toast({
+                            title: "Gmail disconnected",
+                            description: "Your Gmail account has been disconnected.",
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to disconnect Gmail account.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      data-testid="button-disconnect-gmail"
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>No Gmail Account Connected</AlertTitle>
+                    <AlertDescription>
+                      Connect your Gmail account to enable sending emails from the application.
+                      This will allow you to send invoices, shipping documents, and other communications directly from your Gmail.
+                    </AlertDescription>
+                  </Alert>
+
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const response = await apiRequest("GET", "/api/gmail/auth-url", {}) as { authUrl: string };
+                        window.location.href = response.authUrl;
+                      } catch (error) {
+                        toast({
+                          title: "Error",
+                          description: "Failed to initiate Gmail connection.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    data-testid="button-connect-gmail"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Connect Gmail Account
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
