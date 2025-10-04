@@ -212,14 +212,22 @@ export default function ImportShipments() {
     },
     onSuccess: (response: any) => {
       const status = response?.data?.attributes?.status
-      if (status === "pending") {
+      if (status === "existing") {
+        toast({ 
+          title: "Loading Tracking Data", 
+          description: "Retrieving container tracking information..." 
+        })
+        // Container already being tracked, try to fetch data
+        if (response?.data?.id) {
+          fetchTrackingData.mutate(response.data.id)
+        }
+      } else if (status === "pending") {
         toast({ 
           title: "Container Tracking Request Created", 
           description: "Terminal49 is searching for your container. This may take a few moments." 
         })
         // Try to fetch shipment data anyway (it might be available)
         if (response?.data?.id) {
-          // Use tracking request ID to check for shipment
           setTimeout(() => {
             fetchTrackingData.mutate(response.data.id)
           }, 2000)
@@ -247,11 +255,12 @@ export default function ImportShipments() {
       setTrackingData(data)
     },
     onError: (error: any) => {
-      if (error?.details?.errors?.[0]?.status === "404") {
+      // Don't show toast for 404 - the dialog will show a helpful message
+      if (error?.details?.errors?.[0]?.status !== "404") {
         toast({ 
-          title: "Tracking Data Not Available Yet", 
-          description: "Container tracking is still in progress. Please try again in a few minutes.",
-          variant: "default" 
+          title: "Tracking Error", 
+          description: error?.message || "Failed to fetch tracking data",
+          variant: "destructive" 
         })
       }
     },
@@ -1274,7 +1283,14 @@ export default function ImportShipments() {
                 )}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground py-8">No tracking data available</p>
+              <div className="text-center py-8 space-y-3">
+                <p className="text-muted-foreground">Container tracking is in progress</p>
+                <p className="text-sm text-muted-foreground">
+                  Terminal49 is searching for tracking data. This usually takes a few minutes.
+                  <br />
+                  Please try again shortly.
+                </p>
+              </div>
             )}
           </div>
         </DialogContent>

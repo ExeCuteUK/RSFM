@@ -1240,6 +1240,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!response.ok) {
         console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
         
+        // Handle duplicate tracking request - return existing tracking request
+        const duplicateError = data.errors?.find((e: any) => e.code === 'duplicate');
+        if (duplicateError && duplicateError.meta?.tracking_request_id) {
+          // Container already being tracked, return the existing tracking request ID
+          return res.json({
+            data: {
+              id: duplicateError.meta.tracking_request_id,
+              type: "tracking_request",
+              attributes: {
+                status: "existing",
+                request_number: requestNumber,
+              }
+            }
+          });
+        }
+        
         // Add helpful message for SCAC not recognized
         const scacError = data.errors?.find((e: any) => e.code === 'not_recognized' && e.source?.pointer?.includes('scac'));
         if (scacError) {
