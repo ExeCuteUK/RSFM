@@ -11,10 +11,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertSettingsSchema, type Settings, type InsertSettings } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Mail, CheckCircle, XCircle } from "lucide-react";
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("financials");
+  
+  // Fetch Gmail connection status
+  const { data: gmailStatus, isLoading: gmailLoading } = useQuery<{ connected: boolean; email: string | null }>({
+    queryKey: ["/api/gmail/status"],
+  });
 
   // Fetch settings
   const { data: settings, isLoading } = useQuery<Settings>({
@@ -109,6 +115,7 @@ export default function SettingsPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="financials" data-testid="tab-financials">Financials & Charges</TabsTrigger>
+          <TabsTrigger value="email" data-testid="tab-email">Email</TabsTrigger>
         </TabsList>
 
         <TabsContent value="financials" className="mt-6">
@@ -308,6 +315,83 @@ export default function SettingsPage() {
                   </div>
                 </form>
               </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="email" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Email Configuration
+              </CardTitle>
+              <CardDescription>
+                Connect your Gmail account to send emails with attachments directly from the application
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {gmailLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Checking Gmail connection...</p>
+                </div>
+              ) : gmailStatus?.connected ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium text-green-900 dark:text-green-100">Gmail Connected</p>
+                      {gmailStatus.email && (
+                        <p className="text-sm text-green-700 dark:text-green-300">{gmailStatus.email}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Your Gmail account is connected. You can now send emails with PDF attachments directly from the application.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        window.open('/~/connectors', '_blank');
+                      }}
+                      data-testid="button-manage-gmail"
+                    >
+                      Manage Connection
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-900">
+                    <XCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium text-amber-900 dark:text-amber-100">Gmail Not Connected</p>
+                      <p className="text-sm text-amber-700 dark:text-amber-300">Connect your Gmail account to enable email functionality</p>
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+                    <p className="text-sm font-medium">What you'll be able to do:</p>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Send emails with PDF attachments directly from shipment and clearance documents</li>
+                      <li>Emails are sent from your own Gmail account</li>
+                      <li>Full control over your email communications</li>
+                    </ul>
+                  </div>
+                  <div className="pt-2">
+                    <Button
+                      onClick={() => {
+                        window.open('/~/connectors', '_blank');
+                      }}
+                      data-testid="button-connect-gmail"
+                    >
+                      Connect Gmail Account
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

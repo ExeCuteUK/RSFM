@@ -1420,6 +1420,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Gmail Routes ==========
+  
+  // Get Gmail connection status
+  app.get("/api/gmail/status", async (_req, res) => {
+    try {
+      const { getGmailConnectionStatus } = await import("./gmail");
+      const status = await getGmailConnectionStatus();
+      res.json(status);
+    } catch (error) {
+      res.json({ connected: false, email: null });
+    }
+  });
+
+  // Send email with attachment
+  app.post("/api/gmail/send", async (req, res) => {
+    try {
+      const { to, subject, body, attachmentUrl, attachmentFilename } = req.body;
+      
+      if (!to || !subject || !attachmentUrl || !attachmentFilename) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const { sendEmailWithAttachment } = await import("./gmail");
+      const result = await sendEmailWithAttachment({
+        to,
+        subject,
+        body: body || '',
+        attachmentUrl,
+        attachmentFilename
+      });
+
+      res.json({ success: true, messageId: result.id });
+    } catch (error) {
+      console.error("Gmail send error:", error);
+      if (error instanceof Error && error.message === 'Gmail not connected') {
+        return res.status(401).json({ error: "Gmail not connected. Please connect your Gmail account in Settings." });
+      }
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
