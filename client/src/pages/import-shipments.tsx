@@ -46,6 +46,7 @@ export default function ImportShipments() {
   const [etdUpdateDialog, setEtdUpdateDialog] = useState<{ show: boolean; newEtd: string; daysDiff: number; shipmentId: string } | null>(null)
   const [vesselUpdateDialog, setVesselUpdateDialog] = useState<{ show: boolean; newVessel: string; shipmentId: string } | null>(null)
   const [portUpdateDialog, setPortUpdateDialog] = useState<{ show: boolean; newPort: string; shipmentId: string } | null>(null)
+  const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
@@ -196,6 +197,47 @@ export default function ImportShipments() {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       toast({ title: "File deleted successfully" })
     },
+  })
+
+  const uploadFile = useMutation({
+    mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "attachment" | "pod" }) => {
+      // Get upload URL
+      const uploadResponse = await fetch("/api/objects/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name })
+      })
+      const { uploadURL } = await uploadResponse.json()
+      
+      // Upload file to storage
+      await fetch(uploadURL, {
+        method: "PUT",
+        body: file
+      })
+      
+      // Get the file path (remove query params)
+      const filePath = uploadURL.split('?')[0]
+      
+      // Update shipment with new file
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      const currentFiles = fileType === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
+      const updatedFiles = [...currentFiles, filePath]
+      
+      const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
+        ...shipment,
+        [fileType === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({ title: "File uploaded successfully" })
+    },
+    onError: () => {
+      toast({ title: "File upload failed", variant: "destructive" })
+    }
   })
 
   const updateNotes = useMutation({
@@ -539,6 +581,31 @@ export default function ImportShipments() {
   const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
     if (confirm("Are you sure you want to delete this file?")) {
       deleteFile.mutate({ id, filePath, fileType })
+    }
+  }
+
+  const handleFileDragOver = (e: React.DragEvent, shipmentId: string, type: "attachment" | "pod") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver({ shipmentId, type })
+  }
+
+  const handleFileDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver(null)
+  }
+
+  const handleFileDrop = async (e: React.DragEvent, shipmentId: string, type: "attachment" | "pod") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver(null)
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length === 0) return
+
+    for (const file of files) {
+      uploadFile.mutate({ id: shipmentId, file, fileType: type })
     }
   }
 
@@ -1219,75 +1286,109 @@ export default function ImportShipments() {
                     return (
                       <div className="mt-2 pt-2 border-t">
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="space-y-1">
+                          <div 
+                            className="space-y-1"
+                            onDragOver={(e) => handleFileDragOver(e, shipment.id, "attachment")}
+                            onDragLeave={handleFileDragLeave}
+                            onDrop={(e) => handleFileDrop(e, shipment.id, "attachment")}
+                          >
                             <p className="text-xs font-medium text-muted-foreground">Documents</p>
-                            {attachmentFiles.length > 0 ? (
-                              <div className="space-y-0.5">
-                                {attachmentFiles.map((filePath, idx) => {
-                                  const fileName = filePath.split('/').pop() || filePath
-                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                  return (
-                                    <div key={idx} className="flex items-center gap-1 group">
-                                      <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                      <a
-                                        href={downloadPath}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs text-primary hover:underline truncate flex-1"
-                                        title={fileName}
-                                      >
-                                        {fileName}
-                                      </a>
-                                      <button
-                                        onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
-                                        data-testid={`button-delete-attachment-${idx}`}
-                                        title="Delete file"
-                                      >
-                                        <X className="h-3 w-3 text-destructive" />
-                                      </button>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-muted-foreground italic">None</p>
-                            )}
+                            <div className={`min-h-[2.5rem] p-1.5 rounded border-2 border-dashed transition-colors ${
+                              dragOver?.shipmentId === shipment.id && dragOver?.type === "attachment"
+                                ? "border-blue-400 bg-blue-50 dark:bg-blue-950/20"
+                                : "border-transparent"
+                            }`}>
+                              {attachmentFiles.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {attachmentFiles.map((filePath, idx) => {
+                                    const fileName = filePath.split('/').pop() || filePath
+                                    const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                    return (
+                                      <div key={idx} className="flex items-center gap-1 group">
+                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                        <a
+                                          href={downloadPath}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-xs text-primary hover:underline truncate flex-1"
+                                          title={fileName}
+                                        >
+                                          {fileName}
+                                        </a>
+                                        <button
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                          data-testid={`button-delete-attachment-${idx}`}
+                                          title="Delete file"
+                                        >
+                                          <X className="h-3 w-3 text-destructive" />
+                                        </button>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              ) : (
+                                <p className={`text-xs italic transition-colors ${
+                                  dragOver?.shipmentId === shipment.id && dragOver?.type === "attachment"
+                                    ? "text-blue-600 dark:text-blue-400"
+                                    : "text-muted-foreground"
+                                }`}>
+                                  {dragOver?.shipmentId === shipment.id && dragOver?.type === "attachment" ? "Drop files here" : "None"}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <div className="space-y-1">
+                          <div 
+                            className="space-y-1"
+                            onDragOver={(e) => handleFileDragOver(e, shipment.id, "pod")}
+                            onDragLeave={handleFileDragLeave}
+                            onDrop={(e) => handleFileDrop(e, shipment.id, "pod")}
+                          >
                             <p className="text-xs font-medium text-muted-foreground">POD</p>
-                            {podFiles.length > 0 ? (
-                              <div className="space-y-0.5">
-                                {podFiles.map((filePath, idx) => {
-                                  const fileName = filePath.split('/').pop() || filePath
-                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                  return (
-                                    <div key={idx} className="flex items-center gap-1 group">
-                                      <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                      <a
-                                        href={downloadPath}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs text-primary hover:underline truncate flex-1"
-                                        title={fileName}
-                                      >
-                                        {fileName}
-                                      </a>
-                                      <button
-                                        onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
-                                        data-testid={`button-delete-pod-${idx}`}
-                                        title="Delete file"
-                                      >
-                                        <X className="h-3 w-3 text-destructive" />
-                                      </button>
-                                    </div>
+                            <div className={`min-h-[2.5rem] p-1.5 rounded border-2 border-dashed transition-colors ${
+                              dragOver?.shipmentId === shipment.id && dragOver?.type === "pod"
+                                ? "border-green-400 bg-green-50 dark:bg-green-950/20"
+                                : "border-transparent"
+                            }`}>
+                              {podFiles.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {podFiles.map((filePath, idx) => {
+                                    const fileName = filePath.split('/').pop() || filePath
+                                    const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                    return (
+                                      <div key={idx} className="flex items-center gap-1 group">
+                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                        <a
+                                          href={downloadPath}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-xs text-primary hover:underline truncate flex-1"
+                                          title={fileName}
+                                        >
+                                          {fileName}
+                                        </a>
+                                        <button
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                          data-testid={`button-delete-pod-${idx}`}
+                                          title="Delete file"
+                                        >
+                                          <X className="h-3 w-3 text-destructive" />
+                                        </button>
+                                      </div>
                                   )
                                 })}
                               </div>
                             ) : (
-                              <p className="text-xs text-muted-foreground italic">None</p>
+                              <p className={`text-xs italic transition-colors ${
+                                dragOver?.shipmentId === shipment.id && dragOver?.type === "pod"
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-muted-foreground"
+                              }`}>
+                                {dragOver?.shipmentId === shipment.id && dragOver?.type === "pod" ? "Drop files here" : "None"}
+                              </p>
                             )}
+                            </div>
                           </div>
                         </div>
                         <div className="mt-2 pt-2 border-t">
