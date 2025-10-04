@@ -212,29 +212,32 @@ export default function ImportShipments() {
     },
     onSuccess: (response: any) => {
       const status = response?.data?.attributes?.status
-      if (status === "existing") {
+      const shipmentId = response?.data?.relationships?.tracked_object?.data?.id
+      
+      if (status === "view_on_terminal49") {
+        // API limitations - direct to Terminal49 website
+        const terminal49Url = response?.data?.meta?.terminal49_url || "https://app.terminal49.com"
+        setTrackingShipment(null)
+        window.open(terminal49Url, '_blank')
+        toast({ 
+          title: "Opening Terminal49", 
+          description: "Tracking data is available on Terminal49's website. A new tab has been opened."
+        })
+      } else if (shipmentId) {
+        // Shipment found, fetch tracking data
         toast({ 
           title: "Loading Tracking Data", 
           description: "Retrieving container tracking information..." 
         })
-        // Container already being tracked, try to fetch data
-        if (response?.data?.id) {
-          fetchTrackingData.mutate(response.data.id)
-        }
-      } else if (status === "pending") {
+        fetchTrackingData.mutate(shipmentId)
+      } else {
+        // Tracking request created
         toast({ 
           title: "Container Tracking Request Created", 
-          description: "Terminal49 is searching for your container. This may take a few moments." 
+          description: status === "pending" 
+            ? "Terminal49 is searching for your container. This may take a few moments."
+            : "Container tracking in progress." 
         })
-        // Try to fetch shipment data anyway (it might be available)
-        if (response?.data?.id) {
-          setTimeout(() => {
-            fetchTrackingData.mutate(response.data.id)
-          }, 2000)
-        }
-      } else if (response?.data?.relationships?.shipment?.data?.id) {
-        toast({ title: "Container tracking started" })
-        fetchTrackingData.mutate(response.data.relationships.shipment.data.id)
       }
     },
     onError: (error: any) => {

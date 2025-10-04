@@ -1240,17 +1240,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!response.ok) {
         console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
         
-        // Handle duplicate tracking request - return existing tracking request
+        // Handle duplicate tracking request - container already being tracked
         const duplicateError = data.errors?.find((e: any) => e.code === 'duplicate');
-        if (duplicateError && duplicateError.meta?.tracking_request_id) {
-          // Container already being tracked, return the existing tracking request ID
+        if (duplicateError) {
+          try {
+            // Fetch all shipments and find the matching one
+            const shipmentsResponse = await fetch(
+              `${TERMINAL49_BASE_URL}/shipments?include=containers`,
+              {
+                headers: {
+                  "Authorization": `Token ${TERMINAL49_API_KEY}`,
+                  "Content-Type": "application/vnd.api+json",
+                },
+              }
+            );
+            
+            if (shipmentsResponse.ok) {
+              const shipmentsData = await shipmentsResponse.json();
+              
+              // Find the shipment that matches our container
+              // Check both bill_of_lading_number and containers array
+              const shipment = shipmentsData.data?.find((s: any) => {
+                // Check bill of lading number
+                if (s.attributes?.bill_of_lading_number === requestNumber) {
+                  return true;
+                }
+                // Check containers array
+                if (s.attributes?.containers?.some((c: any) => c.number === requestNumber)) {
+                  return true;
+                }
+                return false;
+              });
+              
+              if (shipment) {
+                // Return a response with the shipment ID
+                return res.json({
+                  data: {
+                    id: duplicateError.meta?.tracking_request_id,
+                    type: "tracking_request",
+                    attributes: {
+                      status: "created",
+                    },
+                    relationships: {
+                      tracked_object: {
+                        data: {
+                          id: shipment.id,
+                          type: "shipment"
+                        }
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          } catch (e) {
+            console.error("Error fetching shipments:", e);
+          }
+          
+          // Fallback: Direct to Terminal49 website
           return res.json({
             data: {
-              id: duplicateError.meta.tracking_request_id,
+              id: duplicateError.meta?.tracking_request_id,
               type: "tracking_request",
               attributes: {
-                status: "existing",
+                status: "view_on_terminal49",
                 request_number: requestNumber,
+              },
+              meta: {
+                terminal49_url: `https://app.terminal49.com/shipments`
               }
             }
           });
@@ -1287,8 +1344,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: "Terminal49 API key not configured" });
       }
 
+      // Workaround: API key can't fetch individual shipments, so fetch all and filter
       const response = await fetch(
-        `${TERMINAL49_BASE_URL}/shipments/${req.params.id}?include=containers,transport_events,terminal_events`,
+        `${TERMINAL49_BASE_URL}/shipments`,
         {
           headers: {
             "Authorization": `Token ${TERMINAL49_API_KEY}`,
@@ -1307,7 +1365,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      res.json(data);
+      // Find the requested shipment
+      const shipment = data.data?.find((s: any) => s.id === req.params.id);
+      
+      if (!shipment) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      // Return in the same format as the individual endpoint would
+      res.json({
+        data: shipment,
+        included: data.included?.filter((inc: any) => {
+          // Filter included records related to this shipment
+          return inc.relationships?.shipment?.data?.id === req.params.id;
+        })
+      });
     } catch (error) {
       console.error("Terminal49 shipment error:", error);
       res.status(500).json({ error: "Failed to get shipment details" });
