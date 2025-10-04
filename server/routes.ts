@@ -1882,15 +1882,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build email body with optional signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
       if (user.includeSignature && user.emailSignature) {
-        // Convert Quill's paragraph-based HTML to div-based HTML for better email compatibility
+        // Apply aggressive inline styles to fix spacing while preserving fonts
         let styledSignature = user.emailSignature
           // Remove empty paragraphs that just have <br>
-          .replace(/<p><br\s*\/?><\/p>/gi, '<br>')
+          .replace(/<p><br\s*\/?><\/p>/gi, '')
           .replace(/<p>\s*<\/p>/gi, '')
-          // Convert <p> tags to <div> with tight styling
-          .replace(/<p>/gi, '<div style="margin:0;padding:0;line-height:1.2;">')
-          .replace(/<p\s+/gi, '<div style="margin:0;padding:0;line-height:1.2;" ')
-          .replace(/<\/p>/gi, '</div>');
+          // Add inline styles to <p> tags with font preservation
+          .replace(/<p>/gi, '<p style="margin:0;padding:0;line-height:1.2;font-family:Arial,Helvetica,sans-serif;">')
+          .replace(/<p\s+/gi, '<p style="margin:0;padding:0;line-height:1.2;font-family:Arial,Helvetica,sans-serif;" ');
         
         messageText += '<br><br>' + styledSignature;
       }
