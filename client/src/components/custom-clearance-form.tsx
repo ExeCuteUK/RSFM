@@ -27,9 +27,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
-import { InlineUploader } from "./InlineUploader"
+import { ObjectStorageUploader } from "@/components/ui/object-storage-uploader"
 import { useJobFileGroup } from "@/hooks/use-job-file-group"
 import { FileText, Download, X } from "lucide-react"
+import { useState } from "react"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -38,6 +39,9 @@ interface CustomClearanceFormProps {
 }
 
 export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: CustomClearanceFormProps) {
+  const [pendingTransportDocuments, setPendingTransportDocuments] = useState<string[]>([])
+  const [pendingClearanceDocuments, setPendingClearanceDocuments] = useState<string[]>([])
+  
   const form = useForm<InsertCustomClearance>({
     resolver: zodResolver(insertCustomClearanceSchema),
     defaultValues: {
@@ -97,9 +101,32 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const jobType = form.watch("jobType")
   const containerShipment = form.watch("containerShipment")
 
+  const handleFormSubmit = (data: InsertCustomClearance) => {
+    const normalizedTransportDocuments: string[] = [...(data.transportDocuments || [])];
+    const normalizedClearanceDocuments: string[] = [...(data.clearanceDocuments || [])];
+
+    if (pendingTransportDocuments.length > 0) {
+      const cleanUrls = pendingTransportDocuments.map((url) => url.split("?")[0]);
+      normalizedTransportDocuments.push(...cleanUrls);
+    }
+
+    if (pendingClearanceDocuments.length > 0) {
+      const cleanUrls = pendingClearanceDocuments.map((url) => url.split("?")[0]);
+      normalizedClearanceDocuments.push(...cleanUrls);
+    }
+
+    const finalData = {
+      ...data,
+      transportDocuments: normalizedTransportDocuments,
+      clearanceDocuments: normalizedClearanceDocuments,
+    };
+
+    onSubmit(finalData);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid gap-6">
           <Card>
             <CardHeader>
@@ -742,60 +769,52 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   name="transportDocuments"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-3">
-                        <InlineUploader
-                          maxNumberOfFiles={10}
-                          maxFileSize={20 * 1024 * 1024}
-                          onGetUploadParameters={async (file) => {
-                            const response = await fetch("/api/objects/upload", { 
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ filename: file?.name })
-                            });
-                            const data = await response.json();
-                            return { method: "PUT" as const, url: data.uploadURL };
-                          }}
-                          onComplete={(result) => {
-                            if (result.successful && result.successful.length > 0) {
-                              const urls = result.successful.map((file: any) => file.uploadURL?.split('?')[0]);
-                              const currentUrls = field.value || [];
-                              field.onChange([...currentUrls, ...urls]);
-                            }
-                          }}
-                        />
-                        
-                        {/* Display shared documents from job_file_groups */}
-                        {jobRef && sharedDocuments && sharedDocuments.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground">Shared Transport Documents:</p>
-                            {sharedDocuments.map((path: string, index: number) => {
-                              const downloadPath = path.startsWith('/') ? path : `/objects/${path}`;
-                              return (
-                                <div key={`shared-${index}`} className="flex items-center justify-between p-2 border rounded-md bg-blue-50 dark:bg-blue-950">
-                                  <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                      <FormControl>
+                        <div className="space-y-3">
+                          <ObjectStorageUploader
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            pendingFiles={pendingTransportDocuments}
+                            onPendingFilesChange={setPendingTransportDocuments}
+                            maxFiles={10}
+                            testId="transport-docs-uploader"
+                            label="Transport Documents:"
+                            dragDropLabel="Drop transport documents here or click to browse"
+                          />
+                          
+                          {/* Display shared documents from job_file_groups */}
+                          {jobRef && sharedDocuments && sharedDocuments.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-sm text-muted-foreground">Shared Transport Documents:</p>
+                              {sharedDocuments.map((path: string, index: number) => {
+                                const downloadPath = path.startsWith('/') ? path : `/objects/${path}`;
+                                return (
+                                  <div key={`shared-${index}`} className="flex items-center justify-between p-2 border rounded-md bg-blue-50 dark:bg-blue-950">
+                                    <div className="flex items-center gap-2">
+                                      <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                      <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                                    </div>
+                                    <a href={downloadPath} target="_blank" rel="noopener noreferrer">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        data-testid={`button-download-shared-transport-${index}`}
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </a>
                                   </div>
-                                  <a href={downloadPath} target="_blank" rel="noopener noreferrer">
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      data-testid={`button-download-shared-transport-${index}`}
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </Button>
-                                  </a>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                        
-                        {isLoadingSharedDocs && jobRef && (
-                          <p className="text-sm text-muted-foreground">Loading shared documents...</p>
-                        )}
-                      </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          
+                          {isLoadingSharedDocs && jobRef && (
+                            <p className="text-sm text-muted-foreground">Loading shared documents...</p>
+                          )}
+                        </div>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -813,28 +832,18 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   name="clearanceDocuments"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-3">
-                        <InlineUploader
-                          maxNumberOfFiles={10}
-                          maxFileSize={20 * 1024 * 1024}
-                          onGetUploadParameters={async (file) => {
-                            const response = await fetch("/api/objects/upload", { 
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ filename: file?.name })
-                            });
-                            const data = await response.json();
-                            return { method: "PUT" as const, url: data.uploadURL };
-                          }}
-                          onComplete={(result) => {
-                            if (result.successful && result.successful.length > 0) {
-                              const urls = result.successful.map((file: any) => file.uploadURL?.split('?')[0]);
-                              const currentUrls = field.value || [];
-                              field.onChange([...currentUrls, ...urls]);
-                            }
-                          }}
+                      <FormControl>
+                        <ObjectStorageUploader
+                          value={field.value || []}
+                          onChange={field.onChange}
+                          pendingFiles={pendingClearanceDocuments}
+                          onPendingFilesChange={setPendingClearanceDocuments}
+                          maxFiles={10}
+                          testId="clearance-docs-uploader"
+                          label="Clearance Documents:"
+                          dragDropLabel="Drop clearance documents here or click to browse"
                         />
-                      </div>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
