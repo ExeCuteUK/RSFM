@@ -1317,6 +1317,8 @@ export class DatabaseStorage implements IStorage {
     
     // Sync files to job_file_groups if jobRef exists and attachments were updated
     if (updated.jobRef && updates.attachments !== undefined) {
+      const newDocuments = updated.attachments || [];
+      
       // Get existing job file group
       const [existingGroup] = await db.select()
         .from(jobFileGroups)
@@ -1325,15 +1327,22 @@ export class DatabaseStorage implements IStorage {
       if (existingGroup) {
         // Update documents with the new attachments
         await db.update(jobFileGroups)
-          .set({ documents: updated.attachments || [] })
+          .set({ documents: newDocuments })
           .where(eq(jobFileGroups.jobRef, updated.jobRef));
       } else {
         // Create new job file group with the attachments
         await db.insert(jobFileGroups).values({
           jobRef: updated.jobRef,
-          documents: updated.attachments || [],
+          documents: newDocuments,
           rsInvoices: [],
         });
+      }
+      
+      // Also sync back to linked custom clearance if it exists
+      if (updated.linkedClearanceId) {
+        await db.update(customClearances)
+          .set({ transportDocuments: newDocuments })
+          .where(eq(customClearances.id, updated.linkedClearanceId));
       }
     }
     
