@@ -1193,10 +1193,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ========== Backup Routes ==========
+  // ========== Backup Routes (Admin only) ==========
 
   // List all backups
-  app.get("/api/backups", async (_req, res) => {
+  app.get("/api/backups", requireAuth, requireAdmin, async (_req, res) => {
     try {
       const { readdirSync, readFileSync, statSync } = await import("fs");
       const { join } = await import("path");
@@ -1233,7 +1233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create backup of all contact databases
-  app.post("/api/backups/create", async (_req, res) => {
+  app.post("/api/backups/create", requireAuth, requireAdmin, async (_req, res) => {
     try {
       const { execSync } = await import("child_process");
       const result = execSync("tsx scripts/backup-contact-databases.ts", {
@@ -1264,7 +1264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Restore from specific backup
-  app.post("/api/backups/restore/:backupName", async (req, res) => {
+  app.post("/api/backups/restore/:backupName", requireAuth, requireAdmin, async (req, res) => {
     try {
       const { backupName } = req.params;
       const { tables } = req.body;
@@ -1313,7 +1313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete specific backup
-  app.delete("/api/backups/:backupName", async (req, res) => {
+  app.delete("/api/backups/:backupName", requireAuth, requireAdmin, async (req, res) => {
     try {
       const { backupName } = req.params;
       const { rmSync } = await import("fs");

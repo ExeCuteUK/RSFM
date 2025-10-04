@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Database, Download, Upload, AlertCircle, CheckCircle2, Trash2, Clock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -38,10 +39,32 @@ interface Backup {
 
 export default function BackupsPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [showRestoreWarning, setShowRestoreWarning] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
+
+  // Check if user is admin
+  if (!user?.isAdmin) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Access Denied</CardTitle>
+            <CardDescription>
+              Administrator access is required to manage backups
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              You don't have permission to view this page. Please contact your administrator.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Fetch all backups
   const { data: backups, isLoading } = useQuery<Backup[]>({
