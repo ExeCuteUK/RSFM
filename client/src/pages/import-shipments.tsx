@@ -225,7 +225,8 @@ export default function ImportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups/batch"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       toast({ title: "File deleted successfully" })
     },
   })
@@ -264,7 +265,8 @@ export default function ImportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups/batch"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       toast({ title: "File uploaded successfully" })
     },
     onError: () => {
