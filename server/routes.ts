@@ -1125,6 +1125,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Terminal49 Container Tracking Routes ==========
+  
+  const TERMINAL49_API_KEY = process.env.TERMINAL49_API_KEY;
+  const TERMINAL49_BASE_URL = "https://api.terminal49.com/v2";
+
+  // Create tracking request for a container
+  app.post("/api/terminal49/track", async (req, res) => {
+    try {
+      const { containerNumber, shippingLine, billOfLading } = req.body;
+      
+      if (!TERMINAL49_API_KEY) {
+        return res.status(500).json({ error: "Terminal49 API key not configured" });
+      }
+
+      // Determine request type and number
+      let requestType = "container";
+      let requestNumber = containerNumber;
+      
+      if (billOfLading) {
+        requestType = "bill_of_lading";
+        requestNumber = billOfLading;
+      }
+
+      const response = await fetch(`${TERMINAL49_BASE_URL}/tracking_requests`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Token ${TERMINAL49_API_KEY}`,
+          "Content-Type": "application/vnd.api+json",
+        },
+        body: JSON.stringify({
+          data: {
+            type: "tracking_request",
+            attributes: {
+              request_type: requestType,
+              request_number: requestNumber,
+              scac: shippingLine || null,
+            },
+          },
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return res.status(response.status).json({ 
+          error: "Terminal49 API error", 
+          details: data 
+        });
+      }
+
+      res.json(data);
+    } catch (error) {
+      console.error("Terminal49 track error:", error);
+      res.status(500).json({ error: "Failed to create tracking request" });
+    }
+  });
+
+  // Get shipment details by ID
+  app.get("/api/terminal49/shipments/:id", async (req, res) => {
+    try {
+      if (!TERMINAL49_API_KEY) {
+        return res.status(500).json({ error: "Terminal49 API key not configured" });
+      }
+
+      const response = await fetch(
+        `${TERMINAL49_BASE_URL}/shipments/${req.params.id}?include=containers,transport_events,terminal_events`,
+        {
+          headers: {
+            "Authorization": `Token ${TERMINAL49_API_KEY}`,
+            "Content-Type": "application/vnd.api+json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return res.status(response.status).json({ 
+          error: "Terminal49 API error", 
+          details: data 
+        });
+      }
+
+      res.json(data);
+    } catch (error) {
+      console.error("Terminal49 shipment error:", error);
+      res.status(500).json({ error: "Failed to get shipment details" });
+    }
+  });
+
+  // List all tracked shipments
+  app.get("/api/terminal49/shipments", async (req, res) => {
+    try {
+      if (!TERMINAL49_API_KEY) {
+        return res.status(500).json({ error: "Terminal49 API key not configured" });
+      }
+
+      const response = await fetch(
+        `${TERMINAL49_BASE_URL}/shipments?include=containers`,
+        {
+          headers: {
+            "Authorization": `Token ${TERMINAL49_API_KEY}`,
+            "Content-Type": "application/vnd.api+json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return res.status(response.status).json({ 
+          error: "Terminal49 API error", 
+          details: data 
+        });
+      }
+
+      res.json(data);
+    } catch (error) {
+      console.error("Terminal49 list shipments error:", error);
+      res.status(500).json({ error: "Failed to list shipments" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
