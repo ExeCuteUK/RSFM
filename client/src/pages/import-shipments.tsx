@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -40,6 +40,8 @@ export default function ImportShipments() {
   const [notesValue, setNotesValue] = useState("")
   const [viewingShipment, setViewingShipment] = useState<ImportShipment | null>(null)
   const [statusPrompt, setStatusPrompt] = useState<{ show: boolean; newStatus: string; message: string }>({ show: false, newStatus: '', message: '' })
+  const [trackingShipment, setTrackingShipment] = useState<ImportShipment | null>(null)
+  const [trackingData, setTrackingData] = useState<any>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
@@ -204,6 +206,31 @@ export default function ImportShipments() {
     },
   })
 
+  const trackContainer = useMutation({
+    mutationFn: async ({ containerNumber, shippingLine }: { containerNumber: string; shippingLine?: string }) => {
+      return apiRequest("POST", "/api/terminal49/track", { containerNumber, shippingLine })
+    },
+    onSuccess: (response: any) => {
+      toast({ title: "Container tracking started" })
+      // Get shipment ID from the response and fetch tracking data
+      if (response?.data?.relationships?.shipment?.data?.id) {
+        fetchTrackingData.mutate(response.data.relationships.shipment.data.id)
+      }
+    },
+    onError: () => {
+      toast({ title: "Failed to track container", variant: "destructive" })
+    },
+  })
+
+  const fetchTrackingData = useMutation({
+    mutationFn: async (shipmentId: string) => {
+      return apiRequest("GET", `/api/terminal49/shipments/${shipmentId}`)
+    },
+    onSuccess: (data) => {
+      setTrackingData(data)
+    },
+  })
+
   const formatCurrency = (currency: string | null | undefined) => {
     if (!currency) return ""
     if (currency === "GBP") return "£"
@@ -223,6 +250,19 @@ export default function ImportShipments() {
   const handleCloseNotes = () => {
     setNotesShipmentId(null)
     setNotesValue("")
+  }
+
+  const handleTrackContainer = (shipment: ImportShipment) => {
+    if (!shipment.trailerOrContainerNumber) {
+      toast({ title: "No container number available", variant: "destructive" })
+      return
+    }
+    setTrackingShipment(shipment)
+    setTrackingData(null)
+    trackContainer.mutate({
+      containerNumber: shipment.trailerOrContainerNumber,
+      shippingLine: shipment.shippingLine || undefined,
+    })
   }
 
   const handleCreateNew = () => {
@@ -589,6 +629,18 @@ export default function ImportShipments() {
                         {shipment.jobRef}
                       </h3>
                       <div className="flex -space-x-1">
+                        {shipment.trailerOrContainerNumber && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleTrackContainer(shipment)}
+                            data-testid={`button-track-${shipment.id}`}
+                            title="Track Container"
+                            className="h-7 w-7"
+                          >
+                            <MapPinned className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          </Button>
+                        )}
                         <Button
                           size="icon"
                           variant="ghost"
@@ -1138,6 +1190,66 @@ export default function ImportShipments() {
             >
               {updateNotes.isPending ? "Saving..." : "Save/Update"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!trackingShipment} onOpenChange={(open) => !open && setTrackingShipment(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Container Tracking - {trackingShipment?.trailerOrContainerNumber}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {trackContainer.isPending || fetchTrackingData.isPending ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+                <p className="ml-3 text-muted-foreground">Loading tracking data...</p>
+              </div>
+            ) : trackingData ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">Container Number</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.containers?.[0]?.number || trackingShipment?.trailerOrContainerNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">Status</p>
+                    <p className="text-lg capitalize">{trackingData.data?.attributes?.status?.replace(/_/g, ' ')}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">Pod</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.pod_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">ETA</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.pod_eta ? format(new Date(trackingData.data.attributes.pod_eta), 'MMM dd, yyyy') : 'N/A'}</p>
+                  </div>
+                </div>
+                
+                {trackingData.included && trackingData.included.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-2">Transport Events</h3>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {trackingData.included
+                        .filter((item: any) => item.type === 'transport_event')
+                        .map((event: any, index: number) => (
+                          <div key={index} className="border rounded-lg p-3">
+                            <div className="flex justify-between">
+                              <p className="font-semibold">{event.attributes?.event}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {event.attributes?.timestamp ? format(new Date(event.attributes.timestamp), 'MMM dd, yyyy HH:mm') : ''}
+                              </p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{event.attributes?.location}</p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">No tracking data available</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
