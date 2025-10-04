@@ -1971,7 +1971,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
           <Card>
             <CardHeader>
-              <CardTitle>File Attachments</CardTitle>
+              <CardTitle>Transport Documents</CardTitle>
             </CardHeader>
             <CardContent>
               <FormField
