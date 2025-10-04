@@ -427,6 +427,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all contact emails for autocomplete
+  app.get("/api/contacts/emails", async (_req, res) => {
+    try {
+      const importCustomers = await storage.getAllImportCustomers();
+      const exportCustomers = await storage.getAllExportCustomers();
+      
+      const emails: Array<{ email: string; name: string; type: string }> = [];
+      
+      // Collect import customer emails
+      importCustomers.forEach(customer => {
+        if (customer.email && Array.isArray(customer.email)) {
+          customer.email.forEach(email => {
+            if (email && email.trim()) {
+              emails.push({ email: email.trim(), name: customer.companyName || '', type: 'Import Customer' });
+            }
+          });
+        }
+        if (customer.accountsEmail && Array.isArray(customer.accountsEmail)) {
+          customer.accountsEmail.forEach(email => {
+            if (email && email.trim()) {
+              emails.push({ email: email.trim(), name: customer.companyName || '', type: 'Import Customer' });
+            }
+          });
+        }
+      });
+      
+      // Collect export customer emails
+      exportCustomers.forEach(customer => {
+        if (customer.email && Array.isArray(customer.email)) {
+          customer.email.forEach(email => {
+            if (email && email.trim()) {
+              emails.push({ email: email.trim(), name: customer.companyName || '', type: 'Export Customer' });
+            }
+          });
+        }
+        if (customer.accountsEmail && Array.isArray(customer.accountsEmail)) {
+          customer.accountsEmail.forEach(email => {
+            if (email && email.trim()) {
+              emails.push({ email: email.trim(), name: customer.companyName || '', type: 'Export Customer' });
+            }
+          });
+        }
+      });
+      
+      // Remove duplicates and sort
+      const uniqueEmails = Array.from(new Map(emails.map(item => [item.email, item])).values());
+      uniqueEmails.sort((a, b) => a.email.localeCompare(b.email));
+      
+      res.json(uniqueEmails);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch contact emails" });
+    }
+  });
+
   // ========== Hauliers Routes ==========
   
   // Get all hauliers
