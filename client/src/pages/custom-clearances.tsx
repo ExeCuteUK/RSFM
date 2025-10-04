@@ -39,6 +39,7 @@ export default function CustomClearances() {
   const [notesValue, setNotesValue] = useState("")
   const [dragOver, setDragOver] = useState<{ clearanceId: string; type: "transport" | "clearance" } | null>(null)
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
+  const [redButtonPrompt, setRedButtonPrompt] = useState<{ clearanceId: string; statusType: string; statusValue: number } | null>(null)
   const { toast } = useToast()
   const [location] = useLocation()
 
@@ -133,6 +134,15 @@ export default function CustomClearances() {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       setNotesClearanceId(null)
       toast({ title: "Notes updated successfully" })
+    },
+  })
+
+  const updateRequestClearanceStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/request-clearance-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
@@ -250,20 +260,79 @@ export default function CustomClearances() {
     }
   })
 
+  const handleRequestClearanceStatusUpdate = (id: string, status: number) => {
+    if (status === 4) {
+      setRedButtonPrompt({ clearanceId: id, statusType: 'requestClearance', statusValue: status })
+    } else {
+      updateRequestClearanceStatus.mutate({ id, status })
+    }
+  }
+
   const handleAdviseAgentStatusUpdate = (id: string, status: number) => {
-    updateAdviseAgentStatus.mutate({ id, status })
+    if (status === 4) {
+      setRedButtonPrompt({ clearanceId: id, statusType: 'adviseAgent', statusValue: status })
+    } else {
+      updateAdviseAgentStatus.mutate({ id, status })
+    }
   }
 
   const handleSendEntryStatusUpdate = (id: string, status: number) => {
-    updateSendEntryStatus.mutate({ id, status })
+    if (status === 4) {
+      setRedButtonPrompt({ clearanceId: id, statusType: 'sendEntry', statusValue: status })
+    } else {
+      updateSendEntryStatus.mutate({ id, status })
+    }
   }
 
   const handleInvoiceStatusUpdate = (id: string, status: number) => {
-    updateInvoiceStatus.mutate({ id, status })
+    if (status === 4) {
+      setRedButtonPrompt({ clearanceId: id, statusType: 'invoice', statusValue: status })
+    } else {
+      updateInvoiceStatus.mutate({ id, status })
+    }
   }
 
   const handleSendClearedEntryStatusUpdate = (id: string, status: number) => {
-    updateSendClearedEntryStatus.mutate({ id, status })
+    if (status === 4) {
+      setRedButtonPrompt({ clearanceId: id, statusType: 'sendClearedEntry', statusValue: status })
+    } else {
+      updateSendClearedEntryStatus.mutate({ id, status })
+    }
+  }
+
+  const handleRedButtonConfirm = (openNotes: boolean) => {
+    if (!redButtonPrompt) return
+
+    // Update the status
+    const { clearanceId, statusType, statusValue } = redButtonPrompt
+    switch (statusType) {
+      case 'requestClearance':
+        updateRequestClearanceStatus.mutate({ id: clearanceId, status: statusValue })
+        break
+      case 'adviseAgent':
+        updateAdviseAgentStatus.mutate({ id: clearanceId, status: statusValue })
+        break
+      case 'sendEntry':
+        updateSendEntryStatus.mutate({ id: clearanceId, status: statusValue })
+        break
+      case 'invoice':
+        updateInvoiceStatus.mutate({ id: clearanceId, status: statusValue })
+        break
+      case 'sendClearedEntry':
+        updateSendClearedEntryStatus.mutate({ id: clearanceId, status: statusValue })
+        break
+    }
+
+    // If user wants to add notes, open the notes dialog
+    if (openNotes) {
+      const clearance = clearances.find(c => c.id === clearanceId)
+      if (clearance) {
+        setNotesClearanceId(clearanceId)
+        setNotesValue(clearance.additionalNotes || "")
+      }
+    }
+
+    setRedButtonPrompt(null)
   }
 
   const handleFileDragOver = (e: React.DragEvent, clearanceId: string, type: "transport" | "clearance") => {
@@ -680,6 +749,27 @@ export default function CustomClearances() {
                       <div className="space-y-1">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
+                            <ListTodo className="h-3.5 w-3.5 text-muted-foreground" />
+                            <p className={`text-xs ${getStatusColor(clearance.requestClearanceStatusIndicator)} font-medium`} data-testid={`todo-request-clearance-${clearance.id}`}>
+                              Request Clearance
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleRequestClearanceStatusUpdate(clearance.id, 1)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.requestClearanceStatusIndicator === 1 || clearance.requestClearanceStatusIndicator === null
+                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              }`}
+                              data-testid={`button-request-yellow-${clearance.id}`}
+                              title="To Do"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
                             <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
                             <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium`} data-testid={`todo-advise-agent-${clearance.id}`}>
                               Advise Clearance To Agent
@@ -694,17 +784,7 @@ export default function CustomClearances() {
                                   : 'bg-yellow-200 border-yellow-300 hover-elevate'
                               }`}
                               data-testid={`button-advise-yellow-${clearance.id}`}
-                              title="Yellow Status (1)"
-                            />
-                            <button
-                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 2)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.adviseAgentStatusIndicator === 2
-                                  ? 'bg-orange-400 border-orange-500 scale-110'
-                                  : 'bg-orange-200 border-orange-300 hover-elevate'
-                              }`}
-                              data-testid={`button-advise-orange-${clearance.id}`}
-                              title="Orange Status (2)"
+                              title="To Do"
                             />
                             <button
                               onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 3)}
@@ -714,17 +794,7 @@ export default function CustomClearances() {
                                   : 'bg-green-200 border-green-300 hover-elevate'
                               }`}
                               data-testid={`button-advise-green-${clearance.id}`}
-                              title="Green Status (3)"
-                            />
-                            <button
-                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 4)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.adviseAgentStatusIndicator === 4
-                                  ? 'bg-red-400 border-red-500 scale-110'
-                                  : 'bg-red-200 border-red-300 hover-elevate'
-                              }`}
-                              data-testid={`button-advise-red-${clearance.id}`}
-                              title="Red Status (4)"
+                              title="Completed"
                             />
                           </div>
                         </div>
@@ -745,17 +815,7 @@ export default function CustomClearances() {
                                   : 'bg-yellow-200 border-yellow-300 hover-elevate'
                               }`}
                               data-testid={`button-entry-yellow-${clearance.id}`}
-                              title="Yellow Status (1)"
-                            />
-                            <button
-                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 2)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendEntryToCustomerStatusIndicator === 2
-                                  ? 'bg-orange-400 border-orange-500 scale-110'
-                                  : 'bg-orange-200 border-orange-300 hover-elevate'
-                              }`}
-                              data-testid={`button-entry-orange-${clearance.id}`}
-                              title="Orange Status (2)"
+                              title="To Do"
                             />
                             <button
                               onClick={() => handleSendEntryStatusUpdate(clearance.id, 3)}
@@ -765,17 +825,7 @@ export default function CustomClearances() {
                                   : 'bg-green-200 border-green-300 hover-elevate'
                               }`}
                               data-testid={`button-entry-green-${clearance.id}`}
-                              title="Green Status (3)"
-                            />
-                            <button
-                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 4)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendEntryToCustomerStatusIndicator === 4
-                                  ? 'bg-red-400 border-red-500 scale-110'
-                                  : 'bg-red-200 border-red-300 hover-elevate'
-                              }`}
-                              data-testid={`button-entry-red-${clearance.id}`}
-                              title="Red Status (4)"
+                              title="Completed"
                             />
                           </div>
                         </div>
@@ -797,17 +847,7 @@ export default function CustomClearances() {
                                     : 'bg-yellow-200 border-yellow-300 hover-elevate'
                                 }`}
                                 data-testid={`button-invoice-yellow-${clearance.id}`}
-                                title="Yellow Status (1)"
-                              />
-                              <button
-                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 2)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.invoiceCustomerStatusIndicator === 2
-                                    ? 'bg-orange-400 border-orange-500 scale-110'
-                                    : 'bg-orange-200 border-orange-300 hover-elevate'
-                                }`}
-                                data-testid={`button-invoice-orange-${clearance.id}`}
-                                title="Orange Status (2)"
+                                title="To Do"
                               />
                               <button
                                 onClick={() => handleInvoiceStatusUpdate(clearance.id, 3)}
@@ -817,17 +857,7 @@ export default function CustomClearances() {
                                     : 'bg-green-200 border-green-300 hover-elevate'
                                 }`}
                                 data-testid={`button-invoice-green-${clearance.id}`}
-                                title="Green Status (3)"
-                              />
-                              <button
-                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 4)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.invoiceCustomerStatusIndicator === 4
-                                    ? 'bg-red-400 border-red-500 scale-110'
-                                    : 'bg-red-200 border-red-300 hover-elevate'
-                                }`}
-                                data-testid={`button-invoice-red-${clearance.id}`}
-                                title="Red Status (4)"
+                                title="Completed"
                               />
                             </div>
                           </div>
@@ -850,17 +880,7 @@ export default function CustomClearances() {
                                     : 'bg-yellow-200 border-yellow-300 hover-elevate'
                                 }`}
                                 data-testid={`button-cleared-yellow-${clearance.id}`}
-                                title="Yellow Status (1)"
-                              />
-                              <button
-                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 2)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendClearedEntryStatusIndicator === 2
-                                    ? 'bg-orange-400 border-orange-500 scale-110'
-                                    : 'bg-orange-200 border-orange-300 hover-elevate'
-                                }`}
-                                data-testid={`button-cleared-orange-${clearance.id}`}
-                                title="Orange Status (2)"
+                                title="To Do"
                               />
                               <button
                                 onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 3)}
@@ -870,17 +890,7 @@ export default function CustomClearances() {
                                     : 'bg-green-200 border-green-300 hover-elevate'
                                 }`}
                                 data-testid={`button-cleared-green-${clearance.id}`}
-                                title="Green Status (3)"
-                              />
-                              <button
-                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 4)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendClearedEntryStatusIndicator === 4
-                                    ? 'bg-red-400 border-red-500 scale-110'
-                                    : 'bg-red-200 border-red-300 hover-elevate'
-                                }`}
-                                data-testid={`button-cleared-red-${clearance.id}`}
-                                title="Red Status (4)"
+                                title="Completed"
                               />
                             </div>
                           </div>
@@ -1021,6 +1031,21 @@ export default function CustomClearances() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!redButtonPrompt} onOpenChange={(open) => !open && setRedButtonPrompt(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Issue Detected</AlertDialogTitle>
+            <AlertDialogDescription>
+              You've marked this status as having an issue. Would you like to leave a note about the possible issue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => handleRedButtonConfirm(false)}>No, Continue</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleRedButtonConfirm(true)}>Yes, Add Note</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

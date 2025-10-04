@@ -559,6 +559,7 @@ export const customClearances = pgTable("custom_clearances", {
   clearanceDocuments: text("clearance_documents").array(),
   
   // Status Indicators (1=yellow, 2=orange, 3=green, 4=red)
+  requestClearanceStatusIndicator: integer("request_clearance_status_indicator").default(1),
   adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(1),
   sendEntryToCustomerStatusIndicator: integer("send_entry_to_customer_status_indicator").default(1),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),

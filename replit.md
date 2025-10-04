@@ -44,6 +44,15 @@ The backend is developed with Express.js and TypeScript on Node.js, utilizing an
 
 **Export Receivers Database:** Uses a simplified structure with combined address field (multiline) and separate country field. Email field has been removed from this entity.
 
+**Custom Clearance Status Indicators:**
+- **Request Clearance** (new): Yellow button only, appears first in To-Do list
+- **Advise Clearance To Agent**: Yellow and Green only (orange/red removed)
+- **Send Import Entry to Customer**: Yellow and Green only (orange/red removed)
+- **Invoice Customer**: Yellow and Green only (orange/red removed)
+- **Send Cleared Entry to Customer** (Import only): Yellow and Green only (orange/red removed)
+- **Tooltip System**: Yellow="To Do", Orange="Waiting for Reply", Green="Completed", Red="Issue, Check Notes?"
+- **Red Button Behavior**: When red is clicked on any status, prompts user to optionally add a note about the issue via the Additional Notes dialog
+
 ### API Endpoints
 
 The API provides standard RESTful endpoints for managing:

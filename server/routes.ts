@@ -1243,6 +1243,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update request clearance status indicator
+  app.patch("/api/custom-clearances/:id/request-clearance-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.updateCustomClearance(req.params.id, { 
+        requestClearanceStatusIndicator: status 
+      });
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
   // Update advise agent status indicator
   app.patch("/api/custom-clearances/:id/advise-agent-status", async (req, res) => {
     try {
