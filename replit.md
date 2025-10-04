@@ -96,7 +96,16 @@ Key routes include:
 -   SCAC code mapping for major shipping lines (Cosco, Maersk, MSC, CMA CGM, Hapag-Lloyd, etc.)
 -   Automatic SCAC code extraction from shipping line names or container numbers
 
+**Email Signature System:**
+-   File-based signature templates using uploadable HTML files
+-   Logo image upload with single hosted instance (replaces on new upload)
+-   Template placeholders: {{USER_NAME}} and {{LOGO_URL}} for dynamic replacement
+-   Signature storage: `attached_assets/signature-template.html` and `attached_assets/rs-logo.jpg`
+-   Per-user toggle to enable/disable signature in emails (`useSignature` field)
+-   Download/reupload capability for both template and logo files
+
 **Development Tools:**
 -   TypeScript
 -   Vite (frontend bundling)
 -   esbuild (backend bundling)
+-   Multer (file uploads)
