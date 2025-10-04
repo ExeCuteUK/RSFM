@@ -311,7 +311,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
   const handleValidationError = (errors: typeof form.formState.errors) => {
     const firstErrorField = Object.keys(errors)[0];
-    const firstErrorMessage = errors[firstErrorField]?.message;
+    const firstError = firstErrorField ? (errors as any)[firstErrorField] : null;
+    const firstErrorMessage = firstError?.message;
 
     toast({
       title: "Form Validation Error",
@@ -319,9 +320,11 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       variant: "destructive",
     });
 
-    const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
-    if (errorElement) {
-      errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (firstErrorField) {
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   };
 
