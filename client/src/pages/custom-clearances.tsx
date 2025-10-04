@@ -37,6 +37,7 @@ export default function CustomClearances() {
   const [notesClearanceId, setNotesClearanceId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
   const [dragOver, setDragOver] = useState<{ clearanceId: string; type: "transport" | "clearance" } | null>(null)
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const { toast } = useToast()
   const [location] = useLocation()
 
@@ -314,6 +315,17 @@ export default function CustomClearances() {
   const parseAttachments = (attachments: string[] | null) => {
     if (!attachments) return []
     return attachments
+  }
+
+  const handleFileClick = (e: React.MouseEvent, filePath: string) => {
+    const fileName = filePath.split('/').pop() || filePath
+    const fileExtension = fileName.split('.').pop()?.toLowerCase()
+    
+    if (fileExtension === 'pdf') {
+      e.preventDefault()
+      const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+      setViewingPdf({ url: downloadPath, name: fileName })
+    }
   }
 
   const formatDate = (dateString: string | null) => {
@@ -765,9 +777,10 @@ export default function CustomClearances() {
                                       <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                       <a
                                         href={downloadPath}
+                                        onClick={(e) => handleFileClick(e, filePath)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-xs truncate hover:text-primary flex-1"
+                                        className="text-xs truncate hover:text-primary flex-1 cursor-pointer"
                                         title={fileName}
                                         data-testid={`link-transport-doc-${clearance.id}-${idx}`}
                                       >
@@ -811,9 +824,10 @@ export default function CustomClearances() {
                                       <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                       <a
                                         href={downloadPath}
+                                        onClick={(e) => handleFileClick(e, filePath)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-xs truncate hover:text-primary flex-1"
+                                        className="text-xs truncate hover:text-primary flex-1 cursor-pointer"
                                         title={fileName}
                                         data-testid={`link-clearance-doc-${clearance.id}-${idx}`}
                                       >
@@ -913,6 +927,37 @@ export default function CustomClearances() {
             >
               {updateNotes.isPending ? "Saving..." : "Save Notes"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!viewingPdf} onOpenChange={(open) => !open && setViewingPdf(null)}>
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-4">
+            <DialogTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {viewingPdf?.name}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setViewingPdf(null)}
+                className="h-8 w-8"
+                data-testid="button-close-pdf"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 px-6 pb-6">
+            {viewingPdf && (
+              <iframe
+                src={viewingPdf.url}
+                className="w-full h-full border rounded"
+                title={viewingPdf.name}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -47,6 +47,7 @@ export default function ImportShipments() {
   const [vesselUpdateDialog, setVesselUpdateDialog] = useState<{ show: boolean; newVessel: string; shipmentId: string } | null>(null)
   const [portUpdateDialog, setPortUpdateDialog] = useState<{ show: boolean; newPort: string; shipmentId: string } | null>(null)
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
@@ -732,6 +733,17 @@ export default function ImportShipments() {
     return attachments
   }
 
+  const handleFileClick = (e: React.MouseEvent, filePath: string) => {
+    const fileName = filePath.split('/').pop() || filePath
+    const fileExtension = fileName.split('.').pop()?.toLowerCase()
+    
+    if (fileExtension === 'pdf') {
+      e.preventDefault()
+      const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+      setViewingPdf({ url: downloadPath, name: fileName })
+    }
+  }
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null
     try {
@@ -1308,9 +1320,10 @@ export default function ImportShipments() {
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                         <a
                                           href={downloadPath}
+                                          onClick={(e) => handleFileClick(e, filePath)}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-xs text-primary hover:underline truncate flex-1"
+                                          className="text-xs text-primary hover:underline truncate flex-1 cursor-pointer"
                                           title={fileName}
                                         >
                                           {fileName}
@@ -1360,9 +1373,10 @@ export default function ImportShipments() {
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                         <a
                                           href={downloadPath}
+                                          onClick={(e) => handleFileClick(e, filePath)}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-xs text-primary hover:underline truncate flex-1"
+                                          className="text-xs text-primary hover:underline truncate flex-1 cursor-pointer"
                                           title={fileName}
                                         >
                                           {fileName}
@@ -2257,9 +2271,10 @@ export default function ImportShipments() {
                                     <a
                                       key={idx}
                                       href={downloadPath}
+                                      onClick={(e) => handleFileClick(e, filePath)}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group"
+                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group cursor-pointer"
                                       title={fileName}
                                     >
                                       <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-md">
@@ -2287,9 +2302,10 @@ export default function ImportShipments() {
                                     <a
                                       key={idx}
                                       href={downloadPath}
+                                      onClick={(e) => handleFileClick(e, filePath)}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group"
+                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group cursor-pointer"
                                       title={fileName}
                                     >
                                       <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-md">
@@ -2456,6 +2472,37 @@ export default function ImportShipments() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!viewingPdf} onOpenChange={(open) => !open && setViewingPdf(null)}>
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-4">
+            <DialogTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {viewingPdf?.name}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setViewingPdf(null)}
+                className="h-8 w-8"
+                data-testid="button-close-pdf"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 px-6 pb-6">
+            {viewingPdf && (
+              <iframe
+                src={viewingPdf.url}
+                className="w-full h-full border rounded"
+                title={viewingPdf.name}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
