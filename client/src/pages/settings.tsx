@@ -635,7 +635,7 @@ export default function SettingsPage() {
                     disabled={restoreDefaultsMutation.isPending}
                     data-testid="button-restore-defaults"
                   >
-                    {restoreDefaultsMutation.isPending ? "Restoring..." : "Restore Default"}
+                    {restoreDefaultsMutation.isPending ? "Restoring..." : "Restore Signature To Default"}
                   </Button>
                   <Button
                     variant="outline"
@@ -653,7 +653,7 @@ export default function SettingsPage() {
                     }}
                     data-testid="button-download-logo"
                   >
-                    Download Template Logo
+                    Download Current Template Logo
                   </Button>
                 </div>
                 <Button
