@@ -226,7 +226,7 @@ export default function ImportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       toast({ title: "File deleted successfully" })
     },
