@@ -28,6 +28,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
 import { InlineUploader } from "./InlineUploader"
+import { useJobFileGroup } from "@/hooks/use-job-file-group"
+import { FileText, Download, X } from "lucide-react"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -83,6 +85,13 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
   const { data: exportReceivers } = useQuery<ExportReceiver[]>({
     queryKey: ["/api/export-receivers"],
+  })
+
+  // Fetch shared documents from job_file_groups if this is an existing clearance
+  const jobRef = defaultValues?.jobRef
+  const { documents: sharedDocuments, isLoading: isLoadingSharedDocs } = useJobFileGroup({ 
+    jobRef,
+    enabled: !!jobRef 
   })
 
   const jobType = form.watch("jobType")
@@ -725,7 +734,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Transport Documents</CardTitle>
+                <CardTitle>Transport Documents {jobRef && <span className="text-sm font-normal text-muted-foreground">(Shared with Job #{jobRef})</span>}</CardTitle>
               </CardHeader>
               <CardContent>
                 <FormField
@@ -754,6 +763,38 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             }
                           }}
                         />
+                        
+                        {/* Display shared documents from job_file_groups */}
+                        {jobRef && sharedDocuments && sharedDocuments.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">Shared Transport Documents:</p>
+                            {sharedDocuments.map((path: string, index: number) => {
+                              const downloadPath = path.startsWith('/') ? path : `/objects/${path}`;
+                              return (
+                                <div key={`shared-${index}`} className="flex items-center justify-between p-2 border rounded-md bg-blue-50 dark:bg-blue-950">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                    <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                                  </div>
+                                  <a href={downloadPath} target="_blank" rel="noopener noreferrer">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      data-testid={`button-download-shared-transport-${index}`}
+                                    >
+                                      <Download className="h-4 w-4" />
+                                    </Button>
+                                  </a>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                        
+                        {isLoadingSharedDocs && jobRef && (
+                          <p className="text-sm text-muted-foreground">Loading shared documents...</p>
+                        )}
                       </div>
                       <FormMessage />
                     </FormItem>
