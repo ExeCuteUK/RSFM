@@ -208,7 +208,8 @@ export default function ImportShipments() {
 
   const trackContainer = useMutation({
     mutationFn: async ({ containerNumber, shippingLine }: { containerNumber: string; shippingLine?: string }) => {
-      return apiRequest("POST", "/api/terminal49/track", { containerNumber, shippingLine })
+      const res = await apiRequest("POST", "/api/terminal49/track", { containerNumber, shippingLine })
+      return res.json()
     },
     onSuccess: (response: any) => {
       console.log("Track container response:", response)
@@ -256,7 +257,8 @@ export default function ImportShipments() {
 
   const fetchTrackingData = useMutation({
     mutationFn: async (shipmentId: string) => {
-      return apiRequest("GET", `/api/terminal49/shipments/${shipmentId}`)
+      const res = await apiRequest("GET", `/api/terminal49/shipments/${shipmentId}`)
+      return res.json()
     },
     onSuccess: (data) => {
       setTrackingData(data)
