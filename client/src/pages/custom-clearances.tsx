@@ -216,6 +216,7 @@ export default function CustomClearances() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups/batch"] })
       toast({ title: "File uploaded successfully" })
     },
     onError: () => {
@@ -239,6 +240,7 @@ export default function CustomClearances() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups/batch"] })
       toast({ title: "File deleted successfully" })
     },
     onError: () => {
