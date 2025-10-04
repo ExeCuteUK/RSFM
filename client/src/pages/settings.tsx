@@ -32,6 +32,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("financials");
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToEdit, setUserToEdit] = useState<Omit<User, 'password'> | null>(null);
   
   // Fetch Gmail connection status
   const { data: gmailStatus, isLoading: gmailLoading } = useQuery<{ connected: boolean; email: string | null }>({
@@ -342,6 +343,8 @@ export default function SettingsPage() {
               setIsAddUserOpen={setIsAddUserOpen}
               userToDelete={userToDelete}
               setUserToDelete={setUserToDelete}
+              userToEdit={userToEdit}
+              setUserToEdit={setUserToEdit}
             />
           ) : (
             <Card>
@@ -368,12 +371,16 @@ function UsersManagement({
   isAddUserOpen, 
   setIsAddUserOpen,
   userToDelete,
-  setUserToDelete 
+  setUserToDelete,
+  userToEdit,
+  setUserToEdit
 }: {
   isAddUserOpen: boolean;
   setIsAddUserOpen: (open: boolean) => void;
   userToDelete: User | null;
   setUserToDelete: (user: User | null) => void;
+  userToEdit: Omit<User, 'password'> | null;
+  setUserToEdit: (user: Omit<User, 'password'> | null) => void;
 }) {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
@@ -393,6 +400,27 @@ function UsersManagement({
     },
   });
 
+  const editUserForm = useForm({
+    defaultValues: {
+      username: "",
+      fullName: "",
+      email: "",
+      isAdmin: false,
+    },
+  });
+
+  // Update form when userToEdit changes
+  useEffect(() => {
+    if (userToEdit) {
+      editUserForm.reset({
+        username: userToEdit.username,
+        fullName: userToEdit.fullName || "",
+        email: userToEdit.email || "",
+        isAdmin: userToEdit.isAdmin,
+      });
+    }
+  }, [userToEdit, editUserForm]);
+
   const createUserMutation = useMutation({
     mutationFn: async (data: any) => {
       return apiRequest("POST", "/api/users", data);
@@ -409,6 +437,28 @@ function UsersManagement({
     onError: (error: Error) => {
       toast({
         title: "Failed to create user",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, data }: { userId: string; data: any }) => {
+      return apiRequest("PATCH", `/api/users/${userId}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setUserToEdit(null);
+      editUserForm.reset();
+      toast({
+        title: "User updated",
+        description: "The user has been updated successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to update user",
         description: error.message,
         variant: "destructive",
       });
@@ -438,6 +488,12 @@ function UsersManagement({
 
   const handleCreateUser = (data: any) => {
     createUserMutation.mutate(data);
+  };
+
+  const handleUpdateUser = (data: any) => {
+    if (userToEdit) {
+      updateUserMutation.mutate({ userId: userToEdit.id, data });
+    }
   };
 
   const handleDeleteUser = () => {
@@ -605,15 +661,25 @@ function UsersManagement({
                       {!user.isAdmin && <span className="text-muted-foreground">User</span>}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setUserToDelete(user)}
-                        disabled={user.id === currentUser?.id}
-                        data-testid={`button-delete-user-${user.id}`}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUserToEdit(user as Omit<User, 'password'>)}
+                          data-testid={`button-edit-user-${user.id}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUserToDelete(user)}
+                          disabled={user.id === currentUser?.id}
+                          data-testid={`button-delete-user-${user.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -628,6 +694,99 @@ function UsersManagement({
           </Table>
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!userToEdit} onOpenChange={(open) => !open && setUserToEdit(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information and role
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editUserForm}>
+            <form onSubmit={editUserForm.handleSubmit(handleUpdateUser)} className="space-y-4">
+              <FormField
+                control={editUserForm.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled data-testid="input-edit-username" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editUserForm.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} data-testid="input-edit-fullname" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editUserForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} data-testid="input-edit-email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editUserForm.control}
+                name="isAdmin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <FormControl>
+                      <select
+                        value={field.value ? "admin" : "user"}
+                        onChange={(e) => field.onChange(e.target.value === "admin")}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        data-testid="select-edit-role"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Administrator</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setUserToEdit(null)}
+                  data-testid="button-cancel-edit-user"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateUserMutation.isPending}
+                  data-testid="button-update-user"
+                >
+                  {updateUserMutation.isPending ? "Updating..." : "Update User"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
         <AlertDialogContent>
