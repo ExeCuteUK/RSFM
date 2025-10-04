@@ -1315,6 +1315,28 @@ export class DatabaseStorage implements IStorage {
       .where(eq(importShipments.id, id))
       .returning();
     
+    // Sync files to job_file_groups if jobRef exists and attachments were updated
+    if (updated.jobRef && updates.attachments !== undefined) {
+      // Get existing job file group
+      const [existingGroup] = await db.select()
+        .from(jobFileGroups)
+        .where(eq(jobFileGroups.jobRef, updated.jobRef));
+      
+      if (existingGroup) {
+        // Update documents with the new attachments
+        await db.update(jobFileGroups)
+          .set({ documents: updated.attachments || [] })
+          .where(eq(jobFileGroups.jobRef, updated.jobRef));
+      } else {
+        // Create new job file group with the attachments
+        await db.insert(jobFileGroups).values({
+          jobRef: updated.jobRef,
+          documents: updated.attachments || [],
+          rsInvoices: [],
+        });
+      }
+    }
+    
     return updated;
   }
 
@@ -1456,6 +1478,28 @@ export class DatabaseStorage implements IStorage {
       .set(updates)
       .where(eq(customClearances.id, id))
       .returning();
+    
+    // Sync files to job_file_groups if jobRef exists and transportDocuments were updated
+    if (updated.jobRef && updates.transportDocuments !== undefined) {
+      // Get existing job file group
+      const [existingGroup] = await db.select()
+        .from(jobFileGroups)
+        .where(eq(jobFileGroups.jobRef, updated.jobRef));
+      
+      if (existingGroup) {
+        // Update documents with the new transportDocuments
+        await db.update(jobFileGroups)
+          .set({ documents: updated.transportDocuments || [] })
+          .where(eq(jobFileGroups.jobRef, updated.jobRef));
+      } else {
+        // Create new job file group with the transportDocuments
+        await db.insert(jobFileGroups).values({
+          jobRef: updated.jobRef,
+          documents: updated.transportDocuments || [],
+          rsInvoices: [],
+        });
+      }
+    }
     
     return updated;
   }
