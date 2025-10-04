@@ -64,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ error: "Login failed" });
         }
         const { password, ...userWithoutPassword } = user;
-        res.json(userWithoutPassword);
+        return res.json({ user: userWithoutPassword });
       });
     })(req, res, next);
   });
@@ -77,16 +77,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.logIn(user, (err) => {
         if (err) {
+          console.error("Login after registration failed:", err);
           return res.status(500).json({ error: "Registration succeeded but login failed" });
         }
         const { password, ...userWithoutPassword } = user;
-        res.status(201).json(userWithoutPassword);
+        return res.status(201).json({ user: userWithoutPassword });
       });
     } catch (error) {
       if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
       } else {
-        res.status(400).json({ error: "Registration failed" });
+        return res.status(400).json({ error: "Registration failed" });
       }
     }
   });
