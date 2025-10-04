@@ -744,92 +744,96 @@ export default function CustomClearances() {
                     <div className="pt-2 mt-2 border-t" data-testid={`files-section-${clearance.id}`}>
                       <div className="grid grid-cols-2 gap-2">
                         <div 
-                          className={`space-y-1 p-2 rounded border-2 border-dashed transition-colors ${
-                            dragOver?.clearanceId === clearance.id && dragOver?.type === "transport"
-                              ? "border-blue-500 bg-blue-50 dark:bg-blue-950"
-                              : "border-transparent hover:border-blue-300 dark:hover:border-blue-700"
-                          }`}
+                          className="space-y-1"
                           onDragOver={(e) => handleFileDragOver(e, clearance.id, "transport")}
                           onDragLeave={handleFileDragLeave}
                           onDrop={(e) => handleFileDrop(e, clearance.id, "transport")}
                         >
                           <p className="text-xs font-medium text-muted-foreground">Transport Documents</p>
-                          {transportDocs.length > 0 ? (
-                            <div className="space-y-0.5">
-                              {transportDocs.map((filePath, idx) => {
-                                const fileName = filePath.split('/').pop() || filePath
-                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                return (
-                                  <div key={idx} className="flex items-center gap-1 group">
-                                    <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                    <a
-                                      href={downloadPath}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs truncate hover:text-primary flex-1"
-                                      title={fileName}
-                                      data-testid={`link-transport-doc-${clearance.id}-${idx}`}
-                                    >
-                                      {fileName}
-                                    </a>
-                                    <button
-                                      onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "transport" })}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                      data-testid={`button-delete-transport-${clearance.id}-${idx}`}
-                                    >
-                                      <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
-                                    </button>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            <p className="text-xs text-muted-foreground italic">Drop files here</p>
-                          )}
+                          <div className={`min-h-[2.5rem] p-1.5 rounded border-2 border-dashed transition-colors ${
+                            dragOver?.clearanceId === clearance.id && dragOver?.type === "transport"
+                              ? "border-blue-400 bg-blue-50 dark:bg-blue-950/20"
+                              : "border-transparent"
+                          }`}>
+                            {transportDocs.length > 0 ? (
+                              <div className="space-y-0.5">
+                                {transportDocs.map((filePath, idx) => {
+                                  const fileName = filePath.split('/').pop() || filePath
+                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  return (
+                                    <div key={idx} className="flex items-center gap-1 group">
+                                      <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <a
+                                        href={downloadPath}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs truncate hover:text-primary flex-1"
+                                        title={fileName}
+                                        data-testid={`link-transport-doc-${clearance.id}-${idx}`}
+                                      >
+                                        {fileName}
+                                      </a>
+                                      <button
+                                        onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "transport" })}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-delete-transport-${clearance.id}-${idx}`}
+                                      >
+                                        <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
+                                      </button>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground italic">Drop files here</p>
+                            )}
+                          </div>
                         </div>
                         <div 
-                          className={`space-y-1 p-2 rounded border-2 border-dashed transition-colors ${
-                            dragOver?.clearanceId === clearance.id && dragOver?.type === "clearance"
-                              ? "border-green-500 bg-green-50 dark:bg-green-950"
-                              : "border-transparent hover:border-green-300 dark:hover:border-green-700"
-                          }`}
+                          className="space-y-1"
                           onDragOver={(e) => handleFileDragOver(e, clearance.id, "clearance")}
                           onDragLeave={handleFileDragLeave}
                           onDrop={(e) => handleFileDrop(e, clearance.id, "clearance")}
                         >
                           <p className="text-xs font-medium text-muted-foreground">Clearance Documents</p>
-                          {clearanceDocs.length > 0 ? (
-                            <div className="space-y-0.5">
-                              {clearanceDocs.map((filePath, idx) => {
-                                const fileName = filePath.split('/').pop() || filePath
-                                const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
-                                return (
-                                  <div key={idx} className="flex items-center gap-1 group">
-                                    <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                    <a
-                                      href={downloadPath}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs truncate hover:text-primary flex-1"
-                                      title={fileName}
-                                      data-testid={`link-clearance-doc-${clearance.id}-${idx}`}
-                                    >
-                                      {fileName}
-                                    </a>
-                                    <button
-                                      onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "clearance" })}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                      data-testid={`button-delete-clearance-${clearance.id}-${idx}`}
-                                    >
-                                      <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
-                                    </button>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            <p className="text-xs text-muted-foreground italic">Drop files here</p>
-                          )}
+                          <div className={`min-h-[2.5rem] p-1.5 rounded border-2 border-dashed transition-colors ${
+                            dragOver?.clearanceId === clearance.id && dragOver?.type === "clearance"
+                              ? "border-green-400 bg-green-50 dark:bg-green-950/20"
+                              : "border-transparent"
+                          }`}>
+                            {clearanceDocs.length > 0 ? (
+                              <div className="space-y-0.5">
+                                {clearanceDocs.map((filePath, idx) => {
+                                  const fileName = filePath.split('/').pop() || filePath
+                                  const downloadPath = filePath.startsWith('/') ? filePath : `/objects/${filePath}`
+                                  return (
+                                    <div key={idx} className="flex items-center gap-1 group">
+                                      <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <a
+                                        href={downloadPath}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs truncate hover:text-primary flex-1"
+                                        title={fileName}
+                                        data-testid={`link-clearance-doc-${clearance.id}-${idx}`}
+                                      >
+                                        {fileName}
+                                      </a>
+                                      <button
+                                        onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "clearance" })}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-delete-clearance-${clearance.id}-${idx}`}
+                                      >
+                                        <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
+                                      </button>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground italic">Drop files here</p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
