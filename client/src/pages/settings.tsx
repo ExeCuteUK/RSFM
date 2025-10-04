@@ -28,8 +28,6 @@ import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle } from
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -40,14 +38,14 @@ export default function SettingsPage() {
   const [userToEdit, setUserToEdit] = useState<Omit<User, 'password'> | null>(null);
   
   // Email signature state
-  const [emailSignature, setEmailSignature] = useState(currentUser?.emailSignature || '');
-  const [includeSignature, setIncludeSignature] = useState(currentUser?.includeSignature || false);
+  const [useSignature, setUseSignature] = useState(currentUser?.useSignature || false);
+  const [templateFile, setTemplateFile] = useState<File | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   
   // Update signature state when user changes
   useEffect(() => {
     if (currentUser) {
-      setEmailSignature(currentUser.emailSignature || '');
-      setIncludeSignature(currentUser.includeSignature || false);
+      setUseSignature(currentUser.useSignature || false);
     }
   }, [currentUser]);
   
@@ -56,22 +54,80 @@ export default function SettingsPage() {
     queryKey: ["/api/gmail/status"],
   });
   
-  // Save signature mutation
+  // Save signature enabled/disabled mutation
   const saveSignatureMutation = useMutation({
-    mutationFn: async (data: { emailSignature: string; includeSignature: boolean }) => {
+    mutationFn: async (data: { useSignature: boolean }) => {
       return apiRequest("PATCH", `/api/users/${currentUser?.id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       toast({
-        title: "Signature saved",
-        description: "Your email signature has been updated.",
+        title: "Signature settings saved",
+        description: "Your signature preferences have been updated.",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to save signature",
+        title: "Failed to save settings",
         description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Upload template mutation
+  const uploadTemplateMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('template', file);
+      const response = await fetch('/api/signature/upload-template', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Upload failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      setTemplateFile(null);
+      toast({
+        title: "Template uploaded",
+        description: "Your signature template has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload the template file.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Upload logo mutation
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('logo', file);
+      const response = await fetch('/api/signature/upload-logo', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Upload failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      setLogoFile(null);
+      toast({
+        title: "Logo uploaded",
+        description: "Your signature logo has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload the logo file.",
         variant: "destructive",
       });
     },
@@ -467,44 +523,100 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Email Signature</CardTitle>
               <CardDescription>
-                Create a signature that will be automatically included in your emails
+                Upload an HTML template and logo image for your email signature
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* HTML Template Upload */}
               <div className="space-y-2">
-                <Label htmlFor="emailSignature">Signature</Label>
-                <div className="border rounded-md" data-testid="editor-email-signature">
-                  <ReactQuill
-                    theme="snow"
-                    value={emailSignature}
-                    onChange={setEmailSignature}
-                    modules={{
-                      toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ 'color': [] }],
-                        ['link'],
-                        ['clean']
-                      ]
+                <Label htmlFor="template-upload">Signature Template (HTML)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="template-upload"
+                    type="file"
+                    accept=".html"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setTemplateFile(file);
                     }}
-                    formats={['bold', 'italic', 'underline', 'color', 'link']}
-                    placeholder="Enter your email signature..."
-                    style={{ minHeight: '150px' }}
+                    data-testid="input-template-file"
                   />
+                  <Button
+                    onClick={() => {
+                      if (templateFile) {
+                        uploadTemplateMutation.mutate(templateFile);
+                      }
+                    }}
+                    disabled={!templateFile || uploadTemplateMutation.isPending}
+                    data-testid="button-upload-template"
+                  >
+                    {uploadTemplateMutation.isPending ? "Uploading..." : "Upload"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      window.location.href = '/api/signature/download-template';
+                    }}
+                    data-testid="button-download-template"
+                  >
+                    Download
+                  </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Use the formatting tools to style your signature. It will be automatically included in your emails.
+                  Upload an HTML file for your signature. Use {'{{USER_NAME}}'} and {'{{LOGO_URL}}'} as placeholders.
                 </p>
               </div>
 
+              {/* Logo Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="logo-upload">Signature Logo Image</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setLogoFile(file);
+                    }}
+                    data-testid="input-logo-file"
+                  />
+                  <Button
+                    onClick={() => {
+                      if (logoFile) {
+                        uploadLogoMutation.mutate(logoFile);
+                      }
+                    }}
+                    disabled={!logoFile || uploadLogoMutation.isPending}
+                    data-testid="button-upload-logo"
+                  >
+                    {uploadLogoMutation.isPending ? "Uploading..." : "Upload"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      window.location.href = '/api/signature/download-logo';
+                    }}
+                    data-testid="button-download-logo"
+                  >
+                    Download
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Upload an image file for your signature logo. Only one logo can be hosted at a time.
+                </p>
+              </div>
+
+              {/* Enable/Disable Signature */}
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="includeSignature"
-                  checked={includeSignature}
-                  onCheckedChange={(checked) => setIncludeSignature(checked as boolean)}
-                  data-testid="checkbox-include-signature"
+                  id="useSignature"
+                  checked={useSignature}
+                  onCheckedChange={(checked) => setUseSignature(checked as boolean)}
+                  data-testid="checkbox-use-signature"
                 />
                 <Label
-                  htmlFor="includeSignature"
+                  htmlFor="useSignature"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
                   Include signature in emails
@@ -515,14 +627,13 @@ export default function SettingsPage() {
                 <Button
                   onClick={() => {
                     saveSignatureMutation.mutate({
-                      emailSignature,
-                      includeSignature,
+                      useSignature,
                     });
                   }}
                   disabled={saveSignatureMutation.isPending}
                   data-testid="button-save-signature"
                 >
-                  {saveSignatureMutation.isPending ? "Saving..." : "Save Signature"}
+                  {saveSignatureMutation.isPending ? "Saving..." : "Save Settings"}
                 </Button>
               </div>
             </CardContent>
