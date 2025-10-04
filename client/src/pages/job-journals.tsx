@@ -225,7 +225,7 @@ export default function JobJournals() {
   }
 
   return (
-    <div className="h-full flex flex-col p-6 space-y-6">
+    <div className="h-full flex flex-col p-6 gap-4 overflow-hidden">
       <div>
         <h1 className="text-3xl font-bold">Job Journals</h1>
         <p className="text-muted-foreground mt-1">Financial tracking for all jobs</p>
@@ -312,34 +312,34 @@ export default function JobJournals() {
         </div>
       </div>
 
-      <Card className="flex-1 flex flex-col">
-        <CardHeader>
+      <Card className="flex-1 flex flex-col min-h-0">
+        <CardHeader className="flex-shrink-0">
           <CardTitle>
             Showing All Jobs - {getMonthLabel()}, {selectedYear} - {journalEntries.length} Records
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 overflow-auto">
-          <div className="overflow-x-auto">
+        <CardContent className="flex-1 overflow-auto p-0">
+          <div className="overflow-auto h-full">
             <table className="w-full border-collapse">
-              <thead className="text-xs">
-                <tr className="border-b">
-                  <th className="text-center p-2 font-semibold underline border-r border-border">#</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Job Ref</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Client Name</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Destination</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Identifier</th>
-                  <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border">Invoice From</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Invoice No</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Amount</th>
-                  <th className="text-center p-2 font-semibold underline border-r-2 border-border">Reserve</th>
-                  <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border">Invoice To</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Invoice No</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border">Amount</th>
-                  <th className="text-center p-2 font-semibold underline border-r-2 border-border">Reserve</th>
-                  <th className="text-center p-2 font-semibold underline border-l-2">P/L</th>
+              <thead className="text-xs sticky top-0 bg-background z-10">
+                <tr className="border-b-2">
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">#</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Job Ref</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Client Name</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Destination</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Identifier</th>
+                  <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border bg-background">Invoice From</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Invoice No</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Amount</th>
+                  <th className="text-center p-2 font-semibold underline border-r-2 border-border bg-background">Reserve</th>
+                  <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border bg-background">Invoice To</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Invoice No</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
+                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Amount</th>
+                  <th className="text-center p-2 font-semibold underline border-r-2 border-border bg-background">Reserve</th>
+                  <th className="text-center p-2 font-semibold underline border-l-2 bg-background">P/L</th>
                 </tr>
               </thead>
               <tbody className="text-xs">
