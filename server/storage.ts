@@ -1481,6 +1481,8 @@ export class DatabaseStorage implements IStorage {
     
     // Sync files to job_file_groups if jobRef exists and transportDocuments were updated
     if (updated.jobRef && updates.transportDocuments !== undefined) {
+      const newDocuments = updated.transportDocuments || [];
+      
       // Get existing job file group
       const [existingGroup] = await db.select()
         .from(jobFileGroups)
@@ -1489,15 +1491,29 @@ export class DatabaseStorage implements IStorage {
       if (existingGroup) {
         // Update documents with the new transportDocuments
         await db.update(jobFileGroups)
-          .set({ documents: updated.transportDocuments || [] })
+          .set({ documents: newDocuments })
           .where(eq(jobFileGroups.jobRef, updated.jobRef));
       } else {
         // Create new job file group with the transportDocuments
         await db.insert(jobFileGroups).values({
           jobRef: updated.jobRef,
-          documents: updated.transportDocuments || [],
+          documents: newDocuments,
           rsInvoices: [],
         });
+      }
+      
+      // Also sync back to linked import shipment if it exists
+      if (updated.createdFromType === 'import' && updated.createdFromId) {
+        await db.update(importShipments)
+          .set({ attachments: newDocuments })
+          .where(eq(importShipments.id, updated.createdFromId));
+      }
+      
+      // Also sync back to linked export shipment if it exists
+      if (updated.createdFromType === 'export' && updated.createdFromId) {
+        await db.update(exportShipments)
+          .set({ attachments: newDocuments })
+          .where(eq(exportShipments.id, updated.createdFromId));
       }
     }
     
