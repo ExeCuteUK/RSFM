@@ -1882,13 +1882,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build email body with optional signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
       if (user.includeSignature && user.emailSignature) {
+        console.log('Applying signature styling...');
+        console.log('Original signature (first 300 chars):', user.emailSignature.substring(0, 300));
+        
         // Apply inline styles to paragraph tags for email client compatibility
+        // Remove empty paragraphs first
         let styledSignature = user.emailSignature
-          // Remove empty paragraphs that just contain <br>
-          .replace(/<p><br><\/p>/g, '')
-          .replace(/<p>\s*<br\s*\/?>\s*<\/p>/g, '')
-          // Apply inline styles to all paragraph tags
-          .replace(/<p(\s+[^>]*)?>/g, '<p style="margin: 0; padding: 0; line-height: 1.4;"$1>');
+          .replace(/<p><br><\/p>/gi, '')
+          .replace(/<p><br \/><\/p>/gi, '');
+        
+        // Add inline styles to ALL <p> tags - simple and direct approach
+        styledSignature = styledSignature.replace(/<p>/gi, '<p style="margin:0;padding:0;line-height:1.4;">');
+        styledSignature = styledSignature.replace(/<p /gi, '<p style="margin:0;padding:0;line-height:1.4;" ');
+        
+        console.log('Styled signature (first 300 chars):', styledSignature.substring(0, 300));
+        
         messageText += '<br><br>' + styledSignature;
       }
       
