@@ -1885,11 +1885,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messageText += '<br><br>' + user.emailSignature;
       }
       
-      // Wrap in proper HTML structure
+      // Wrap in proper HTML structure with email-friendly styles
       const htmlBody = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+  p { margin: 0 0 0.5em 0; padding: 0; }
+</style>
 </head>
 <body>
 ${messageText}
