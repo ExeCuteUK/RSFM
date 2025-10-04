@@ -1882,20 +1882,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build email body with optional signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
       if (user.includeSignature && user.emailSignature) {
-        console.log('Applying signature styling...');
-        console.log('Original signature (first 300 chars):', user.emailSignature.substring(0, 300));
-        
-        // Apply inline styles to paragraph tags for email client compatibility
-        // Remove empty paragraphs first
+        // Convert Quill's paragraph-based HTML to div-based HTML for better email compatibility
         let styledSignature = user.emailSignature
-          .replace(/<p><br><\/p>/gi, '')
-          .replace(/<p><br \/><\/p>/gi, '');
-        
-        // Add inline styles to ALL <p> tags - simple and direct approach
-        styledSignature = styledSignature.replace(/<p>/gi, '<p style="margin:0;padding:0;line-height:1.4;">');
-        styledSignature = styledSignature.replace(/<p /gi, '<p style="margin:0;padding:0;line-height:1.4;" ');
-        
-        console.log('Styled signature (first 300 chars):', styledSignature.substring(0, 300));
+          // Remove empty paragraphs that just have <br>
+          .replace(/<p><br\s*\/?><\/p>/gi, '<br>')
+          .replace(/<p>\s*<\/p>/gi, '')
+          // Convert <p> tags to <div> with tight styling
+          .replace(/<p>/gi, '<div style="margin:0;padding:0;line-height:1.2;">')
+          .replace(/<p\s+/gi, '<div style="margin:0;padding:0;line-height:1.2;" ')
+          .replace(/<\/p>/gi, '</div>');
         
         messageText += '<br><br>' + styledSignature;
       }
