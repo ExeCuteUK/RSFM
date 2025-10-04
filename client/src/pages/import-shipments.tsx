@@ -203,7 +203,7 @@ export default function ImportShipments() {
   })
 
   const updateInvoiceCustomerStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+    mutationFn: async ({ id, status }: { id: string; status: number | null }) => {
       return apiRequest("PATCH", `/api/import-shipments/${id}/invoice-customer-status`, { status })
     },
     onSuccess: () => {
@@ -212,7 +212,7 @@ export default function ImportShipments() {
   })
 
   const updateSendPodToCustomerStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+    mutationFn: async ({ id, status }: { id: string; status: number | null }) => {
       return apiRequest("PATCH", `/api/import-shipments/${id}/send-pod-to-customer-status`, { status })
     },
     onSuccess: () => {
@@ -1310,14 +1310,14 @@ export default function ImportShipments() {
                       </div>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 1)}
+                          onClick={() => updateInvoiceCustomerStatus.mutate({ id: shipment.id, status: null })}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 1 || shipment.invoiceCustomerStatusIndicator === null
+                            shipment.invoiceCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
                           data-testid={`button-invoice-status-yellow-${shipment.id}`}
-                          title="Yellow Status (1)"
+                          title="Yellow Status (Default)"
                         />
                         <button
                           onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 2)}
@@ -1339,16 +1339,6 @@ export default function ImportShipments() {
                           data-testid={`button-invoice-status-green-${shipment.id}`}
                           title="Green Status (3)"
                         />
-                        <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-invoice-status-red-${shipment.id}`}
-                          title="Red Status (4)"
-                        />
                       </div>
                     </div>
                   </div>
@@ -1362,14 +1352,14 @@ export default function ImportShipments() {
                       </div>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 1)}
+                          onClick={() => updateSendPodToCustomerStatus.mutate({ id: shipment.id, status: null })}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === 1 || shipment.sendPodToCustomerStatusIndicator === null
+                            shipment.sendPodToCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
                           data-testid={`button-send-pod-status-yellow-${shipment.id}`}
-                          title="Yellow Status (1)"
+                          title="Yellow Status (Default)"
                         />
                         <button
                           onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 2)}
@@ -1390,16 +1380,6 @@ export default function ImportShipments() {
                           }`}
                           data-testid={`button-send-pod-status-green-${shipment.id}`}
                           title="Green Status (3)"
-                        />
-                        <button
-                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-send-pod-status-red-${shipment.id}`}
-                          title="Red Status (4)"
                         />
                       </div>
                     </div>
