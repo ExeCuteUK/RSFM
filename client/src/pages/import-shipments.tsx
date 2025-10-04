@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
+import { PDFViewer } from "@/components/pdf-viewer"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
@@ -2520,29 +2521,8 @@ export default function ImportShipments() {
               </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 px-6 pb-6">
-            {viewingPdf && (
-              <object
-                data={viewingPdf.url}
-                type="application/pdf"
-                className="w-full h-full border rounded"
-                title={viewingPdf.name}
-              >
-                <div className="flex flex-col items-center justify-center h-full gap-4">
-                  <FileText className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">Unable to display PDF in browser</p>
-                  <Button
-                    onClick={() => {
-                      if (viewingPdf) {
-                        window.open(viewingPdf.url, '_blank')
-                      }
-                    }}
-                  >
-                    Open in New Tab
-                  </Button>
-                </div>
-              </object>
-            )}
+          <div className="flex-1 px-6 pb-6 overflow-hidden">
+            {viewingPdf && <PDFViewer url={viewingPdf.url} />}
           </div>
         </DialogContent>
       </Dialog>

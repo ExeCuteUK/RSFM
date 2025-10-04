@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown } from "lucide-react"
+import { PDFViewer } from "@/components/pdf-viewer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -978,29 +979,8 @@ export default function CustomClearances() {
               </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 px-6 pb-6">
-            {viewingPdf && (
-              <object
-                data={viewingPdf.url}
-                type="application/pdf"
-                className="w-full h-full border rounded"
-                title={viewingPdf.name}
-              >
-                <div className="flex flex-col items-center justify-center h-full gap-4">
-                  <FileText className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">Unable to display PDF in browser</p>
-                  <Button
-                    onClick={() => {
-                      if (viewingPdf) {
-                        window.open(viewingPdf.url, '_blank')
-                      }
-                    }}
-                  >
-                    Open in New Tab
-                  </Button>
-                </div>
-              </object>
-            )}
+          <div className="flex-1 px-6 pb-6 overflow-hidden">
+            {viewingPdf && <PDFViewer url={viewingPdf.url} />}
           </div>
         </DialogContent>
       </Dialog>
