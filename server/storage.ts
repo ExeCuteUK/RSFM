@@ -1,6 +1,7 @@
 import { 
   type User, 
   type InsertUser,
+  type UpdateUser,
   type ImportCustomer,
   type InsertImportCustomer,
   type ExportCustomer,
@@ -36,12 +37,22 @@ import {
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import createMemoryStore from "memorystore";
 
 export interface IStorage {
+  // Session store
+  sessionStore: session.Store;
+  
   // User methods
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  getUserCount(): Promise<number>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, user: Partial<UpdateUser>): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
 
   // Import Customer methods
   getAllImportCustomers(): Promise<ImportCustomer[]>;
@@ -124,6 +135,7 @@ export class MemStorage implements IStorage {
   private exportShipments: Map<string, ExportShipment>;
   private customClearances: Map<string, CustomClearance>;
   private jobRefCounter: number;
+  public sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
@@ -134,6 +146,11 @@ export class MemStorage implements IStorage {
     this.exportShipments = new Map();
     this.customClearances = new Map();
     this.jobRefCounter = 26001;
+    
+    const MemoryStore = createMemoryStore(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000,
+    });
   }
 
   // User methods
@@ -147,11 +164,42 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async getUserCount(): Promise<number> {
+    return this.users.size;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      fullName: insertUser.fullName ?? null,
+      email: insertUser.email ?? null,
+      isAdmin: insertUser.isAdmin ?? false,
+      gmailAccessToken: null,
+      gmailRefreshToken: null,
+      gmailTokenExpiry: null,
+      gmailEmail: null,
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUser(id: string, updates: Partial<UpdateUser>): Promise<User | undefined> {
+    const existing = this.users.get(id);
+    if (!existing) return undefined;
+    
+    const updated: User = { ...existing, ...updates };
+    this.users.set(id, updated);
+    return updated;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    return this.users.delete(id);
   }
 
   // Import Customer methods
@@ -171,25 +219,16 @@ export class MemStorage implements IStorage {
       contactName: insertCustomer.contactName ?? null,
       vatNumber: insertCustomer.vatNumber ?? null,
       telephone: insertCustomer.telephone ?? null,
-      fax: insertCustomer.fax ?? null,
       email: insertCustomer.email ?? null,
-      addressLine1: insertCustomer.addressLine1 ?? null,
-      addressLine2: insertCustomer.addressLine2 ?? null,
-      town: insertCustomer.town ?? null,
-      county: insertCustomer.county ?? null,
-      postcode: insertCustomer.postcode ?? null,
-      country: insertCustomer.country ?? null,
+      accountsEmail: insertCustomer.accountsEmail ?? null,
+      address: insertCustomer.address ?? null,
       agentName: insertCustomer.agentName ?? null,
       agentContactName: insertCustomer.agentContactName ?? null,
+      agentVatNumber: insertCustomer.agentVatNumber ?? null,
       agentTelephone: insertCustomer.agentTelephone ?? null,
-      agentFax: insertCustomer.agentFax ?? null,
       agentEmail: insertCustomer.agentEmail ?? null,
-      agentAddressLine1: insertCustomer.agentAddressLine1 ?? null,
-      agentAddressLine2: insertCustomer.agentAddressLine2 ?? null,
-      agentTown: insertCustomer.agentTown ?? null,
-      agentCounty: insertCustomer.agentCounty ?? null,
-      agentPostcode: insertCustomer.agentPostcode ?? null,
-      agentCountry: insertCustomer.agentCountry ?? null,
+      agentAccountsEmail: insertCustomer.agentAccountsEmail ?? null,
+      agentAddress: insertCustomer.agentAddress ?? null,
       rsProcessCustomsClearance: insertCustomer.rsProcessCustomsClearance ?? false,
       agentInDover: insertCustomer.agentInDover ?? null,
       vatPaymentMethod: insertCustomer.vatPaymentMethod ?? null,
@@ -211,25 +250,16 @@ export class MemStorage implements IStorage {
       contactName: updates.contactName !== undefined ? updates.contactName ?? null : existing.contactName,
       vatNumber: updates.vatNumber !== undefined ? updates.vatNumber ?? null : existing.vatNumber,
       telephone: updates.telephone !== undefined ? updates.telephone ?? null : existing.telephone,
-      fax: updates.fax !== undefined ? updates.fax ?? null : existing.fax,
       email: updates.email !== undefined ? updates.email ?? null : existing.email,
-      addressLine1: updates.addressLine1 !== undefined ? updates.addressLine1 ?? null : existing.addressLine1,
-      addressLine2: updates.addressLine2 !== undefined ? updates.addressLine2 ?? null : existing.addressLine2,
-      town: updates.town !== undefined ? updates.town ?? null : existing.town,
-      county: updates.county !== undefined ? updates.county ?? null : existing.county,
-      postcode: updates.postcode !== undefined ? updates.postcode ?? null : existing.postcode,
-      country: updates.country !== undefined ? updates.country ?? null : existing.country,
+      accountsEmail: updates.accountsEmail !== undefined ? updates.accountsEmail ?? null : existing.accountsEmail,
+      address: updates.address !== undefined ? updates.address ?? null : existing.address,
       agentName: updates.agentName !== undefined ? updates.agentName ?? null : existing.agentName,
       agentContactName: updates.agentContactName !== undefined ? updates.agentContactName ?? null : existing.agentContactName,
+      agentVatNumber: updates.agentVatNumber !== undefined ? updates.agentVatNumber ?? null : existing.agentVatNumber,
       agentTelephone: updates.agentTelephone !== undefined ? updates.agentTelephone ?? null : existing.agentTelephone,
-      agentFax: updates.agentFax !== undefined ? updates.agentFax ?? null : existing.agentFax,
       agentEmail: updates.agentEmail !== undefined ? updates.agentEmail ?? null : existing.agentEmail,
-      agentAddressLine1: updates.agentAddressLine1 !== undefined ? updates.agentAddressLine1 ?? null : existing.agentAddressLine1,
-      agentAddressLine2: updates.agentAddressLine2 !== undefined ? updates.agentAddressLine2 ?? null : existing.agentAddressLine2,
-      agentTown: updates.agentTown !== undefined ? updates.agentTown ?? null : existing.agentTown,
-      agentCounty: updates.agentCounty !== undefined ? updates.agentCounty ?? null : existing.agentCounty,
-      agentPostcode: updates.agentPostcode !== undefined ? updates.agentPostcode ?? null : existing.agentPostcode,
-      agentCountry: updates.agentCountry !== undefined ? updates.agentCountry ?? null : existing.agentCountry,
+      agentAccountsEmail: updates.agentAccountsEmail !== undefined ? updates.agentAccountsEmail ?? null : existing.agentAccountsEmail,
+      agentAddress: updates.agentAddress !== undefined ? updates.agentAddress ?? null : existing.agentAddress,
       rsProcessCustomsClearance: updates.rsProcessCustomsClearance !== undefined ? updates.rsProcessCustomsClearance ?? false : existing.rsProcessCustomsClearance,
       agentInDover: updates.agentInDover !== undefined ? updates.agentInDover ?? null : existing.agentInDover,
       vatPaymentMethod: updates.vatPaymentMethod !== undefined ? updates.vatPaymentMethod ?? null : existing.vatPaymentMethod,
@@ -265,25 +295,16 @@ export class MemStorage implements IStorage {
       contactName: insertCustomer.contactName ?? null,
       vatNumber: insertCustomer.vatNumber ?? null,
       telephone: insertCustomer.telephone ?? null,
-      fax: insertCustomer.fax ?? null,
       email: insertCustomer.email ?? null,
-      addressLine1: insertCustomer.addressLine1 ?? null,
-      addressLine2: insertCustomer.addressLine2 ?? null,
-      town: insertCustomer.town ?? null,
-      county: insertCustomer.county ?? null,
-      postcode: insertCustomer.postcode ?? null,
-      country: insertCustomer.country ?? null,
+      accountsEmail: insertCustomer.accountsEmail ?? null,
+      address: insertCustomer.address ?? null,
       agentName: insertCustomer.agentName ?? null,
       agentContactName: insertCustomer.agentContactName ?? null,
+      agentVatNumber: insertCustomer.agentVatNumber ?? null,
       agentTelephone: insertCustomer.agentTelephone ?? null,
-      agentFax: insertCustomer.agentFax ?? null,
       agentEmail: insertCustomer.agentEmail ?? null,
-      agentAddressLine1: insertCustomer.agentAddressLine1 ?? null,
-      agentAddressLine2: insertCustomer.agentAddressLine2 ?? null,
-      agentTown: insertCustomer.agentTown ?? null,
-      agentCounty: insertCustomer.agentCounty ?? null,
-      agentPostcode: insertCustomer.agentPostcode ?? null,
-      agentCountry: insertCustomer.agentCountry ?? null,
+      agentAccountsEmail: insertCustomer.agentAccountsEmail ?? null,
+      agentAddress: insertCustomer.agentAddress ?? null,
     };
     this.exportCustomers.set(id, customer);
     return customer;
@@ -298,25 +319,16 @@ export class MemStorage implements IStorage {
       contactName: updates.contactName !== undefined ? updates.contactName ?? null : existing.contactName,
       vatNumber: updates.vatNumber !== undefined ? updates.vatNumber ?? null : existing.vatNumber,
       telephone: updates.telephone !== undefined ? updates.telephone ?? null : existing.telephone,
-      fax: updates.fax !== undefined ? updates.fax ?? null : existing.fax,
       email: updates.email !== undefined ? updates.email ?? null : existing.email,
-      addressLine1: updates.addressLine1 !== undefined ? updates.addressLine1 ?? null : existing.addressLine1,
-      addressLine2: updates.addressLine2 !== undefined ? updates.addressLine2 ?? null : existing.addressLine2,
-      town: updates.town !== undefined ? updates.town ?? null : existing.town,
-      county: updates.county !== undefined ? updates.county ?? null : existing.county,
-      postcode: updates.postcode !== undefined ? updates.postcode ?? null : existing.postcode,
-      country: updates.country !== undefined ? updates.country ?? null : existing.country,
+      accountsEmail: updates.accountsEmail !== undefined ? updates.accountsEmail ?? null : existing.accountsEmail,
+      address: updates.address !== undefined ? updates.address ?? null : existing.address,
       agentName: updates.agentName !== undefined ? updates.agentName ?? null : existing.agentName,
       agentContactName: updates.agentContactName !== undefined ? updates.agentContactName ?? null : existing.agentContactName,
+      agentVatNumber: updates.agentVatNumber !== undefined ? updates.agentVatNumber ?? null : existing.agentVatNumber,
       agentTelephone: updates.agentTelephone !== undefined ? updates.agentTelephone ?? null : existing.agentTelephone,
-      agentFax: updates.agentFax !== undefined ? updates.agentFax ?? null : existing.agentFax,
       agentEmail: updates.agentEmail !== undefined ? updates.agentEmail ?? null : existing.agentEmail,
-      agentAddressLine1: updates.agentAddressLine1 !== undefined ? updates.agentAddressLine1 ?? null : existing.agentAddressLine1,
-      agentAddressLine2: updates.agentAddressLine2 !== undefined ? updates.agentAddressLine2 ?? null : existing.agentAddressLine2,
-      agentTown: updates.agentTown !== undefined ? updates.agentTown ?? null : existing.agentTown,
-      agentCounty: updates.agentCounty !== undefined ? updates.agentCounty ?? null : existing.agentCounty,
-      agentPostcode: updates.agentPostcode !== undefined ? updates.agentPostcode ?? null : existing.agentPostcode,
-      agentCountry: updates.agentCountry !== undefined ? updates.agentCountry ?? null : existing.agentCountry,
+      agentAccountsEmail: updates.agentAccountsEmail !== undefined ? updates.agentAccountsEmail ?? null : existing.agentAccountsEmail,
+      agentAddress: updates.agentAddress !== undefined ? updates.agentAddress ?? null : existing.agentAddress,
     };
     
     const updated: ExportCustomer = { ...existing, ...normalized };
@@ -342,11 +354,7 @@ export class MemStorage implements IStorage {
     const receiver: ExportReceiver = { 
       ...insertReceiver, 
       id,
-      addressLine1: insertReceiver.addressLine1 ?? null,
-      addressLine2: insertReceiver.addressLine2 ?? null,
-      town: insertReceiver.town ?? null,
-      county: insertReceiver.county ?? null,
-      postcode: insertReceiver.postcode ?? null,
+      address: insertReceiver.address ?? null,
       country: insertReceiver.country ?? null,
     };
     this.exportReceivers.set(id, receiver);
@@ -359,11 +367,7 @@ export class MemStorage implements IStorage {
     
     const normalized = {
       ...updates,
-      addressLine1: updates.addressLine1 !== undefined ? updates.addressLine1 ?? null : existing.addressLine1,
-      addressLine2: updates.addressLine2 !== undefined ? updates.addressLine2 ?? null : existing.addressLine2,
-      town: updates.town !== undefined ? updates.town ?? null : existing.town,
-      county: updates.county !== undefined ? updates.county ?? null : existing.county,
-      postcode: updates.postcode !== undefined ? updates.postcode ?? null : existing.postcode,
+      address: updates.address !== undefined ? updates.address ?? null : existing.address,
       country: updates.country !== undefined ? updates.country ?? null : existing.country,
     };
     
@@ -390,12 +394,10 @@ export class MemStorage implements IStorage {
     const created: Haulier = {
       ...haulier,
       id,
-      homeCountry: haulier.homeCountry ?? null,
+      contacts: haulier.contacts ?? [],
       address: haulier.address ?? null,
       telephone: haulier.telephone ?? null,
       mobile: haulier.mobile ?? null,
-      email: haulier.email ?? null,
-      destinationCountries: haulier.destinationCountries ?? null,
     };
     return created;
   }
@@ -478,15 +480,20 @@ export class MemStorage implements IStorage {
   }
 
   async createSettings(settingsData: InsertSettings): Promise<Settings> {
+    const toStringOrNull = (val: string | number | null | undefined): string | null => {
+      if (val === null || val === undefined) return null;
+      return typeof val === 'number' ? val.toString() : val;
+    };
+    
     const created: Settings = {
       id: randomUUID(),
-      importClearanceFee: settingsData.importClearanceFee ?? null,
-      inventoryLinkedFee: settingsData.inventoryLinkedFee ?? null,
+      importClearanceFee: toStringOrNull(settingsData.importClearanceFee),
+      inventoryLinkedFee: toStringOrNull(settingsData.inventoryLinkedFee),
       commodityCodesIncludedFree: settingsData.commodityCodesIncludedFree ?? null,
-      additionalCommodityCodeCharge: settingsData.additionalCommodityCodeCharge ?? null,
-      defermentChargeMinimum: settingsData.defermentChargeMinimum ?? null,
-      defermentChargePercentage: settingsData.defermentChargePercentage ?? null,
-      handoverFee: settingsData.handoverFee ?? null,
+      additionalCommodityCodeCharge: toStringOrNull(settingsData.additionalCommodityCodeCharge),
+      defermentChargeMinimum: toStringOrNull(settingsData.defermentChargeMinimum),
+      defermentChargePercentage: toStringOrNull(settingsData.defermentChargePercentage),
+      handoverFee: toStringOrNull(settingsData.handoverFee),
     };
     return created;
   }
@@ -521,7 +528,7 @@ export class MemStorage implements IStorage {
       portOfArrival: insertShipment.portOfArrival ?? null,
       trailerOrContainerNumber: insertShipment.trailerOrContainerNumber ?? null,
       departureCountry: insertShipment.departureCountry ?? null,
-      containerShipment: insertShipment.containerShipment ?? false,
+      containerShipment: insertShipment.containerShipment ?? null,
       vesselName: insertShipment.vesselName ?? null,
       incoterms: insertShipment.incoterms ?? null,
       numberOfPieces: insertShipment.numberOfPieces ?? null,
@@ -579,7 +586,14 @@ export class MemStorage implements IStorage {
         incoterms: null,
         customerReferenceNumber: shipment.customerReferenceNumber,
         supplierName: shipment.supplierName,
-        attachments: null,
+        deliveryAddress: null,
+        additionalNotes: null,
+        transportDocuments: null,
+        clearanceDocuments: null,
+        adviseAgentStatusIndicator: 2,
+        sendEntryToCustomerStatusIndicator: 2,
+        invoiceCustomerStatusIndicator: 2,
+        sendClearedEntryStatusIndicator: 2,
         createdFromType: "import",
         createdFromId: shipment.id,
       };
@@ -612,7 +626,7 @@ export class MemStorage implements IStorage {
       portOfArrival: updates.portOfArrival !== undefined ? updates.portOfArrival ?? null : existing.portOfArrival,
       trailerOrContainerNumber: updates.trailerOrContainerNumber !== undefined ? updates.trailerOrContainerNumber ?? null : existing.trailerOrContainerNumber,
       departureCountry: updates.departureCountry !== undefined ? updates.departureCountry ?? null : existing.departureCountry,
-      containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? false : existing.containerShipment,
+      containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? null : existing.containerShipment,
       vesselName: updates.vesselName !== undefined ? updates.vesselName ?? null : existing.vesselName,
       incoterms: updates.incoterms !== undefined ? updates.incoterms ?? null : existing.incoterms,
       numberOfPieces: updates.numberOfPieces !== undefined ? updates.numberOfPieces ?? null : existing.numberOfPieces,
@@ -668,21 +682,16 @@ export class MemStorage implements IStorage {
         incoterms: null,
         customerReferenceNumber: updated.customerReferenceNumber,
         supplierName: updated.supplierName,
-        attachments: null,
+        deliveryAddress: null,
+        additionalNotes: null,
+        transportDocuments: null,
+        clearanceDocuments: null,
+        adviseAgentStatusIndicator: 2,
+        sendEntryToCustomerStatusIndicator: 2,
+        invoiceCustomerStatusIndicator: 2,
+        sendClearedEntryStatusIndicator: 2,
         createdFromType: "import",
         createdFromId: existing.id,
-        deliveryAddress: null,
-        shippingLine: null,
-        additionalCommodityCodeCharge: null,
-        dutiesAndVat: null,
-        customsOfficerName: null,
-        customsClearanceCharge: null,
-        entryNumber: null,
-        additionalNotes: null,
-        localImpChargesIn: null,
-        localImpChargesOut: null,
-        clearanceStatusBooked: 0,
-        deliveryBooked: 0,
       };
 
       this.customClearances.set(clearanceId, clearance);
@@ -720,12 +729,12 @@ export class MemStorage implements IStorage {
       receiverId: insertShipment.receiverId ?? null,
       destinationCustomerId: insertShipment.destinationCustomerId ?? null,
       customerReferenceNumber: insertShipment.customerReferenceNumber ?? null,
-      loadDate: insertShipment.loadDate ?? null,
+      bookingDate: insertShipment.bookingDate ?? null,
       trailerNo: insertShipment.trailerNo ?? null,
       departureFrom: insertShipment.departureFrom ?? null,
       portOfArrival: insertShipment.portOfArrival ?? null,
       incoterms: insertShipment.incoterms ?? null,
-      containerShipment: insertShipment.containerShipment ?? false,
+      containerShipment: insertShipment.containerShipment ?? null,
       vesselName: insertShipment.vesselName ?? null,
       exportClearanceAgent: insertShipment.exportClearanceAgent,
       arrivalClearanceAgent: insertShipment.arrivalClearanceAgent,
@@ -763,12 +772,12 @@ export class MemStorage implements IStorage {
       receiverId: updates.receiverId !== undefined ? updates.receiverId ?? null : existing.receiverId,
       destinationCustomerId: updates.destinationCustomerId !== undefined ? updates.destinationCustomerId ?? null : existing.destinationCustomerId,
       customerReferenceNumber: updates.customerReferenceNumber !== undefined ? updates.customerReferenceNumber ?? null : existing.customerReferenceNumber,
-      loadDate: updates.loadDate !== undefined ? updates.loadDate ?? null : existing.loadDate,
+      bookingDate: updates.bookingDate !== undefined ? updates.bookingDate ?? null : existing.bookingDate,
       trailerNo: updates.trailerNo !== undefined ? updates.trailerNo ?? null : existing.trailerNo,
       departureFrom: updates.departureFrom !== undefined ? updates.departureFrom ?? null : existing.departureFrom,
       portOfArrival: updates.portOfArrival !== undefined ? updates.portOfArrival ?? null : existing.portOfArrival,
       incoterms: updates.incoterms !== undefined ? updates.incoterms ?? null : existing.incoterms,
-      containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? false : existing.containerShipment,
+      containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? null : existing.containerShipment,
       vesselName: updates.vesselName !== undefined ? updates.vesselName ?? null : existing.vesselName,
       exportClearanceAgent: updates.exportClearanceAgent !== undefined ? updates.exportClearanceAgent : existing.exportClearanceAgent,
       arrivalClearanceAgent: updates.arrivalClearanceAgent !== undefined ? updates.arrivalClearanceAgent : existing.arrivalClearanceAgent,
@@ -825,7 +834,7 @@ export class MemStorage implements IStorage {
       portOfArrival: insertClearance.portOfArrival ?? null,
       trailerOrContainerNumber: insertClearance.trailerOrContainerNumber ?? null,
       departureFrom: insertClearance.departureFrom ?? null,
-      containerShipment: insertClearance.containerShipment ?? false,
+      containerShipment: insertClearance.containerShipment ?? null,
       vesselName: insertClearance.vesselName ?? null,
       numberOfPieces: insertClearance.numberOfPieces ?? null,
       packaging: insertClearance.packaging ?? null,
@@ -842,7 +851,14 @@ export class MemStorage implements IStorage {
       incoterms: insertClearance.incoterms ?? null,
       customerReferenceNumber: insertClearance.customerReferenceNumber ?? null,
       supplierName: insertClearance.supplierName ?? null,
-      attachments: insertClearance.attachments ?? null,
+      deliveryAddress: insertClearance.deliveryAddress ?? null,
+      additionalNotes: insertClearance.additionalNotes ?? null,
+      transportDocuments: insertClearance.transportDocuments ?? null,
+      clearanceDocuments: insertClearance.clearanceDocuments ?? null,
+      adviseAgentStatusIndicator: insertClearance.adviseAgentStatusIndicator ?? 2,
+      sendEntryToCustomerStatusIndicator: insertClearance.sendEntryToCustomerStatusIndicator ?? 2,
+      invoiceCustomerStatusIndicator: insertClearance.invoiceCustomerStatusIndicator ?? 2,
+      sendClearedEntryStatusIndicator: insertClearance.sendClearedEntryStatusIndicator ?? 2,
       createdFromType: insertClearance.createdFromType ?? null,
       createdFromId: insertClearance.createdFromId ?? null,
     };
@@ -866,7 +882,7 @@ export class MemStorage implements IStorage {
       portOfArrival: updates.portOfArrival !== undefined ? updates.portOfArrival ?? null : existing.portOfArrival,
       trailerOrContainerNumber: updates.trailerOrContainerNumber !== undefined ? updates.trailerOrContainerNumber ?? null : existing.trailerOrContainerNumber,
       departureFrom: updates.departureFrom !== undefined ? updates.departureFrom ?? null : existing.departureFrom,
-      containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? false : existing.containerShipment,
+      containerShipment: updates.containerShipment !== undefined ? updates.containerShipment ?? null : existing.containerShipment,
       vesselName: updates.vesselName !== undefined ? updates.vesselName ?? null : existing.vesselName,
       numberOfPieces: updates.numberOfPieces !== undefined ? updates.numberOfPieces ?? null : existing.numberOfPieces,
       packaging: updates.packaging !== undefined ? updates.packaging ?? null : existing.packaging,
@@ -883,7 +899,14 @@ export class MemStorage implements IStorage {
       incoterms: updates.incoterms !== undefined ? updates.incoterms ?? null : existing.incoterms,
       customerReferenceNumber: updates.customerReferenceNumber !== undefined ? updates.customerReferenceNumber ?? null : existing.customerReferenceNumber,
       supplierName: updates.supplierName !== undefined ? updates.supplierName ?? null : existing.supplierName,
-      attachments: updates.attachments !== undefined ? updates.attachments ?? null : existing.attachments,
+      deliveryAddress: updates.deliveryAddress !== undefined ? updates.deliveryAddress ?? null : existing.deliveryAddress,
+      additionalNotes: updates.additionalNotes !== undefined ? updates.additionalNotes ?? null : existing.additionalNotes,
+      transportDocuments: updates.transportDocuments !== undefined ? updates.transportDocuments ?? null : existing.transportDocuments,
+      clearanceDocuments: updates.clearanceDocuments !== undefined ? updates.clearanceDocuments ?? null : existing.clearanceDocuments,
+      adviseAgentStatusIndicator: updates.adviseAgentStatusIndicator !== undefined ? updates.adviseAgentStatusIndicator ?? 2 : existing.adviseAgentStatusIndicator,
+      sendEntryToCustomerStatusIndicator: updates.sendEntryToCustomerStatusIndicator !== undefined ? updates.sendEntryToCustomerStatusIndicator ?? 2 : existing.sendEntryToCustomerStatusIndicator,
+      invoiceCustomerStatusIndicator: updates.invoiceCustomerStatusIndicator !== undefined ? updates.invoiceCustomerStatusIndicator ?? 2 : existing.invoiceCustomerStatusIndicator,
+      sendClearedEntryStatusIndicator: updates.sendClearedEntryStatusIndicator !== undefined ? updates.sendClearedEntryStatusIndicator ?? 2 : existing.sendClearedEntryStatusIndicator,
       createdFromType: updates.createdFromType !== undefined ? updates.createdFromType ?? null : existing.createdFromType,
       createdFromId: updates.createdFromId !== undefined ? updates.createdFromId ?? null : existing.createdFromId,
     };
@@ -901,6 +924,15 @@ export class MemStorage implements IStorage {
 export class DatabaseStorage implements IStorage {
   private jobRefCounter: number = 26001;
   private initialized: boolean = false;
+  public sessionStore: session.Store;
+
+  constructor() {
+    const PgStore = connectPg(session);
+    this.sessionStore = new PgStore({
+      pool: db as any,
+      createTableIfMissing: true,
+    });
+  }
 
   private async initialize() {
     if (this.initialized) return;
@@ -935,9 +967,28 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getUserCount(): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
+    return result.count;
+  }
+
   async createUser(user: InsertUser): Promise<User> {
     const [created] = await db.insert(users).values(user).returning();
     return created;
+  }
+
+  async updateUser(id: string, user: Partial<UpdateUser>): Promise<User | undefined> {
+    const [updated] = await db.update(users).set(user).where(eq(users.id, id)).returning();
+    return updated;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   // Import Customer methods
@@ -1283,7 +1334,7 @@ export class DatabaseStorage implements IStorage {
         importCustomerId: null,
         exportCustomerId: shipment.destinationCustomerId,
         receiverId: shipment.receiverId,
-        etaPort: shipment.loadDate,
+        etaPort: shipment.bookingDate,
         portOfArrival: shipment.portOfArrival,
         trailerOrContainerNumber: shipment.trailerNo,
         departureFrom: shipment.departureFrom,

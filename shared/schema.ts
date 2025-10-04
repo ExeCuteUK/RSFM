@@ -7,14 +7,29 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  fullName: text("full_name"),
+  email: text("email"),
+  isAdmin: boolean("is_admin").default(false).notNull(),
+  
+  // Gmail OAuth fields
+  gmailAccessToken: text("gmail_access_token"),
+  gmailRefreshToken: text("gmail_refresh_token"),
+  gmailTokenExpiry: text("gmail_token_expiry"),
+  gmailEmail: text("gmail_email"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  gmailAccessToken: true,
+  gmailRefreshToken: true,
+  gmailTokenExpiry: true,
+  gmailEmail: true,
 });
+
+export const updateUserSchema = insertUserSchema.partial();
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
 
 // Import Customers Database

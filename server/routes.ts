@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
@@ -12,11 +12,183 @@ import {
   insertSettingsSchema,
   insertImportShipmentSchema,
   insertExportShipmentSchema,
-  insertCustomClearanceSchema
+  insertCustomClearanceSchema,
+  insertUserSchema,
+  updateUserSchema,
+  type User
 } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import passport from "passport";
+import { registerUser } from "./auth";
+
+// Auth middleware
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: "Authentication required" });
+}
+
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated() && (req.user as User).isAdmin) {
+    return next();
+  }
+  res.status(403).json({ error: "Admin access required" });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ========== Auth Routes ==========
+  
+  // Check auth status
+  app.get("/api/auth/me", (req, res) => {
+    if (req.isAuthenticated()) {
+      const user = req.user as User;
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } else {
+      res.status(401).json({ error: "Not authenticated" });
+    }
+  });
+
+  // Login
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate("local", (err: Error, user: User, info: { message: string }) => {
+      if (err) {
+        return res.status(500).json({ error: "Login failed" });
+      }
+      if (!user) {
+        return res.status(401).json({ error: info?.message || "Invalid credentials" });
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Login failed" });
+        }
+        const { password, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+      });
+    })(req, res, next);
+  });
+
+  // Register
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      const user = await registerUser(storage, validatedData);
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Registration succeeded but login failed" });
+        }
+        const { password, ...userWithoutPassword } = user;
+        res.status(201).json(userWithoutPassword);
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: "Registration failed" });
+      }
+    }
+  });
+
+  // Logout
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  // ========== User Management Routes (Admin only) ==========
+  
+  // Get all users
+  app.get("/api/users", requireAuth, requireAdmin, async (_req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+      res.json(usersWithoutPasswords);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Get single user
+  app.get("/api/users/:id", requireAuth, async (req, res) => {
+    try {
+      const requestingUser = req.user as User;
+      const requestedUserId = req.params.id;
+      
+      // Users can only view their own profile unless admin
+      if (!requestingUser.isAdmin && requestingUser.id !== requestedUserId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const user = await storage.getUser(requestedUserId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+
+  // Update user
+  app.patch("/api/users/:id", requireAuth, async (req, res) => {
+    try {
+      const requestingUser = req.user as User;
+      const targetUserId = req.params.id;
+      
+      // Users can only update their own profile unless admin
+      if (!requestingUser.isAdmin && requestingUser.id !== targetUserId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const validatedData = updateUserSchema.parse(req.body);
+      
+      // Non-admins cannot change admin status
+      if (!requestingUser.isAdmin && validatedData.isAdmin !== undefined) {
+        return res.status(403).json({ error: "Cannot modify admin status" });
+      }
+      
+      const user = await storage.updateUser(targetUserId, validatedData);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  // Delete user (Admin only)
+  app.delete("/api/users/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const requestingUser = req.user as User;
+      const targetUserId = req.params.id;
+      
+      // Prevent self-deletion
+      if (requestingUser.id === targetUserId) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+      
+      const success = await storage.deleteUser(targetUserId);
+      if (!success) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
+  // ========== Import Customers Routes ==========
   // ========== Import Customers Routes ==========
   
   // Get all import customers
