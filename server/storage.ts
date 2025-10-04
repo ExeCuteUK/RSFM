@@ -35,7 +35,7 @@ import {
   users
 } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -929,7 +929,7 @@ export class DatabaseStorage implements IStorage {
   constructor() {
     const PgStore = connectPg(session);
     this.sessionStore = new PgStore({
-      pool: db as any,
+      pool: pool as any,
       createTableIfMissing: true,
     });
   }
