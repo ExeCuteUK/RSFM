@@ -1882,7 +1882,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build email body with optional signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
       if (user.includeSignature && user.emailSignature) {
-        messageText += '<br><br>' + user.emailSignature;
+        // Apply inline styles to paragraph tags for email client compatibility
+        const styledSignature = user.emailSignature
+          .replace(/<p>/g, '<p style="margin: 0; padding: 0; line-height: 1.4;">')
+          .replace(/<p ([^>]*)>/g, '<p $1 style="margin: 0; padding: 0; line-height: 1.4;">');
+        messageText += '<br><br>' + styledSignature;
       }
       
       // Wrap in proper HTML structure with email-friendly styles
@@ -1890,12 +1894,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 <html>
 <head>
 <meta charset="UTF-8">
-<style>
-  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-  p { margin: 0 0 0.5em 0; padding: 0; }
-</style>
 </head>
-<body>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif;">
 ${messageText}
 </body>
 </html>`;
