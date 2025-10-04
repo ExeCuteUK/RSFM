@@ -1568,6 +1568,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "objectPath is required" });
       }
 
+      // Check if file is an image type (OCR only works with images)
+      const fileExtension = objectPath.toLowerCase().split('.').pop();
+      const supportedImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
+      
+      if (!supportedImageTypes.includes(fileExtension || '')) {
+        return res.status(400).json({ 
+          error: "OCR only supports image files (JPG, PNG, GIF, BMP, TIFF, WEBP). PDF files are not supported." 
+        });
+      }
+
       const objectStorageService = new ObjectStorageService();
       
       // Normalize the path if it's a full URL
