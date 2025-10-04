@@ -445,7 +445,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   />
                 )}
 
-                {status === "Completed" && (
+                {(status === "Delivered" || status === "Completed") && (
                   <FormField
                     control={form.control}
                     name="proofOfDelivery"
