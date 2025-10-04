@@ -315,7 +315,7 @@ export default function JobJournals() {
       <Card className="flex-1 flex flex-col min-h-0">
         <CardHeader className="flex-shrink-0">
           <CardTitle>
-            Showing All Jobs - {getMonthLabel()}, {selectedYear} - {journalEntries.length} Records
+            {getMonthLabel()}, {selectedYear} - {journalEntries.length} {journalEntries.length === 1 ? 'Record' : 'Records'}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 overflow-auto p-0">
