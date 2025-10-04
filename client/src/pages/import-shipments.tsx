@@ -1248,19 +1248,35 @@ export default function ImportShipments() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-semibold text-muted-foreground">Container Number</p>
-                    <p className="text-lg">{trackingData.data?.attributes?.containers?.[0]?.number || trackingShipment?.trailerOrContainerNumber}</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.bill_of_lading_number || trackingShipment?.trailerOrContainerNumber}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-muted-foreground">Status</p>
-                    <p className="text-lg capitalize">{trackingData.data?.attributes?.status?.replace(/_/g, ' ')}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Shipping Line</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.shipping_line_name || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-muted-foreground">Pod</p>
-                    <p className="text-lg">{trackingData.data?.attributes?.pod_name}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Port of Loading</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.port_of_lading_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">Port of Discharge</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.port_of_discharge_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">Vessel Name</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.pod_vessel_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">Voyage Number</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.pod_voyage_number || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground">ETD (Actual)</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.pol_atd_at ? format(new Date(trackingData.data.attributes.pol_atd_at), 'MMM dd, yyyy HH:mm') : 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-muted-foreground">ETA</p>
-                    <p className="text-lg">{trackingData.data?.attributes?.pod_eta ? format(new Date(trackingData.data.attributes.pod_eta), 'MMM dd, yyyy') : 'N/A'}</p>
+                    <p className="text-lg">{trackingData.data?.attributes?.pod_eta_at ? format(new Date(trackingData.data.attributes.pod_eta_at), 'MMM dd, yyyy HH:mm') : 'N/A'}</p>
                   </div>
                 </div>
                 
