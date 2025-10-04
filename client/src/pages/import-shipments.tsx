@@ -2491,27 +2491,13 @@ export default function ImportShipments() {
       <Dialog open={!!viewingPdf} onOpenChange={(open) => !open && setViewingPdf(null)}>
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-4">
-            <DialogTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {viewingPdf?.name}
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (viewingPdf) {
-                    window.open(viewingPdf.url, '_blank')
-                  }
-                }}
-                data-testid="button-open-new-tab"
-              >
-                Open in New Tab
-              </Button>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {viewingPdf?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
-            {viewingPdf && <PDFViewer url={viewingPdf.url} />}
+            {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
           </div>
         </DialogContent>
       </Dialog>

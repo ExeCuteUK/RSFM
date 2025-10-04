@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ExternalLink, Printer, Download, Mail } from 'lucide-react'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
 interface PDFViewerProps {
   url: string
+  filename?: string
 }
 
-export function PDFViewer({ url }: PDFViewerProps) {
+export function PDFViewer({ url, filename }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null)
   const [pageNumber, setPageNumber] = useState(1)
   const [scale, setScale] = useState(1.0)
@@ -29,6 +30,23 @@ export function PDFViewer({ url }: PDFViewerProps) {
 
   function nextPage() {
     changePage(1)
+  }
+
+  function handlePrint() {
+    window.open(url, '_blank')?.print()
+  }
+
+  function handleDownload() {
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename || 'document.pdf'
+    link.click()
+  }
+
+  function handleEmail() {
+    const subject = encodeURIComponent(`Document: ${filename || 'PDF'}`)
+    const body = encodeURIComponent(`Please find the document here: ${url}`)
+    window.location.href = `mailto:?subject=${subject}&body=${body}`
   }
 
   return (
@@ -63,6 +81,7 @@ export function PDFViewer({ url }: PDFViewerProps) {
             variant="outline"
             onClick={() => setScale(scale - 0.1)}
             disabled={scale <= 0.5}
+            data-testid="button-zoom-out"
           >
             -
           </Button>
@@ -72,8 +91,46 @@ export function PDFViewer({ url }: PDFViewerProps) {
             variant="outline"
             onClick={() => setScale(scale + 0.1)}
             disabled={scale >= 2.0}
+            data-testid="button-zoom-in"
           >
             +
+          </Button>
+          <div className="h-4 w-px bg-border mx-1" />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => window.open(url, '_blank')}
+            data-testid="button-open-new-tab"
+          >
+            <ExternalLink className="h-4 w-4 mr-1" />
+            Open in New Tab
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handlePrint}
+            data-testid="button-print"
+          >
+            <Printer className="h-4 w-4 mr-1" />
+            Print
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDownload}
+            data-testid="button-download"
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Download
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleEmail}
+            data-testid="button-email"
+          >
+            <Mail className="h-4 w-4 mr-1" />
+            Email
           </Button>
         </div>
       </div>
