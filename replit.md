@@ -6,6 +6,14 @@ R.S International Freight Manager is a web-based freight management system desig
 
 The application now includes comprehensive file upload functionality integrated with Replit's App Storage (object storage), allowing users to attach files to shipments and custom clearances. Files are stored persistently and can be downloaded directly from the system. A key feature is the **shared document storage system** using the `job_file_groups` table: linked jobs (import/export shipments and their custom clearances) automatically share the same Documents and R.S Invoices storage via their shared `jobRef`. The backend automatically syncs files between individual job tables and the unified storage, ensuring seamless file sharing across related jobs.
 
+**OCR Text Extraction:**
+- Dual-engine OCR system for extracting text from documents
+- **PDF files**: Powered by Scribe.js (free, open-source, no system dependencies)
+- **Image files**: Powered by Tesseract.js (supports JPG, PNG, GIF, BMP, TIFF, WEBP)
+- OCR button appears on hover for all uploaded documents
+- Extracted text can be copied to clipboard for easy use
+- Currently available on Import Shipments page (planned for Export Shipments and Custom Clearances)
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

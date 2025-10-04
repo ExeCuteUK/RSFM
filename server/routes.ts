@@ -1568,13 +1568,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "objectPath is required" });
       }
 
-      // Check if file is an image type (OCR only works with images)
       const fileExtension = objectPath.toLowerCase().split('.').pop();
       const supportedImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
+      const isPDF = fileExtension === 'pdf';
+      const isImage = supportedImageTypes.includes(fileExtension || '');
       
-      if (!supportedImageTypes.includes(fileExtension || '')) {
+      if (!isPDF && !isImage) {
         return res.status(400).json({ 
-          error: "OCR only supports image files (JPG, PNG, GIF, BMP, TIFF, WEBP). PDF files are not supported." 
+          error: "OCR only supports image files (JPG, PNG, GIF, BMP, TIFF, WEBP) and PDF files." 
         });
       }
 
@@ -1586,24 +1587,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Download the file from object storage
       const fileBuffer = await objectStorageService.getObjectBuffer(normalizedPath);
       
-      // Import Tesseract.js
-      const { createWorker } = await import("tesseract.js");
-      const worker = await createWorker('eng');
-      
-      try {
-        // Recognize text from the buffer
-        const { data: { text, confidence } } = await worker.recognize(fileBuffer);
+      if (isPDF) {
+        // Use Scribe.js for PDF OCR
+        const scribe = (await import("scribe.js-ocr")).default;
+        const fs = await import("fs");
+        const path = await import("path");
+        const os = await import("os");
         
-        await worker.terminate();
+        // Create a temporary file for the PDF
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `ocr-${Date.now()}.pdf`);
         
-        res.json({ 
-          text, 
-          confidence,
-          filename: objectPath.split('/').pop()
-        });
-      } catch (ocrError) {
-        await worker.terminate();
-        throw ocrError;
+        try {
+          // Write buffer to temp file
+          fs.writeFileSync(tempFilePath, fileBuffer);
+          
+          // Extract text using Scribe.js
+          const result = await scribe.extractText([tempFilePath]);
+          
+          // Clean up temp file
+          fs.unlinkSync(tempFilePath);
+          
+          res.json({ 
+            text: result.text || "No text found in PDF",
+            confidence: 95, // Scribe.js doesn't provide confidence, use default
+            filename: objectPath.split('/').pop(),
+            engine: 'scribe.js'
+          });
+        } catch (scribeError) {
+          // Clean up temp file on error
+          if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+          }
+          throw scribeError;
+        }
+      } else {
+        // Use Tesseract.js for image OCR
+        const { createWorker } = await import("tesseract.js");
+        const worker = await createWorker('eng');
+        
+        try {
+          // Recognize text from the buffer
+          const { data: { text, confidence } } = await worker.recognize(fileBuffer);
+          
+          await worker.terminate();
+          
+          res.json({ 
+            text, 
+            confidence,
+            filename: objectPath.split('/').pop(),
+            engine: 'tesseract.js'
+          });
+        } catch (ocrError) {
+          await worker.terminate();
+          throw ocrError;
+        }
       }
     } catch (error) {
       console.error("Error performing OCR:", error);
