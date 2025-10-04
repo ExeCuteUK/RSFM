@@ -1560,6 +1560,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // OCR text extraction from uploaded files
+  app.post("/api/objects/ocr", async (req, res) => {
+    try {
+      const { objectPath } = req.body;
+      if (!objectPath) {
+        return res.status(400).json({ error: "objectPath is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      
+      // Download the file from object storage
+      const fileBuffer = await objectStorageService.getObjectBuffer(objectPath);
+      
+      // Import Tesseract.js
+      const { createWorker } = await import("tesseract.js");
+      const worker = await createWorker('eng');
+      
+      try {
+        // Recognize text from the buffer
+        const { data: { text, confidence } } = await worker.recognize(fileBuffer);
+        
+        await worker.terminate();
+        
+        res.json({ 
+          text, 
+          confidence,
+          filename: objectPath.split('/').pop()
+        });
+      } catch (ocrError) {
+        await worker.terminate();
+        throw ocrError;
+      }
+    } catch (error) {
+      console.error("Error performing OCR:", error);
+      res.status(500).json({ error: "Failed to extract text from file" });
+    }
+  });
+
   // ========== Backup Routes (Admin only) ==========
 
   // List all backups

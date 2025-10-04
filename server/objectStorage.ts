@@ -172,6 +172,12 @@ export class ObjectStorageService {
     return objectFile;
   }
 
+  async getObjectBuffer(objectPath: string): Promise<Buffer> {
+    const file = await this.getObjectEntityFile(objectPath);
+    const [buffer] = await file.download();
+    return buffer;
+  }
+
   normalizeObjectEntityPath(rawPath: string): string {
     if (!rawPath.startsWith("https://storage.googleapis.com/")) {
       return rawPath;
