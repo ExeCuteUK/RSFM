@@ -211,9 +211,21 @@ export default function ImportShipments() {
       return apiRequest("POST", "/api/terminal49/track", { containerNumber, shippingLine })
     },
     onSuccess: (response: any) => {
-      toast({ title: "Container tracking started" })
-      // Get shipment ID from the response and fetch tracking data
-      if (response?.data?.relationships?.shipment?.data?.id) {
+      const status = response?.data?.attributes?.status
+      if (status === "pending") {
+        toast({ 
+          title: "Container Tracking Request Created", 
+          description: "Terminal49 is searching for your container. This may take a few moments." 
+        })
+        // Try to fetch shipment data anyway (it might be available)
+        if (response?.data?.id) {
+          // Use tracking request ID to check for shipment
+          setTimeout(() => {
+            fetchTrackingData.mutate(response.data.id)
+          }, 2000)
+        }
+      } else if (response?.data?.relationships?.shipment?.data?.id) {
+        toast({ title: "Container tracking started" })
         fetchTrackingData.mutate(response.data.relationships.shipment.data.id)
       }
     },
@@ -233,6 +245,15 @@ export default function ImportShipments() {
     },
     onSuccess: (data) => {
       setTrackingData(data)
+    },
+    onError: (error: any) => {
+      if (error?.details?.errors?.[0]?.status === "404") {
+        toast({ 
+          title: "Tracking Data Not Available Yet", 
+          description: "Container tracking is still in progress. Please try again in a few minutes.",
+          variant: "default" 
+        })
+      }
     },
   })
 
