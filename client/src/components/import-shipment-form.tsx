@@ -1748,8 +1748,10 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         field.onChange(value);
                         const selectedHaulier = hauliers?.find(h => h.haulierName === value);
                         if (selectedHaulier) {
-                          form.setValue("haulierContactName", selectedHaulier.contactNames || []);
-                          form.setValue("haulierEmail", selectedHaulier.email || []);
+                          const contactNames = selectedHaulier.contacts?.map(c => c.contactName) || [];
+                          const contactEmails = selectedHaulier.contacts?.map(c => c.contactEmail) || [];
+                          form.setValue("haulierContactName", contactNames);
+                          form.setValue("haulierEmail", contactEmails);
                           form.setValue("haulierTelephone", selectedHaulier.telephone || "");
                         }
                       }} 
