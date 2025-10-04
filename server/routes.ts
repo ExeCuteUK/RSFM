@@ -1614,16 +1614,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Extract text using Scribe.js
           const result = await scribe.extractText([tempFilePath]);
           
+          console.log("[DEBUG-OCR] Scribe.js result:", JSON.stringify(result, null, 2));
+          
           // Clean up temp file
           fs.unlinkSync(tempFilePath);
           
+          // Scribe.js returns an object with pages, check if there's any text
+          let extractedText = "";
+          if (result && typeof result === 'object') {
+            // Try different possible result structures
+            if (result.text) {
+              extractedText = result.text;
+            } else if (result.pages && Array.isArray(result.pages)) {
+              extractedText = result.pages.map((p: any) => p.text || '').join('\n');
+            } else if (Array.isArray(result)) {
+              extractedText = result.map((p: any) => p.text || '').join('\n');
+            }
+          }
+          
           res.json({ 
-            text: result.text || "No text found in PDF",
+            text: extractedText || "No text found in PDF",
             confidence: 95, // Scribe.js doesn't provide confidence, use default
             filename: objectPath.split('/').pop(),
             engine: 'scribe.js'
           });
         } catch (scribeError) {
+          console.error("[DEBUG-OCR] Scribe.js error:", scribeError);
           // Clean up temp file on error
           if (fs.existsSync(tempFilePath)) {
             fs.unlinkSync(tempFilePath);
