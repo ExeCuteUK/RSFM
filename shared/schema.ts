@@ -16,6 +16,10 @@ export const users = pgTable("users", {
   gmailRefreshToken: text("gmail_refresh_token"),
   gmailTokenExpiry: text("gmail_token_expiry"),
   gmailEmail: text("gmail_email"),
+  
+  // Email signature
+  emailSignature: text("email_signature"),
+  includeSignature: boolean("include_signature").default(false).notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({

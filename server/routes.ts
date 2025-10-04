@@ -1818,6 +1818,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create email with attachment
       const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
       
+      // Build email body with optional signature
+      let emailBody = body || '';
+      if (user.includeSignature && user.emailSignature) {
+        emailBody += '\n\n' + user.emailSignature;
+      }
+      
       const boundary = '----=_Part_' + Date.now();
       const message = [
         `To: ${to}`,
@@ -1828,7 +1834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `--${boundary}`,
         'Content-Type: text/plain; charset=UTF-8',
         '',
-        body || '',
+        emailBody,
         '',
         `--${boundary}`,
         'Content-Type: application/pdf',

@@ -26,6 +26,8 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -35,9 +37,42 @@ export default function SettingsPage() {
   const [userToDelete, setUserToDelete] = useState<Omit<User, 'password'> | null>(null);
   const [userToEdit, setUserToEdit] = useState<Omit<User, 'password'> | null>(null);
   
+  // Email signature state
+  const [emailSignature, setEmailSignature] = useState(currentUser?.emailSignature || '');
+  const [includeSignature, setIncludeSignature] = useState(currentUser?.includeSignature || false);
+  
+  // Update signature state when user changes
+  useEffect(() => {
+    if (currentUser) {
+      setEmailSignature(currentUser.emailSignature || '');
+      setIncludeSignature(currentUser.includeSignature || false);
+    }
+  }, [currentUser]);
+  
   // Fetch Gmail connection status
   const { data: gmailStatus, isLoading: gmailLoading } = useQuery<{ connected: boolean; email: string | null }>({
     queryKey: ["/api/gmail/status"],
+  });
+  
+  // Save signature mutation
+  const saveSignatureMutation = useMutation({
+    mutationFn: async (data: { emailSignature: string; includeSignature: boolean }) => {
+      return apiRequest("PATCH", `/api/users/${currentUser?.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      toast({
+        title: "Signature saved",
+        description: "Your email signature has been updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to save signature",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   // Fetch settings
@@ -423,6 +458,62 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Email Signature</CardTitle>
+              <CardDescription>
+                Create a signature that will be automatically included in your emails
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="emailSignature">Signature</Label>
+                <Textarea
+                  id="emailSignature"
+                  placeholder="Enter your email signature..."
+                  value={emailSignature}
+                  onChange={(e) => setEmailSignature(e.target.value)}
+                  rows={6}
+                  data-testid="textarea-email-signature"
+                  className="font-sans"
+                />
+                <p className="text-sm text-muted-foreground">
+                  This signature will be added to the end of your emails. Use line breaks to format your signature.
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="includeSignature"
+                  checked={includeSignature}
+                  onCheckedChange={(checked) => setIncludeSignature(checked as boolean)}
+                  data-testid="checkbox-include-signature"
+                />
+                <Label
+                  htmlFor="includeSignature"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Include signature in emails
+                </Label>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    saveSignatureMutation.mutate({
+                      emailSignature,
+                      includeSignature,
+                    });
+                  }}
+                  disabled={saveSignatureMutation.isPending}
+                  data-testid="button-save-signature"
+                >
+                  {saveSignatureMutation.isPending ? "Saving..." : "Save Signature"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
