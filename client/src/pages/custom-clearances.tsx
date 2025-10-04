@@ -398,9 +398,14 @@ export default function CustomClearances() {
   }
 
   const getStatusColor = (indicator: number | null) => {
-    if (indicator === 3) return "text-green-600 dark:text-green-400"
-    if (indicator === 2) return "text-yellow-600 dark:text-yellow-400"
-    return "text-gray-500 dark:text-gray-400"
+    switch (indicator) {
+      case 1:
+      case null:
+      default: return "text-yellow-600 dark:text-yellow-400"
+      case 2: return "text-orange-600 dark:text-orange-400"
+      case 3: return "text-green-600 dark:text-green-400"
+      case 4: return "text-red-600 dark:text-red-400"
+    }
   }
 
   const getClearanceStatusBadgeColor = (status: string) => {

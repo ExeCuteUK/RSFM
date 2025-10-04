@@ -558,11 +558,11 @@ export const customClearances = pgTable("custom_clearances", {
   transportDocuments: text("transport_documents").array(),
   clearanceDocuments: text("clearance_documents").array(),
   
-  // Status Indicators (1=pending, 2=in-progress, 3=completed)
-  adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(2),
-  sendEntryToCustomerStatusIndicator: integer("send_entry_to_customer_status_indicator").default(2),
-  invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(2),
-  sendClearedEntryStatusIndicator: integer("send_cleared_entry_status_indicator").default(2),
+  // Status Indicators (1=yellow, 2=orange, 3=green, 4=red)
+  adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(1),
+  sendEntryToCustomerStatusIndicator: integer("send_entry_to_customer_status_indicator").default(1),
+  invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
+  sendClearedEntryStatusIndicator: integer("send_cleared_entry_status_indicator").default(1),
   
   // Link to source shipment
   createdFromType: text("created_from_type"),

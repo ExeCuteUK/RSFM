@@ -702,10 +702,10 @@ export default function ImportShipments() {
 
   const getDeliveryBookedStatusColor = (status: number | null) => {
     switch (status) {
-      case 1: return "text-orange-600 dark:text-orange-400"
-      case 2:
+      case 1:
       case null:
       default: return "text-yellow-600 dark:text-yellow-400"
+      case 2: return "text-orange-600 dark:text-orange-400"
       case 3: return "text-green-600 dark:text-green-400"
       case 4: return "text-red-600 dark:text-red-400"
     }
@@ -713,10 +713,10 @@ export default function ImportShipments() {
 
   const getHaulierBookingStatusColor = (status: number | null) => {
     switch (status) {
-      case 1: return "text-orange-600 dark:text-orange-400"
-      case 2:
+      case 1:
       case null:
       default: return "text-yellow-600 dark:text-yellow-400"
+      case 2: return "text-orange-600 dark:text-orange-400"
       case 3: return "text-green-600 dark:text-green-400"
       case 4: return "text-red-600 dark:text-red-400"
     }
@@ -724,10 +724,10 @@ export default function ImportShipments() {
 
   const getContainerReleaseStatusColor = (status: number | null) => {
     switch (status) {
-      case 1: return "text-orange-600 dark:text-orange-400"
-      case 2:
+      case 1:
       case null:
       default: return "text-yellow-600 dark:text-yellow-400"
+      case 2: return "text-orange-600 dark:text-orange-400"
       case 3: return "text-green-600 dark:text-green-400"
       case 4: return "text-red-600 dark:text-red-400"
     }
@@ -735,19 +735,23 @@ export default function ImportShipments() {
 
   const getInvoiceCustomerStatusColor = (status: number | null) => {
     switch (status) {
-      case 2:
+      case 1:
       case null:
       default: return "text-yellow-600 dark:text-yellow-400"
+      case 2: return "text-orange-600 dark:text-orange-400"
       case 3: return "text-green-600 dark:text-green-400"
+      case 4: return "text-red-600 dark:text-red-400"
     }
   }
 
   const getSendPodToCustomerStatusColor = (status: number | null) => {
     switch (status) {
-      case 2:
+      case 1:
       case null:
       default: return "text-yellow-600 dark:text-yellow-400"
+      case 2: return "text-orange-600 dark:text-orange-400"
       case 3: return "text-green-600 dark:text-green-400"
+      case 4: return "text-red-600 dark:text-red-400"
     }
   }
 
