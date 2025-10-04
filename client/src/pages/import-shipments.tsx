@@ -27,6 +27,7 @@ import {
 import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
+import { OCRDialog } from "@/components/ocr-dialog"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
@@ -1441,6 +1442,7 @@ export default function ImportShipments() {
                                         >
                                           {fileName}
                                         </a>
+                                        <OCRDialog filePath={filePath} fileName={fileName} />
                                         <button
                                           onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
@@ -1494,6 +1496,7 @@ export default function ImportShipments() {
                                         >
                                           {fileName}
                                         </a>
+                                        <OCRDialog filePath={filePath} fileName={fileName} />
                                         <button
                                           onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
@@ -2381,22 +2384,22 @@ export default function ImportShipments() {
                                   const fileName = filePath.split('/').pop() || filePath
                                   const downloadPath = normalizeFilePath(filePath)
                                   return (
-                                    <a
-                                      key={idx}
-                                      href={downloadPath}
-                                      onClick={(e) => handleFileClick(e, filePath)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group cursor-pointer"
-                                      title={fileName}
-                                    >
+                                    <div key={idx} className="flex items-center gap-2 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group">
                                       <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-md">
                                         <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                       </div>
-                                      <span className="text-sm truncate flex-1 group-hover:text-primary">
+                                      <a
+                                        href={downloadPath}
+                                        onClick={(e) => handleFileClick(e, filePath)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm truncate flex-1 group-hover:text-primary cursor-pointer"
+                                        title={fileName}
+                                      >
                                         {fileName}
-                                      </span>
-                                    </a>
+                                      </a>
+                                      <OCRDialog filePath={filePath} fileName={fileName} />
+                                    </div>
                                   )
                                 })}
                               </div>
@@ -2412,22 +2415,22 @@ export default function ImportShipments() {
                                   const fileName = filePath.split('/').pop() || filePath
                                   const downloadPath = normalizeFilePath(filePath)
                                   return (
-                                    <a
-                                      key={idx}
-                                      href={downloadPath}
-                                      onClick={(e) => handleFileClick(e, filePath)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group cursor-pointer"
-                                      title={fileName}
-                                    >
+                                    <div key={idx} className="flex items-center gap-2 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group">
                                       <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-md">
                                         <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />
                                       </div>
-                                      <span className="text-sm truncate flex-1 group-hover:text-primary">
+                                      <a
+                                        href={downloadPath}
+                                        onClick={(e) => handleFileClick(e, filePath)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm truncate flex-1 group-hover:text-primary cursor-pointer"
+                                        title={fileName}
+                                      >
                                         {fileName}
-                                      </span>
-                                    </a>
+                                      </a>
+                                      <OCRDialog filePath={filePath} fileName={fileName} />
+                                    </div>
                                   )
                                 })}
                               </div>
