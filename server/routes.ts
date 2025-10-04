@@ -768,6 +768,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertImportShipmentSchema.parse(req.body);
       const shipment = await storage.createImportShipment(validatedData);
+      
+      // Sync attachments to job_file_groups
+      if (shipment.attachments && shipment.attachments.length > 0) {
+        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+        if (existingGroup) {
+          await storage.updateJobFileGroup(shipment.jobRef, {
+            documents: shipment.attachments,
+          });
+        } else {
+          await storage.createJobFileGroup({
+            jobRef: shipment.jobRef,
+            documents: shipment.attachments,
+            rsInvoices: [],
+          });
+        }
+      }
+      
       res.status(201).json(shipment);
     } catch (error: any) {
       if (error.name === "ZodError") {
@@ -790,6 +807,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Import shipment not found" });
       }
       console.log('[DEBUG] Updated shipment rsToClear:', shipment.rsToClear, 'linkedClearanceId:', shipment.linkedClearanceId);
+      
+      // Sync attachments to job_file_groups if they were updated
+      if (req.body.attachments !== undefined) {
+        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+        if (existingGroup) {
+          await storage.updateJobFileGroup(shipment.jobRef, {
+            documents: shipment.attachments || [],
+          });
+        } else if (shipment.attachments && shipment.attachments.length > 0) {
+          await storage.createJobFileGroup({
+            jobRef: shipment.jobRef,
+            documents: shipment.attachments,
+            rsInvoices: [],
+          });
+        }
+      }
+      
       res.json(shipment);
     } catch (error: any) {
       console.error('[ERROR] Failed to update import shipment:', error);
@@ -1016,6 +1050,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertExportShipmentSchema.parse(req.body);
       const shipment = await storage.createExportShipment(validatedData);
+      
+      // Sync attachments to job_file_groups
+      if (shipment.attachments && shipment.attachments.length > 0) {
+        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+        if (existingGroup) {
+          await storage.updateJobFileGroup(shipment.jobRef, {
+            documents: shipment.attachments,
+          });
+        } else {
+          await storage.createJobFileGroup({
+            jobRef: shipment.jobRef,
+            documents: shipment.attachments,
+            rsInvoices: [],
+          });
+        }
+      }
+      
       res.status(201).json(shipment);
     } catch (error: any) {
       if (error.name === "ZodError") {
@@ -1036,6 +1087,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
       }
+      
+      // Sync attachments to job_file_groups if they were updated
+      if (req.body.attachments !== undefined) {
+        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+        if (existingGroup) {
+          await storage.updateJobFileGroup(shipment.jobRef, {
+            documents: shipment.attachments || [],
+          });
+        } else if (shipment.attachments && shipment.attachments.length > 0) {
+          await storage.createJobFileGroup({
+            jobRef: shipment.jobRef,
+            documents: shipment.attachments,
+            rsInvoices: [],
+          });
+        }
+      }
+      
       res.json(shipment);
     } catch (error: any) {
       if (error.name === "ZodError") {
@@ -1091,6 +1159,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertCustomClearanceSchema.parse(req.body);
       const clearance = await storage.createCustomClearance(validatedData);
+      
+      // Sync documents to job_file_groups
+      const allDocs = [
+        ...(clearance.transportDocuments || []),
+        ...(clearance.clearanceDocuments || [])
+      ];
+      
+      if (allDocs.length > 0) {
+        const existingGroup = await storage.getJobFileGroupByJobRef(clearance.jobRef);
+        if (existingGroup) {
+          // Merge with existing documents to avoid duplicates
+          const mergedDocs = [...new Set([...(existingGroup.documents || []), ...allDocs])];
+          await storage.updateJobFileGroup(clearance.jobRef, {
+            documents: mergedDocs,
+          });
+        } else {
+          await storage.createJobFileGroup({
+            jobRef: clearance.jobRef,
+            documents: allDocs,
+            rsInvoices: [],
+          });
+        }
+      }
+      
       res.status(201).json(clearance);
     } catch (error) {
       res.status(400).json({ error: "Invalid custom clearance data" });
@@ -1105,6 +1197,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
+      
+      // Sync documents to job_file_groups if they were updated
+      if (req.body.transportDocuments !== undefined || req.body.clearanceDocuments !== undefined) {
+        const allDocs = [
+          ...(clearance.transportDocuments || []),
+          ...(clearance.clearanceDocuments || [])
+        ];
+        
+        const existingGroup = await storage.getJobFileGroupByJobRef(clearance.jobRef);
+        if (existingGroup) {
+          // Merge with existing documents to avoid duplicates
+          const mergedDocs = [...new Set(allDocs)];
+          await storage.updateJobFileGroup(clearance.jobRef, {
+            documents: mergedDocs,
+          });
+        } else if (allDocs.length > 0) {
+          await storage.createJobFileGroup({
+            jobRef: clearance.jobRef,
+            documents: allDocs,
+            rsInvoices: [],
+          });
+        }
+      }
+      
       res.json(clearance);
     } catch (error) {
       if (error instanceof Error && error.name === "ZodError") {
