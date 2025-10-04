@@ -133,6 +133,26 @@ export default function SettingsPage() {
     },
   });
 
+  // Restore default signature mutation
+  const restoreDefaultsMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/signature/restore-defaults");
+    },
+    onSuccess: () => {
+      toast({
+        title: "Defaults restored",
+        description: "Your signature template and logo have been restored to defaults.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Restore failed",
+        description: "Failed to restore default signature.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Fetch settings
   const { data: settings, isLoading } = useQuery<Settings>({
     queryKey: ["/api/settings"],
@@ -623,7 +643,17 @@ export default function SettingsPage() {
                 </Label>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    restoreDefaultsMutation.mutate();
+                  }}
+                  disabled={restoreDefaultsMutation.isPending}
+                  data-testid="button-restore-defaults"
+                >
+                  {restoreDefaultsMutation.isPending ? "Restoring..." : "Restore Default"}
+                </Button>
                 <Button
                   onClick={() => {
                     saveSignatureMutation.mutate({
