@@ -397,8 +397,21 @@ export default function JobJournals() {
                     <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r-2 border-border font-semibold" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
                       {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
                     </td>
-                    <td className="p-2 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
-                      {entry.profitLoss !== undefined ? `£${entry.profitLoss.toFixed(2)}` : ""}
+                    <td className="p-2 text-center bg-muted border-l-2 font-semibold" data-testid={`text-profit-loss-${entry.jobRef}`}>
+                      {(() => {
+                        const rsCharges = entry.rsChargesReserve || 0
+                        const jobExpenses = entry.jobExpensesReserve || 0
+                        const profitLoss = rsCharges - jobExpenses
+                        
+                        if (profitLoss === 0) return ""
+                        
+                        const formatted = profitLoss.toLocaleString('en-GB', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })
+                        
+                        return `£${formatted}`
+                      })()}
                     </td>
                   </tr>
                 ))}
