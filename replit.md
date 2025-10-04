@@ -91,6 +91,11 @@ Key routes include:
 -   Uppy (core, react, dashboard, aws-s3)
 -   @google-cloud/storage
 
+**Container Tracking:**
+-   Terminal49 API integration for real-time container tracking
+-   SCAC code mapping for major shipping lines (Cosco, Maersk, MSC, CMA CGM, Hapag-Lloyd, etc.)
+-   Automatic SCAC code extraction from shipping line names or container numbers
+
 **Development Tools:**
 -   TypeScript
 -   Vite (frontend bundling)
