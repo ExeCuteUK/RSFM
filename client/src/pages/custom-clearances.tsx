@@ -459,6 +459,8 @@ export default function CustomClearances() {
 
   const getClearanceStatusBadgeColor = (status: string) => {
     switch (status) {
+      case "Request CC":
+        return "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700"
       case "Fully Cleared":
         return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700"
       case "Waiting Arrival":

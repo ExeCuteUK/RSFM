@@ -126,9 +126,28 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     onSubmit(finalData);
   };
 
+  const handleValidationError = (errors: typeof form.formState.errors) => {
+    const firstErrorField = Object.keys(errors)[0];
+    const firstError = firstErrorField ? (errors as any)[firstErrorField] : null;
+    const firstErrorMessage = firstError?.message;
+
+    toast({
+      title: "Form Validation Error",
+      description: firstErrorMessage || "Please check the form for errors",
+      variant: "destructive",
+    });
+
+    if (firstErrorField) {
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)} className="space-y-6">
         <div className="grid gap-6">
           <Card>
             <CardHeader>
