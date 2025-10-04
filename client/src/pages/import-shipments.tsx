@@ -211,8 +211,10 @@ export default function ImportShipments() {
       return apiRequest("POST", "/api/terminal49/track", { containerNumber, shippingLine })
     },
     onSuccess: (response: any) => {
+      console.log("Track container response:", response)
       const status = response?.data?.attributes?.status
       const shipmentId = response?.data?.relationships?.tracked_object?.data?.id
+      console.log("Status:", status, "Shipment ID:", shipmentId)
       
       if (status === "view_on_terminal49") {
         // API limitations - direct to Terminal49 website
@@ -225,6 +227,7 @@ export default function ImportShipments() {
         })
       } else if (shipmentId) {
         // Shipment found, fetch tracking data
+        console.log("Fetching tracking data for shipment:", shipmentId)
         toast({ 
           title: "Loading Tracking Data", 
           description: "Retrieving container tracking information..." 
@@ -232,6 +235,7 @@ export default function ImportShipments() {
         fetchTrackingData.mutate(shipmentId)
       } else {
         // Tracking request created
+        console.log("No shipment ID, showing pending message")
         toast({ 
           title: "Container Tracking Request Created", 
           description: status === "pending" 
