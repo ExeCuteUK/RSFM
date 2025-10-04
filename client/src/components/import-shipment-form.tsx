@@ -309,9 +309,25 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
     onSubmit(finalData);
   };
 
+  const handleValidationError = (errors: typeof form.formState.errors) => {
+    const firstErrorField = Object.keys(errors)[0];
+    const firstErrorMessage = errors[firstErrorField]?.message;
+
+    toast({
+      title: "Form Validation Error",
+      description: firstErrorMessage || "Please check the form for errors",
+      variant: "destructive",
+    });
+
+    const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+    if (errorElement) {
+      errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)} className="space-y-6">
         <div className="grid gap-6">
           <Card>
             <CardHeader>
