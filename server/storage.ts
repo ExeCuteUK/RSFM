@@ -22,6 +22,8 @@ import {
   type InsertExportShipment,
   type CustomClearance,
   type InsertCustomClearance,
+  type JobFileGroup,
+  type InsertJobFileGroup,
   importCustomers,
   exportCustomers,
   exportReceivers,
@@ -32,6 +34,7 @@ import {
   importShipments,
   exportShipments,
   customClearances,
+  jobFileGroups,
   users
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -124,6 +127,12 @@ export interface IStorage {
   createCustomClearance(clearance: InsertCustomClearance): Promise<CustomClearance>;
   updateCustomClearance(id: string, clearance: Partial<InsertCustomClearance>): Promise<CustomClearance | undefined>;
   deleteCustomClearance(id: string): Promise<boolean>;
+
+  // Job File Group methods (shared file storage for linked jobs)
+  getJobFileGroupByJobRef(jobRef: number): Promise<JobFileGroup | undefined>;
+  createJobFileGroup(group: InsertJobFileGroup): Promise<JobFileGroup>;
+  updateJobFileGroup(jobRef: number, group: Partial<InsertJobFileGroup>): Promise<JobFileGroup | undefined>;
+  deleteJobFileGroup(jobRef: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -918,6 +927,23 @@ export class MemStorage implements IStorage {
   async deleteCustomClearance(id: string): Promise<boolean> {
     return this.customClearances.delete(id);
   }
+
+  // Job File Group methods (stubs for MemStorage)
+  async getJobFileGroupByJobRef(jobRef: number): Promise<JobFileGroup | undefined> {
+    return undefined;
+  }
+
+  async createJobFileGroup(group: InsertJobFileGroup): Promise<JobFileGroup> {
+    throw new Error("Job file groups not supported in memory storage");
+  }
+
+  async updateJobFileGroup(jobRef: number, group: Partial<InsertJobFileGroup>): Promise<JobFileGroup | undefined> {
+    return undefined;
+  }
+
+  async deleteJobFileGroup(jobRef: number): Promise<boolean> {
+    return false;
+  }
 }
 
 // Database Storage Implementation using Drizzle ORM
@@ -1436,6 +1462,39 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomClearance(id: string): Promise<boolean> {
     const result = await db.delete(customClearances).where(eq(customClearances.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Job File Group methods
+  async getJobFileGroupByJobRef(jobRef: number): Promise<JobFileGroup | undefined> {
+    const [group] = await db.select().from(jobFileGroups).where(eq(jobFileGroups.jobRef, jobRef));
+    return group;
+  }
+
+  async createJobFileGroup(insertGroup: InsertJobFileGroup): Promise<JobFileGroup> {
+    const [group] = await db.insert(jobFileGroups).values({
+      ...insertGroup,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }).returning();
+    
+    return group;
+  }
+
+  async updateJobFileGroup(jobRef: number, updates: Partial<InsertJobFileGroup>): Promise<JobFileGroup | undefined> {
+    const [updated] = await db.update(jobFileGroups)
+      .set({
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(jobFileGroups.jobRef, jobRef))
+      .returning();
+    
+    return updated;
+  }
+
+  async deleteJobFileGroup(jobRef: number): Promise<boolean> {
+    const result = await db.delete(jobFileGroups).where(eq(jobFileGroups.jobRef, jobRef));
     return result.rowCount !== null && result.rowCount > 0;
   }
 }
