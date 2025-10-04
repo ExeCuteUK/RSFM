@@ -989,6 +989,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (fileType === "attachment") {
         updatedFiles = (shipment.attachments || []).filter(f => f !== filePath);
         await storage.updateImportShipment(req.params.id, { attachments: updatedFiles });
+        
+        // Also remove from job_file_groups if shipment has a jobRef
+        if (shipment.jobRef) {
+          const fileGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+          if (fileGroup) {
+            const updatedDocs = (fileGroup.documents || []).filter(f => f !== filePath);
+            await storage.updateJobFileGroupDocuments(shipment.jobRef, updatedDocs);
+          }
+        }
       } else {
         updatedFiles = (shipment.proofOfDelivery || []).filter(f => f !== filePath);
         await storage.updateImportShipment(req.params.id, { proofOfDelivery: updatedFiles });
