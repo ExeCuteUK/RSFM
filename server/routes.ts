@@ -1462,7 +1462,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      res.json(clearance);
+      // Bidirectional sync: Update linked import or export shipment with changed fields
+      let syncedToShipment = false;
+      if (clearance.createdFromId && clearance.createdFromType) {
+        const shipmentUpdate: any = {};
+        
+        if (clearance.createdFromType === "import") {
+          // Map custom clearance fields back to import shipment fields
+          if (req.body.importCustomerId !== undefined) shipmentUpdate.importCustomerId = clearance.importCustomerId;
+          if (req.body.etaPort !== undefined) shipmentUpdate.importDateEtaPort = clearance.etaPort;
+          if (req.body.portOfArrival !== undefined) shipmentUpdate.portOfArrival = clearance.portOfArrival;
+          if (req.body.trailerOrContainerNumber !== undefined) shipmentUpdate.trailerOrContainerNumber = clearance.trailerOrContainerNumber;
+          if (req.body.departureFrom !== undefined) shipmentUpdate.departureCountry = clearance.departureFrom;
+          if (req.body.containerShipment !== undefined) shipmentUpdate.containerShipment = clearance.containerShipment;
+          if (req.body.vesselName !== undefined) shipmentUpdate.vesselName = clearance.vesselName;
+          if (req.body.numberOfPieces !== undefined) shipmentUpdate.numberOfPieces = clearance.numberOfPieces;
+          if (req.body.packaging !== undefined) shipmentUpdate.packaging = clearance.packaging;
+          if (req.body.weight !== undefined) shipmentUpdate.weight = clearance.weight;
+          if (req.body.cube !== undefined) shipmentUpdate.cube = clearance.cube;
+          if (req.body.goodsDescription !== undefined) shipmentUpdate.goodsDescription = clearance.goodsDescription;
+          if (req.body.invoiceValue !== undefined) shipmentUpdate.invoiceValue = clearance.invoiceValue;
+          if (req.body.transportCosts !== undefined) shipmentUpdate.freightCharge = clearance.transportCosts;
+          if (req.body.clearanceCharge !== undefined) shipmentUpdate.clearanceCharge = clearance.clearanceCharge;
+          if (req.body.currency !== undefined) shipmentUpdate.currency = clearance.currency;
+          if (req.body.additionalCommodityCodes !== undefined) shipmentUpdate.additionalCommodityCodes = clearance.additionalCommodityCodes;
+          if (req.body.vatZeroRated !== undefined) shipmentUpdate.vatZeroRated = clearance.vatZeroRated;
+          if (req.body.clearanceType !== undefined) shipmentUpdate.clearanceType = clearance.clearanceType;
+          if (req.body.customerReferenceNumber !== undefined) shipmentUpdate.customerReferenceNumber = clearance.customerReferenceNumber;
+          if (req.body.supplierName !== undefined) shipmentUpdate.supplierName = clearance.supplierName;
+          
+          if (Object.keys(shipmentUpdate).length > 0) {
+            await storage.updateImportShipment(clearance.createdFromId, shipmentUpdate);
+            syncedToShipment = true;
+          }
+        } else if (clearance.createdFromType === "export") {
+          // Map custom clearance fields back to export shipment fields
+          if (req.body.exportCustomerId !== undefined) shipmentUpdate.destinationCustomerId = clearance.exportCustomerId;
+          if (req.body.receiverId !== undefined) shipmentUpdate.receiverId = clearance.receiverId;
+          if (req.body.etaPort !== undefined) shipmentUpdate.bookingDate = clearance.etaPort;
+          if (req.body.portOfArrival !== undefined) shipmentUpdate.portOfArrival = clearance.portOfArrival;
+          if (req.body.trailerOrContainerNumber !== undefined) shipmentUpdate.trailerNo = clearance.trailerOrContainerNumber;
+          if (req.body.departureFrom !== undefined) shipmentUpdate.departureFrom = clearance.departureFrom;
+          if (req.body.containerShipment !== undefined) shipmentUpdate.containerShipment = clearance.containerShipment;
+          if (req.body.vesselName !== undefined) shipmentUpdate.vesselName = clearance.vesselName;
+          if (req.body.numberOfPieces !== undefined) shipmentUpdate.numberOfPieces = clearance.numberOfPieces;
+          if (req.body.packaging !== undefined) shipmentUpdate.packaging = clearance.packaging;
+          if (req.body.weight !== undefined) shipmentUpdate.weight = clearance.weight;
+          if (req.body.cube !== undefined) shipmentUpdate.cube = clearance.cube;
+          if (req.body.goodsDescription !== undefined) shipmentUpdate.goodsDescription = clearance.goodsDescription;
+          if (req.body.invoiceValue !== undefined) shipmentUpdate.value = clearance.invoiceValue;
+          if (req.body.transportCosts !== undefined) shipmentUpdate.freightRateOut = clearance.transportCosts;
+          if (req.body.clearanceCharge !== undefined) shipmentUpdate.clearanceCharge = clearance.clearanceCharge;
+          if (req.body.currency !== undefined) shipmentUpdate.currency = clearance.currency;
+          if (req.body.additionalCommodityCodes !== undefined) shipmentUpdate.additionalCommodityCodes = clearance.additionalCommodityCodes;
+          if (req.body.incoterms !== undefined) shipmentUpdate.incoterms = clearance.incoterms;
+          if (req.body.customerReferenceNumber !== undefined) shipmentUpdate.customerReferenceNumber = clearance.customerReferenceNumber;
+          if (req.body.supplierName !== undefined) shipmentUpdate.supplier = clearance.supplierName;
+          
+          // Sync transport documents back to attachments
+          if (req.body.transportDocuments !== undefined) {
+            shipmentUpdate.attachments = clearance.transportDocuments || [];
+          }
+          
+          if (Object.keys(shipmentUpdate).length > 0) {
+            await storage.updateExportShipment(clearance.createdFromId, shipmentUpdate);
+            syncedToShipment = true;
+          }
+        }
+      }
+      
+      res.json({ ...clearance, _syncedToShipment: syncedToShipment });
     } catch (error) {
       if (error instanceof Error && error.name === "ZodError") {
         return res.status(400).json({ error: "Invalid custom clearance data" });
