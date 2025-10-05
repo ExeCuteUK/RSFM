@@ -14,11 +14,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, MailOpen, Trash2, Send, Paperclip, Download } from "lucide-react";
+import { Mail, MailOpen, Trash2, Send, Paperclip, Download, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
+import Uppy from "@uppy/core";
+import { Dashboard } from "@uppy/react";
+import AwsS3 from "@uppy/aws-s3";
 
 type Message = {
   id: number;
@@ -54,6 +57,7 @@ export default function Messages() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"inbox" | "sent">("inbox");
+  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
@@ -72,6 +76,52 @@ export default function Messages() {
       attachments: [],
     },
   });
+
+  // Initialize Uppy for file uploads
+  const [uppy] = useState(() => {
+    const uppyInstance = new Uppy({
+      restrictions: {
+        maxNumberOfFiles: 10,
+        maxFileSize: 10 * 1024 * 1024, // 10MB
+      },
+      autoProceed: false,
+    }).use(AwsS3, {
+      async getUploadParameters(file) {
+        const response = await fetch("/api/objects/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type,
+          }),
+        });
+        const data = await response.json();
+        return {
+          method: "PUT",
+          url: data.url,
+          fields: {},
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+        };
+      },
+    });
+
+    uppyInstance.on("upload-success", (file, response) => {
+      if (file?.name) {
+        const uploadedUrl = (response.uploadURL as string).split("?")[0];
+        setUploadedFiles((prev) => [...prev, uploadedUrl]);
+      }
+    });
+
+    return uppyInstance;
+  });
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+    };
+  }, [uppy]);
 
   // Handle userId parameter from URL to auto-open composer
   useEffect(() => {
@@ -100,6 +150,8 @@ export default function Messages() {
       toast({ title: "Message sent successfully" });
       setIsComposerOpen(false);
       form.reset();
+      uppy.cancelAll();
+      setUploadedFiles([]);
     },
     onError: () => {
       toast({ title: "Failed to send message", variant: "destructive" });
@@ -139,8 +191,37 @@ export default function Messages() {
     }
   };
 
-  const handleSendMessage = (data: MessageFormData) => {
-    sendMessageMutation.mutate(data);
+  const handleSendMessage = async (data: MessageFormData) => {
+    // Normalize uploaded file URLs and combine with attachments
+    const normalizedFiles = uploadedFiles.length > 0
+      ? await fetch("/api/objects/normalize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: uploadedFiles }),
+        }).then(res => res.json()).then(data => data.normalizedUrls)
+      : [];
+
+    sendMessageMutation.mutate({
+      ...data,
+      attachments: normalizedFiles,
+    });
+  };
+
+  const handleRemoveAttachment = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+    const files = uppy.getFiles();
+    if (files[index]) {
+      uppy.removeFile(files[index].id);
+    }
+  };
+
+  const handleComposerClose = (open: boolean) => {
+    if (!open) {
+      // Reset files when closing
+      uppy.cancelAll();
+      setUploadedFiles([]);
+    }
+    setIsComposerOpen(open);
   };
 
   const getUserDisplayName = (userId: string, fallbackName: string | null) => {
@@ -155,7 +236,7 @@ export default function Messages() {
           <h1 className="text-3xl font-bold">Messages</h1>
           <p className="text-muted-foreground">Internal communication system</p>
         </div>
-        <Dialog open={isComposerOpen} onOpenChange={setIsComposerOpen}>
+        <Dialog open={isComposerOpen} onOpenChange={handleComposerClose}>
           <DialogTrigger asChild>
             <Button data-testid="button-compose">
               <Send className="h-4 w-4 mr-2" />
@@ -225,11 +306,43 @@ export default function Messages() {
                     </FormItem>
                   )}
                 />
+                
+                <div className="space-y-2">
+                  <FormLabel>Attachments</FormLabel>
+                  <Dashboard
+                    uppy={uppy}
+                    height={200}
+                    theme="light"
+                    hideUploadButton={true}
+                    note="Upload files (max 10MB each, 10 files total)"
+                  />
+                  {uploadedFiles.length > 0 && (
+                    <div className="space-y-1">
+                      {uploadedFiles.map((file, idx) => {
+                        const fileName = file.split("/").pop() || file;
+                        return (
+                          <div key={idx} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
+                            <span className="truncate flex-1">{fileName}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveAttachment(idx)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-end gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setIsComposerOpen(false)}
+                    onClick={() => handleComposerClose(false)}
                     data-testid="button-cancel"
                   >
                     Cancel
