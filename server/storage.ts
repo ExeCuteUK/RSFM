@@ -992,11 +992,11 @@ export class MemStorage implements IStorage {
 
   // Job History methods (stubs for MemStorage)
   async getImportShipmentsByCustomerId(customerId: string): Promise<ImportShipment[]> {
-    return Array.from(this.importShipments.values()).filter(s => s.customerId === customerId);
+    return Array.from(this.importShipments.values()).filter(s => s.importCustomerId === customerId);
   }
 
   async getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]> {
-    return Array.from(this.exportShipments.values()).filter(s => s.customerId === customerId);
+    return Array.from(this.exportShipments.values()).filter(s => s.destinationCustomerId === customerId);
   }
 }
 
@@ -1666,7 +1666,7 @@ export class DatabaseStorage implements IStorage {
   async getImportShipmentsByCustomerId(customerId: string): Promise<ImportShipment[]> {
     const shipments = await db.select()
       .from(importShipments)
-      .where(eq(importShipments.customerId, customerId))
+      .where(eq(importShipments.importCustomerId, customerId))
       .orderBy(desc(importShipments.jobRef));
     return shipments;
   }
@@ -1674,7 +1674,7 @@ export class DatabaseStorage implements IStorage {
   async getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]> {
     const shipments = await db.select()
       .from(exportShipments)
-      .where(eq(exportShipments.customerId, customerId))
+      .where(eq(exportShipments.destinationCustomerId, customerId))
       .orderBy(desc(exportShipments.jobRef));
     return shipments;
   }
