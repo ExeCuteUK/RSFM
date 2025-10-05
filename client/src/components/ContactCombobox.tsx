@@ -55,12 +55,19 @@ export function ContactCombobox({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Determine the API endpoint based on type
-  const endpoint = `/api/${type}s/search?query=${encodeURIComponent(debouncedQuery)}&limit=25`;
+  // Construct search endpoint
+  const searchEndpoint = `/api/${type}s/search?query=${encodeURIComponent(debouncedQuery)}&limit=25`;
 
   // Fetch search results
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
-    queryKey: [`/api/${type}s/search`, debouncedQuery],
+    queryKey: [searchEndpoint],
+    queryFn: async () => {
+      const res = await fetch(searchEndpoint, { credentials: "include" });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    },
     enabled: open, // Only fetch when popover is open
   });
 
