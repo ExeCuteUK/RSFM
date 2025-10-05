@@ -537,21 +537,22 @@ export function DraggableEmailComposer({
         </div>
 
         {/* Attachments */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">
+            <label className="text-xs font-medium">
               Attachments {data.attachments.length > 0 && `(${data.attachments.length})`}
             </label>
             <Button
               type="button"
               variant="outline"
               size="sm"
+              className="h-7"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               data-testid="button-add-attachment"
             >
-              <Paperclip className="h-4 w-4 mr-2" />
-              {isUploading ? 'Uploading...' : 'Add Files'}
+              <Paperclip className="h-3 w-3 mr-1" />
+              <span className="text-xs">{isUploading ? 'Uploading...' : 'Add Files'}</span>
             </Button>
             <input
               ref={fileInputRef}
@@ -563,23 +564,23 @@ export function DraggableEmailComposer({
             />
           </div>
           {data.attachments.length > 0 && (
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {data.attachments.filter(file => file).map((file, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-2 bg-muted/50 rounded-md"
+                  className="flex items-center justify-between px-1.5 py-1 bg-muted/50 rounded"
                   data-testid={`attachment-${idx}`}
                 >
-                  <span className="text-sm truncate flex-1">{file.split('/').pop()}</span>
+                  <span className="text-xs truncate flex-1">{file.split('/').pop()}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 ml-2"
+                    className="h-5 w-5 p-0 ml-1"
                     onClick={() => handleRemoveAttachment(idx)}
                     data-testid={`button-remove-attachment-${idx}`}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               ))}
