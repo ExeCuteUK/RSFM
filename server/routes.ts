@@ -1306,14 +1306,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Sync attachments to linked custom clearance's transport documents if modified
-      if (req.body.attachments !== undefined && shipment.linkedClearanceId) {
-        await storage.updateCustomClearance(shipment.linkedClearanceId, {
-          transportDocuments: shipment.attachments || [],
-        });
+      // Bidirectional sync: Update linked custom clearance with changed fields
+      let syncedToClearance = false;
+      if (shipment.linkedClearanceId) {
+        const clearanceUpdate: any = {};
+        
+        // Map export shipment fields to custom clearance fields
+        if (req.body.destinationCustomerId !== undefined) clearanceUpdate.exportCustomerId = shipment.destinationCustomerId;
+        if (req.body.receiverId !== undefined) clearanceUpdate.receiverId = shipment.receiverId;
+        if (req.body.bookingDate !== undefined) clearanceUpdate.etaPort = shipment.bookingDate;
+        if (req.body.portOfArrival !== undefined) clearanceUpdate.portOfArrival = shipment.portOfArrival;
+        if (req.body.trailerNo !== undefined) clearanceUpdate.trailerOrContainerNumber = shipment.trailerNo;
+        if (req.body.departureFrom !== undefined) clearanceUpdate.departureFrom = shipment.departureFrom;
+        if (req.body.containerShipment !== undefined) clearanceUpdate.containerShipment = shipment.containerShipment;
+        if (req.body.vesselName !== undefined) clearanceUpdate.vesselName = shipment.vesselName;
+        if (req.body.numberOfPieces !== undefined) clearanceUpdate.numberOfPieces = shipment.numberOfPieces;
+        if (req.body.packaging !== undefined) clearanceUpdate.packaging = shipment.packaging;
+        if (req.body.weight !== undefined) clearanceUpdate.weight = shipment.weight;
+        if (req.body.cube !== undefined) clearanceUpdate.cube = shipment.cube;
+        if (req.body.goodsDescription !== undefined) clearanceUpdate.goodsDescription = shipment.goodsDescription;
+        if (req.body.value !== undefined) clearanceUpdate.invoiceValue = shipment.value;
+        if (req.body.freightRateOut !== undefined) clearanceUpdate.transportCosts = shipment.freightRateOut;
+        if (req.body.clearanceCharge !== undefined) clearanceUpdate.clearanceCharge = shipment.clearanceCharge;
+        if (req.body.currency !== undefined) clearanceUpdate.currency = shipment.currency;
+        if (req.body.additionalCommodityCodes !== undefined) clearanceUpdate.additionalCommodityCodes = shipment.additionalCommodityCodes;
+        if (req.body.incoterms !== undefined) clearanceUpdate.incoterms = shipment.incoterms;
+        if (req.body.customerReferenceNumber !== undefined) clearanceUpdate.customerReferenceNumber = shipment.customerReferenceNumber;
+        if (req.body.supplier !== undefined) clearanceUpdate.supplierName = shipment.supplier;
+        
+        // Sync attachments to transport documents
+        if (req.body.attachments !== undefined) {
+          clearanceUpdate.transportDocuments = shipment.attachments || [];
+        }
+        
+        if (Object.keys(clearanceUpdate).length > 0) {
+          await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdate);
+          syncedToClearance = true;
+        }
       }
       
-      res.json(shipment);
+      res.json({ ...shipment, _syncedToClearance: syncedToClearance });
     } catch (error: any) {
       if (error.name === "ZodError") {
         return res.status(400).json({ 
