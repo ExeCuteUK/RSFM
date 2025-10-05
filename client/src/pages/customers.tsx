@@ -63,18 +63,22 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
               >
                 <div className="flex-1">
                   <p className="font-medium">#{shipment.jobRef}</p>
-                  {'containerNo' in shipment && shipment.containerNo && (
+                  {type === "import" && 'containerNo' in shipment && shipment.containerNo && (
                     <p className="text-muted-foreground">{shipment.containerNo}</p>
                   )}
-                  {'exporterRef' in shipment && shipment.exporterRef && (
+                  {type === "export" && 'exporterRef' in shipment && shipment.exporterRef && (
                     <p className="text-muted-foreground">{shipment.exporterRef}</p>
                   )}
                 </div>
-                {shipment.dateReceived && (
+                {(type === "import" && 'dateReceived' in shipment && shipment.dateReceived) ? (
                   <p className="text-muted-foreground">
                     {format(new Date(shipment.dateReceived), "dd/MM/yy")}
                   </p>
-                )}
+                ) : (type === "export" && 'bookingDate' in shipment && shipment.bookingDate) ? (
+                  <p className="text-muted-foreground">
+                    {format(new Date(shipment.bookingDate), "dd/MM/yy")}
+                  </p>
+                ) : null}
               </div>
             ))}
           </div>
