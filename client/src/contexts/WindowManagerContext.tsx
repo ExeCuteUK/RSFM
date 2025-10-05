@@ -157,21 +157,37 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
   const restoreWindow = (id: string) => {
     const window = windows.find(w => w.id === id)
-    if (!window) return
-
-    // Auto-minimize currently active window
-    if (activeWindow && !activeWindow.isMinimized && activeWindow.id !== id) {
-      minimizeWindow(activeWindow.id)
-    }
+    if (!window || !window.isMinimized) return
 
     // Create the restored window state
     const restoredWindow = { ...window, isMinimized: false }
 
-    setWindows(prev =>
-      prev.map(w => w.id === id ? restoredWindow : w)
-    )
+    // If there's an active window, minimize it along with restoring the new window in a single update
+    if (activeWindow && !activeWindow.isMinimized && activeWindow.id !== id) {
+      setWindows(prev =>
+        prev.map(w => {
+          if (w.id === id) return restoredWindow
+          if (w.id === activeWindow.id) return { ...w, isMinimized: true }
+          return w
+        })
+      )
 
-    setMinimizedWindows(prev => prev.filter(w => w.id !== id))
+      setMinimizedWindows(prev => {
+        const filtered = prev.filter(w => w.id !== id)
+        return [
+          ...filtered,
+          { id: activeWindow.id, type: activeWindow.type, title: activeWindow.title }
+        ]
+      })
+    } else {
+      // No active window to minimize, just restore
+      setWindows(prev =>
+        prev.map(w => w.id === id ? restoredWindow : w)
+      )
+
+      setMinimizedWindows(prev => prev.filter(w => w.id !== id))
+    }
+
     setActiveWindowState(restoredWindow)
   }
 
