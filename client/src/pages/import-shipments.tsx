@@ -31,6 +31,7 @@ import { OCRDialog } from "@/components/ocr-dialog"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useEmail } from "@/contexts/EmailContext"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { format } from "date-fns"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -38,8 +39,7 @@ import { cn } from '@/lib/utils'
 
 export default function ImportShipments() {
   const { openEmailComposer } = useEmail()
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingShipment, setEditingShipment] = useState<ImportShipment | null>(null)
+  const { openWindow } = useWindowManager()
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
   const [searchText, setSearchText] = useState("")
@@ -145,8 +145,6 @@ export default function ImportShipments() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-      setIsFormOpen(false)
-      setEditingShipment(null)
       toast({ title: "Import shipment created successfully" })
     },
   })
@@ -158,8 +156,6 @@ export default function ImportShipments() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-      setIsFormOpen(false)
-      setEditingShipment(null)
       toast({ title: "Import shipment updated successfully" })
     },
   })
@@ -550,13 +546,21 @@ export default function ImportShipments() {
   }
 
   const handleCreateNew = () => {
-    setEditingShipment(null)
-    setIsFormOpen(true)
+    openWindow({
+      id: `import-shipment-new-${Date.now()}`,
+      type: 'import-shipment',
+      title: 'New Import Shipment',
+      payload: {}
+    })
   }
 
   const handleEdit = (shipment: ImportShipment) => {
-    setEditingShipment(shipment)
-    setIsFormOpen(true)
+    openWindow({
+      id: `import-shipment-${shipment.id}`,
+      type: 'import-shipment',
+      title: `Edit Import Shipment #${shipment.jobRef}`,
+      payload: { shipment }
+    })
   }
 
   const handleDelete = (id: string) => {
@@ -567,14 +571,6 @@ export default function ImportShipments() {
     if (!deletingShipmentId) return
     deleteShipment.mutate(deletingShipmentId)
     setDeletingShipmentId(null)
-  }
-
-  const handleFormSubmit = (data: InsertImportShipment) => {
-    if (editingShipment) {
-      updateShipment.mutate({ id: editingShipment.id, data })
-    } else {
-      createShipment.mutate(data)
-    }
   }
 
   const getCustomer = (customerId: string | null) => {
@@ -1546,24 +1542,6 @@ export default function ImportShipments() {
         </div>
       )}
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingShipment ? "Edit Import Shipment" : "New Import Shipment"}
-            </DialogTitle>
-          </DialogHeader>
-          <ImportShipmentForm
-            onSubmit={handleFormSubmit}
-            onCancel={() => setIsFormOpen(false)}
-            defaultValues={editingShipment ? {
-              ...editingShipment,
-              importCustomerId: editingShipment.importCustomerId || "",
-            } : undefined}
-          />
-        </DialogContent>
-      </Dialog>
-
       <AlertDialog open={!!deletingShipmentId} onOpenChange={(open) => !open && setDeletingShipmentId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1756,9 +1734,15 @@ export default function ImportShipments() {
                   size="icon"
                   variant="ghost"
                   onClick={() => {
-                    setEditingShipment(viewingShipment)
-                    setViewingShipment(null)
-                    setIsFormOpen(true)
+                    if (viewingShipment) {
+                      openWindow({
+                        id: `import-shipment-${viewingShipment.id}`,
+                        type: 'import-shipment',
+                        title: `Edit Import Shipment #${viewingShipment.jobRef}`,
+                        payload: { shipment: viewingShipment }
+                      })
+                      setViewingShipment(null)
+                    }
                   }}
                   data-testid="button-edit-shipment"
                 >
