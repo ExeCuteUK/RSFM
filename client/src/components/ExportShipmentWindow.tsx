@@ -16,12 +16,20 @@ export function ExportShipmentWindow({ windowId, payload, onSubmitSuccess }: Exp
   const { closeWindow, minimizeWindow } = useWindowManager()
 
   const handleSubmit = (data: InsertExportShipment) => {
-    onSubmitSuccess()
-    closeWindow(windowId)
+    try {
+      onSubmitSuccess()
+      closeWindow(windowId)
+    } catch (error) {
+      console.error('Error in handleSubmit:', error)
+    }
   }
 
   const handleCancel = () => {
-    closeWindow(windowId)
+    try {
+      closeWindow(windowId)
+    } catch (error) {
+      console.error('Error in handleCancel:', error)
+    }
   }
 
   const title = payload.mode === 'create' ? 'New Export Shipment' : 'Edit Export Shipment'
@@ -31,7 +39,13 @@ export function ExportShipmentWindow({ windowId, payload, onSubmitSuccess }: Exp
       id={windowId}
       title={title}
       onClose={handleCancel}
-      onMinimize={() => minimizeWindow(windowId)}
+      onMinimize={() => {
+        try {
+          minimizeWindow(windowId)
+        } catch (error) {
+          console.error('Error minimizing window:', error)
+        }
+      }}
       width={900}
       height={700}
     >

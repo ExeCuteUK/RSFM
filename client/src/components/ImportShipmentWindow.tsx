@@ -16,12 +16,20 @@ export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: Imp
   const { closeWindow, minimizeWindow } = useWindowManager()
 
   const handleSubmit = (data: InsertImportShipment) => {
-    onSubmitSuccess()
-    closeWindow(windowId)
+    try {
+      onSubmitSuccess()
+      closeWindow(windowId)
+    } catch (error) {
+      console.error('Error in handleSubmit:', error)
+    }
   }
 
   const handleCancel = () => {
-    closeWindow(windowId)
+    try {
+      closeWindow(windowId)
+    } catch (error) {
+      console.error('Error in handleCancel:', error)
+    }
   }
 
   const title = payload.mode === 'create' ? 'New Import Shipment' : 'Edit Import Shipment'
@@ -31,7 +39,13 @@ export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: Imp
       id={windowId}
       title={title}
       onClose={handleCancel}
-      onMinimize={() => minimizeWindow(windowId)}
+      onMinimize={() => {
+        try {
+          minimizeWindow(windowId)
+        } catch (error) {
+          console.error('Error minimizing window:', error)
+        }
+      }}
       width={900}
       height={700}
     >
