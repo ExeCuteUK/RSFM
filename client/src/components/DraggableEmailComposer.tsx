@@ -52,7 +52,14 @@ export function DraggableEmailComposer({
   contactEmails,
   onDataChange,
 }: DraggableEmailComposerProps) {
-  const [position, setPosition] = useState({ x: 100, y: 100 });
+  const [position, setPosition] = useState(() => {
+    const width = 600;
+    const height = 550;
+    return {
+      x: Math.max(0, (window.innerWidth - width) / 2),
+      y: Math.max(0, (window.innerHeight - height) / 2),
+    };
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [emailPopoverOpen, setEmailPopoverOpen] = useState(false);
@@ -72,7 +79,7 @@ export function DraggableEmailComposer({
 
       // Keep window within viewport bounds
       const maxX = window.innerWidth - 600; // composer width
-      const maxY = window.innerHeight - 600; // composer height
+      const maxY = window.innerHeight - 550; // composer height
 
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
@@ -197,7 +204,7 @@ export function DraggableEmailComposer({
         left: `${position.x}px`,
         top: `${position.y}px`,
         width: "600px",
-        maxHeight: "96vh",
+        maxHeight: "550px",
       }}
       data-testid="draggable-email-composer"
     >
@@ -234,9 +241,9 @@ export function DraggableEmailComposer({
       </div>
 
       {/* Email Form Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {/* To Field */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           <label className="text-sm font-medium">To:</label>
           <Popover open={emailPopoverOpen} onOpenChange={setEmailPopoverOpen}>
             <PopoverTrigger asChild>
@@ -329,8 +336,8 @@ export function DraggableEmailComposer({
         </div>
 
         {/* CC and BCC Fields */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
             <label className="text-sm font-medium">CC (Optional):</label>
             <Popover open={ccPopoverOpen} onOpenChange={setCcPopoverOpen}>
               <PopoverTrigger asChild>
@@ -422,7 +429,7 @@ export function DraggableEmailComposer({
             </Popover>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <label className="text-sm font-medium">BCC (Optional):</label>
             <Popover open={bccPopoverOpen} onOpenChange={setBccPopoverOpen}>
               <PopoverTrigger asChild>
@@ -516,7 +523,7 @@ export function DraggableEmailComposer({
         </div>
 
         {/* Subject Field */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           <label className="text-sm font-medium">Subject:</label>
           <Input
             value={data.subject}
@@ -526,10 +533,10 @@ export function DraggableEmailComposer({
         </div>
 
         {/* Body Field */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           <label className="text-sm font-medium">Message:</label>
           <Textarea
-            rows={10}
+            rows={7}
             value={data.body}
             onChange={(e) => onDataChange({ ...data, body: e.target.value })}
             data-testid="textarea-body"
