@@ -40,25 +40,24 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
     
   const { data: shipments = [], isLoading } = useQuery<ImportShipment[] | ExportShipment[]>({
     queryKey: [endpoint],
-    enabled: isOpen,
   });
 
   return (
-    <Accordion type="single" collapsible className="mt-4 pt-3 border-t" onValueChange={(value) => setIsOpen(value === "history")}>
+    <Accordion type="single" collapsible className="mt-2 pt-2 border-t" onValueChange={(value) => setIsOpen(value === "history")}>
       <AccordionItem value="history" className="border-0">
-        <AccordionTrigger className="py-2 hover:no-underline" data-testid={`accordion-job-history-${customerId}`}>
-          <div className="flex items-center gap-2 text-sm">
-            <Package className="h-4 w-4" />
-            <span>Job History {isOpen && shipments.length > 0 && `(${shipments.length})`}</span>
+        <AccordionTrigger className="py-1 hover:no-underline" data-testid={`accordion-job-history-${customerId}`}>
+          <div className="flex items-center gap-1.5 text-xs">
+            <Package className="h-3.5 w-3.5" />
+            <span>Job History {shipments.length > 0 && `(${shipments.length})`}</span>
           </div>
         </AccordionTrigger>
-        <AccordionContent>
+        <AccordionContent className="pb-0">
           {isLoading ? (
-            <div className="text-xs text-muted-foreground p-2">Loading...</div>
+            <div className="text-xs text-muted-foreground px-1 py-1">Loading...</div>
           ) : shipments.length === 0 ? (
-            <div className="text-xs text-muted-foreground p-2">No job history</div>
+            <div className="text-xs text-muted-foreground px-1 py-1">No job history</div>
           ) : (
-            <div className="space-y-2 pt-2">
+            <div className="space-y-1 pt-1">
               {shipments.map((shipment) => {
                 const importShipment = type === "import" ? shipment as ImportShipment : null;
                 const exportShipment = type === "export" ? shipment as ExportShipment : null;
@@ -66,7 +65,7 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
                 return (
                   <div 
                     key={shipment.id} 
-                    className="flex items-center justify-between p-2 bg-background/50 rounded text-xs"
+                    className="flex items-center justify-between px-1.5 py-1 bg-background/50 rounded text-xs"
                     data-testid={`job-history-item-${shipment.id}`}
                   >
                     <div className="flex-1">
