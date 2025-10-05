@@ -28,10 +28,10 @@ import {
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver, JobFileGroup } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 
 export default function CustomClearances() {
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingClearance, setEditingClearance] = useState<CustomClearance | null>(null)
+  const { openWindow } = useWindowManager()
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
   const [searchText, setSearchText] = useState("")
@@ -98,8 +98,6 @@ export default function CustomClearances() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-      setIsFormOpen(false)
-      setEditingClearance(null)
       toast({ title: "Custom clearance created successfully" })
     },
   })
@@ -110,8 +108,6 @@ export default function CustomClearances() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-      setIsFormOpen(false)
-      setEditingClearance(null)
       toast({ title: "Custom clearance updated successfully" })
     },
   })
@@ -356,13 +352,21 @@ export default function CustomClearances() {
   }
 
   const handleCreateNew = () => {
-    setEditingClearance(null)
-    setIsFormOpen(true)
+    openWindow({
+      id: `custom-clearance-new-${Date.now()}`,
+      type: 'custom-clearance',
+      title: 'New Custom Clearance',
+      payload: {}
+    })
   }
 
   const handleEdit = (clearance: CustomClearance) => {
-    setEditingClearance(clearance)
-    setIsFormOpen(true)
+    openWindow({
+      id: `custom-clearance-${clearance.id}`,
+      type: 'custom-clearance',
+      title: `Edit Custom Clearance #${clearance.jobRef}`,
+      payload: { clearance }
+    })
   }
 
   const handleDelete = (id: string) => {
@@ -373,14 +377,6 @@ export default function CustomClearances() {
     if (!deletingClearanceId) return
     deleteClearance.mutate(deletingClearanceId)
     setDeletingClearanceId(null)
-  }
-
-  const handleFormSubmit = (data: InsertCustomClearance) => {
-    if (editingClearance) {
-      updateClearance.mutate({ id: editingClearance.id, data })
-    } else {
-      createClearance.mutate(data)
-    }
   }
 
   const getCustomerName = (clearance: CustomClearance) => {
@@ -976,21 +972,6 @@ export default function CustomClearances() {
           })}
         </div>
       )}
-
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingClearance ? "Edit Custom Clearance" : "New Custom Clearance"}
-            </DialogTitle>
-          </DialogHeader>
-          <CustomClearanceForm
-            onSubmit={handleFormSubmit}
-            onCancel={() => setIsFormOpen(false)}
-            defaultValues={editingClearance || undefined}
-          />
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog open={!!deletingClearanceId} onOpenChange={(open) => !open && setDeletingClearanceId(null)}>
         <AlertDialogContent>
