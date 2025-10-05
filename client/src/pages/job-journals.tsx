@@ -379,7 +379,7 @@ export default function JobJournals() {
                     <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
                       {entry.purchaseInvoiceAmount || ""}
                     </td>
-                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r-2 border-border font-semibold" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r-2 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
                       {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
                     </td>
                     <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
@@ -394,10 +394,10 @@ export default function JobJournals() {
                     <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
                       {entry.salesInvoiceAmount || ""}
                     </td>
-                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r-2 border-border font-semibold" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r-2 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
                       {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
                     </td>
-                    <td className="p-2 text-center bg-muted border-l-2 font-semibold" data-testid={`text-profit-loss-${entry.jobRef}`}>
+                    <td className="p-2 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {(() => {
                         const salesAmount = parseFloat(entry.salesInvoiceAmount || "0") || 0
                         const purchaseAmount = parseFloat(entry.purchaseInvoiceAmount || "0") || 0
