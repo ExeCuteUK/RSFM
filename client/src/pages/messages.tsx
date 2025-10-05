@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -19,9 +19,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import Uppy from "@uppy/core";
-import { Dashboard } from "@uppy/react";
-import AwsS3 from "@uppy/aws-s3";
 
 type Message = {
   id: number;
@@ -58,6 +55,8 @@ export default function Messages() {
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"inbox" | "sent">("inbox");
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
@@ -77,16 +76,40 @@ export default function Messages() {
     },
   });
 
-  // Initialize Uppy for file uploads
-  const [uppy] = useState(() => {
-    const uppyInstance = new Uppy({
-      restrictions: {
-        maxNumberOfFiles: 10,
-        maxFileSize: 10 * 1024 * 1024, // 10MB
-      },
-      autoProceed: false,
-    }).use(AwsS3, {
-      async getUploadParameters(file) {
+  // Handle file upload
+  const handleFileUpload = async (files: FileList) => {
+    if (files.length === 0) return;
+    
+    const fileArray = Array.from(files);
+    const maxFiles = 10;
+    const maxFileSize = 10 * 1024 * 1024; // 10MB
+    
+    // Check file count limit
+    if (uploadedFiles.length + fileArray.length > maxFiles) {
+      toast({
+        title: "Too many files",
+        description: `You can only upload up to ${maxFiles} files total`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check file size limit
+    const oversizedFiles = fileArray.filter(f => f.size > maxFileSize);
+    if (oversizedFiles.length > 0) {
+      toast({
+        title: "File too large",
+        description: "Each file must be under 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      const uploadPromises = fileArray.map(async (file) => {
+        // Get presigned URL
         const response = await fetch("/api/objects/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -96,32 +119,39 @@ export default function Messages() {
           }),
         });
         const data = await response.json();
-        return {
+        
+        // Upload file
+        await fetch(data.url, {
           method: "PUT",
-          url: data.url,
-          fields: {},
+          body: file,
           headers: {
             "Content-Type": file.type || "application/octet-stream",
           },
-        };
-      },
-    });
-
-    uppyInstance.on("upload-success", (file, response) => {
-      if (file?.name) {
-        const uploadedUrl = (response.uploadURL as string).split("?")[0];
-        setUploadedFiles((prev) => [...prev, uploadedUrl]);
+        });
+        
+        // Return uploaded URL without query params
+        return data.url.split("?")[0];
+      });
+      
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setUploadedFiles((prev) => [...prev, ...uploadedUrls]);
+      
+      toast({
+        title: "Files uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload one or more files",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
-    });
-
-    return uppyInstance;
-  });
-
-  useEffect(() => {
-    return () => {
-      // Cleanup on unmount
-    };
-  }, [uppy]);
+    }
+  };
 
   // Handle userId parameter from URL to auto-open composer
   useEffect(() => {
@@ -150,7 +180,6 @@ export default function Messages() {
       toast({ title: "Message sent successfully" });
       setIsComposerOpen(false);
       form.reset();
-      uppy.cancelAll();
       setUploadedFiles([]);
     },
     onError: () => {
@@ -309,15 +338,31 @@ export default function Messages() {
                 
                 <div className="space-y-2">
                   <FormLabel>Attachments</FormLabel>
-                  <Dashboard
-                    uppy={uppy}
-                    height={200}
-                    theme="light"
-                    hideUploadButton={true}
-                    note="Upload files (max 10MB each, 10 files total)"
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        handleFileUpload(e.target.files);
+                      }
+                    }}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    data-testid="button-attach-files"
+                  >
+                    <Paperclip className="h-4 w-4 mr-2" />
+                    {isUploading ? "Uploading..." : "Attach Files"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">Max 10MB each, 10 files total</p>
                   {uploadedFiles.length > 0 && (
-                    <div className="space-y-1">
+                    <div className="space-y-1 mt-2">
                       {uploadedFiles.map((file, idx) => {
                         const fileName = file.split("/").pop() || file;
                         return (
