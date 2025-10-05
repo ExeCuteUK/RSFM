@@ -26,18 +26,21 @@ interface EmailContextType {
   emailComposerData: EmailComposerData | null
   emailDrafts: Record<string, EmailDraft>
   recentEmails: string[]
+  minimizedEmails: EmailComposerData[]
   openEmailComposer: (data: Omit<EmailComposerData, 'isMinimized'>) => void
   closeEmailComposer: () => void
   updateEmailDraft: (id: string, draft: EmailDraft) => void
   removeEmailDraft: (id: string) => void
   addToRecentEmails: (email: string) => void
+  restoreEmail: (id: string) => void
+  removeMinimizedEmail: (id: string) => void
 }
 
 const EmailContext = createContext<EmailContextType | undefined>(undefined)
 
 export function EmailProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const { openWindow, windows, activeWindow, updateWindowPayload } = useWindowManager()
+  const { openWindow, windows, activeWindow, updateWindowPayload, restoreWindow, closeWindow } = useWindowManager()
 
   const [emailDrafts, setEmailDrafts] = useState<Record<string, EmailDraft>>(() => {
     if (!user) return {}
@@ -140,17 +143,44 @@ export function EmailProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('recentEmails', JSON.stringify(updated))
   }
 
+  // Compute minimized emails from windows
+  const minimizedEmails = windows
+    .filter(w => w.type === 'email' && w.isMinimized)
+    .map(w => ({
+      id: w.id,
+      ...w.payload,
+      isMinimized: true
+    })) as EmailComposerData[]
+
+  const restoreEmail = (id: string) => {
+    restoreWindow(id)
+  }
+
+  const removeMinimizedEmail = (id: string) => {
+    // Remove draft
+    setEmailDrafts(prev => {
+      const newDrafts = { ...prev }
+      delete newDrafts[id]
+      return newDrafts
+    })
+    // Close window
+    closeWindow(id)
+  }
+
   return (
     <EmailContext.Provider
       value={{
         emailComposerData,
         emailDrafts,
         recentEmails,
+        minimizedEmails,
         openEmailComposer,
         closeEmailComposer,
         updateEmailDraft,
         removeEmailDraft,
-        addToRecentEmails
+        addToRecentEmails,
+        restoreEmail,
+        removeMinimizedEmail
       }}
     >
       {children}
