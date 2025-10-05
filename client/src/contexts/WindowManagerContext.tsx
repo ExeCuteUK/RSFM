@@ -97,33 +97,54 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
   }, [user?.id])
 
   const openWindow = (data: Omit<WindowData, 'isMinimized'>) => {
-    // Check if window with same id already exists
-    const existingWindow = windows.find(w => w.id === data.id)
-    
-    if (existingWindow) {
-      // If it exists and is minimized, restore it
-      if (existingWindow.isMinimized) {
-        restoreWindow(data.id)
-      } else {
-        // Update its payload if it's already open
-        updateWindowPayload(data.id, data.payload)
+    try {
+      // Check if window with same id already exists
+      const existingWindow = windows.find(w => w.id === data.id)
+      
+      if (existingWindow) {
+        // If it exists and is minimized, restore it
+        if (existingWindow.isMinimized) {
+          restoreWindow(data.id)
+        } else {
+          // Update its payload if it's already open
+          updateWindowPayload(data.id, data.payload)
+        }
+        return
       }
-      return
-    }
 
-    // Auto-minimize currently active window
-    if (activeWindow && !activeWindow.isMinimized) {
-      minimizeWindow(activeWindow.id)
-    }
+      // Add new window and minimize currently active window in one state update
+      const newWindow: WindowData = {
+        ...data,
+        isMinimized: false
+      }
 
-    // Add new window
-    const newWindow: WindowData = {
-      ...data,
-      isMinimized: false
-    }
+      if (activeWindow && !activeWindow.isMinimized) {
+        // Minimize current active window and add new window together
+        setWindows(prev => [
+          ...prev.map(w => w.id === activeWindow.id ? { ...w, isMinimized: true } : w),
+          newWindow
+        ])
+        
+        setMinimizedWindows(prev => {
+          // Check if already in minimized windows to prevent duplicates
+          if (prev.some(w => w.id === activeWindow.id)) {
+            return prev
+          }
+          return [
+            ...prev,
+            { id: activeWindow.id, type: activeWindow.type, title: activeWindow.title }
+          ]
+        })
+      } else {
+        // Just add new window
+        setWindows(prev => [...prev, newWindow])
+      }
 
-    setWindows(prev => [...prev, newWindow])
-    setActiveWindowState(newWindow)
+      setActiveWindowState(newWindow)
+    } catch (error) {
+      console.error('Error in openWindow:', error)
+      throw error
+    }
   }
 
   const closeWindow = (id: string) => {
