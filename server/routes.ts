@@ -929,20 +929,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertImportShipmentSchema.parse(req.body);
       const shipment = await storage.createImportShipment(validatedData);
       
-      // Sync attachments to job_file_groups
-      if (shipment.attachments && shipment.attachments.length > 0) {
-        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
-        if (existingGroup) {
-          await storage.updateJobFileGroup(shipment.jobRef, {
-            documents: shipment.attachments,
-          });
-        } else {
-          await storage.createJobFileGroup({
-            jobRef: shipment.jobRef,
-            documents: shipment.attachments,
-            rsInvoices: [],
-          });
-        }
+      // Always create/update job_file_groups for new jobs
+      const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+      if (existingGroup) {
+        await storage.updateJobFileGroup(shipment.jobRef, {
+          documents: shipment.attachments || [],
+        });
+      } else {
+        await storage.createJobFileGroup({
+          jobRef: shipment.jobRef,
+          documents: shipment.attachments || [],
+          rsInvoices: [],
+        });
       }
       
       res.status(201).json(shipment);
@@ -968,20 +966,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.log('[DEBUG] Updated shipment rsToClear:', shipment.rsToClear, 'linkedClearanceId:', shipment.linkedClearanceId);
       
-      // Sync attachments to job_file_groups if they were updated
-      if (req.body.attachments !== undefined) {
-        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
-        if (existingGroup) {
-          await storage.updateJobFileGroup(shipment.jobRef, {
-            documents: shipment.attachments || [],
-          });
-        } else if (shipment.attachments && shipment.attachments.length > 0) {
-          await storage.createJobFileGroup({
-            jobRef: shipment.jobRef,
-            documents: shipment.attachments,
-            rsInvoices: [],
-          });
-        }
+      // Always ensure job_file_groups exists and is synced
+      const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+      if (existingGroup) {
+        await storage.updateJobFileGroup(shipment.jobRef, {
+          documents: shipment.attachments || [],
+        });
+      } else {
+        await storage.createJobFileGroup({
+          jobRef: shipment.jobRef,
+          documents: shipment.attachments || [],
+          rsInvoices: [],
+        });
       }
       
       res.json(shipment);
@@ -1220,20 +1216,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertExportShipmentSchema.parse(req.body);
       const shipment = await storage.createExportShipment(validatedData);
       
-      // Sync attachments to job_file_groups
-      if (shipment.attachments && shipment.attachments.length > 0) {
-        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
-        if (existingGroup) {
-          await storage.updateJobFileGroup(shipment.jobRef, {
-            documents: shipment.attachments,
-          });
-        } else {
-          await storage.createJobFileGroup({
-            jobRef: shipment.jobRef,
-            documents: shipment.attachments,
-            rsInvoices: [],
-          });
-        }
+      // Always create/update job_file_groups for new jobs
+      const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+      if (existingGroup) {
+        await storage.updateJobFileGroup(shipment.jobRef, {
+          documents: shipment.attachments || [],
+        });
+      } else {
+        await storage.createJobFileGroup({
+          jobRef: shipment.jobRef,
+          documents: shipment.attachments || [],
+          rsInvoices: [],
+        });
       }
       
       // Sync attachments to linked custom clearance's transport documents
@@ -1264,27 +1258,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Export shipment not found" });
       }
       
-      // Sync attachments to job_file_groups if they were updated
-      if (req.body.attachments !== undefined) {
-        const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
-        if (existingGroup) {
-          await storage.updateJobFileGroup(shipment.jobRef, {
-            documents: shipment.attachments || [],
-          });
-        } else if (shipment.attachments && shipment.attachments.length > 0) {
-          await storage.createJobFileGroup({
-            jobRef: shipment.jobRef,
-            documents: shipment.attachments,
-            rsInvoices: [],
-          });
-        }
-        
-        // Sync attachments to linked custom clearance's transport documents
-        if (shipment.linkedClearanceId) {
-          await storage.updateCustomClearance(shipment.linkedClearanceId, {
-            transportDocuments: shipment.attachments || [],
-          });
-        }
+      // Always ensure job_file_groups exists and is synced
+      const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
+      if (existingGroup) {
+        await storage.updateJobFileGroup(shipment.jobRef, {
+          documents: shipment.attachments || [],
+        });
+      } else {
+        await storage.createJobFileGroup({
+          jobRef: shipment.jobRef,
+          documents: shipment.attachments || [],
+          rsInvoices: [],
+        });
+      }
+      
+      // Sync attachments to linked custom clearance's transport documents if modified
+      if (req.body.attachments !== undefined && shipment.linkedClearanceId) {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+          transportDocuments: shipment.attachments || [],
+        });
       }
       
       res.json(shipment);
