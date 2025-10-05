@@ -2759,7 +2759,28 @@ export default function ImportShipments() {
       <EmailTaskbar
         minimizedEmails={minimizedEmails}
         onRestore={(id) => {
-          setEmailComposerData(prev => prev && prev.id === id ? {...prev, isMinimized: false} : prev)
+          // If there's a currently displayed email (not minimized) and it's a different one, minimize it first
+          if (emailComposerData && !emailComposerData.isMinimized && emailComposerData.id !== id) {
+            // Add current email to minimized list
+            setMinimizedEmails(prev => [...prev, {
+              id: emailComposerData.id,
+              to: emailComposerData.to,
+              subject: emailComposerData.subject
+            }])
+            // Set current email as minimized
+            setEmailComposerData(prev => prev ? {...prev, isMinimized: true} : null)
+          }
+          
+          // Restore the requested email
+          setEmailComposerData(prev => {
+            if (prev && prev.id === id) {
+              // Same email, just un-minimize it
+              return {...prev, isMinimized: false}
+            }
+            return prev
+          })
+          
+          // Remove from minimized emails list
           setMinimizedEmails(prev => prev.filter(email => email.id !== id))
         }}
         onClose={(id) => {
