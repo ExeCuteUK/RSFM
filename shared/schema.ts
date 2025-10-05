@@ -529,6 +529,7 @@ export const insertExportShipmentSchema = createInsertSchema(exportShipments).om
   ),
   exportClearanceAgent: z.string().min(1, "Export Clearance Agent is required"),
   arrivalClearanceAgent: z.string().min(1, "Arrival Clearance Agent is required"),
+  haulierReference: z.string().nullable().optional(),
 });
 
 export type InsertExportShipment = z.infer<typeof insertExportShipmentSchema>;
