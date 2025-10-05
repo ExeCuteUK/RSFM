@@ -866,10 +866,10 @@ function UsersManagement({
                   Add User
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent aria-describedby="add-user-description">
                 <DialogHeader>
                   <DialogTitle>Create New User</DialogTitle>
-                  <DialogDescription>
+                  <DialogDescription id="add-user-description">
                     Add a new user to the system
                   </DialogDescription>
                 </DialogHeader>
@@ -1033,10 +1033,10 @@ function UsersManagement({
 
       {/* Edit User Dialog */}
       <Dialog open={!!userToEdit} onOpenChange={(open) => !open && setUserToEdit(null)}>
-        <DialogContent>
+        <DialogContent aria-describedby="edit-user-description">
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="edit-user-description">
               Update user information and role
             </DialogDescription>
           </DialogHeader>

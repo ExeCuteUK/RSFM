@@ -484,9 +484,10 @@ export default function ExportShipments() {
       </AlertDialog>
 
       <Dialog open={!!notesShipmentId} onOpenChange={(open) => !open && handleCloseNotes()}>
-        <DialogContent className="max-w-3xl h-[400px] flex flex-col">
+        <DialogContent className="max-w-3xl h-[400px] flex flex-col" aria-describedby="export-notes-description">
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle>Additional Notes</DialogTitle>
+            <p id="export-notes-description" className="sr-only">Add or edit additional notes for this export shipment</p>
             <Button
               size="icon"
               variant="ghost"

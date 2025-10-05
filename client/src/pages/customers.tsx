@@ -1328,7 +1328,7 @@ export default function Customers() {
       </Tabs>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="customer-form-description">
           <DialogHeader>
             <DialogTitle>
               {editingCustomer ? "Edit" : "Create New"}{" "}
@@ -1337,6 +1337,7 @@ export default function Customers() {
                 return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : formType === "haulier" ? "Haulier" : formType === "shippingline" ? "Shipping Line" : formType === "clearanceagent" ? "Clearance Agent" : "Export Receiver"
               })()}
             </DialogTitle>
+            <p id="customer-form-description" className="sr-only">{editingCustomer ? "Edit" : "Create"} contact information</p>
           </DialogHeader>
           {(() => {
             const formType = getCustomerType(editingCustomer)
@@ -1413,7 +1414,7 @@ export default function Customers() {
       </AlertDialog>
 
       <Dialog open={!!viewingCustomer} onOpenChange={(open) => !open && setViewingCustomer(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl" aria-describedby="customer-details-description">
           <DialogHeader>
             <DialogTitle className="text-2xl">
               {viewingCustomer && 'haulierName' in viewingCustomer 
@@ -1424,6 +1425,7 @@ export default function Customers() {
                 ? viewingCustomer.agentName
                 : viewingCustomer?.companyName}
             </DialogTitle>
+            <p id="customer-details-description" className="sr-only">View complete contact details and information</p>
           </DialogHeader>
           
           {viewingCustomer && 'rsProcessCustomsClearance' in viewingCustomer && (

@@ -272,9 +272,10 @@ export default function Messages() {
               Compose
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl" aria-describedby="new-message-description">
             <DialogHeader>
               <DialogTitle>New Message</DialogTitle>
+              <p id="new-message-description" className="sr-only">Compose and send a new internal message</p>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSendMessage)} className="space-y-4">

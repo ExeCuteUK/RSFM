@@ -1004,9 +1004,10 @@ export default function CustomClearances() {
       </AlertDialog>
 
       <Dialog open={!!notesClearanceId} onOpenChange={(open) => !open && handleCloseNotes()}>
-        <DialogContent className="max-w-3xl h-[400px] flex flex-col">
+        <DialogContent className="max-w-3xl h-[400px] flex flex-col" aria-describedby="clearance-notes-description">
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle>Additional Notes</DialogTitle>
+            <p id="clearance-notes-description" className="sr-only">Add or edit additional notes for this custom clearance</p>
             <Button
               size="icon"
               variant="ghost"
@@ -1046,12 +1047,13 @@ export default function CustomClearances() {
       </Dialog>
 
       <Dialog open={!!viewingPdf} onOpenChange={(open) => !open && setViewingPdf(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0" aria-describedby="clearance-pdf-description">
           <DialogHeader className="px-6 pt-6 pb-4">
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               {viewingPdf?.name}
             </DialogTitle>
+            <p id="clearance-pdf-description" className="sr-only">PDF document viewer</p>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
             {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
