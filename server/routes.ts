@@ -319,6 +319,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Job History Routes ==========
+  
+  // Get import shipments by customer ID
+  app.get("/api/import-customers/:id/shipments", requireAuth, async (req, res) => {
+    try {
+      const shipments = await storage.getImportShipmentsByCustomerId(req.params.id);
+      res.json(shipments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch import shipments" });
+    }
+  });
+
+  // Get export shipments by customer ID
+  app.get("/api/export-customers/:id/shipments", requireAuth, async (req, res) => {
+    try {
+      const shipments = await storage.getExportShipmentsByCustomerId(req.params.id);
+      res.json(shipments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch export shipments" });
+    }
+  });
+
   // ========== Import Customers Routes ==========
   // ========== Import Customers Routes ==========
   

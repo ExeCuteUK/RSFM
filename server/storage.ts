@@ -145,6 +145,10 @@ export interface IStorage {
   createJobFileGroup(group: InsertJobFileGroup): Promise<JobFileGroup>;
   updateJobFileGroup(jobRef: number, group: Partial<InsertJobFileGroup>): Promise<JobFileGroup | undefined>;
   deleteJobFileGroup(jobRef: number): Promise<boolean>;
+
+  // Job History methods
+  getImportShipmentsByCustomerId(customerId: string): Promise<ImportShipment[]>;
+  getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -985,6 +989,15 @@ export class MemStorage implements IStorage {
   async deleteJobFileGroup(jobRef: number): Promise<boolean> {
     return false;
   }
+
+  // Job History methods (stubs for MemStorage)
+  async getImportShipmentsByCustomerId(customerId: string): Promise<ImportShipment[]> {
+    return Array.from(this.importShipments.values()).filter(s => s.customerId === customerId);
+  }
+
+  async getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]> {
+    return Array.from(this.exportShipments.values()).filter(s => s.customerId === customerId);
+  }
 }
 
 // Database Storage Implementation using Drizzle ORM
@@ -1647,6 +1660,23 @@ export class DatabaseStorage implements IStorage {
   async deleteJobFileGroup(jobRef: number): Promise<boolean> {
     const result = await db.delete(jobFileGroups).where(eq(jobFileGroups.jobRef, jobRef));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Job History methods
+  async getImportShipmentsByCustomerId(customerId: string): Promise<ImportShipment[]> {
+    const shipments = await db.select()
+      .from(importShipments)
+      .where(eq(importShipments.customerId, customerId))
+      .orderBy(desc(importShipments.jobRef));
+    return shipments;
+  }
+
+  async getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]> {
+    const shipments = await db.select()
+      .from(exportShipments)
+      .where(eq(exportShipments.customerId, customerId))
+      .orderBy(desc(exportShipments.jobRef));
+    return shipments;
   }
 }
 
