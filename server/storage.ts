@@ -1211,7 +1211,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         or(
           ilike(importCustomers.companyName, searchPattern),
-          ilike(importCustomers.contactName, searchPattern)
+          sql`EXISTS (SELECT 1 FROM unnest(coalesce(${importCustomers.contactName}, ARRAY[]::text[])) AS name WHERE name ILIKE ${searchPattern})`
         )
       )
       .orderBy(importCustomers.companyName)
@@ -1256,7 +1256,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         or(
           ilike(exportCustomers.companyName, searchPattern),
-          ilike(exportCustomers.contactName, searchPattern)
+          sql`EXISTS (SELECT 1 FROM unnest(coalesce(${exportCustomers.contactName}, ARRAY[]::text[])) AS name WHERE name ILIKE ${searchPattern})`
         )
       )
       .orderBy(exportCustomers.companyName)
