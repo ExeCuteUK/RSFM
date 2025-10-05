@@ -37,7 +37,7 @@ const EmailContext = createContext<EmailContextType | undefined>(undefined)
 
 export function EmailProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const { openWindow, windows, activeWindow } = useWindowManager()
+  const { openWindow, windows, activeWindow, updateWindowPayload } = useWindowManager()
 
   const [emailDrafts, setEmailDrafts] = useState<Record<string, EmailDraft>>(() => {
     if (!user) return {}
@@ -122,6 +122,8 @@ export function EmailProvider({ children }: { children: ReactNode }) {
       ...prev,
       [id]: draft
     }))
+    // Also update the window payload so restored windows have latest data
+    updateWindowPayload(id, draft)
   }
 
   const removeEmailDraft = (id: string) => {
