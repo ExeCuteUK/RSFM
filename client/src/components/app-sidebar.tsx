@@ -11,6 +11,8 @@ import {
   MessageSquare
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
+import { useQuery } from "@tanstack/react-query"
+import { Badge } from "@/components/ui/badge"
 
 import {
   Sidebar,
@@ -82,6 +84,11 @@ const secondaryItems = [
 
 export function AppSidebar() {
   const [location] = useLocation()
+  
+  const { data: unreadCount = 0 } = useQuery<number>({
+    queryKey: ["/api/messages/unread-count"],
+    refetchInterval: 30000,
+  })
 
   return (
     <Sidebar data-testid="sidebar-app">
@@ -136,6 +143,15 @@ export function AppSidebar() {
                     <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
+                      {item.title === "Messages" && unreadCount > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-auto h-5 min-w-5 px-1 text-[10px] font-semibold"
+                          data-testid="badge-unread-count"
+                        >
+                          {unreadCount}
+                        </Badge>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
