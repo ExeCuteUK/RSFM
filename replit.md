@@ -1,18 +1,24 @@
-# R.S International Freight Manager 4.0.1 alpha
+# R.S International Freight Manager 4.0.2 alpha
 
 ## Overview
 
 R.S International Freight Manager is a web-based freight management system designed to replace a legacy VB6 application. Its primary purpose is to manage import/export shipments, customs clearances, customer records, invoicing, and freight rate calculations, providing an enterprise-grade solution for logistics operations. The system handles three core workflows: Import Shipments, Export Shipments, and Custom Clearances, all sharing a unified job reference system starting at #26001. A key feature is the automatic generation of Custom Clearance jobs when an Import Shipment is marked "R.S To Clear", sharing the same job reference. The system also supports multi-currency financial fields and maintains separate databases for Import Customers, Export Customers, and Export Receivers. Each job type is visually differentiated with distinct color themes for clarity.
 
-The application now includes comprehensive file upload functionality integrated with Replit's App Storage (object storage), allowing users to attach files to shipments and custom clearances. Files are stored persistently and can be downloaded directly from the system. A key feature is the **shared document storage system** using the `job_file_groups` table: linked jobs (import/export shipments and their custom clearances) automatically share the same Documents and R.S Invoices storage via their shared `jobRef`. The backend automatically syncs files between individual job tables and the unified storage, ensuring seamless file sharing across related jobs.
+The application now includes comprehensive file upload functionality integrated with Replit's App Storage (object storage), allowing users to attach files to shipments and custom clearances. Files are stored persistently and can be downloaded directly from the system. A key feature is the **shared document storage system** using the `job_file_groups` table: linked jobs (import/export shipments and their custom clearances) automatically share the same Documents and R.S Invoices storage via their shared `jobRef`. The backend automatically syncs files between individual job tables and the unified storage, ensuring seamless file sharing across related jobs. Export shipment "Transport Documents" are automatically synced to linked custom clearance's `transportDocuments` field for complete bidirectional synchronization.
 
 **OCR Text Extraction:**
-- Dual-engine OCR system for extracting text from documents
+- Dual-engine OCR system for extracting text from documents (backend fully functional)
 - **PDF files**: Powered by Scribe.js (free, open-source, no system dependencies)
 - **Image files**: Powered by Tesseract.js (supports JPG, PNG, GIF, BMP, TIFF, WEBP)
-- OCR button appears on hover for all uploaded documents
+- OCR UI buttons currently hidden from interface (backend system remains intact for future use)
 - Extracted text can be copied to clipboard for easy use
-- Currently available on Import Shipments page (planned for Export Shipments and Custom Clearances)
+
+**Internal Messaging System:**
+- Multi-user messaging infrastructure with real-time unread count polling
+- Message notification icon in header with badge displaying unread message count
+- Database schema includes sender, recipient, subject, content, attachments, and read status
+- RESTful API endpoints for creating, reading, marking as read, and deleting messages
+- Foundation ready for full messaging page implementation
 
 ## User Preferences
 
@@ -46,7 +52,17 @@ The frontend is built with React 18 and TypeScript, using Vite for development a
 
 ### Backend Architecture
 
-The backend is developed with Express.js and TypeScript on Node.js, utilizing an ESM module system. It provides a RESTful API under the `/api` prefix for CRUD operations on all major entities. Zod schemas are shared between frontend and backend for validation. The storage layer uses PostgreSQL via Drizzle ORM (`DatabaseStorage`) for permanent data persistence. The system includes data models for `importCustomers`, `exportCustomers`, `exportReceivers`, `hauliers`, `shippingLines`, `clearanceAgents`, `settings`, `importShipments`, `exportShipments`, `customClearances`, and `jobFileGroups` (shared document storage), with automatic custom clearance job generation logic. All contact forms support multi-email functionality using array fields for `email`, `agentEmail`, and `accountsEmail` (Import/Export Customers only). Fax fields have been completely removed from the system. The `customClearances` table now includes a `deliveryAddress` field for better destination tracking in job journals.
+The backend is developed with Express.js and TypeScript on Node.js, utilizing an ESM module system. It provides a RESTful API under the `/api` prefix for CRUD operations on all major entities. Zod schemas are shared between frontend and backend for validation. The storage layer uses PostgreSQL via Drizzle ORM (`DatabaseStorage`) for permanent data persistence. The system includes data models for `importCustomers`, `exportCustomers`, `exportReceivers`, `hauliers`, `shippingLines`, `clearanceAgents`, `settings`, `importShipments`, `exportShipments`, `customClearances`, `jobFileGroups` (shared document storage), and `messages` (internal messaging), with automatic custom clearance job generation logic. All contact forms support multi-email functionality using array fields for `email`, `agentEmail`, and `accountsEmail` (Import/Export Customers only). Fax fields have been completely removed from the system. The `customClearances` table now includes a `deliveryAddress` field for better destination tracking in job journals.
+
+**Export Shipments Enhancements:**
+- Renamed "File Attachments" to "Transport Documents" for clearer terminology
+- Added `expensesToChargeOut` and `additionalExpensesIn` expense tracking fields (matching import shipments structure)
+- Automatic syncing of transport documents to linked custom clearance's `transportDocuments` field
+- Full bidirectional synchronization ensures transport documents are visible across linked jobs
+
+**UI Improvements:**
+- All customer/receiver dropdown menus now sort alphabetically for easier navigation
+- Import Customer, Export Customer, and Export Receiver selects display in alphabetical order by company name
 
 **Shared Document Storage System:** The `job_file_groups` table provides unified file storage keyed by `jobRef`. When jobs are created or updated, files are automatically synced from individual job tables (import/export `attachments`, custom clearance `transportDocuments`/`clearanceDocuments`) to `job_file_groups`. Linked jobs sharing the same `jobRef` automatically share documents and R.S invoices, enabling seamless file access across import/export shipments and their associated custom clearances.
 
@@ -72,9 +88,10 @@ The API provides standard RESTful endpoints for managing:
 -   **Clearance Agents**: GET, POST, PATCH, DELETE `/api/clearance-agents`
 -   **Settings**: GET, POST, PATCH `/api/settings` (single record for financial settings)
 -   **Import Shipments**: GET, POST, PATCH, DELETE `/api/import-shipments` (auto-creates Custom Clearance if `rsToClear=true`, auto-syncs files to job_file_groups)
--   **Export Shipments**: GET, POST, PATCH, DELETE `/api/export-shipments` (auto-syncs files to job_file_groups)
+-   **Export Shipments**: GET, POST, PATCH, DELETE `/api/export-shipments` (auto-syncs attachments to job_file_groups.documents AND linked custom clearance's transportDocuments)
 -   **Custom Clearances**: GET, POST, PATCH, DELETE `/api/custom-clearances` (auto-syncs files to job_file_groups)
 -   **Job File Groups**: GET `/api/job-file-groups/:jobRef`, PATCH `/api/job-file-groups/:jobRef/documents`, PATCH `/api/job-file-groups/:jobRef/rs-invoices` (shared document storage by jobRef)
+-   **Messages**: GET `/api/messages` (user's messages), GET `/api/messages/unread-count`, POST `/api/messages`, PATCH `/api/messages/:id/read`, DELETE `/api/messages/:id`
 -   **File Storage**: POST `/api/objects/upload` (get presigned upload URL), GET `/objects/:objectPath` (download files), POST `/api/objects/normalize` (normalize uploaded file URLs)
 
 ### Navigation Routes
