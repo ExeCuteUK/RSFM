@@ -28,7 +28,7 @@ import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, Fil
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
-import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup } from "@shared/schema"
+import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 
@@ -50,7 +50,15 @@ export default function ImportShipments() {
   const [portUpdateDialog, setPortUpdateDialog] = useState<{ show: boolean; newPort: string; shipmentId: string } | null>(null)
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
-  const { toast } = useToast()
+  const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
+  const [emailComposerData, setEmailComposerData] = useState<{ 
+    show: boolean; 
+    to: string; 
+    subject: string; 
+    body: string; 
+    attachments: string[] 
+  } | null>(null)
+  const { toast} = useToast()
   const [, setLocation] = useLocation()
 
   // Read search parameter from URL on mount
@@ -73,6 +81,10 @@ export default function ImportShipments() {
 
   const { data: customClearances = [] } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
+  })
+
+  const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
+    queryKey: ["/api/clearance-agents"],
   })
 
   // Fetch shared documents for all import shipments
@@ -504,6 +516,24 @@ export default function ImportShipments() {
     },
   })
 
+  const sendEmail = useMutation({
+    mutationFn: async ({ to, subject, body, attachmentUrls }: { to: string; subject: string; body: string; attachmentUrls: string[] }) => {
+      return apiRequest('POST', '/api/gmail/send-with-attachments', {
+        to,
+        subject,
+        body,
+        attachmentUrls
+      })
+    },
+    onSuccess: () => {
+      toast({ title: 'Email sent successfully' })
+      setEmailComposerData(null)
+    },
+    onError: (error: any) => {
+      toast({ title: 'Failed to send email', description: error.message || 'Please try again', variant: 'destructive' })
+    },
+  })
+
   const formatCurrency = (currency: string | null | undefined) => {
     if (!currency) return ""
     if (currency === "GBP") return "£"
@@ -821,6 +851,61 @@ export default function ImportShipments() {
     }
   }
 
+  const handleClearanceAgentSelected = (agent: ClearanceAgent) => {
+    if (!clearanceAgentDialog) return
+    
+    const shipment = allShipments.find(s => s.id === clearanceAgentDialog.shipmentId)
+    if (!shipment) return
+    
+    const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
+    const customerName = customer?.companyName || "N/A"
+    const vatPaymentMethod = customer?.vatPaymentMethod || "N/A"
+    
+    // Build email subject
+    const truckContainerFlight = shipment.trailerOrContainerNumber || "TBA"
+    const eta = formatDate(shipment.importDateEtaPort) || "TBA"
+    const subject = `Import Clearance / ${customerName} / Our Ref : ${shipment.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+    
+    // Build email body
+    let body = `Hi Team,\n\nPlease could you arrange clearance on the below shipment. Our Ref : ${shipment.jobRef}\n\n`
+    body += `Consignment will arrive on Trailer : ${shipment.trailerOrContainerNumber || "TBA"} Into ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.importDateEtaPort) || "TBA"}.\n\n`
+    body += `${customerName}\n`
+    body += `${shipment.numberOfPieces || ""} ${shipment.packaging || ""}.\n`
+    body += `${shipment.goodsDescription || ""}\n`
+    body += `${shipment.weight || ""}kgs, Invoice value ${shipment.currency || ""} ${shipment.invoiceValue || ""}\n`
+    
+    if (shipment.freightCharge) {
+      body += `Transport Costs : ${shipment.freightCharge}\n`
+    }
+    
+    body += `\nVAT Payment Method : ${vatPaymentMethod}\n`
+    
+    if (shipment.vatZeroRated) {
+      body += `VAT Zero Rated\n`
+    }
+    
+    body += `Clearance Type : ${shipment.clearanceType || "N/A"}\n`
+    
+    // Get agent's import email (first one if multiple)
+    const agentEmail = agent.agentImportEmail && agent.agentImportEmail.length > 0 
+      ? agent.agentImportEmail[0] 
+      : ""
+    
+    // Get transport documents
+    const transportDocs = parseAttachments(shipment.attachments).map(normalizeFilePath)
+    
+    // Open email composer
+    setEmailComposerData({
+      show: true,
+      to: agentEmail,
+      subject: subject,
+      body: body,
+      attachments: transportDocs
+    })
+    
+    setClearanceAgentDialog(null)
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -1103,7 +1188,12 @@ export default function ImportShipments() {
                     </h3>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <ClipboardCheck 
+                          className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" 
+                          onClick={() => setClearanceAgentDialog({ show: true, shipmentId: shipment.id })}
+                          data-testid={`button-advise-clearance-${shipment.id}`}
+                          title="Send clearance details to agent"
+                        />
                         <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           Advise Clearance to Agent
                         </p>
@@ -2535,6 +2625,89 @@ export default function ImportShipments() {
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
             {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Clearance Agent Selection Dialog */}
+      <Dialog open={clearanceAgentDialog?.show || false} onOpenChange={(open) => !open && setClearanceAgentDialog(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Select Clearance Agent</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {clearanceAgents.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No clearance agents available</p>
+            ) : (
+              clearanceAgents.map((agent) => (
+                <Card 
+                  key={agent.id} 
+                  className="cursor-pointer hover-elevate transition-all"
+                  onClick={() => handleClearanceAgentSelected(agent)}
+                  data-testid={`clearance-agent-${agent.id}`}
+                >
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg">{agent.agentName}</h3>
+                    {agent.agentImportEmail && agent.agentImportEmail.length > 0 && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {agent.agentImportEmail[0]}
+                      </p>
+                    )}
+                    {agent.agentTelephone && (
+                      <p className="text-sm text-muted-foreground">{agent.agentTelephone}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Composer Dialog */}
+      <Dialog open={emailComposerData?.show || false} onOpenChange={(open) => !open && setEmailComposerData(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Send Email to Clearance Agent</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">To:</label>
+              <Input value={emailComposerData?.to || ""} onChange={(e) => setEmailComposerData(prev => prev ? {...prev, to: e.target.value} : null)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Subject:</label>
+              <Input value={emailComposerData?.subject || ""} onChange={(e) => setEmailComposerData(prev => prev ? {...prev, subject: e.target.value} : null)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Message:</label>
+              <Textarea rows={12} value={emailComposerData?.body || ""} onChange={(e) => setEmailComposerData(prev => prev ? {...prev, body: e.target.value} : null)} />
+            </div>
+            {emailComposerData?.attachments && emailComposerData.attachments.length > 0 && (
+              <div>
+                <label className="text-sm font-medium">Attachments ({emailComposerData.attachments.length}):</label>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {emailComposerData.attachments.map((file, idx) => (
+                    <div key={idx}>{file.split('/').pop()}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setEmailComposerData(null)}>Cancel</Button>
+            <Button onClick={() => {
+              if (emailComposerData) {
+                sendEmail.mutate({
+                  to: emailComposerData.to,
+                  subject: emailComposerData.subject,
+                  body: emailComposerData.body,
+                  attachmentUrls: emailComposerData.attachments
+                })
+              }
+            }} disabled={sendEmail.isPending}>
+              {sendEmail.isPending ? 'Sending...' : 'Send Email'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

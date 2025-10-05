@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -153,11 +153,16 @@ export default function Messages() {
     }
   };
 
-  // Handle userId parameter from URL to auto-open composer
+  // Handle URL parameters to auto-open composer with pre-filled data
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const userIdParam = params.get('userId');
+    const emailParam = params.get('email');
+    const subjectParam = params.get('subject');
+    const bodyParam = params.get('body');
+    const attachmentsParam = params.get('attachments');
     
+    // Handle userId parameter (existing functionality)
     if (userIdParam && users.length > 0) {
       const targetUser = users.find(u => u.id === userIdParam);
       if (targetUser && targetUser.id !== user?.id) {
@@ -167,6 +172,31 @@ export default function Messages() {
         // Clear the URL parameter
         window.history.replaceState({}, '', '/messages');
       }
+    }
+    
+    // Handle email parameter (new functionality for clearance agent emails)
+    if (emailParam && users.length > 0) {
+      // Find user by email - note: Messages system uses user IDs, but we receive email
+      // We'll need to find a user that matches or just pre-fill the email field
+      // For now, we'll just set the subject and body, and the user can select recipient manually
+      
+      if (subjectParam) {
+        form.setValue('subject', subjectParam);
+      }
+      
+      if (bodyParam) {
+        form.setValue('content', bodyParam);
+      }
+      
+      if (attachmentsParam) {
+        const attachmentList = attachmentsParam.split(',').filter(Boolean);
+        setUploadedFiles(attachmentList);
+      }
+      
+      setIsComposerOpen(true);
+      
+      // Clear the URL parameters
+      window.history.replaceState({}, '', '/messages');
     }
   }, [users, user, form]);
 
