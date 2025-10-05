@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from '@/hooks/use-auth'
+import { useWindowManager } from '@/contexts/WindowManagerContext'
 
 interface EmailComposerData {
   id: string
@@ -10,12 +11,6 @@ interface EmailComposerData {
   body: string
   attachments: string[]
   isMinimized: boolean
-}
-
-interface MinimizedEmail {
-  id: string
-  to: string
-  subject: string
 }
 
 interface EmailDraft {
@@ -29,14 +24,10 @@ interface EmailDraft {
 
 interface EmailContextType {
   emailComposerData: EmailComposerData | null
-  minimizedEmails: MinimizedEmail[]
   emailDrafts: Record<string, EmailDraft>
   recentEmails: string[]
   openEmailComposer: (data: Omit<EmailComposerData, 'isMinimized'>) => void
   closeEmailComposer: () => void
-  minimizeEmail: (email: MinimizedEmail) => void
-  restoreEmail: (id: string) => void
-  removeMinimizedEmail: (id: string) => void
   updateEmailDraft: (id: string, draft: EmailDraft) => void
   removeEmailDraft: (id: string) => void
   addToRecentEmails: (email: string) => void
@@ -46,15 +37,8 @@ const EmailContext = createContext<EmailContextType | undefined>(undefined)
 
 export function EmailProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
+  const { openWindow, windows, activeWindow } = useWindowManager()
 
-  const [emailComposerData, setEmailComposerData] = useState<EmailComposerData | null>(null)
-  
-  const [minimizedEmails, setMinimizedEmails] = useState<MinimizedEmail[]>(() => {
-    if (!user) return []
-    const stored = localStorage.getItem(`emailMinimized_${user.id}`)
-    return stored ? JSON.parse(stored) : []
-  })
-  
   const [emailDrafts, setEmailDrafts] = useState<Record<string, EmailDraft>>(() => {
     if (!user) return {}
     const stored = localStorage.getItem(`emailDrafts_${user.id}`)
@@ -73,6 +57,13 @@ export function EmailProvider({ children }: { children: ReactNode }) {
     return []
   })
 
+  // Compute current email composer from windows
+  const emailComposerData = activeWindow?.type === 'email' ? {
+    id: activeWindow.id,
+    ...activeWindow.payload,
+    isMinimized: activeWindow.isMinimized
+  } as EmailComposerData : null
+
   // Save email drafts to localStorage whenever they change
   useEffect(() => {
     if (user && Object.keys(emailDrafts).length > 0) {
@@ -82,26 +73,11 @@ export function EmailProvider({ children }: { children: ReactNode }) {
     }
   }, [emailDrafts, user])
 
-  // Save minimized emails to localStorage whenever they change
-  useEffect(() => {
-    if (user && minimizedEmails.length > 0) {
-      localStorage.setItem(`emailMinimized_${user.id}`, JSON.stringify(minimizedEmails))
-    } else if (user && minimizedEmails.length === 0) {
-      localStorage.removeItem(`emailMinimized_${user.id}`)
-    }
-  }, [minimizedEmails, user])
-
   // Load drafts from localStorage when user changes
   useEffect(() => {
     if (!user) {
-      setMinimizedEmails([])
       setEmailDrafts({})
       return
-    }
-    
-    const storedMinimized = localStorage.getItem(`emailMinimized_${user.id}`)
-    if (storedMinimized) {
-      setMinimizedEmails(JSON.parse(storedMinimized))
     }
     
     const storedDrafts = localStorage.getItem(`emailDrafts_${user.id}`)
@@ -111,73 +87,34 @@ export function EmailProvider({ children }: { children: ReactNode }) {
   }, [user?.id])
 
   const openEmailComposer = (data: Omit<EmailComposerData, 'isMinimized'>) => {
-    // If there's already an open email, minimize it first
+    // Save current email draft if there's one open
     if (emailComposerData && !emailComposerData.isMinimized) {
       const { isMinimized: _, ...draftData } = emailComposerData
-      minimizeEmail({
-        id: emailComposerData.id,
-        to: emailComposerData.to,
-        subject: emailComposerData.subject
-      })
       setEmailDrafts(prev => ({
         ...prev,
         [emailComposerData.id]: draftData
       }))
     }
     
-    setEmailComposerData({ ...data, isMinimized: false })
+    // Open email window using WindowManager
+    const { id, to, cc, bcc, subject, body, attachments } = data
+    openWindow({
+      id,
+      type: 'email',
+      title: subject || 'New Email',
+      payload: { to, cc, bcc, subject, body, attachments }
+    })
   }
 
   const closeEmailComposer = () => {
-    setEmailComposerData(null)
-  }
-
-  const minimizeEmail = (email: MinimizedEmail) => {
-    setMinimizedEmails(prev => {
-      const exists = prev.find(e => e.id === email.id)
-      if (exists) return prev
-      return [...prev, email]
-    })
-    
-    if (emailComposerData?.id === email.id) {
-      setEmailComposerData(null)
-    }
-  }
-
-  const restoreEmail = (id: string) => {
-    const draft = emailDrafts[id]
-    if (!draft) return
-
-    // If there's already an open email, minimize it first
-    if (emailComposerData && !emailComposerData.isMinimized) {
-      const { isMinimized: _, ...draftData } = emailComposerData
-      minimizeEmail({
-        id: emailComposerData.id,
-        to: emailComposerData.to,
-        subject: emailComposerData.subject
+    if (emailComposerData) {
+      // Remove draft when closing
+      setEmailDrafts(prev => {
+        const newDrafts = { ...prev }
+        delete newDrafts[emailComposerData.id]
+        return newDrafts
       })
-      setEmailDrafts(prev => ({
-        ...prev,
-        [emailComposerData.id]: draftData
-      }))
     }
-
-    setEmailComposerData({
-      id,
-      ...draft,
-      isMinimized: false
-    })
-    
-    setMinimizedEmails(prev => prev.filter(e => e.id !== id))
-  }
-
-  const removeMinimizedEmail = (id: string) => {
-    setMinimizedEmails(prev => prev.filter(e => e.id !== id))
-    setEmailDrafts(prev => {
-      const newDrafts = { ...prev }
-      delete newDrafts[id]
-      return newDrafts
-    })
   }
 
   const updateEmailDraft = (id: string, draft: EmailDraft) => {
@@ -193,10 +130,6 @@ export function EmailProvider({ children }: { children: ReactNode }) {
       delete newDrafts[id]
       return newDrafts
     })
-    setMinimizedEmails(prev => prev.filter(e => e.id !== id))
-    if (emailComposerData?.id === id) {
-      setEmailComposerData(null)
-    }
   }
 
   const addToRecentEmails = (email: string) => {
@@ -209,14 +142,10 @@ export function EmailProvider({ children }: { children: ReactNode }) {
     <EmailContext.Provider
       value={{
         emailComposerData,
-        minimizedEmails,
         emailDrafts,
         recentEmails,
         openEmailComposer,
         closeEmailComposer,
-        minimizeEmail,
-        restoreEmail,
-        removeMinimizedEmail,
         updateEmailDraft,
         removeEmailDraft,
         addToRecentEmails

@@ -13,7 +13,6 @@ import { UserMenu } from "@/components/user-menu";
 import { OtherUsersMenu } from "@/components/other-users-menu";
 import { EmailProvider, useEmail } from "@/contexts/EmailContext";
 import { DraggableEmailComposer } from "@/components/DraggableEmailComposer";
-import { EmailTaskbar } from "@/components/EmailTaskbar";
 import { WindowManagerProvider, useWindowManager } from "@/contexts/WindowManagerContext";
 import { WindowTaskbar } from "@/components/WindowTaskbar";
 import { ImportShipmentWindow } from "@/components/ImportShipmentWindow";
@@ -138,7 +137,7 @@ function AppContent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const previousUnreadCount = useRef<number>(0);
-  const { emailComposerData, minimizedEmails } = useEmail();
+  const { emailComposerData } = useEmail();
   const { windows, activeWindow } = useWindowManager();
   
   const { data: unreadData } = useQuery<{ count: number }>({
@@ -188,7 +187,6 @@ function AppContent() {
       </div>
       {user && (
         <>
-          {minimizedEmails.length > 0 && <EmailTaskbar />}
           {emailComposerData && !emailComposerData.isMinimized && <DraggableEmailComposer />}
           <WindowTaskbar />
           {activeWindow && !activeWindow.isMinimized && (
