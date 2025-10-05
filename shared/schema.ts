@@ -604,6 +604,9 @@ export const insertCustomClearanceSchema = createInsertSchema(customClearances).
 }).extend({
   jobType: z.string().min(1, "Job Type is required"),
   status: z.string().min(1, "Status is required"),
+  importCustomerId: z.string().nullable().optional(),
+  exportCustomerId: z.string().nullable().optional(),
+  receiverId: z.string().nullable().optional(),
   supplierName: z.string().min(1, "Supplier Name is required"),
   portOfArrival: z.string().min(1, "Port Of Arrival is required"),
   departureFrom: z.string().min(1, "Departure From is required"),
