@@ -138,6 +138,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       haulierContactName: [],
       haulierEmail: [],
       haulierTelephone: "",
+      haulierReference: "",
       deliveryAddress: "",
       collectionAddress: "",
       collectionContactName: "",
@@ -1635,6 +1636,20 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                       <FormLabel>Telephone</FormLabel>
                       <FormControl>
                         <Input type="tel" {...field} value={field.value || ""} data-testid="input-haulier-telephone" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="haulierReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-haulier-reference" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
