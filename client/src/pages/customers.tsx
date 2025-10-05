@@ -68,7 +68,7 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
                 >
                   <div className="flex-1">
                     <Link 
-                      href={type === "import" ? "/import-shipments" : "/export-shipments"}
+                      href={`${type === "import" ? "/import-shipments" : "/export-shipments"}?search=${shipment.jobRef}`}
                       className="font-medium text-primary hover:underline"
                       data-testid={`link-job-${shipment.jobRef}`}
                     >

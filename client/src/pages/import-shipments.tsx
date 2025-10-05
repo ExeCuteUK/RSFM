@@ -53,6 +53,15 @@ export default function ImportShipments() {
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
+  // Read search parameter from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const searchParam = params.get('search')
+    if (searchParam) {
+      setSearchText(searchParam)
+    }
+  }, [])
+
   const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
   })
