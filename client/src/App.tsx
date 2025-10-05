@@ -18,6 +18,12 @@ import { WindowTaskbar } from "@/components/WindowTaskbar";
 import { ImportShipmentWindow } from "@/components/ImportShipmentWindow";
 import { ExportShipmentWindow } from "@/components/ExportShipmentWindow";
 import { CustomClearanceWindow } from "@/components/CustomClearanceWindow";
+import { ImportCustomerWindow } from "@/components/ImportCustomerWindow";
+import { ExportCustomerWindow } from "@/components/ExportCustomerWindow";
+import { ExportReceiverWindow } from "@/components/ExportReceiverWindow";
+import { HaulierWindow } from "@/components/HaulierWindow";
+import { ShippingLineWindow } from "@/components/ShippingLineWindow";
+import { ClearanceAgentWindow } from "@/components/ClearanceAgentWindow";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useRef, useEffect } from "react";
@@ -206,6 +212,48 @@ function AppContent() {
               )}
               {activeWindow.type === 'custom-clearance' && (
                 <CustomClearanceWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'import-customer' && (
+                <ImportCustomerWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'export-customer' && (
+                <ExportCustomerWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'export-receiver' && (
+                <ExportReceiverWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'haulier' && (
+                <HaulierWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'shipping-line' && (
+                <ShippingLineWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'clearance-agent' && (
+                <ClearanceAgentWindow
                   windowId={activeWindow.id}
                   payload={activeWindow.payload}
                   onSubmitSuccess={() => {}}

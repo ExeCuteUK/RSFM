@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import {
   AlertDialog,
@@ -105,8 +106,6 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
 
 export default function Customers() {
   const [selectedTab, setSelectedTab] = useState<CustomerType>("import")
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null>(null)
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
   const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null>(null)
   const [searchText, setSearchText] = useState("")
@@ -119,6 +118,7 @@ export default function Customers() {
     clearanceagent: 1
   })
   const { toast } = useToast()
+  const { openWindow } = useWindowManager()
 
   const ITEMS_PER_PAGE = 30
 
@@ -159,79 +159,7 @@ export default function Customers() {
     queryKey: ["/api/clearance-agents"],
   })
 
-  // Mutations
-  const createImportCustomer = useMutation({
-    mutationFn: async (data: InsertImportCustomer) => {
-      return apiRequest("POST", "/api/import-customers", data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/import-customers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Import customer created successfully" })
-    },
-  })
-
-  const createExportCustomer = useMutation({
-    mutationFn: async (data: InsertExportCustomer) => {
-      return apiRequest("POST", "/api/export-customers", data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-customers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Export customer created successfully" })
-    },
-  })
-
-  const createExportReceiver = useMutation({
-    mutationFn: async (data: InsertExportReceiver) => {
-      return apiRequest("POST", "/api/export-receivers", data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-receivers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Export receiver created successfully" })
-    },
-  })
-
-  const updateImportCustomer = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertImportCustomer }) => {
-      return apiRequest("PATCH", `/api/import-customers/${id}`, data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/import-customers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Import customer updated successfully" })
-    },
-  })
-
-  const updateExportCustomer = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertExportCustomer }) => {
-      return apiRequest("PATCH", `/api/export-customers/${id}`, data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-customers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Export customer updated successfully" })
-    },
-  })
-
-  const updateExportReceiver = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertExportReceiver }) => {
-      return apiRequest("PATCH", `/api/export-receivers/${id}`, data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-receivers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Export receiver updated successfully" })
-    },
-  })
-
+  // Delete Mutations Only (Create/Update now handled by window components)
   const deleteImportCustomer = useMutation({
     mutationFn: async (id: string) => {
       return apiRequest("DELETE", `/api/import-customers/${id}`)
@@ -262,30 +190,6 @@ export default function Customers() {
     },
   })
 
-  const createHaulier = useMutation({
-    mutationFn: async (data: InsertHaulier) => {
-      return apiRequest("POST", "/api/hauliers", data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hauliers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Haulier created successfully" })
-    },
-  })
-
-  const updateHaulier = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertHaulier }) => {
-      return apiRequest("PATCH", `/api/hauliers/${id}`, data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hauliers"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Haulier updated successfully" })
-    },
-  })
-
   const deleteHaulier = useMutation({
     mutationFn: async (id: string) => {
       return apiRequest("DELETE", `/api/hauliers/${id}`)
@@ -296,30 +200,6 @@ export default function Customers() {
     },
   })
 
-  const createShippingLine = useMutation({
-    mutationFn: async (data: InsertShippingLine) => {
-      return apiRequest("POST", "/api/shipping-lines", data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Shipping line created successfully" })
-    },
-  })
-
-  const updateShippingLine = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertShippingLine }) => {
-      return apiRequest("PATCH", `/api/shipping-lines/${id}`, data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Shipping line updated successfully" })
-    },
-  })
-
   const deleteShippingLine = useMutation({
     mutationFn: async (id: string) => {
       return apiRequest("DELETE", `/api/shipping-lines/${id}`)
@@ -327,30 +207,6 @@ export default function Customers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] })
       toast({ title: "Shipping line deleted successfully" })
-    },
-  })
-
-  const createClearanceAgent = useMutation({
-    mutationFn: async (data: InsertClearanceAgent) => {
-      return apiRequest("POST", "/api/clearance-agents", data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clearance-agents"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Clearance agent created successfully" })
-    },
-  })
-
-  const updateClearanceAgent = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertClearanceAgent }) => {
-      return apiRequest("PATCH", `/api/clearance-agents/${id}`, data)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clearance-agents"] })
-      setIsFormOpen(false)
-      setEditingCustomer(null)
-      toast({ title: "Clearance agent updated successfully" })
     },
   })
 
@@ -365,13 +221,65 @@ export default function Customers() {
   })
 
   const handleCreateNew = () => {
-    setEditingCustomer(null)
-    setIsFormOpen(true)
+    const windowTypeMap: Record<CustomerType, string> = {
+      import: 'import-customer',
+      export: 'export-customer',
+      receiver: 'export-receiver',
+      haulier: 'haulier',
+      shippingline: 'shipping-line',
+      clearanceagent: 'clearance-agent'
+    }
+
+    const titleMap: Record<CustomerType, string> = {
+      import: 'New Import Customer',
+      export: 'New Export Customer',
+      receiver: 'New Export Receiver',
+      haulier: 'New Haulier',
+      shippingline: 'New Shipping Line',
+      clearanceagent: 'New Clearance Agent'
+    }
+
+    openWindow({
+      id: `${selectedTab}-create-${Date.now()}`,
+      type: windowTypeMap[selectedTab] as any,
+      title: titleMap[selectedTab],
+      payload: {
+        mode: 'create',
+        defaultValues: {}
+      }
+    })
   }
 
   const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent) => {
-    setEditingCustomer(customer)
-    setIsFormOpen(true)
+    const customerType = getCustomerType(customer)
+    
+    const windowTypeMap: Record<CustomerType, string> = {
+      import: 'import-customer',
+      export: 'export-customer',
+      receiver: 'export-receiver',
+      haulier: 'haulier',
+      shippingline: 'shipping-line',
+      clearanceagent: 'clearance-agent'
+    }
+
+    const titleMap: Record<CustomerType, string> = {
+      import: 'Edit Import Customer',
+      export: 'Edit Export Customer',
+      receiver: 'Edit Export Receiver',
+      haulier: 'Edit Haulier',
+      shippingline: 'Edit Shipping Line',
+      clearanceagent: 'Edit Clearance Agent'
+    }
+
+    openWindow({
+      id: `${customerType}-edit-${customer.id}`,
+      type: windowTypeMap[customerType] as any,
+      title: titleMap[customerType],
+      payload: {
+        mode: 'edit',
+        defaultValues: customer
+      }
+    })
   }
 
   const handleDelete = (id: string) => {
@@ -399,45 +307,6 @@ export default function Customers() {
       deleteHaulier.mutate(deletingCustomerId)
     }
     setDeletingCustomerId(null)
-  }
-
-  const handleFormSubmit = (data: InsertImportCustomer | InsertExportCustomer | InsertExportReceiver | InsertHaulier | InsertShippingLine | InsertClearanceAgent) => {
-    if (editingCustomer) {
-      // Determine type from editingCustomer properties rather than selectedTab
-      if ('rsProcessCustomsClearance' in editingCustomer) {
-        // Import customer has unique import-specific fields
-        updateImportCustomer.mutate({ id: editingCustomer.id, data: data as InsertImportCustomer })
-      } else if ('haulierName' in editingCustomer) {
-        // Haulier
-        updateHaulier.mutate({ id: editingCustomer.id, data: data as InsertHaulier })
-      } else if ('agentName' in editingCustomer) {
-        // Clearance Agent
-        updateClearanceAgent.mutate({ id: editingCustomer.id, data: data as InsertClearanceAgent })
-      } else if ('shippingLineName' in editingCustomer) {
-        // Shipping Line
-        updateShippingLine.mutate({ id: editingCustomer.id, data: data as InsertShippingLine })
-      } else if ('contactName' in editingCustomer && editingCustomer.contactName !== undefined) {
-        // Export customer has contactName, receiver doesn't
-        updateExportCustomer.mutate({ id: editingCustomer.id, data: data as InsertExportCustomer })
-      } else {
-        // Export receiver
-        updateExportReceiver.mutate({ id: editingCustomer.id, data: data as InsertExportReceiver })
-      }
-    } else {
-      if (selectedTab === "import") {
-        createImportCustomer.mutate(data as InsertImportCustomer)
-      } else if (selectedTab === "export") {
-        createExportCustomer.mutate(data as InsertExportCustomer)
-      } else if (selectedTab === "receiver") {
-        createExportReceiver.mutate(data as InsertExportReceiver)
-      } else if (selectedTab === "shippingline") {
-        createShippingLine.mutate(data as InsertShippingLine)
-      } else if (selectedTab === "clearanceagent") {
-        createClearanceAgent.mutate(data as InsertClearanceAgent)
-      } else {
-        createHaulier.mutate(data as InsertHaulier)
-      }
-    }
   }
 
   const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers || isLoadingShippingLines || isLoadingClearanceAgents
@@ -1326,77 +1195,6 @@ export default function Customers() {
           )}
         </TabsContent>
       </Tabs>
-
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="customer-form-description">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCustomer ? "Edit" : "Create New"}{" "}
-              {(() => {
-                const formType = getCustomerType(editingCustomer)
-                return formType === "import" ? "Import Customer" : formType === "export" ? "Export Customer" : formType === "haulier" ? "Haulier" : formType === "shippingline" ? "Shipping Line" : formType === "clearanceagent" ? "Clearance Agent" : "Export Receiver"
-              })()}
-            </DialogTitle>
-            <p id="customer-form-description" className="sr-only">{editingCustomer ? "Edit" : "Create"} contact information</p>
-          </DialogHeader>
-          {(() => {
-            const formType = getCustomerType(editingCustomer)
-            if (formType === "import") {
-              return (
-                <ImportCustomerForm
-                  onSubmit={handleFormSubmit}
-                  onCancel={() => setIsFormOpen(false)}
-                  defaultValues={editingCustomer as ImportCustomer}
-                />
-              )
-            } else if (formType === "export") {
-              return (
-                <ExportCustomerForm
-                  onSubmit={handleFormSubmit}
-                  onCancel={() => setIsFormOpen(false)}
-                  defaultValues={editingCustomer as ExportCustomer}
-                />
-              )
-            } else if (formType === "haulier") {
-              const haulier = editingCustomer as Haulier | null
-              return (
-                <HaulierForm
-                  onSubmit={handleFormSubmit}
-                  onCancel={() => setIsFormOpen(false)}
-                  defaultValues={haulier ? {
-                    ...haulier,
-                    contacts: haulier.contacts || []
-                  } : undefined}
-                />
-              )
-            } else if (formType === "shippingline") {
-              return (
-                <ShippingLineForm
-                  onSubmit={handleFormSubmit}
-                  onCancel={() => setIsFormOpen(false)}
-                  defaultValues={editingCustomer as ShippingLine}
-                />
-              )
-            } else if (formType === "clearanceagent") {
-              return (
-                <ClearanceAgentForm
-                  onSubmit={handleFormSubmit}
-                  onCancel={() => setIsFormOpen(false)}
-                  defaultValues={editingCustomer as ClearanceAgent}
-                />
-              )
-            } else {
-              return (
-                <ExportReceiverForm
-                  onSubmit={handleFormSubmit}
-                  onCancel={() => setIsFormOpen(false)}
-                  defaultValues={editingCustomer as ExportReceiver}
-                />
-              )
-            }
-          })()}
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog open={!!deletingCustomerId} onOpenChange={(open) => !open && setDeletingCustomerId(null)}>
         <AlertDialogContent>
