@@ -497,6 +497,13 @@ export const exportShipments = pgTable("export_shipments", {
   
   // Link to auto-created customs clearance
   linkedClearanceId: varchar("linked_clearance_id"),
+  
+  // Status Indicators (1=yellow/To Do, 2=orange/Waiting, 3=green/Done, 4=red/Issue, null=not set)
+  bookingConfirmedStatusIndicator: integer("booking_confirmed_status_indicator"),
+  transportArrangedStatusIndicator: integer("transport_arranged_status_indicator"),
+  customsSubmittedStatusIndicator: integer("customs_submitted_status_indicator"),
+  invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator"),
+  sendDocsToCustomerStatusIndicator: integer("send_docs_to_customer_status_indicator"),
 });
 
 export const insertExportShipmentSchema = createInsertSchema(exportShipments).omit({
