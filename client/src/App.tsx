@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/protected-route";
 import { UserMenu } from "@/components/user-menu";
 import { OtherUsersMenu } from "@/components/other-users-menu";
-import { EmailProvider } from "@/contexts/EmailContext";
+import { EmailProvider, useEmail } from "@/contexts/EmailContext";
 import { DraggableEmailComposer } from "@/components/DraggableEmailComposer";
 import { EmailTaskbar } from "@/components/EmailTaskbar";
 import { useQuery } from "@tanstack/react-query";
@@ -133,6 +133,7 @@ function AppContent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const previousUnreadCount = useRef<number>(0);
+  const { emailComposerData, minimizedEmails } = useEmail();
   
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread-count"],
@@ -181,8 +182,8 @@ function AppContent() {
       </div>
       {user && (
         <>
-          <EmailTaskbar />
-          <DraggableEmailComposer />
+          {minimizedEmails.length > 0 && <EmailTaskbar />}
+          {emailComposerData && !emailComposerData.isMinimized && <DraggableEmailComposer />}
         </>
       )}
     </SidebarProvider>
