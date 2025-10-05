@@ -33,6 +33,7 @@ import { useJobFileGroup } from "@/hooks/use-job-file-group"
 import { FileText, Download, X } from "lucide-react"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { ContactCombobox } from "@/components/ContactCombobox"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -247,20 +248,14 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Import Customer</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-import-customer">
-                            <SelectValue placeholder="Select import customer" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {importCustomers?.map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>
-                              {customer.companyName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <ContactCombobox
+                          type="import-customer"
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
+                          placeholder="Select import customer"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -275,20 +270,14 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Export Customer</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-export-customer">
-                              <SelectValue placeholder="Select export customer" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {exportCustomers?.map((customer) => (
-                              <SelectItem key={customer.id} value={customer.id}>
-                                {customer.companyName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <ContactCombobox
+                            type="export-customer"
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder="Select export customer"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -300,20 +289,14 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Export Receiver</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-export-receiver">
-                              <SelectValue placeholder="Select export receiver" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {exportReceivers?.map((receiver) => (
-                              <SelectItem key={receiver.id} value={receiver.id}>
-                                {receiver.companyName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <ContactCombobox
+                            type="export-receiver"
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder="Select export receiver"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
