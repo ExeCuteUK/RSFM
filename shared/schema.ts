@@ -627,15 +627,6 @@ export const insertCustomClearanceSchema = createInsertSchema(customClearances).
   currency: z.string().min(1, "Currency is required"),
   invoiceValue: z.string().min(1, "Invoice Value is required"),
   clearanceType: z.string().nullable().optional(),
-}).superRefine((data, ctx) => {
-  // Supplier name is only required for import clearances (and only when jobType is present)
-  if (data.jobType === "import" && data.supplierName !== undefined && (!data.supplierName || data.supplierName.trim().length === 0)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Supplier Name is required for import clearances",
-      path: ["supplierName"],
-    });
-  }
 });
 
 export type InsertCustomClearance = z.infer<typeof insertCustomClearanceSchema>;
