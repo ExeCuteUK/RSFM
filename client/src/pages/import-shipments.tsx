@@ -67,6 +67,14 @@ export default function ImportShipments() {
     isMinimized: boolean;
   } | null>(null)
   const [minimizedEmails, setMinimizedEmails] = useState<{ id: string; to: string; subject: string }[]>([])
+  const [emailDrafts, setEmailDrafts] = useState<Record<string, {
+    to: string;
+    cc: string;
+    bcc: string;
+    subject: string;
+    body: string;
+    attachments: string[];
+  }>>({})
   const [recentEmails, setRecentEmails] = useState<string[]>([])
   const { toast} = useToast()
   const [, setLocation] = useLocation()
@@ -940,15 +948,24 @@ export default function ImportShipments() {
     // Get transport documents
     const transportDocs = parseAttachments(shipment.attachments).map(normalizeFilePath)
     
-    // Open email composer
-    setEmailComposerData({
-      id: `email-${Date.now()}`,
+    // Create email data
+    const emailId = `email-${Date.now()}`
+    const newEmailData = {
       to: agentEmail,
       cc: "",
       bcc: "",
       subject: subject,
       body: body,
       attachments: transportDocs,
+    }
+    
+    // Save to drafts storage
+    setEmailDrafts(prev => ({...prev, [emailId]: newEmailData}))
+    
+    // Open email composer
+    setEmailComposerData({
+      id: emailId,
+      ...newEmailData,
       isMinimized: false
     })
     
