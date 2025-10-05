@@ -44,12 +44,12 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
   });
 
   return (
-    <Accordion type="single" collapsible className="mt-3" onValueChange={(value) => setIsOpen(value === "history")}>
+    <Accordion type="single" collapsible className="mt-4 pt-3 border-t" onValueChange={(value) => setIsOpen(value === "history")}>
       <AccordionItem value="history" className="border-0">
         <AccordionTrigger className="py-2 hover:no-underline" data-testid={`accordion-job-history-${customerId}`}>
           <div className="flex items-center gap-2 text-sm">
             <Package className="h-4 w-4" />
-            <span>Job History</span>
+            <span>Job History {isOpen && shipments.length > 0 && `(${shipments.length})`}</span>
           </div>
         </AccordionTrigger>
         <AccordionContent>
