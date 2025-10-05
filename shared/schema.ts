@@ -616,7 +616,7 @@ export const insertCustomClearanceSchema = createInsertSchema(customClearances).
   incoterms: z.string().nullable().optional(),
   customerReferenceNumber: z.string().nullable().optional(),
   deliveryAddress: z.string().nullable().optional(),
-  supplierName: z.string().min(1, "Supplier Name is required"),
+  supplierName: z.string().nullable().optional(),
   portOfArrival: z.string().min(1, "Port Of Arrival is required"),
   departureFrom: z.string().min(1, "Departure From is required"),
   containerShipment: z.string().min(1, "Shipment Type is required"),
@@ -627,6 +627,15 @@ export const insertCustomClearanceSchema = createInsertSchema(customClearances).
   currency: z.string().min(1, "Currency is required"),
   invoiceValue: z.string().min(1, "Invoice Value is required"),
   clearanceType: z.string().nullable().optional(),
+}).refine((data) => {
+  // Supplier name is only required for import clearances
+  if (data.jobType === "import" && (!data.supplierName || data.supplierName.trim().length === 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Supplier Name is required for import clearances",
+  path: ["supplierName"],
 });
 
 export type InsertCustomClearance = z.infer<typeof insertCustomClearanceSchema>;
