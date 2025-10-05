@@ -39,6 +39,17 @@ The application now includes comprehensive file upload functionality integrated 
 - Enables instant one-click messaging between team members
 - API endpoints: `/api/users`, `/api/presence/online-users`, `/api/presence/heartbeat`
 
+**Email Composer System:**
+- Draggable, minimizable window system for composing emails with PDF attachments
+- Multi-draft support: compose and manage multiple emails simultaneously with unique IDs
+- Email taskbar displays minimized drafts for quick access and switching
+- Auto-minimize behavior: restoring a minimized email automatically minimizes the current window
+- **localStorage Persistence**: Email drafts survive browser close/logout and are restored on return
+  - Draft data keyed by user ID: `emailDrafts_${userId}` and `emailMinimized_${userId}`
+  - Drafts automatically saved on changes via useEffect hooks
+  - Drafts cleared on email send or manual close
+  - Ensures privacy: each user's drafts stored separately by user ID
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
