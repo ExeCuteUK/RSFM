@@ -143,7 +143,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       setActiveWindowState(newWindow)
     } catch (error) {
       console.error('Error in openWindow:', error)
-      throw error
+      // Don't rethrow - let the caller handle it gracefully
     }
   }
 

@@ -829,62 +829,72 @@ export default function ImportShipments() {
   }
 
   const handleClearanceAgentSelected = (agent: ClearanceAgent) => {
-    if (!clearanceAgentDialog) return
-    
-    const shipment = allShipments.find(s => s.id === clearanceAgentDialog.shipmentId)
-    if (!shipment) return
-    
-    const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
-    const customerName = customer?.companyName || "N/A"
-    const vatPaymentMethod = customer?.vatPaymentMethod || "N/A"
-    
-    // Build email subject
-    const truckContainerFlight = shipment.trailerOrContainerNumber || "TBA"
-    const eta = formatDate(shipment.importDateEtaPort) || "TBA"
-    const subject = `Import Clearance / ${customerName} / Our Ref : ${shipment.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
-    
-    // Build email body
-    let body = `Hi Team,\n\nPlease could you arrange clearance on the below shipment. Our Ref : ${shipment.jobRef}\n\n`
-    body += `Consignment will arrive on Trailer : ${shipment.trailerOrContainerNumber || "TBA"} Into ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.importDateEtaPort) || "TBA"}.\n\n`
-    body += `${customerName}\n`
-    body += `${shipment.numberOfPieces || ""} ${shipment.packaging || ""}.\n`
-    body += `${shipment.goodsDescription || ""}\n`
-    body += `${shipment.weight || ""}, Invoice value ${shipment.currency || ""} ${shipment.invoiceValue || ""}\n`
-    
-    if (shipment.freightCharge) {
-      body += `Transport Costs : ${shipment.freightCharge}\n`
+    try {
+      if (!clearanceAgentDialog) return
+      
+      const shipment = allShipments.find(s => s.id === clearanceAgentDialog.shipmentId)
+      if (!shipment) return
+      
+      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
+      const customerName = customer?.companyName || "N/A"
+      const vatPaymentMethod = customer?.vatPaymentMethod || "N/A"
+      
+      // Build email subject
+      const truckContainerFlight = shipment.trailerOrContainerNumber || "TBA"
+      const eta = formatDate(shipment.importDateEtaPort) || "TBA"
+      const subject = `Import Clearance / ${customerName} / Our Ref : ${shipment.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      
+      // Build email body
+      let body = `Hi Team,\n\nPlease could you arrange clearance on the below shipment. Our Ref : ${shipment.jobRef}\n\n`
+      body += `Consignment will arrive on Trailer : ${shipment.trailerOrContainerNumber || "TBA"} Into ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.importDateEtaPort) || "TBA"}.\n\n`
+      body += `${customerName}\n`
+      body += `${shipment.numberOfPieces || ""} ${shipment.packaging || ""}.\n`
+      body += `${shipment.goodsDescription || ""}\n`
+      body += `${shipment.weight || ""}, Invoice value ${shipment.currency || ""} ${shipment.invoiceValue || ""}\n`
+      
+      if (shipment.freightCharge) {
+        body += `Transport Costs : ${shipment.freightCharge}\n`
+      }
+      
+      // Replace "R.S Deferment" with "Via Your Deferment"
+      const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
+      body += `\nVAT Payment Method : ${displayVatMethod}\n`
+      
+      if (shipment.vatZeroRated) {
+        body += `VAT Zero Rated\n`
+      }
+      
+      body += `Clearance Type : ${shipment.clearanceType || "N/A"}\n`
+      
+      // Get agent's import email (first one if multiple)
+      const agentEmail = agent.agentImportEmail && agent.agentImportEmail.length > 0 
+        ? agent.agentImportEmail[0] 
+        : ""
+      
+      // Get transport documents
+      const transportDocs = parseAttachments(shipment.attachments).map(normalizeFilePath)
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: agentEmail,
+        cc: "",
+        bcc: "",
+        subject: subject,
+        body: body,
+        attachments: transportDocs,
+      })
+      
+      setClearanceAgentDialog(null)
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+      setClearanceAgentDialog(null)
     }
-    
-    // Replace "R.S Deferment" with "Via Your Deferment"
-    const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
-    body += `\nVAT Payment Method : ${displayVatMethod}\n`
-    
-    if (shipment.vatZeroRated) {
-      body += `VAT Zero Rated\n`
-    }
-    
-    body += `Clearance Type : ${shipment.clearanceType || "N/A"}\n`
-    
-    // Get agent's import email (first one if multiple)
-    const agentEmail = agent.agentImportEmail && agent.agentImportEmail.length > 0 
-      ? agent.agentImportEmail[0] 
-      : ""
-    
-    // Get transport documents
-    const transportDocs = parseAttachments(shipment.attachments).map(normalizeFilePath)
-    
-    // Open email composer
-    openEmailComposer({
-      id: `email-${Date.now()}`,
-      to: agentEmail,
-      cc: "",
-      bcc: "",
-      subject: subject,
-      body: body,
-      attachments: transportDocs,
-    })
-    
-    setClearanceAgentDialog(null)
   }
 
   return (

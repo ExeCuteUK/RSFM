@@ -110,7 +110,7 @@ export function EmailProvider({ children }: { children: ReactNode }) {
       })
     } catch (error) {
       console.error('Error in openEmailComposer:', error)
-      throw error
+      // Don't rethrow - let the caller handle it gracefully
     }
   }
 
