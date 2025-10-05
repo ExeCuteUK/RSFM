@@ -71,8 +71,14 @@ export function ContactCombobox({
     enabled: open, // Only fetch when popover is open
   });
 
+  // Fetch selected contact for display (when value is set but not in search results)
+  const { data: selectedContactData } = useQuery<Contact>({
+    queryKey: [`/api/${type}s`, value],
+    enabled: !!value && !contacts.find((c) => c.id === value),
+  });
+
   // Get selected contact for display
-  const selectedContact = contacts.find((contact) => contact.id === value);
+  const selectedContact = contacts.find((contact) => contact.id === value) || selectedContactData;
 
   const handleSelect = useCallback(
     (currentValue: string) => {
