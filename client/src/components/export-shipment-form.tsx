@@ -38,6 +38,7 @@ import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { ExportCustomerForm } from "./export-customer-form"
 import { ExportReceiverForm } from "./export-receiver-form"
+import { ContactCombobox } from "./ContactCombobox"
 import { apiRequest, queryClient } from "@/lib/queryClient"
 import { useToast } from "@/hooks/use-toast"
 
@@ -108,12 +109,11 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
     },
   })
 
-  const { data: exportReceivers } = useQuery<ExportReceiver[]>({
-    queryKey: ["/api/export-receivers"],
-  })
+  const receiverId = form.watch("receiverId")
 
-  const { data: exportCustomers } = useQuery<ExportCustomer[]>({
-    queryKey: ["/api/export-customers"],
+  const { data: selectedReceiver } = useQuery<ExportReceiver>({
+    queryKey: ["/api/export-receivers", receiverId],
+    enabled: !!receiverId,
   })
 
   const { data: hauliers } = useQuery<Haulier[]>({
@@ -175,7 +175,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const containerShipment = form.watch("containerShipment")
   const dispatchDate = form.watch("dispatchDate")
   const status = form.watch("status")
-  const receiverId = form.watch("receiverId")
   const additionalCommodityCodes = form.watch("additionalCommodityCodes")
 
   useEffect(() => {
@@ -188,19 +187,16 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   }, [dispatchDate, status, form])
 
   useEffect(() => {
-    if (receiverId && exportReceivers) {
-      const selectedReceiver = exportReceivers.find(r => r.id === receiverId)
-      if (selectedReceiver) {
-        const addressParts = [
-          selectedReceiver.address,
-          selectedReceiver.country
-        ].filter(part => part && part.trim() !== "")
-        
-        const fullAddress = addressParts.join(", ")
-        form.setValue("deliveryAddress", fullAddress)
-      }
+    if (selectedReceiver) {
+      const addressParts = [
+        selectedReceiver.address,
+        selectedReceiver.country
+      ].filter(part => part && part.trim() !== "")
+      
+      const fullAddress = addressParts.join(", ")
+      form.setValue("deliveryAddress", fullAddress)
     }
-  }, [receiverId, exportReceivers, form])
+  }, [selectedReceiver, form])
 
   useEffect(() => {
     if (additionalCommodityCodes && additionalCommodityCodes > 1) {
@@ -297,20 +293,15 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   <FormItem>
                     <FormLabel>Export Customer</FormLabel>
                     <div className="flex gap-2">
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-destination-customer" className="flex-1">
-                            <SelectValue placeholder="Select export customer" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {exportCustomers?.sort((a, b) => a.companyName.localeCompare(b.companyName)).map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>
-                              {customer.companyName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <ContactCombobox
+                          type="export-customer"
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
+                          placeholder="Select export customer"
+                          className="flex-1"
+                        />
+                      </FormControl>
                       <Button
                         type="button"
                         variant="outline"
@@ -333,20 +324,15 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   <FormItem>
                     <FormLabel>Export Receiver</FormLabel>
                     <div className="flex gap-2">
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-receiver" className="flex-1">
-                            <SelectValue placeholder="Select receiver" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {exportReceivers?.sort((a, b) => a.companyName.localeCompare(b.companyName)).map((receiver) => (
-                            <SelectItem key={receiver.id} value={receiver.id}>
-                              {receiver.companyName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <ContactCombobox
+                          type="export-receiver"
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
+                          placeholder="Select export receiver"
+                          className="flex-1"
+                        />
+                      </FormControl>
                       <Button
                         type="button"
                         variant="outline"
