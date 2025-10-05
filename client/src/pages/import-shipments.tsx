@@ -1558,9 +1558,10 @@ export default function ImportShipments() {
       </AlertDialog>
 
       <Dialog open={!!notesShipmentId} onOpenChange={(open) => !open && handleCloseNotes()}>
-        <DialogContent className="max-w-3xl h-[400px] flex flex-col">
+        <DialogContent className="max-w-3xl h-[400px] flex flex-col" aria-describedby="notes-description">
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle>Additional Notes</DialogTitle>
+            <p id="notes-description" className="sr-only">Add or edit additional notes for this shipment</p>
             <Button
               size="icon"
               variant="ghost"
@@ -1599,9 +1600,10 @@ export default function ImportShipments() {
       </Dialog>
 
       <Dialog open={!!trackingShipment} onOpenChange={(open) => !open && setTrackingShipment(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="tracking-description">
           <DialogHeader>
             <DialogTitle>Container Tracking - {trackingShipment?.trailerOrContainerNumber}</DialogTitle>
+            <p id="tracking-description" className="sr-only">View real-time tracking information for this container</p>
           </DialogHeader>
           <div className="space-y-4">
             {trackContainer.isPending || fetchTrackingData.isPending ? (
@@ -1682,7 +1684,8 @@ export default function ImportShipments() {
       </Dialog>
 
       <Dialog open={!!viewingShipment} onOpenChange={(open) => !open && setViewingShipment(null)}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" aria-describedby="shipment-details-description">
+          <p id="shipment-details-description" className="sr-only">View complete shipment details and information</p>
           <DialogHeader className="border-b pb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -2585,12 +2588,13 @@ export default function ImportShipments() {
       </AlertDialog>
 
       <Dialog open={!!viewingPdf} onOpenChange={(open) => !open && setViewingPdf(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0" aria-describedby="pdf-viewer-description">
           <DialogHeader className="px-6 pt-6 pb-4">
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               {viewingPdf?.name}
             </DialogTitle>
+            <p id="pdf-viewer-description" className="sr-only">PDF document viewer</p>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
             {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
