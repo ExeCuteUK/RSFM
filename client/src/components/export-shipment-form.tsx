@@ -1546,10 +1546,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       </form>
 
       <Dialog open={isCustomerDialogOpen} onOpenChange={setIsCustomerDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="create-export-customer-description">
           <DialogHeader>
             <DialogTitle>Create Export Customer</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="create-export-customer-description">
               Add a new export customer to the system
             </DialogDescription>
           </DialogHeader>
@@ -1561,10 +1561,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       </Dialog>
 
       <Dialog open={isReceiverDialogOpen} onOpenChange={setIsReceiverDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="create-receiver-description">
           <DialogHeader>
             <DialogTitle>Create Export Receiver</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="create-receiver-description">
               Add a new export receiver to the system
             </DialogDescription>
           </DialogHeader>

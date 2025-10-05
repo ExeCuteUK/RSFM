@@ -133,9 +133,12 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
   return (
     <>
       <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-        <DialogContent>
+        <DialogContent aria-describedby="email-dialog-description">
           <DialogHeader>
             <DialogTitle>Send Email with Attachment</DialogTitle>
+            <DialogDescription id="email-dialog-description">
+              Send this PDF document as an email attachment
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">

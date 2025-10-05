@@ -1958,10 +1958,10 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       </form>
 
       <Dialog open={isCustomerDialogOpen} onOpenChange={setIsCustomerDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="create-customer-description">
           <DialogHeader>
             <DialogTitle>Create New Import Customer</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="create-customer-description">
               Add a new import customer to the system. The customer will be automatically selected after creation.
             </DialogDescription>
           </DialogHeader>

@@ -92,13 +92,13 @@ export function OCRDialog({ filePath, fileName, trigger }: OCRDialogProps) {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col" aria-describedby="ocr-confidence-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               Extracted Text from {fileName}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="ocr-confidence-description">
               OCR Confidence: {Math.round(confidence)}%
             </DialogDescription>
           </DialogHeader>

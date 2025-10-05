@@ -230,11 +230,14 @@ export default function ShippingLines() {
       )}
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="shipping-line-form-description">
           <DialogHeader>
             <DialogTitle data-testid="text-dialog-title">
               {editingShippingLine ? "Edit Shipping Line" : "New Shipping Line"}
             </DialogTitle>
+            <p id="shipping-line-form-description" className="sr-only">
+              {editingShippingLine ? "Edit shipping line details" : "Create a new shipping line"}
+            </p>
           </DialogHeader>
           <ShippingLineForm
             onSubmit={handleFormSubmit}
