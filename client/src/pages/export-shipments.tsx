@@ -28,10 +28,10 @@ import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Searc
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 
 export default function ExportShipments() {
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingShipment, setEditingShipment] = useState<ExportShipment | null>(null)
+  const { openWindow } = useWindowManager()
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
   const [searchText, setSearchText] = useState("")
@@ -98,8 +98,6 @@ export default function ExportShipments() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-      setIsFormOpen(false)
-      setEditingShipment(null)
       toast({ title: "Export shipment created successfully" })
     },
   })
@@ -110,8 +108,6 @@ export default function ExportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
-      setIsFormOpen(false)
-      setEditingShipment(null)
       toast({ title: "Export shipment updated successfully" })
     },
   })
@@ -165,13 +161,21 @@ export default function ExportShipments() {
   }
 
   const handleCreateNew = () => {
-    setEditingShipment(null)
-    setIsFormOpen(true)
+    openWindow({
+      id: `export-shipment-new-${Date.now()}`,
+      type: 'export-shipment',
+      title: 'New Export Shipment',
+      payload: {}
+    })
   }
 
   const handleEdit = (shipment: ExportShipment) => {
-    setEditingShipment(shipment)
-    setIsFormOpen(true)
+    openWindow({
+      id: `export-shipment-${shipment.id}`,
+      type: 'export-shipment',
+      title: `Edit Export Shipment #${shipment.jobRef}`,
+      payload: { shipment }
+    })
   }
 
   const handleDelete = (id: string) => {
@@ -182,14 +186,6 @@ export default function ExportShipments() {
     if (!deletingShipmentId) return
     deleteShipment.mutate(deletingShipmentId)
     setDeletingShipmentId(null)
-  }
-
-  const handleFormSubmit = (data: InsertExportShipment) => {
-    if (editingShipment) {
-      updateShipment.mutate({ id: editingShipment.id, data })
-    } else {
-      createShipment.mutate(data)
-    }
   }
 
   const getLinkedClearance = (linkedClearanceId: string | null) => {
@@ -471,21 +467,6 @@ export default function ExportShipments() {
           ))}
         </div>
       )}
-
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingShipment ? "Edit Export Shipment" : "New Export Shipment"}
-            </DialogTitle>
-          </DialogHeader>
-          <ExportShipmentForm
-            onSubmit={handleFormSubmit}
-            onCancel={() => setIsFormOpen(false)}
-            defaultValues={editingShipment || undefined}
-          />
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog open={!!deletingShipmentId} onOpenChange={(open) => !open && setDeletingShipmentId(null)}>
         <AlertDialogContent>
