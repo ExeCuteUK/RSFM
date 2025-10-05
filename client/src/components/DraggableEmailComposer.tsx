@@ -59,27 +59,17 @@ export function DraggableEmailComposer() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  // Now we can conditionally return
-  if (!emailComposerData || emailComposerData.isMinimized) return null;
-  
-  const data = emailComposerData;
-
-  // Helper function to update email data
-  const handleDataChange = (updatedData: typeof data) => {
-    const { isMinimized: _, ...draftData } = updatedData;
-    updateEmailDraft(data.id, draftData);
-  };
-
-  // Send email mutation
+  // Send email mutation - MUST be called before conditional return
   const sendEmailMutation = useMutation({
-    mutationFn: async (emailData: typeof data) => {
+    mutationFn: async (emailData: any) => {
       const { isMinimized: _, ...sendData } = emailData;
       return apiRequest("POST", "/api/gmail/send", sendData);
     },
     onSuccess: () => {
+      if (!emailComposerData) return;
       toast({ title: "Email sent successfully" });
-      if (data.to) addToRecentEmails(data.to);
-      removeEmailDraft(data.id);
+      if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
+      removeEmailDraft(emailComposerData.id);
       closeEmailComposer();
     },
     onError: (error) => {
@@ -90,6 +80,17 @@ export function DraggableEmailComposer() {
       });
     },
   });
+  
+  // Now we can conditionally return
+  if (!emailComposerData || emailComposerData.isMinimized) return null;
+  
+  const data = emailComposerData;
+
+  // Helper function to update email data
+  const handleDataChange = (updatedData: typeof data) => {
+    const { isMinimized: _, ...draftData } = updatedData;
+    updateEmailDraft(data.id, draftData);
+  };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
