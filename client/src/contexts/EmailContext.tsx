@@ -158,7 +158,16 @@ export function EmailProvider({ children }: { children: ReactNode }) {
     })) as EmailComposerData[]
 
   const restoreEmail = (id: string) => {
-    restoreWindow(id)
+    try {
+      console.log('restoreEmail called with id:', id)
+      console.log('Current activeWindow:', activeWindow)
+      console.log('All windows:', windows)
+      restoreWindow(id)
+      console.log('restoreWindow completed')
+    } catch (error) {
+      console.error('Error in restoreEmail:', error)
+      throw error
+    }
   }
 
   const removeMinimizedEmail = (id: string) => {

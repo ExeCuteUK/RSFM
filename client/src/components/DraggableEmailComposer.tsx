@@ -81,8 +81,16 @@ export function DraggableEmailComposer() {
     },
   });
   
+  // Debugging - log state before conditional return
+  console.log('DraggableEmailComposer render - emailComposerData:', emailComposerData)
+  
   // Now we can conditionally return
-  if (!emailComposerData || emailComposerData.isMinimized) return null;
+  if (!emailComposerData || emailComposerData.isMinimized) {
+    console.log('DraggableEmailComposer - returning null (minimized or no data)')
+    return null;
+  }
+  
+  console.log('DraggableEmailComposer - rendering composer')
   
   const data = emailComposerData;
 
