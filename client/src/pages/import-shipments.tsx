@@ -24,13 +24,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 export default function ImportShipments() {
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -58,6 +61,8 @@ export default function ImportShipments() {
     body: string; 
     attachments: string[] 
   } | null>(null)
+  const [emailPopoverOpen, setEmailPopoverOpen] = useState(false)
+  const [recentEmails, setRecentEmails] = useState<string[]>([])
   const { toast} = useToast()
   const [, setLocation] = useLocation()
 
@@ -86,6 +91,37 @@ export default function ImportShipments() {
   const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
     queryKey: ["/api/clearance-agents"],
   })
+
+  // Fetch contact emails for email autocomplete
+  interface ContactEmail {
+    email: string;
+    name: string;
+    type: string;
+  }
+  
+  const { data: contactEmails = [] } = useQuery<ContactEmail[]>({
+    queryKey: ['/api/contacts/emails'],
+    staleTime: 5 * 60 * 1000
+  })
+
+  // Load recent emails from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('recentEmails')
+    if (stored) {
+      try {
+        setRecentEmails(JSON.parse(stored))
+      } catch (e) {
+        setRecentEmails([])
+      }
+    }
+  }, [])
+
+  // Save email to recent list
+  const addToRecentEmails = (email: string) => {
+    const updated = [email, ...recentEmails.filter(e => e !== email)].slice(0, 10)
+    setRecentEmails(updated)
+    localStorage.setItem('recentEmails', JSON.stringify(updated))
+  }
 
   // Fetch shared documents for all import shipments
   const jobRefs = allShipments.map(s => s.jobRef).filter((ref): ref is number => ref !== undefined)
@@ -525,9 +561,11 @@ export default function ImportShipments() {
         attachmentUrls
       })
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      addToRecentEmails(variables.to)
       toast({ title: 'Email sent successfully' })
       setEmailComposerData(null)
+      setEmailPopoverOpen(false)
     },
     onError: (error: any) => {
       toast({ title: 'Failed to send email', description: error.message || 'Please try again', variant: 'destructive' })
@@ -2671,9 +2709,96 @@ export default function ImportShipments() {
             <DialogTitle>Send Email to Clearance Agent</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <label className="text-sm font-medium">To:</label>
-              <Input value={emailComposerData?.to || ""} onChange={(e) => setEmailComposerData(prev => prev ? {...prev, to: e.target.value} : null)} />
+              <Popover open={emailPopoverOpen} onOpenChange={setEmailPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={emailPopoverOpen}
+                    className="w-full justify-start font-normal"
+                    data-testid="button-email-combobox"
+                  >
+                    {emailComposerData?.to || "Select or type email..."}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[550px] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput
+                      placeholder="Type email address..."
+                      value={emailComposerData?.to || ""}
+                      onValueChange={(value) => setEmailComposerData(prev => prev ? {...prev, to: value} : null)}
+                      data-testid="input-email-search"
+                    />
+                    <CommandList>
+                      <CommandEmpty>
+                        {emailComposerData?.to ? `Press Enter to use: ${emailComposerData.to}` : 'No emails found'}
+                      </CommandEmpty>
+                      {recentEmails.length > 0 && (
+                        <CommandGroup heading="Recent">
+                          {recentEmails
+                            .filter(email => !emailComposerData?.to || email.toLowerCase().includes(emailComposerData.to.toLowerCase()))
+                            .map((email) => (
+                            <CommandItem
+                              key={`recent-${email}`}
+                              value={email}
+                              onSelect={(currentValue) => {
+                                setEmailComposerData(prev => prev ? {...prev, to: currentValue} : null)
+                                setEmailPopoverOpen(false)
+                              }}
+                              data-testid={`email-option-${email}`}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  emailComposerData?.to === email ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {email}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                      {contactEmails.length > 0 && (
+                        <CommandGroup heading={`Contacts (${contactEmails.length})`}>
+                          {contactEmails
+                            .filter(contact => !emailComposerData?.to || 
+                              contact.email.toLowerCase().includes(emailComposerData.to.toLowerCase()) ||
+                              contact.name.toLowerCase().includes(emailComposerData.to.toLowerCase()))
+                            .slice(0, 50)
+                            .map((contact) => (
+                            <CommandItem
+                              key={`contact-${contact.email}`}
+                              value={contact.email}
+                              onSelect={(currentValue) => {
+                                setEmailComposerData(prev => prev ? {...prev, to: currentValue} : null)
+                                setEmailPopoverOpen(false)
+                              }}
+                              data-testid={`email-option-${contact.email}`}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  emailComposerData?.to === contact.email ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span>{contact.email}</span>
+                                {contact.name && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {contact.name} • {contact.type}
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-sm font-medium">Subject:</label>
