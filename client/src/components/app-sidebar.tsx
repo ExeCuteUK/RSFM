@@ -7,7 +7,8 @@ import {
   Settings, 
   FileCheck,
   BookOpen,
-  Database
+  Database,
+  MessageSquare
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 
@@ -62,6 +63,11 @@ const menuItems = [
 ]
 
 const secondaryItems = [
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
+  },
   {
     title: "Backups",
     url: "/backups",
