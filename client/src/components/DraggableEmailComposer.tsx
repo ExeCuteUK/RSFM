@@ -143,11 +143,13 @@ export function DraggableEmailComposer({
         const normalizeResponse = await fetch('/api/objects/normalize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uploadUrl }),
+          body: JSON.stringify({ urls: [uploadUrl] }),
         });
 
-        const { normalizedUrl } = await normalizeResponse.json();
-        uploadedUrls.push(normalizedUrl);
+        const { paths } = await normalizeResponse.json();
+        if (paths && paths.length > 0) {
+          uploadedUrls.push(paths[0]);
+        }
       }
 
       // Update attachments
@@ -562,7 +564,7 @@ export function DraggableEmailComposer({
           </div>
           {data.attachments.length > 0 && (
             <div className="space-y-1">
-              {data.attachments.map((file, idx) => (
+              {data.attachments.filter(file => file).map((file, idx) => (
                 <div
                   key={idx}
                   className="flex items-center justify-between p-2 bg-muted/50 rounded-md"
