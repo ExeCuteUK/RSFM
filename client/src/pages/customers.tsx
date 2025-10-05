@@ -37,7 +37,7 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
     ? `/api/import-customers/${customerId}/shipments`
     : `/api/export-customers/${customerId}/shipments`;
     
-  const { data: shipments = [] } = useQuery<(ImportShipment | ExportShipment)[]>({
+  const { data: shipments = [] } = useQuery<ImportShipment[] | ExportShipment[]>({
     queryKey: [endpoint],
   });
 
@@ -56,38 +56,43 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
         </AccordionTrigger>
         <AccordionContent>
           <div className="space-y-2 pt-2">
-            {shipments.map((shipment) => (
-              <div 
-                key={shipment.id} 
-                className="flex items-center justify-between p-2 bg-background/50 rounded text-xs"
-                data-testid={`job-history-item-${shipment.id}`}
-              >
-                <div className="flex-1">
-                  <Link 
-                    href={type === "import" ? "/import-shipments" : "/export-shipments"}
-                    className="font-medium text-primary hover:underline"
-                    data-testid={`link-job-${shipment.jobRef}`}
-                  >
-                    {shipment.jobRef}
-                  </Link>
-                  {type === "import" && 'containerNo' in shipment && shipment.containerNo && (
-                    <p className="text-muted-foreground">{shipment.containerNo}</p>
-                  )}
-                  {type === "export" && 'exporterRef' in shipment && shipment.exporterRef && (
-                    <p className="text-muted-foreground">{shipment.exporterRef}</p>
-                  )}
+            {shipments.map((shipment) => {
+              const importShipment = type === "import" ? shipment as ImportShipment : null;
+              const exportShipment = type === "export" ? shipment as ExportShipment : null;
+              
+              return (
+                <div 
+                  key={shipment.id} 
+                  className="flex items-center justify-between p-2 bg-background/50 rounded text-xs"
+                  data-testid={`job-history-item-${shipment.id}`}
+                >
+                  <div className="flex-1">
+                    <Link 
+                      href={type === "import" ? "/import-shipments" : "/export-shipments"}
+                      className="font-medium text-primary hover:underline"
+                      data-testid={`link-job-${shipment.jobRef}`}
+                    >
+                      {shipment.jobRef}
+                    </Link>
+                    {importShipment?.containerNo && (
+                      <p className="text-muted-foreground">{importShipment.containerNo}</p>
+                    )}
+                    {exportShipment?.exporterRef && (
+                      <p className="text-muted-foreground">{exportShipment.exporterRef}</p>
+                    )}
+                  </div>
+                  {importShipment?.dateReceived ? (
+                    <p className="text-muted-foreground">
+                      {format(new Date(importShipment.dateReceived), "dd/MM/yy")}
+                    </p>
+                  ) : exportShipment?.bookingDate ? (
+                    <p className="text-muted-foreground">
+                      {format(new Date(exportShipment.bookingDate), "dd/MM/yy")}
+                    </p>
+                  ) : null}
                 </div>
-                {(type === "import" && 'dateReceived' in shipment && shipment.dateReceived) ? (
-                  <p className="text-muted-foreground">
-                    {format(new Date(shipment.dateReceived), "dd/MM/yy")}
-                  </p>
-                ) : (type === "export" && 'bookingDate' in shipment && shipment.bookingDate) ? (
-                  <p className="text-muted-foreground">
-                    {format(new Date(shipment.bookingDate), "dd/MM/yy")}
-                  </p>
-                ) : null}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </AccordionContent>
       </AccordionItem>
