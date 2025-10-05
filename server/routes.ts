@@ -2582,8 +2582,10 @@ ${messageText}
 <head>
 <meta charset="UTF-8">
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif;">
+<body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+<div style="max-width: 800px;">
 ${messageText}
+</div>
 </body>
 </html>`;
       
