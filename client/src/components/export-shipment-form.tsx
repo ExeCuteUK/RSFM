@@ -543,49 +543,19 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 />
 
                 {containerShipment === "Container Shipment" && (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="vesselName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Vessel Name</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="shippingLine"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Shipping Line</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || ""}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-shipping-line">
-                                <SelectValue placeholder="Select shipping line" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {shippingLines && shippingLines.length > 0 ? (
-                                shippingLines.map((line) => (
-                                  <SelectItem key={line.id} value={line.shippingLineName}>
-                                    {line.shippingLineName}
-                                  </SelectItem>
-                                ))
-                              ) : (
-                                <SelectItem value="none" disabled>No shipping lines available</SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="vesselName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vessel Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
               </div>
             </CardContent>
