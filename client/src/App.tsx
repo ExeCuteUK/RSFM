@@ -11,6 +11,9 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/protected-route";
 import { UserMenu } from "@/components/user-menu";
 import { OtherUsersMenu } from "@/components/other-users-menu";
+import { EmailProvider } from "@/contexts/EmailContext";
+import { DraggableEmailComposer } from "@/components/DraggableEmailComposer";
+import { EmailTaskbar } from "@/components/EmailTaskbar";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useRef, useEffect } from "react";
@@ -176,6 +179,12 @@ function AppContent() {
           </main>
         </div>
       </div>
+      {user && (
+        <>
+          <EmailTaskbar />
+          <DraggableEmailComposer />
+        </>
+      )}
     </SidebarProvider>
   );
 }
@@ -186,8 +195,10 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <AuthProvider>
-            <AppContent />
-            <Toaster />
+            <EmailProvider>
+              <AppContent />
+              <Toaster />
+            </EmailProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
