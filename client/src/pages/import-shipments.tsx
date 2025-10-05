@@ -32,12 +32,14 @@ import { DraggableEmailComposer } from "@/components/DraggableEmailComposer"
 import { EmailTaskbar } from "@/components/EmailTaskbar"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
 import { format } from "date-fns"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 export default function ImportShipments() {
+  const { user } = useAuth()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingShipment, setEditingShipment] = useState<ImportShipment | null>(null)
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
@@ -66,7 +68,12 @@ export default function ImportShipments() {
     attachments: string[];
     isMinimized: boolean;
   } | null>(null)
-  const [minimizedEmails, setMinimizedEmails] = useState<{ id: string; to: string; subject: string }[]>([])
+  const [minimizedEmails, setMinimizedEmails] = useState<{ id: string; to: string; subject: string }[]>(() => {
+    // Load from localStorage on mount
+    if (!user) return []
+    const stored = localStorage.getItem(`emailMinimized_${user.id}`)
+    return stored ? JSON.parse(stored) : []
+  })
   const [emailDrafts, setEmailDrafts] = useState<Record<string, {
     to: string;
     cc: string;
@@ -74,7 +81,12 @@ export default function ImportShipments() {
     subject: string;
     body: string;
     attachments: string[];
-  }>>({})
+  }>>(() => {
+    // Load from localStorage on mount
+    if (!user) return {}
+    const stored = localStorage.getItem(`emailDrafts_${user.id}`)
+    return stored ? JSON.parse(stored) : {}
+  })
   const [recentEmails, setRecentEmails] = useState<string[]>([])
   const { toast} = useToast()
   const [, setLocation] = useLocation()
@@ -128,6 +140,24 @@ export default function ImportShipments() {
       }
     }
   }, [])
+
+  // Save email drafts to localStorage whenever they change
+  useEffect(() => {
+    if (user && Object.keys(emailDrafts).length > 0) {
+      localStorage.setItem(`emailDrafts_${user.id}`, JSON.stringify(emailDrafts))
+    } else if (user && Object.keys(emailDrafts).length === 0) {
+      localStorage.removeItem(`emailDrafts_${user.id}`)
+    }
+  }, [emailDrafts, user])
+
+  // Save minimized emails to localStorage whenever they change
+  useEffect(() => {
+    if (user && minimizedEmails.length > 0) {
+      localStorage.setItem(`emailMinimized_${user.id}`, JSON.stringify(minimizedEmails))
+    } else if (user && minimizedEmails.length === 0) {
+      localStorage.removeItem(`emailMinimized_${user.id}`)
+    }
+  }, [minimizedEmails, user])
 
   // Save email to recent list
   const addToRecentEmails = (email: string) => {
