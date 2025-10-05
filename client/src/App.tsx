@@ -11,6 +11,9 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/protected-route";
 import { UserMenu } from "@/components/user-menu";
 import { OtherUsersMenu } from "@/components/other-users-menu";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { useRef, useEffect } from "react";
 
 // Pages
 import Dashboard from "@/pages/dashboard";
@@ -125,6 +128,27 @@ function Router() {
 
 function AppContent() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const previousUnreadCount = useRef<number>(0);
+  
+  const { data: unreadData } = useQuery<{ count: number }>({
+    queryKey: ["/api/messages/unread-count"],
+    refetchInterval: 30000,
+    enabled: !!user,
+  });
+
+  const unreadCount = unreadData?.count || 0;
+
+  useEffect(() => {
+    if (user && unreadCount > previousUnreadCount.current && previousUnreadCount.current !== 0) {
+      toast({
+        title: "New Message",
+        description: `You have ${unreadCount} unread message${unreadCount > 1 ? 's' : ''}`,
+      });
+    }
+    previousUnreadCount.current = unreadCount;
+  }, [unreadCount, user, toast]);
+
   const style = {
     "--sidebar-width": "18rem",       // 288px for freight management
     "--sidebar-width-icon": "3rem",   // default icon width
