@@ -59,6 +59,8 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<UpdateUser>): Promise<User | undefined>;
   deleteUser(id: string): Promise<boolean>;
+  updateUserActivity(userId: string): Promise<void>;
+  getOnlineUsers(): Promise<string[]>;
 
   // Message methods
   getAllMessages(): Promise<Message[]>;
@@ -225,6 +227,15 @@ export class MemStorage implements IStorage {
 
   async deleteUser(id: string): Promise<boolean> {
     return this.users.delete(id);
+  }
+
+  async updateUserActivity(userId: string): Promise<void> {
+    // No-op for memory storage
+  }
+
+  async getOnlineUsers(): Promise<string[]> {
+    // No online tracking in memory storage
+    return [];
   }
 
   // Message methods (stubs - not used in production)
@@ -1069,6 +1080,24 @@ export class DatabaseStorage implements IStorage {
   async deleteUser(id: string): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async updateUserActivity(userId: string): Promise<void> {
+    const now = new Date().toISOString();
+    await db.update(users)
+      .set({ lastActivity: now })
+      .where(eq(users.id, userId));
+  }
+
+  async getOnlineUsers(): Promise<string[]> {
+    // Users are considered online if their last activity was within 2 minutes
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const onlineUsers = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(sql`${users.lastActivity} > ${twoMinutesAgo}`);
+    
+    return onlineUsers.map(u => u.id);
   }
 
   // Message methods

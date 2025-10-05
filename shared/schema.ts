@@ -19,6 +19,9 @@ export const users = pgTable("users", {
   
   // Email signature (uses file upload)
   useSignature: boolean("use_signature").default(false).notNull(),
+  
+  // Presence tracking
+  lastActivity: text("last_activity"),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({

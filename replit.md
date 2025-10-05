@@ -28,12 +28,16 @@ The application now includes comprehensive file upload functionality integrated 
 - Job history automatically updates when new shipments are created
 - Clickable job references navigate to shipment pages with auto-populated search and "All" filter selected
 
-**Quick User Access:**
-- Other registered users displayed as avatar icons in the application header
-- User avatars positioned to the right of theme toggle, before current user menu
+**Quick User Access & Presence Tracking:**
+- Other registered users displayed as avatar icons in the application header (left side, next to menu toggle)
+- Real-time presence tracking shows which users are currently online
+- **Green Border**: Users active within last 2 minutes show green ring around avatar
+- **Online Tooltip**: Hover shows user info with green "Online" indicator for active users
+- **Heartbeat System**: Frontend sends activity pings every 30 seconds to track presence
+- **Unread Message Indicator**: Current user's avatar shows glowing yellow border when they have unread messages
 - Clicking any user avatar opens the Messages page with that user pre-selected as recipient
 - Enables instant one-click messaging between team members
-- Component: `OtherUsersMenu` fetches all users via `/api/users` endpoint
+- API endpoints: `/api/users`, `/api/presence/online-users`, `/api/presence/heartbeat`
 
 ## User Preferences
 

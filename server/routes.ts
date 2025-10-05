@@ -237,6 +237,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Presence tracking routes
+  app.post("/api/presence/heartbeat", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      await storage.updateUserActivity(user.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update presence" });
+    }
+  });
+
+  app.get("/api/presence/online-users", requireAuth, async (_req, res) => {
+    try {
+      const onlineUserIds = await storage.getOnlineUsers();
+      res.json(onlineUserIds);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch online users" });
+    }
+  });
+
   // ========== Message Routes ==========
   
   // Get messages for current user
