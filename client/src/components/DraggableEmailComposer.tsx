@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Minus, GripHorizontal, Paperclip, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/contexts/EmailContext";
+import { useWindowManager } from "@/contexts/WindowManagerContext";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
@@ -27,12 +28,12 @@ export function DraggableEmailComposer() {
   const { 
     emailComposerData, 
     closeEmailComposer, 
-    minimizeEmail, 
     updateEmailDraft,
     removeEmailDraft,
     recentEmails,
     addToRecentEmails 
   } = useEmail();
+  const { minimizeWindow } = useWindowManager();
   
   const { data: contactEmails = [] } = useQuery<{ email: string; name: string; type: string }[]>({
     queryKey: ['/api/contacts/emails'],
@@ -211,12 +212,8 @@ export function DraggableEmailComposer() {
 
   const handleMinimize = () => {
     const { isMinimized: _, ...draftData } = data;
-    minimizeEmail({
-      id: data.id,
-      to: data.to,
-      subject: data.subject
-    });
     updateEmailDraft(data.id, draftData);
+    minimizeWindow(data.id);
   };
 
   return (

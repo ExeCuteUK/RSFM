@@ -137,7 +137,6 @@ function AppContent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const previousUnreadCount = useRef<number>(0);
-  const { emailComposerData } = useEmail();
   const { windows, activeWindow } = useWindowManager();
   
   const { data: unreadData } = useQuery<{ count: number }>({
@@ -187,10 +186,10 @@ function AppContent() {
       </div>
       {user && (
         <>
-          {emailComposerData && !emailComposerData.isMinimized && <DraggableEmailComposer />}
           <WindowTaskbar />
           {activeWindow && !activeWindow.isMinimized && (
             <>
+              {activeWindow.type === 'email' && <DraggableEmailComposer />}
               {activeWindow.type === 'import-shipment' && (
                 <ImportShipmentWindow
                   windowId={activeWindow.id}
