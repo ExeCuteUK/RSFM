@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -145,6 +145,51 @@ export default function ExportShipments() {
     },
   })
 
+  const updateBookingConfirmedStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/export-shipments/${id}/booking-confirmed-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+    },
+  })
+
+  const updateTransportArrangedStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/export-shipments/${id}/transport-arranged-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+    },
+  })
+
+  const updateCustomsSubmittedStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/export-shipments/${id}/customs-submitted-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+    },
+  })
+
+  const updateInvoiceCustomerStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/export-shipments/${id}/invoice-customer-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+    },
+  })
+
+  const updateSendDocsStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/export-shipments/${id}/send-docs-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+    },
+  })
+
   const handleOpenNotes = (shipment: ExportShipment) => {
     setNotesShipmentId(shipment.id)
     setNotesValue(shipment.additionalNotes || "")
@@ -239,6 +284,72 @@ export default function ExportShipments() {
     } catch {
       return []
     }
+  }
+
+  const getBookingConfirmedStatusColor = (status: number | null) => {
+    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
+    if (status === 2) return "text-orange-600 dark:text-orange-400"
+    if (status === 3) return "text-green-600 dark:text-green-400"
+    if (status === 4) return "text-red-600 dark:text-red-400"
+    return "text-muted-foreground"
+  }
+
+  const getTransportArrangedStatusColor = (status: number | null) => {
+    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
+    if (status === 2) return "text-orange-600 dark:text-orange-400"
+    if (status === 3) return "text-green-600 dark:text-green-400"
+    if (status === 4) return "text-red-600 dark:text-red-400"
+    return "text-muted-foreground"
+  }
+
+  const getCustomsSubmittedStatusColor = (status: number | null) => {
+    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
+    if (status === 2) return "text-orange-600 dark:text-orange-400"
+    if (status === 3) return "text-green-600 dark:text-green-400"
+    if (status === 4) return "text-red-600 dark:text-red-400"
+    return "text-muted-foreground"
+  }
+
+  const getInvoiceCustomerStatusColor = (status: number | null) => {
+    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
+    if (status === 2) return "text-orange-600 dark:text-orange-400"
+    if (status === 3) return "text-green-600 dark:text-green-400"
+    if (status === 4) return "text-red-600 dark:text-red-400"
+    return "text-muted-foreground"
+  }
+
+  const getSendDocsStatusColor = (status: number | null) => {
+    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
+    if (status === 2) return "text-orange-600 dark:text-orange-400"
+    if (status === 3) return "text-green-600 dark:text-green-400"
+    if (status === 4) return "text-red-600 dark:text-red-400"
+    return "text-muted-foreground"
+  }
+
+  const handleBookingConfirmedStatusUpdate = (id: string, status: number) => {
+    updateBookingConfirmedStatus.mutate({ id, status })
+  }
+
+  const handleTransportArrangedStatusUpdate = (id: string, status: number) => {
+    updateTransportArrangedStatus.mutate({ id, status })
+  }
+
+  const handleCustomsSubmittedStatusUpdate = (id: string, status: number) => {
+    updateCustomsSubmittedStatus.mutate({ id, status })
+  }
+
+  const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
+    updateInvoiceCustomerStatus.mutate({ id, status })
+  }
+
+  const handleSendDocsStatusUpdate = (id: string, status: number) => {
+    updateSendDocsStatus.mutate({ id, status })
+  }
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return null
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
   return (
@@ -370,7 +481,36 @@ export default function ExportShipments() {
                       {getReceiverName(shipment.receiverId)}
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex gap-1 ml-2">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleOpenNotes(shipment)}
+                      data-testid={`button-notes-${shipment.id}`}
+                      title={shipment.additionalNotes || "Additional Notes"}
+                    >
+                      <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleEdit(shipment)}
+                      data-testid={`button-edit-${shipment.id}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleDelete(shipment.id)}
+                      data-testid={`button-delete-${shipment.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                  <div className="flex flex-col items-start gap-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button 
@@ -409,47 +549,43 @@ export default function ExportShipments() {
                       ) : null
                     })()}
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleOpenNotes(shipment)}
-                      data-testid={`button-notes-${shipment.id}`}
-                      title={shipment.additionalNotes || "Additional Notes"}
-                    >
-                      <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleEdit(shipment)}
-                      data-testid={`button-edit-${shipment.id}`}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleDelete(shipment.id)}
-                      data-testid={`button-delete-${shipment.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
-                <div className="space-y-1 text-sm">
-                  {shipment.loadDate && (
-                    <p data-testid={`text-date-${shipment.id}`}>
-                      <span className="font-medium">Load Date:</span> {shipment.loadDate}
+                <div className="space-y-1 text-xs">
+                  {shipment.trailerNo && (
+                    <>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <p className="font-semibold text-lg" data-testid={`text-trailer-${shipment.id}`}>
+                          {shipment.trailerNo}
+                        </p>
+                        <p className="font-semibold text-lg" data-testid={`text-booking-date-${shipment.id}`}>
+                          <span>Booking Date:</span>{' '}
+                          {formatDate(shipment.bookingDate) || (
+                            <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
+                          )}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  {shipment.containerShipment === "Container Shipment" && shipment.vesselName && (
+                    <p className="font-semibold text-lg" data-testid={`text-vessel-name-${shipment.id}`}>
+                      {shipment.vesselName}
                     </p>
                   )}
-                  {shipment.incoterms && (
-                    <p data-testid={`text-incoterms-${shipment.id}`}>
-                      <span className="font-medium">Incoterms:</span> {shipment.incoterms}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p data-testid={`text-collection-date-${shipment.id}`}>
+                      <span>Collection Date:</span>{' '}
+                      {formatDate(shipment.collectionDate) || (
+                        <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
+                      )}
                     </p>
-                  )}
+                    {shipment.portOfArrival && (
+                      <p data-testid={`text-port-${shipment.id}`}>
+                        <span>Port:</span> {shipment.portOfArrival}
+                      </p>
+                    )}
+                  </div>
                   {shipment.goodsDescription && (
-                    <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
+                    <p className="text-muted-foreground line-clamp-1" data-testid={`text-description-${shipment.id}`}>
                       {shipment.goodsDescription}
                     </p>
                   )}
@@ -457,7 +593,7 @@ export default function ExportShipments() {
                     const files = parseAttachments(shipment.attachments)
                     if (files.length > 0) {
                       return (
-                        <div className="flex items-center gap-1 mt-2 pt-2 border-t" data-testid={`attachments-${shipment.id}`}>
+                        <div className="flex items-center gap-1 pt-1" data-testid={`attachments-${shipment.id}`}>
                           <Paperclip className="h-3 w-3 text-muted-foreground" />
                           <span className="text-xs text-muted-foreground">
                             {files.length} {files.length === 1 ? 'file' : 'files'} attached
@@ -467,6 +603,267 @@ export default function ExportShipments() {
                     }
                     return null
                   })()}
+                  
+                  <div className="mt-2 pt-2 border-t space-y-1.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getBookingConfirmedStatusColor(shipment.bookingConfirmedStatusIndicator)}`} data-testid={`text-booking-confirmed-${shipment.id}`}>
+                          Confirm Booking
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.bookingConfirmedStatusIndicator === 1 || shipment.bookingConfirmedStatusIndicator === null
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-booking-status-yellow-${shipment.id}`}
+                          title="To Do"
+                        />
+                        <button
+                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.bookingConfirmedStatusIndicator === 2
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-booking-status-orange-${shipment.id}`}
+                          title="Waiting for Reply"
+                        />
+                        <button
+                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.bookingConfirmedStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-booking-status-green-${shipment.id}`}
+                          title="Completed"
+                        />
+                        <button
+                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.bookingConfirmedStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-booking-status-red-${shipment.id}`}
+                          title="Issue, Check Notes?"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <PackageCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getTransportArrangedStatusColor(shipment.transportArrangedStatusIndicator)}`} data-testid={`text-transport-arranged-${shipment.id}`}>
+                          Arrange Transport
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.transportArrangedStatusIndicator === 1 || shipment.transportArrangedStatusIndicator === null
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-transport-status-yellow-${shipment.id}`}
+                          title="To Do"
+                        />
+                        <button
+                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.transportArrangedStatusIndicator === 2
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-transport-status-orange-${shipment.id}`}
+                          title="Waiting for Reply"
+                        />
+                        <button
+                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.transportArrangedStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-transport-status-green-${shipment.id}`}
+                          title="Completed"
+                        />
+                        <button
+                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.transportArrangedStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-transport-status-red-${shipment.id}`}
+                          title="Issue, Check Notes?"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <FileCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getCustomsSubmittedStatusColor(shipment.customsSubmittedStatusIndicator)}`} data-testid={`text-customs-submitted-${shipment.id}`}>
+                          Submit Customs
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.customsSubmittedStatusIndicator === 1 || shipment.customsSubmittedStatusIndicator === null
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-customs-status-yellow-${shipment.id}`}
+                          title="To Do"
+                        />
+                        <button
+                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.customsSubmittedStatusIndicator === 2
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-customs-status-orange-${shipment.id}`}
+                          title="Waiting for Reply"
+                        />
+                        <button
+                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.customsSubmittedStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-customs-status-green-${shipment.id}`}
+                          title="Completed"
+                        />
+                        <button
+                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.customsSubmittedStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-customs-status-red-${shipment.id}`}
+                          title="Issue, Check Notes?"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
+                          Invoice Customer
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.invoiceCustomerStatusIndicator === 1 || shipment.invoiceCustomerStatusIndicator === null
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-invoice-status-yellow-${shipment.id}`}
+                          title="To Do"
+                        />
+                        <button
+                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.invoiceCustomerStatusIndicator === 2
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-invoice-status-orange-${shipment.id}`}
+                          title="Waiting for Reply"
+                        />
+                        <button
+                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.invoiceCustomerStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-invoice-status-green-${shipment.id}`}
+                          title="Completed"
+                        />
+                        <button
+                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.invoiceCustomerStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-invoice-status-red-${shipment.id}`}
+                          title="Issue, Check Notes?"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getSendDocsStatusColor(shipment.sendDocsToCustomerStatusIndicator)}`} data-testid={`text-send-docs-${shipment.id}`}>
+                          Send Docs to Customer
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 1)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.sendDocsToCustomerStatusIndicator === 1 || shipment.sendDocsToCustomerStatusIndicator === null
+                              ? 'bg-yellow-400 border-yellow-500 scale-110'
+                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                          }`}
+                          data-testid={`button-send-docs-status-yellow-${shipment.id}`}
+                          title="To Do"
+                        />
+                        <button
+                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 2)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.sendDocsToCustomerStatusIndicator === 2
+                              ? 'bg-orange-400 border-orange-500 scale-110'
+                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                          }`}
+                          data-testid={`button-send-docs-status-orange-${shipment.id}`}
+                          title="Waiting for Reply"
+                        />
+                        <button
+                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 3)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.sendDocsToCustomerStatusIndicator === 3
+                              ? 'bg-green-400 border-green-500 scale-110'
+                              : 'bg-green-200 border-green-300 hover-elevate'
+                          }`}
+                          data-testid={`button-send-docs-status-green-${shipment.id}`}
+                          title="Completed"
+                        />
+                        <button
+                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 4)}
+                          className={`h-5 w-5 rounded border-2 transition-all ${
+                            shipment.sendDocsToCustomerStatusIndicator === 4
+                              ? 'bg-red-400 border-red-500 scale-110'
+                              : 'bg-red-200 border-red-300 hover-elevate'
+                          }`}
+                          data-testid={`button-send-docs-status-red-${shipment.id}`}
+                          title="Issue, Check Notes?"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
