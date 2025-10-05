@@ -444,6 +444,8 @@ export const exportShipments = pgTable("export_shipments", {
   haulierFreightRateIn: text("haulier_freight_rate_in"),
   exportClearanceChargeIn: text("export_clearance_charge_in"),
   destinationClearanceCostIn: text("destination_clearance_cost_in"),
+  expensesToChargeOut: jsonb("expenses_to_charge_out").$type<Array<{description: string, amount: string}>>().default([]),
+  additionalExpensesIn: jsonb("additional_expenses_in").$type<Array<{description: string, amount: string}>>().default([]),
   
   // Haulier Information
   haulierName: text("haulier_name"),

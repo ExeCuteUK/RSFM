@@ -1076,6 +1076,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Sync attachments to linked custom clearance's transport documents
+      if (shipment.linkedClearanceId && shipment.attachments) {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+          transportDocuments: shipment.attachments,
+        });
+      }
+      
       res.status(201).json(shipment);
     } catch (error: any) {
       if (error.name === "ZodError") {
@@ -1109,6 +1116,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             jobRef: shipment.jobRef,
             documents: shipment.attachments,
             rsInvoices: [],
+          });
+        }
+        
+        // Sync attachments to linked custom clearance's transport documents
+        if (shipment.linkedClearanceId) {
+          await storage.updateCustomClearance(shipment.linkedClearanceId, {
+            transportDocuments: shipment.attachments || [],
           });
         }
       }

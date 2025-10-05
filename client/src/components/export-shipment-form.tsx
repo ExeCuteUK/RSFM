@@ -102,6 +102,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       additionalNotes: "",
       jobTags: [],
       attachments: [],
+      expensesToChargeOut: [],
+      additionalExpensesIn: [],
       ...defaultValues
     },
   })
@@ -302,7 +304,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {exportCustomers?.map((customer) => (
+                          {exportCustomers?.sort((a, b) => a.companyName.localeCompare(b.companyName)).map((customer) => (
                             <SelectItem key={customer.id} value={customer.id}>
                               {customer.companyName}
                             </SelectItem>
@@ -338,7 +340,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {exportReceivers?.map((receiver) => (
+                          {exportReceivers?.sort((a, b) => a.companyName.localeCompare(b.companyName)).map((receiver) => (
                             <SelectItem key={receiver.id} value={receiver.id}>
                               {receiver.companyName}
                             </SelectItem>
@@ -1211,6 +1213,74 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     )}
                   />
                 )}
+
+                <FormField
+                  control={form.control}
+                  name="expensesToChargeOut"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Expenses To Charge Out</FormLabel>
+                      <div className="space-y-2">
+                        {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
+                          <div key={index} className="flex gap-2 items-start">
+                            <Input
+                              value={expense.description}
+                              onChange={(e) => {
+                                const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                newExpenses[index] = { ...newExpenses[index], description: e.target.value };
+                                field.onChange(newExpenses);
+                              }}
+                              placeholder="Description"
+                              data-testid={`input-expense-out-description-${index}`}
+                              className="flex-1"
+                            />
+                            <div className="relative flex-1">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                              <Input
+                                value={expense.amount}
+                                onChange={(e) => {
+                                  const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                  newExpenses[index] = { ...newExpenses[index], amount: e.target.value };
+                                  field.onChange(newExpenses);
+                                }}
+                                placeholder="Amount"
+                                data-testid={`input-expense-out-amount-${index}`}
+                                className="pl-7"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                const newExpenses = ((field.value || []) as Array<{ description: string; amount: string }>).filter((_, i) => i !== index);
+                                field.onChange(newExpenses);
+                              }}
+                              data-testid={`button-remove-expense-out-${index}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newExpenses = [...((field.value || []) as Array<{ description: string; amount: string }>), { description: "", amount: "" }];
+                            field.onChange(newExpenses);
+                          }}
+                          data-testid="button-add-expense-out"
+                          className="w-full"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Expense
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="border-t pt-4">
@@ -1284,6 +1354,74 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                       )}
                     />
                   )}
+
+                  <FormField
+                    control={form.control}
+                    name="additionalExpensesIn"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Additional Expenses In</FormLabel>
+                        <div className="space-y-2">
+                          {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
+                            <div key={index} className="flex gap-2 items-start">
+                              <Input
+                                value={expense.description}
+                                onChange={(e) => {
+                                  const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                  newExpenses[index] = { ...newExpenses[index], description: e.target.value };
+                                  field.onChange(newExpenses);
+                                }}
+                                placeholder="Description"
+                                data-testid={`input-expense-in-description-${index}`}
+                                className="flex-1"
+                              />
+                              <div className="relative flex-1">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
+                                <Input
+                                  value={expense.amount}
+                                  onChange={(e) => {
+                                    const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                                    newExpenses[index] = { ...newExpenses[index], amount: e.target.value };
+                                    field.onChange(newExpenses);
+                                  }}
+                                  placeholder="Amount"
+                                  data-testid={`input-expense-in-amount-${index}`}
+                                  className="pl-7"
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                  const newExpenses = ((field.value || []) as Array<{ description: string; amount: string }>).filter((_, i) => i !== index);
+                                  field.onChange(newExpenses);
+                                }}
+                                data-testid={`button-remove-expense-in-${index}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newExpenses = [...((field.value || []) as Array<{ description: string; amount: string }>), { description: "", amount: "" }];
+                              field.onChange(newExpenses);
+                            }}
+                            data-testid="button-add-expense-in"
+                            className="w-full"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Expense
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -1383,7 +1521,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
           <Card>
             <CardHeader>
-              <CardTitle>File Attachments</CardTitle>
+              <CardTitle>Transport Documents</CardTitle>
             </CardHeader>
             <CardContent>
               <FormField
@@ -1399,8 +1537,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         onPendingFilesChange={setPendingAttachments}
                         maxFiles={10}
                         testId="attachments-uploader"
-                        label="Attached Files:"
-                        dragDropLabel="Drop files here or click to browse"
+                        label="Transport Documents:"
+                        dragDropLabel="Drop transport documents here or click to browse"
                       />
                     </FormControl>
                     <FormMessage />

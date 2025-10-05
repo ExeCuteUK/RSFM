@@ -351,7 +351,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {importCustomers?.map((customer) => (
+                          {importCustomers?.sort((a, b) => a.companyName.localeCompare(b.companyName)).map((customer) => (
                             <SelectItem key={customer.id} value={customer.id}>
                               {customer.companyName}
                             </SelectItem>
