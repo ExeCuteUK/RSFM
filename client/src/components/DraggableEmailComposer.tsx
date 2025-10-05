@@ -40,9 +40,7 @@ export function DraggableEmailComposer() {
     staleTime: 5 * 60 * 1000
   });
   
-  if (!emailComposerData || emailComposerData.isMinimized) return null;
-  
-  const data = emailComposerData;
+  // All hooks must be called before any conditional returns
   const [position, setPosition] = useState(() => {
     const width = 600;
     const height = 690;
@@ -60,6 +58,11 @@ export function DraggableEmailComposer() {
   const composerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  // Now we can conditionally return
+  if (!emailComposerData || emailComposerData.isMinimized) return null;
+  
+  const data = emailComposerData;
 
   // Helper function to update email data
   const handleDataChange = (updatedData: typeof data) => {
