@@ -59,6 +59,7 @@ export default function ImportShipments() {
     const searchParam = params.get('search')
     if (searchParam) {
       setSearchText(searchParam)
+      setSelectedStatuses([]) // Select "All" filter
     }
   }, [])
 

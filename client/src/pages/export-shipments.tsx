@@ -46,6 +46,7 @@ export default function ExportShipments() {
     const searchParam = params.get('search')
     if (searchParam) {
       setSearchText(searchParam)
+      setSelectedStatuses([]) // Select "All" filter
     }
   }, [])
 
