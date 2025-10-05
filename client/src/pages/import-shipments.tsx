@@ -871,18 +871,18 @@ export default function ImportShipments() {
         ? agent.agentImportEmail[0] 
         : ""
       
-      // Get transport documents
-      const transportDocs = parseAttachments(shipment.attachments).map(normalizeFilePath)
+      // Get transport documents - ensure it's always an array
+      const transportDocs = parseAttachments(shipment.attachments || null).map(normalizeFilePath).filter(Boolean)
       
-      // Open email composer
+      // Open email composer with validated data
       openEmailComposer({
         id: `email-${Date.now()}`,
-        to: agentEmail,
+        to: agentEmail || "",
         cc: "",
         bcc: "",
-        subject: subject,
-        body: body,
-        attachments: transportDocs,
+        subject: subject || "Import Clearance",
+        body: body || "",
+        attachments: transportDocs || [],
       })
       
       setClearanceAgentDialog(null)

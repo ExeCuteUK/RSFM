@@ -98,10 +98,13 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
   const openWindow = (data: Omit<WindowData, 'isMinimized'>) => {
     try {
+      console.log('openWindow called with:', data)
+      
       // Check if window with same id already exists
       const existingWindow = windows.find(w => w.id === data.id)
       
       if (existingWindow) {
+        console.log('Window already exists, handling...', existingWindow)
         // If it exists and is minimized, restore it
         if (existingWindow.isMinimized) {
           restoreWindow(data.id)
@@ -117,8 +120,12 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         ...data,
         isMinimized: false
       }
+      
+      console.log('Creating new window:', newWindow)
+      console.log('Active window:', activeWindow)
 
       if (activeWindow && !activeWindow.isMinimized) {
+        console.log('Minimizing active window:', activeWindow.id)
         // Minimize current active window and add new window together
         setWindows(prev => [
           ...prev.map(w => w.id === activeWindow.id ? { ...w, isMinimized: true } : w),
@@ -132,17 +139,19 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
           }
           return [
             ...prev,
-            { id: activeWindow.id, type: activeWindow.type, title: activeWindow.title }
+            { id: activeWindow.id, type: activeWindow.type, title: activeWindow.title || 'Untitled' }
           ]
         })
       } else {
+        console.log('No active window to minimize, just adding new window')
         // Just add new window
         setWindows(prev => [...prev, newWindow])
       }
 
       setActiveWindowState(newWindow)
+      console.log('Window opened successfully')
     } catch (error) {
-      console.error('Error in openWindow:', error)
+      console.error('Error in openWindow:', error, typeof error, error instanceof Error)
       // Don't rethrow - let the caller handle it gracefully
     }
   }
