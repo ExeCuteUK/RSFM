@@ -226,12 +226,12 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <AuthProvider>
-            <EmailProvider>
-              <WindowManagerProvider>
+            <WindowManagerProvider>
+              <EmailProvider>
                 <AppContent />
                 <Toaster />
-              </WindowManagerProvider>
-            </EmailProvider>
+              </EmailProvider>
+            </WindowManagerProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
