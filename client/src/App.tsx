@@ -138,11 +138,13 @@ function AppContent() {
         <div className="flex flex-col flex-1">
           {user && (
             <header className="flex items-center justify-between p-4 border-b border-border gap-4">
-              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <div className="flex items-center gap-4">
+                <SidebarTrigger data-testid="button-sidebar-toggle" />
+                <OtherUsersMenu />
+              </div>
               <div className="flex items-center gap-4">
                 <MessageNotificationIcon />
                 <ThemeToggle />
-                <OtherUsersMenu />
                 <UserMenu />
               </div>
             </header>
