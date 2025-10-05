@@ -364,6 +364,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ========== Import Customers Routes ==========
   // ========== Import Customers Routes ==========
   
+  // Search import customers
+  app.get("/api/import-customers/search", async (req, res) => {
+    try {
+      const query = (req.query.query as string) || '';
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 25;
+      const customers = await storage.searchImportCustomers(query, limit);
+      res.json(customers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search import customers" });
+    }
+  });
+  
   // Get all import customers
   app.get("/api/import-customers", async (_req, res) => {
     try {
@@ -430,6 +442,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Export Customers Routes ==========
   
+  // Search export customers
+  app.get("/api/export-customers/search", async (req, res) => {
+    try {
+      const query = (req.query.query as string) || '';
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 25;
+      const customers = await storage.searchExportCustomers(query, limit);
+      res.json(customers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search export customers" });
+    }
+  });
+  
   // Get all export customers
   app.get("/api/export-customers", async (_req, res) => {
     try {
@@ -495,6 +519,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========== Export Receivers Routes ==========
+  
+  // Search export receivers
+  app.get("/api/export-receivers/search", async (req, res) => {
+    try {
+      const query = (req.query.query as string) || '';
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 25;
+      const receivers = await storage.searchExportReceivers(query, limit);
+      res.json(receivers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search export receivers" });
+    }
+  });
   
   // Get all export receivers
   app.get("/api/export-receivers", async (_req, res) => {

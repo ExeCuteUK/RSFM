@@ -42,7 +42,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db, pool } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, ilike, or } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import createMemoryStore from "memorystore";
@@ -74,6 +74,7 @@ export interface IStorage {
   // Import Customer methods
   getAllImportCustomers(): Promise<ImportCustomer[]>;
   getImportCustomer(id: string): Promise<ImportCustomer | undefined>;
+  searchImportCustomers(query: string, limit?: number): Promise<ImportCustomer[]>;
   createImportCustomer(customer: InsertImportCustomer): Promise<ImportCustomer>;
   updateImportCustomer(id: string, customer: Partial<InsertImportCustomer>): Promise<ImportCustomer | undefined>;
   deleteImportCustomer(id: string): Promise<boolean>;
@@ -81,6 +82,7 @@ export interface IStorage {
   // Export Customer methods
   getAllExportCustomers(): Promise<ExportCustomer[]>;
   getExportCustomer(id: string): Promise<ExportCustomer | undefined>;
+  searchExportCustomers(query: string, limit?: number): Promise<ExportCustomer[]>;
   createExportCustomer(customer: InsertExportCustomer): Promise<ExportCustomer>;
   updateExportCustomer(id: string, customer: Partial<InsertExportCustomer>): Promise<ExportCustomer | undefined>;
   deleteExportCustomer(id: string): Promise<boolean>;
@@ -88,6 +90,7 @@ export interface IStorage {
   // Export Receiver methods
   getAllExportReceivers(): Promise<ExportReceiver[]>;
   getExportReceiver(id: string): Promise<ExportReceiver | undefined>;
+  searchExportReceivers(query: string, limit?: number): Promise<ExportReceiver[]>;
   createExportReceiver(receiver: InsertExportReceiver): Promise<ExportReceiver>;
   updateExportReceiver(id: string, receiver: Partial<InsertExportReceiver>): Promise<ExportReceiver | undefined>;
   deleteExportReceiver(id: string): Promise<boolean>;
@@ -276,6 +279,21 @@ export class MemStorage implements IStorage {
     return this.importCustomers.get(id);
   }
 
+  async searchImportCustomers(query: string, limit: number = 25): Promise<ImportCustomer[]> {
+    const all = Array.from(this.importCustomers.values());
+    if (!query || query.trim() === '') {
+      return all.sort((a, b) => a.companyName.localeCompare(b.companyName)).slice(0, limit);
+    }
+    const lowerQuery = query.toLowerCase();
+    return all
+      .filter(c => 
+        c.companyName.toLowerCase().includes(lowerQuery) ||
+        (c.contactName && c.contactName.some((name: string) => name.toLowerCase().includes(lowerQuery)))
+      )
+      .sort((a, b) => a.companyName.localeCompare(b.companyName))
+      .slice(0, limit);
+  }
+
   async createImportCustomer(insertCustomer: InsertImportCustomer): Promise<ImportCustomer> {
     const id = randomUUID();
     const customer: ImportCustomer = { 
@@ -352,6 +370,21 @@ export class MemStorage implements IStorage {
     return this.exportCustomers.get(id);
   }
 
+  async searchExportCustomers(query: string, limit: number = 25): Promise<ExportCustomer[]> {
+    const all = Array.from(this.exportCustomers.values());
+    if (!query || query.trim() === '') {
+      return all.sort((a, b) => a.companyName.localeCompare(b.companyName)).slice(0, limit);
+    }
+    const lowerQuery = query.toLowerCase();
+    return all
+      .filter(c => 
+        c.companyName.toLowerCase().includes(lowerQuery) ||
+        (c.contactName && c.contactName.some((name: string) => name.toLowerCase().includes(lowerQuery)))
+      )
+      .sort((a, b) => a.companyName.localeCompare(b.companyName))
+      .slice(0, limit);
+  }
+
   async createExportCustomer(insertCustomer: InsertExportCustomer): Promise<ExportCustomer> {
     const id = randomUUID();
     const customer: ExportCustomer = { 
@@ -412,6 +445,18 @@ export class MemStorage implements IStorage {
 
   async getExportReceiver(id: string): Promise<ExportReceiver | undefined> {
     return this.exportReceivers.get(id);
+  }
+
+  async searchExportReceivers(query: string, limit: number = 25): Promise<ExportReceiver[]> {
+    const all = Array.from(this.exportReceivers.values());
+    if (!query || query.trim() === '') {
+      return all.sort((a, b) => a.companyName.localeCompare(b.companyName)).slice(0, limit);
+    }
+    const lowerQuery = query.toLowerCase();
+    return all
+      .filter(r => r.companyName.toLowerCase().includes(lowerQuery))
+      .sort((a, b) => a.companyName.localeCompare(b.companyName))
+      .slice(0, limit);
   }
 
   async createExportReceiver(insertReceiver: InsertExportReceiver): Promise<ExportReceiver> {
@@ -1153,6 +1198,26 @@ export class DatabaseStorage implements IStorage {
     return customer;
   }
 
+  async searchImportCustomers(query: string, limit: number = 25): Promise<ImportCustomer[]> {
+    if (!query || query.trim() === '') {
+      // Return top N alphabetically when no query
+      return await db.select().from(importCustomers)
+        .orderBy(importCustomers.companyName)
+        .limit(limit);
+    }
+    
+    const searchPattern = `%${query}%`;
+    return await db.select().from(importCustomers)
+      .where(
+        or(
+          ilike(importCustomers.companyName, searchPattern),
+          ilike(importCustomers.contactName, searchPattern)
+        )
+      )
+      .orderBy(importCustomers.companyName)
+      .limit(limit);
+  }
+
   async createImportCustomer(customer: InsertImportCustomer): Promise<ImportCustomer> {
     const [created] = await db.insert(importCustomers).values(customer).returning();
     return created;
@@ -1178,6 +1243,26 @@ export class DatabaseStorage implements IStorage {
     return customer;
   }
 
+  async searchExportCustomers(query: string, limit: number = 25): Promise<ExportCustomer[]> {
+    if (!query || query.trim() === '') {
+      // Return top N alphabetically when no query
+      return await db.select().from(exportCustomers)
+        .orderBy(exportCustomers.companyName)
+        .limit(limit);
+    }
+    
+    const searchPattern = `%${query}%`;
+    return await db.select().from(exportCustomers)
+      .where(
+        or(
+          ilike(exportCustomers.companyName, searchPattern),
+          ilike(exportCustomers.contactName, searchPattern)
+        )
+      )
+      .orderBy(exportCustomers.companyName)
+      .limit(limit);
+  }
+
   async createExportCustomer(customer: InsertExportCustomer): Promise<ExportCustomer> {
     const [created] = await db.insert(exportCustomers).values(customer).returning();
     return created;
@@ -1201,6 +1286,21 @@ export class DatabaseStorage implements IStorage {
   async getExportReceiver(id: string): Promise<ExportReceiver | undefined> {
     const [receiver] = await db.select().from(exportReceivers).where(eq(exportReceivers.id, id));
     return receiver;
+  }
+
+  async searchExportReceivers(query: string, limit: number = 25): Promise<ExportReceiver[]> {
+    if (!query || query.trim() === '') {
+      // Return top N alphabetically when no query
+      return await db.select().from(exportReceivers)
+        .orderBy(exportReceivers.companyName)
+        .limit(limit);
+    }
+    
+    const searchPattern = `%${query}%`;
+    return await db.select().from(exportReceivers)
+      .where(ilike(exportReceivers.companyName, searchPattern))
+      .orderBy(exportReceivers.companyName)
+      .limit(limit);
   }
 
   async createExportReceiver(receiver: InsertExportReceiver): Promise<ExportReceiver> {
