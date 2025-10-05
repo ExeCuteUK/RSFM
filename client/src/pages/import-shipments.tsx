@@ -579,6 +579,14 @@ export default function ImportShipments() {
     onSuccess: (_data, variables) => {
       addToRecentEmails(variables.to)
       toast({ title: 'Email sent successfully' })
+      // Remove from drafts storage
+      if (emailComposerData) {
+        setEmailDrafts(prev => {
+          const updated = {...prev}
+          delete updated[emailComposerData.id]
+          return updated
+        })
+      }
       setEmailComposerData(null)
     },
     onError: (error: any) => {
@@ -2741,7 +2749,17 @@ export default function ImportShipments() {
             body: emailComposerData.body,
             attachments: emailComposerData.attachments
           }}
-          onClose={() => setEmailComposerData(null)}
+          onClose={() => {
+            if (emailComposerData) {
+              // Remove from drafts storage
+              setEmailDrafts(prev => {
+                const updated = {...prev}
+                delete updated[emailComposerData.id]
+                return updated
+              })
+            }
+            setEmailComposerData(null)
+          }}
           onSend={(data) => {
             sendEmail.mutate({
               to: data.to,
@@ -2801,20 +2819,32 @@ export default function ImportShipments() {
             setEmailComposerData(prev => prev ? {...prev, isMinimized: true} : null)
           }
           
-          // Restore the requested email
-          setEmailComposerData(prev => {
-            if (prev && prev.id === id) {
-              // Same email, just un-minimize it
-              return {...prev, isMinimized: false}
-            }
-            return prev
-          })
+          // Restore the requested email from drafts storage
+          const draftData = emailDrafts[id]
+          if (draftData) {
+            setEmailComposerData({
+              id,
+              ...draftData,
+              isMinimized: false
+            })
+          } else if (emailComposerData && emailComposerData.id === id) {
+            // Fallback: if it's the same email already in composer, just un-minimize it
+            setEmailComposerData(prev => prev ? {...prev, isMinimized: false} : null)
+          }
           
           // Remove from minimized emails list
           setMinimizedEmails(prev => prev.filter(email => email.id !== id))
         }}
         onClose={(id) => {
+          // Remove from minimized list
           setMinimizedEmails(prev => prev.filter(email => email.id !== id))
+          // Remove from drafts storage
+          setEmailDrafts(prev => {
+            const updated = {...prev}
+            delete updated[id]
+            return updated
+          })
+          // Clear composer if it's the current email
           if (emailComposerData?.id === id) {
             setEmailComposerData(null)
           }
