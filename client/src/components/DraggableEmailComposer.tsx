@@ -571,7 +571,7 @@ export function DraggableEmailComposer({
             />
           </div>
           {data.attachments.length > 0 && (
-            <div className="space-y-0.5">
+            <div className="grid grid-cols-2 gap-1">
               {data.attachments.filter(file => file).map((file, idx) => (
                 <div
                   key={idx}
