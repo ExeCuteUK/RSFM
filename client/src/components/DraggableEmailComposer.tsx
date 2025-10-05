@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Minus, GripHorizontal } from "lucide-react";
+import { X, Minus, GripHorizontal, Paperclip, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -57,7 +58,10 @@ export function DraggableEmailComposer({
   const [emailPopoverOpen, setEmailPopoverOpen] = useState(false);
   const [ccPopoverOpen, setCcPopoverOpen] = useState(false);
   const [bccPopoverOpen, setBccPopoverOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const composerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -100,6 +104,83 @@ export function DraggableEmailComposer({
       });
       setIsDragging(true);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (const file of Array.from(files)) {
+        // Get presigned upload URL
+        const uploadResponse = await fetch('/api/objects/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: file.name }),
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to get upload URL');
+        }
+
+        const { uploadUrl, objectPath } = await uploadResponse.json();
+
+        // Upload file to presigned URL
+        const uploadFileResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type },
+        });
+
+        if (!uploadFileResponse.ok) {
+          throw new Error('Failed to upload file');
+        }
+
+        // Normalize the URL
+        const normalizeResponse = await fetch('/api/objects/normalize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uploadUrl }),
+        });
+
+        const { normalizedUrl } = await normalizeResponse.json();
+        uploadedUrls.push(normalizedUrl);
+      }
+
+      // Update attachments
+      onDataChange({
+        ...data,
+        attachments: [...data.attachments, ...uploadedUrls],
+      });
+
+      toast({
+        title: 'Files uploaded successfully',
+        description: `${uploadedUrls.length} file(s) added to email`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveAttachment = (index: number) => {
+    const newAttachments = [...data.attachments];
+    newAttachments.splice(index, 1);
+    onDataChange({
+      ...data,
+      attachments: newAttachments,
+    });
   };
 
   if (isMinimized) {
@@ -454,16 +535,55 @@ export function DraggableEmailComposer({
         </div>
 
         {/* Attachments */}
-        {data.attachments && data.attachments.length > 0 && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Attachments ({data.attachments.length}):</label>
-            <div className="text-sm text-muted-foreground">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">
+              Attachments {data.attachments.length > 0 && `(${data.attachments.length})`}
+            </label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              data-testid="button-add-attachment"
+            >
+              <Paperclip className="h-4 w-4 mr-2" />
+              {isUploading ? 'Uploading...' : 'Add Files'}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+              data-testid="input-file-upload"
+            />
+          </div>
+          {data.attachments.length > 0 && (
+            <div className="space-y-1">
               {data.attachments.map((file, idx) => (
-                <div key={idx}>{file.split('/').pop()}</div>
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-2 bg-muted/50 rounded-md"
+                  data-testid={`attachment-${idx}`}
+                >
+                  <span className="text-sm truncate flex-1">{file.split('/').pop()}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 ml-2"
+                    onClick={() => handleRemoveAttachment(idx)}
+                    data-testid={`button-remove-attachment-${idx}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Footer Buttons */}
