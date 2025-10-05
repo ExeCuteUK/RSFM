@@ -46,9 +46,20 @@ export function CustomClearanceWindow({ windowId, payload, onSubmitSuccess }: Cu
       const response = await apiRequest('PATCH', `/api/custom-clearances/${id}`, data)
       return response.json()
     },
-    onSuccess: async () => {
+    onSuccess: async (data: any) => {
       await queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] })
+      await queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] })
+      await queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] })
       toast({ title: 'Success', description: 'Custom clearance updated successfully' })
+      
+      // Show additional notification if linked shipment was synced
+      if (data._syncedToShipment) {
+        toast({ 
+          title: 'Linked Shipment Updated', 
+          description: 'The linked import/export shipment has been updated with your changes'
+        })
+      }
+      
       onSubmitSuccess()
       closeWindow(windowId)
     },
