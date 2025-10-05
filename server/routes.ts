@@ -980,7 +980,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      res.json(shipment);
+      // Bidirectional sync: Update linked custom clearance with changed fields
+      let syncedToClearance = false;
+      if (shipment.linkedClearanceId) {
+        const clearanceUpdate: any = {};
+        
+        // Map import shipment fields to custom clearance fields
+        if (req.body.importCustomerId !== undefined) clearanceUpdate.importCustomerId = shipment.importCustomerId;
+        if (req.body.importDateEtaPort !== undefined) clearanceUpdate.etaPort = shipment.importDateEtaPort;
+        if (req.body.portOfArrival !== undefined) clearanceUpdate.portOfArrival = shipment.portOfArrival;
+        if (req.body.trailerOrContainerNumber !== undefined) clearanceUpdate.trailerOrContainerNumber = shipment.trailerOrContainerNumber;
+        if (req.body.departureCountry !== undefined) clearanceUpdate.departureFrom = shipment.departureCountry;
+        if (req.body.containerShipment !== undefined) clearanceUpdate.containerShipment = shipment.containerShipment;
+        if (req.body.vesselName !== undefined) clearanceUpdate.vesselName = shipment.vesselName;
+        if (req.body.numberOfPieces !== undefined) clearanceUpdate.numberOfPieces = shipment.numberOfPieces;
+        if (req.body.packaging !== undefined) clearanceUpdate.packaging = shipment.packaging;
+        if (req.body.weight !== undefined) clearanceUpdate.weight = shipment.weight;
+        if (req.body.cube !== undefined) clearanceUpdate.cube = shipment.cube;
+        if (req.body.goodsDescription !== undefined) clearanceUpdate.goodsDescription = shipment.goodsDescription;
+        if (req.body.invoiceValue !== undefined) clearanceUpdate.invoiceValue = shipment.invoiceValue;
+        if (req.body.freightCharge !== undefined) clearanceUpdate.transportCosts = shipment.freightCharge;
+        if (req.body.clearanceCharge !== undefined) clearanceUpdate.clearanceCharge = shipment.clearanceCharge;
+        if (req.body.currency !== undefined) clearanceUpdate.currency = shipment.currency;
+        if (req.body.additionalCommodityCodes !== undefined) clearanceUpdate.additionalCommodityCodes = shipment.additionalCommodityCodes;
+        if (req.body.vatZeroRated !== undefined) clearanceUpdate.vatZeroRated = shipment.vatZeroRated;
+        if (req.body.clearanceType !== undefined) clearanceUpdate.clearanceType = shipment.clearanceType;
+        if (req.body.customerReferenceNumber !== undefined) clearanceUpdate.customerReferenceNumber = shipment.customerReferenceNumber;
+        if (req.body.supplierName !== undefined) clearanceUpdate.supplierName = shipment.supplierName;
+        
+        if (Object.keys(clearanceUpdate).length > 0) {
+          await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdate);
+          syncedToClearance = true;
+        }
+      }
+      
+      res.json({ ...shipment, _syncedToClearance: syncedToClearance });
     } catch (error: any) {
       console.error('[ERROR] Failed to update import shipment:', error);
       if (error.name === "ZodError") {
