@@ -24,6 +24,7 @@ import JobJournals from "@/pages/job-journals";
 import ShippingLines from "@/pages/shipping-lines";
 import SettingsPage from "@/pages/settings";
 import BackupsPage from "@/pages/backups";
+import Messages from "@/pages/messages";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import NotFound from "@/pages/not-found";
@@ -100,6 +101,13 @@ function Router() {
         {() => (
           <ProtectedRoute>
             <BackupsPage />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/messages">
+        {() => (
+          <ProtectedRoute>
+            <Messages />
           </ProtectedRoute>
         )}
       </Route>

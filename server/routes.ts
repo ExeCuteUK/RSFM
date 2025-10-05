@@ -153,10 +153,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get all users
-  app.get("/api/users", requireAuth, requireAdmin, async (_req, res) => {
+  app.get("/api/users", requireAuth, async (_req, res) => {
     try {
       const users = await storage.getAllUsers();
-      const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+      const usersWithoutPasswords = users.map(({ password, gmailAccessToken, gmailRefreshToken, gmailTokenExpiry, ...user }) => user);
       res.json(usersWithoutPasswords);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch users" });
