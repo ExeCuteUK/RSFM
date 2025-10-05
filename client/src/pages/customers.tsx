@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Search } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Package } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ImportCustomerForm } from "@/components/import-customer-form"
 import { ExportCustomerForm } from "@/components/export-customer-form"
@@ -23,10 +24,65 @@ import { ExportReceiverForm } from "@/components/export-receiver-form"
 import { HaulierForm } from "@/components/haulier-form"
 import { ShippingLineForm } from "@/components/shipping-line-form"
 import { ClearanceAgentForm } from "@/components/clearance-agent-form"
-import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, ShippingLine, ClearanceAgent, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier, InsertShippingLine, InsertClearanceAgent } from "@shared/schema"
+import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, ShippingLine, ClearanceAgent, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier, InsertShippingLine, InsertClearanceAgent, ImportShipment, ExportShipment } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
+import { format } from "date-fns"
 
 type CustomerType = "import" | "export" | "receiver" | "haulier" | "shippingline" | "clearanceagent"
+
+// Job History Component
+function JobHistory({ customerId, type }: { customerId: string; type: "import" | "export" }) {
+  const endpoint = type === "import" 
+    ? `/api/import-customers/${customerId}/shipments`
+    : `/api/export-customers/${customerId}/shipments`;
+    
+  const { data: shipments = [] } = useQuery<(ImportShipment | ExportShipment)[]>({
+    queryKey: [endpoint],
+  });
+
+  if (shipments.length === 0) {
+    return null;
+  }
+
+  return (
+    <Accordion type="single" collapsible className="mt-3">
+      <AccordionItem value="history" className="border-0">
+        <AccordionTrigger className="py-2 hover:no-underline" data-testid={`accordion-job-history-${customerId}`}>
+          <div className="flex items-center gap-2 text-sm">
+            <Package className="h-4 w-4" />
+            <span>Job History ({shipments.length})</span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-2 pt-2">
+            {shipments.map((shipment) => (
+              <div 
+                key={shipment.id} 
+                className="flex items-center justify-between p-2 bg-background/50 rounded text-xs"
+                data-testid={`job-history-item-${shipment.id}`}
+              >
+                <div className="flex-1">
+                  <p className="font-medium">#{shipment.jobRef}</p>
+                  {'containerNo' in shipment && shipment.containerNo && (
+                    <p className="text-muted-foreground">{shipment.containerNo}</p>
+                  )}
+                  {'exporterRef' in shipment && shipment.exporterRef && (
+                    <p className="text-muted-foreground">{shipment.exporterRef}</p>
+                  )}
+                </div>
+                {shipment.dateReceived && (
+                  <p className="text-muted-foreground">
+                    {format(new Date(shipment.dateReceived), "dd/MM/yy")}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
 
 export default function Customers() {
   const [selectedTab, setSelectedTab] = useState<CustomerType>("import")
@@ -557,6 +613,7 @@ export default function Customers() {
                         </div>
                       )}
                     </div>
+                    <JobHistory customerId={customer.id} type="import" />
                   </CardContent>
                 </Card>
               ))}
@@ -658,6 +715,7 @@ export default function Customers() {
                         </div>
                       )}
                     </div>
+                    <JobHistory customerId={customer.id} type="export" />
                   </CardContent>
                 </Card>
               ))}
