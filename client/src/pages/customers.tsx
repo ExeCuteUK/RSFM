@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Link } from "wouter"
@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Search, Package } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Package, ChevronLeft, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ImportCustomerForm } from "@/components/import-customer-form"
 import { ExportCustomerForm } from "@/components/export-customer-form"
@@ -111,7 +111,17 @@ export default function Customers() {
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
   const [viewingCustomer, setViewingCustomer] = useState<ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null>(null)
   const [searchText, setSearchText] = useState("")
+  const [currentPage, setCurrentPage] = useState<Record<CustomerType, number>>({
+    import: 1,
+    export: 1,
+    receiver: 1,
+    haulier: 1,
+    shippingline: 1,
+    clearanceagent: 1
+  })
   const { toast } = useToast()
+
+  const ITEMS_PER_PAGE = 30
 
   // Helper to determine customer type from entity properties
   const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null): CustomerType => {
@@ -493,12 +503,40 @@ export default function Customers() {
     })
   }
 
+  // Reset to page 1 when tab or search changes
+  useEffect(() => {
+    setCurrentPage(prev => ({ ...prev, [selectedTab]: 1 }))
+  }, [selectedTab, searchText])
+
+  // Pagination helper functions
+  const getPaginatedData = <T,>(data: T[], tabType: CustomerType) => {
+    const page = currentPage[tabType]
+    const startIndex = (page - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    return data.slice(startIndex, endIndex)
+  }
+
+  const getTotalPages = (totalItems: number) => {
+    return Math.ceil(totalItems / ITEMS_PER_PAGE)
+  }
+
+  const handlePageChange = (tabType: CustomerType, newPage: number) => {
+    setCurrentPage(prev => ({ ...prev, [tabType]: newPage }))
+  }
+
   const filteredImportCustomers = filterContacts(importCustomers)
   const filteredExportCustomers = filterContacts(exportCustomers)
   const filteredExportReceivers = filterContacts(exportReceivers)
   const filteredHauliers = filterContacts(hauliers)
   const filteredShippingLines = filterContacts(shippingLines)
   const filteredClearanceAgents = filterContacts(clearanceAgents)
+
+  const paginatedImportCustomers = getPaginatedData(filteredImportCustomers, "import")
+  const paginatedExportCustomers = getPaginatedData(filteredExportCustomers, "export")
+  const paginatedExportReceivers = getPaginatedData(filteredExportReceivers, "receiver")
+  const paginatedHauliers = getPaginatedData(filteredHauliers, "haulier")
+  const paginatedShippingLines = getPaginatedData(filteredShippingLines, "shippingline")
+  const paginatedClearanceAgents = getPaginatedData(filteredClearanceAgents, "clearanceagent")
 
   return (
     <div className="p-6 space-y-6">
@@ -556,8 +594,9 @@ export default function Customers() {
               )}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredImportCustomers.map((customer) => (
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedImportCustomers.map((customer) => (
                 <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-blue-50/50 dark:bg-blue-950/20">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -637,7 +676,42 @@ export default function Customers() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+              </div>
+              
+              {/* Pagination Controls */}
+              {getTotalPages(filteredImportCustomers.length) > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage.import - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage.import * ITEMS_PER_PAGE, filteredImportCustomers.length)} of {filteredImportCustomers.length} customers
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("import", currentPage.import - 1)}
+                      disabled={currentPage.import === 1}
+                      data-testid="button-prev-page"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                      Page {currentPage.import} of {getTotalPages(filteredImportCustomers.length)}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("import", currentPage.import + 1)}
+                      disabled={currentPage.import >= getTotalPages(filteredImportCustomers.length)}
+                      data-testid="button-next-page"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -658,88 +732,124 @@ export default function Customers() {
               )}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredExportCustomers.map((customer) => (
-                <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-green-50/50 dark:bg-green-950/20">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 
-                          className="font-semibold text-lg cursor-pointer hover:underline" 
-                          data-testid={`text-company-name-${customer.id}`}
-                          onClick={() => handleViewDetails(customer)}
-                        >
-                          {customer.companyName}
-                        </h3>
-                        {customer.contactName && customer.contactName.length > 0 && (
-                          <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>
-                            {customer.contactName.join(' / ')}
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedExportCustomers.map((customer) => (
+                  <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-green-50/50 dark:bg-green-950/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 
+                            className="font-semibold text-lg cursor-pointer hover:underline" 
+                            data-testid={`text-company-name-${customer.id}`}
+                            onClick={() => handleViewDetails(customer)}
+                          >
+                            {customer.companyName}
+                          </h3>
+                          {customer.contactName && customer.contactName.length > 0 && (
+                            <p className="text-sm text-muted-foreground" data-testid={`text-contact-name-${customer.id}`}>
+                              {customer.contactName.join(' / ')}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEdit(customer)}
+                            data-testid={`button-edit-${customer.id}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDelete(customer.id)}
+                            data-testid={`button-delete-${customer.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        {customer.email && customer.email.length > 0 && (
+                          <div className="space-y-0.5">
+                            {customer.email.map((email, idx) => (
+                              <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
+                                <a href={`mailto:${email}`} className="text-muted-foreground hover:underline">{email}</a>
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
+                        {customer.address && (
+                          <p className="text-muted-foreground whitespace-pre-wrap text-xs" data-testid={`text-address-${customer.id}`}>
+                            {customer.address}
                           </p>
                         )}
+                        {customer.agentName && (
+                          <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
+                            <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
+                            {customer.agentContactName && customer.agentContactName.length > 0 && (
+                              <p className="text-sm text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>
+                                {customer.agentContactName.join(' / ')}
+                              </p>
+                            )}
+                            {customer.agentTelephone && (
+                              <p className="mt-1" data-testid={`text-agent-telephone-${customer.id}`}>{customer.agentTelephone}</p>
+                            )}
+                            {customer.agentEmail && customer.agentEmail.length > 0 && (
+                              <div>
+                                {customer.agentEmail.map((email, idx) => (
+                                  <p key={idx} data-testid={`text-agent-email-${customer.id}-${idx}`}>
+                                    <a href={`mailto:${email}`} className="text-muted-foreground hover:underline font-normal">{email}</a>
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEdit(customer)}
-                          data-testid={`button-edit-${customer.id}`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDelete(customer.id)}
-                          data-testid={`button-delete-${customer.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <JobHistory customerId={customer.id} type="export" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Pagination Controls */}
+              {getTotalPages(filteredExportCustomers.length) > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage.export - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage.export * ITEMS_PER_PAGE, filteredExportCustomers.length)} of {filteredExportCustomers.length} customers
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("export", currentPage.export - 1)}
+                      disabled={currentPage.export === 1}
+                      data-testid="button-prev-page"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                      Page {currentPage.export} of {getTotalPages(filteredExportCustomers.length)}
                     </div>
-                    <div className="space-y-1 text-sm">
-                      {customer.email && customer.email.length > 0 && (
-                        <div className="space-y-0.5">
-                          {customer.email.map((email, idx) => (
-                            <p key={idx} data-testid={`text-email-${customer.id}-${idx}`}>
-                              <a href={`mailto:${email}`} className="text-muted-foreground hover:underline">{email}</a>
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                      {customer.telephone && <p data-testid={`text-telephone-${customer.id}`}>{customer.telephone}</p>}
-                      {customer.address && (
-                        <p className="text-muted-foreground whitespace-pre-wrap text-xs" data-testid={`text-address-${customer.id}`}>
-                          {customer.address}
-                        </p>
-                      )}
-                      {customer.agentName && (
-                        <div className="mt-2 pt-2 border-t" data-testid={`agent-info-${customer.id}`}>
-                          <p className="font-semibold text-lg" data-testid={`text-agent-name-${customer.id}`}>{customer.agentName}</p>
-                          {customer.agentContactName && customer.agentContactName.length > 0 && (
-                            <p className="text-sm text-muted-foreground" data-testid={`text-agent-contact-${customer.id}`}>
-                              {customer.agentContactName.join(' / ')}
-                            </p>
-                          )}
-                          {customer.agentTelephone && (
-                            <p className="mt-1" data-testid={`text-agent-telephone-${customer.id}`}>{customer.agentTelephone}</p>
-                          )}
-                          {customer.agentEmail && customer.agentEmail.length > 0 && (
-                            <div>
-                              {customer.agentEmail.map((email, idx) => (
-                                <p key={idx} data-testid={`text-agent-email-${customer.id}-${idx}`}>
-                                  <a href={`mailto:${email}`} className="text-muted-foreground hover:underline font-normal">{email}</a>
-                                </p>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <JobHistory customerId={customer.id} type="export" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("export", currentPage.export + 1)}
+                      disabled={currentPage.export >= getTotalPages(filteredExportCustomers.length)}
+                      data-testid="button-next-page"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -760,49 +870,85 @@ export default function Customers() {
               )}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredExportReceivers.map((receiver) => (
-                <Card key={receiver.id} data-testid={`card-receiver-${receiver.id}`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg" data-testid={`text-company-name-${receiver.id}`}>{receiver.companyName}</h3>
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedExportReceivers.map((receiver) => (
+                  <Card key={receiver.id} data-testid={`card-receiver-${receiver.id}`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg" data-testid={`text-company-name-${receiver.id}`}>{receiver.companyName}</h3>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEdit(receiver)}
+                            data-testid={`button-edit-${receiver.id}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDelete(receiver.id)}
+                            data-testid={`button-delete-${receiver.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEdit(receiver)}
-                          data-testid={`button-edit-${receiver.id}`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDelete(receiver.id)}
-                          data-testid={`button-delete-${receiver.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div className="space-y-1 text-sm">
+                        {receiver.address && (
+                          <p className="text-muted-foreground whitespace-pre-line" data-testid={`text-address-${receiver.id}`}>
+                            {receiver.address}
+                          </p>
+                        )}
+                        {receiver.country && (
+                          <p className="text-muted-foreground" data-testid={`text-country-${receiver.id}`}>
+                            {receiver.country}
+                          </p>
+                        )}
                       </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Pagination Controls */}
+              {getTotalPages(filteredExportReceivers.length) > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage.receiver - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage.receiver * ITEMS_PER_PAGE, filteredExportReceivers.length)} of {filteredExportReceivers.length} customers
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("receiver", currentPage.receiver - 1)}
+                      disabled={currentPage.receiver === 1}
+                      data-testid="button-prev-page"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                      Page {currentPage.receiver} of {getTotalPages(filteredExportReceivers.length)}
                     </div>
-                    <div className="space-y-1 text-sm">
-                      {receiver.address && (
-                        <p className="text-muted-foreground whitespace-pre-line" data-testid={`text-address-${receiver.id}`}>
-                          {receiver.address}
-                        </p>
-                      )}
-                      {receiver.country && (
-                        <p className="text-muted-foreground" data-testid={`text-country-${receiver.id}`}>
-                          {receiver.country}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("receiver", currentPage.receiver + 1)}
+                      disabled={currentPage.receiver >= getTotalPages(filteredExportReceivers.length)}
+                      data-testid="button-next-page"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -823,83 +969,119 @@ export default function Customers() {
               )}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredHauliers.map((haulier) => (
-                <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 
-                          className="font-semibold text-lg cursor-pointer hover:underline" 
-                          data-testid={`text-haulier-name-${haulier.id}`}
-                          onClick={() => handleViewDetails(haulier)}
-                        >
-                          {haulier.haulierName}
-                        </h3>
-                        {haulier.contacts && haulier.contacts.length > 0 && (
-                          <p className="text-sm text-muted-foreground" data-testid={`text-contact-names-${haulier.id}`}>
-                            {haulier.contacts.map(c => c.contactName).join(' / ')}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEdit(haulier)}
-                          data-testid={`button-edit-${haulier.id}`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDelete(haulier.id)}
-                          data-testid={`button-delete-${haulier.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-1 text-sm">
-                      {haulier.contacts && haulier.contacts.length > 0 && (
-                        <div className="space-y-0.5">
-                          {haulier.contacts.map((contact, idx) => (
-                            <p key={idx} data-testid={`text-email-${haulier.id}-${idx}`}>
-                              <a href={`mailto:${contact.contactEmail}`} className="text-muted-foreground hover:underline">
-                                {contact.contactEmail}
-                              </a>
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedHauliers.map((haulier) => (
+                  <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 
+                            className="font-semibold text-lg cursor-pointer hover:underline" 
+                            data-testid={`text-haulier-name-${haulier.id}`}
+                            onClick={() => handleViewDetails(haulier)}
+                          >
+                            {haulier.haulierName}
+                          </h3>
+                          {haulier.contacts && haulier.contacts.length > 0 && (
+                            <p className="text-sm text-muted-foreground" data-testid={`text-contact-names-${haulier.id}`}>
+                              {haulier.contacts.map(c => c.contactName).join(' / ')}
                             </p>
-                          ))}
+                          )}
                         </div>
-                      )}
-                      {haulier.telephone && <p data-testid={`text-telephone-${haulier.id}`}>{haulier.telephone}</p>}
-                      {haulier.mobile && <p data-testid={`text-mobile-${haulier.id}`}>{haulier.mobile}</p>}
-                      {haulier.address && (
-                        <p className="text-muted-foreground whitespace-pre-wrap text-xs" data-testid={`text-address-${haulier.id}`}>
-                          {haulier.address}
-                        </p>
-                      )}
-                      {haulier.contacts && haulier.contacts.length > 0 && (
-                        <div className="mt-3 pt-2 border-t">
-                          <div className="flex flex-wrap gap-1">
-                            {Array.from(new Set(haulier.contacts.map(c => c.countryServiced))).map((country) => (
-                              <span 
-                                key={country} 
-                                className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md" 
-                                data-testid={`badge-country-${country}`}
-                              >
-                                {country}
-                              </span>
+                        <div className="flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEdit(haulier)}
+                            data-testid={`button-edit-${haulier.id}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDelete(haulier.id)}
+                            data-testid={`button-delete-${haulier.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        {haulier.contacts && haulier.contacts.length > 0 && (
+                          <div className="space-y-0.5">
+                            {haulier.contacts.map((contact, idx) => (
+                              <p key={idx} data-testid={`text-email-${haulier.id}-${idx}`}>
+                                <a href={`mailto:${contact.contactEmail}`} className="text-muted-foreground hover:underline">
+                                  {contact.contactEmail}
+                                </a>
+                              </p>
                             ))}
                           </div>
-                        </div>
-                      )}
+                        )}
+                        {haulier.telephone && <p data-testid={`text-telephone-${haulier.id}`}>{haulier.telephone}</p>}
+                        {haulier.mobile && <p data-testid={`text-mobile-${haulier.id}`}>{haulier.mobile}</p>}
+                        {haulier.address && (
+                          <p className="text-muted-foreground whitespace-pre-wrap text-xs" data-testid={`text-address-${haulier.id}`}>
+                            {haulier.address}
+                          </p>
+                        )}
+                        {haulier.contacts && haulier.contacts.length > 0 && (
+                          <div className="mt-3 pt-2 border-t">
+                            <div className="flex flex-wrap gap-1">
+                              {Array.from(new Set(haulier.contacts.map(c => c.countryServiced))).map((country) => (
+                                <span 
+                                  key={country} 
+                                  className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md" 
+                                  data-testid={`badge-country-${country}`}
+                                >
+                                  {country}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Pagination Controls */}
+              {getTotalPages(filteredHauliers.length) > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage.haulier - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage.haulier * ITEMS_PER_PAGE, filteredHauliers.length)} of {filteredHauliers.length} customers
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("haulier", currentPage.haulier - 1)}
+                      disabled={currentPage.haulier === 1}
+                      data-testid="button-prev-page"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                      Page {currentPage.haulier} of {getTotalPages(filteredHauliers.length)}
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("haulier", currentPage.haulier + 1)}
+                      disabled={currentPage.haulier >= getTotalPages(filteredHauliers.length)}
+                      data-testid="button-next-page"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -920,64 +1102,100 @@ export default function Customers() {
               )}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredShippingLines.map((line) => (
-                <Card key={line.id} data-testid={`card-shipping-line-${line.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 
-                          className="font-semibold text-lg cursor-pointer hover:underline" 
-                          data-testid={`text-shipping-line-name-${line.id}`}
-                          onClick={() => handleViewDetails(line)}
-                        >
-                          {line.shippingLineName}
-                        </h3>
-                        {line.shippingLineAddress && (
-                          <p className="text-sm text-muted-foreground" data-testid={`text-address-${line.id}`}>{line.shippingLineAddress}</p>
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedShippingLines.map((line) => (
+                  <Card key={line.id} data-testid={`card-shipping-line-${line.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 
+                            className="font-semibold text-lg cursor-pointer hover:underline" 
+                            data-testid={`text-shipping-line-name-${line.id}`}
+                            onClick={() => handleViewDetails(line)}
+                          >
+                            {line.shippingLineName}
+                          </h3>
+                          {line.shippingLineAddress && (
+                            <p className="text-sm text-muted-foreground" data-testid={`text-address-${line.id}`}>{line.shippingLineAddress}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEdit(line)}
+                            data-testid={`button-edit-${line.id}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDelete(line.id)}
+                            data-testid={`button-delete-${line.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        {line.telephone && <p data-testid={`text-telephone-${line.id}`}>{line.telephone}</p>}
+                        {line.importEmail && line.importEmail.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs text-muted-foreground">Import Emails:</p>
+                            <div className="space-y-0.5">
+                              {line.importEmail.slice(0, 2).map((email, idx) => (
+                                <p key={idx} data-testid={`text-import-email-${line.id}-${idx}`}>
+                                  <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
+                                </p>
+                              ))}
+                              {line.importEmail.length > 2 && (
+                                <span className="text-xs text-muted-foreground">+{line.importEmail.length - 2} more</span>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEdit(line)}
-                          data-testid={`button-edit-${line.id}`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDelete(line.id)}
-                          data-testid={`button-delete-${line.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Pagination Controls */}
+              {getTotalPages(filteredShippingLines.length) > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage.shippingline - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage.shippingline * ITEMS_PER_PAGE, filteredShippingLines.length)} of {filteredShippingLines.length} customers
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("shippingline", currentPage.shippingline - 1)}
+                      disabled={currentPage.shippingline === 1}
+                      data-testid="button-prev-page"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                      Page {currentPage.shippingline} of {getTotalPages(filteredShippingLines.length)}
                     </div>
-                    <div className="space-y-1 text-sm">
-                      {line.telephone && <p data-testid={`text-telephone-${line.id}`}>{line.telephone}</p>}
-                      {line.importEmail && line.importEmail.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs text-muted-foreground">Import Emails:</p>
-                          <div className="space-y-0.5">
-                            {line.importEmail.slice(0, 2).map((email, idx) => (
-                              <p key={idx} data-testid={`text-import-email-${line.id}-${idx}`}>
-                                <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
-                              </p>
-                            ))}
-                            {line.importEmail.length > 2 && (
-                              <span className="text-xs text-muted-foreground">+{line.importEmail.length - 2} more</span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("shippingline", currentPage.shippingline + 1)}
+                      disabled={currentPage.shippingline >= getTotalPages(filteredShippingLines.length)}
+                      data-testid="button-next-page"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -998,78 +1216,114 @@ export default function Customers() {
               )}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredClearanceAgents.map((agent) => (
-                <Card key={agent.id} data-testid={`card-clearance-agent-${agent.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 
-                          className="font-semibold text-lg cursor-pointer hover:underline" 
-                          data-testid={`text-agent-name-${agent.id}`}
-                          onClick={() => handleViewDetails(agent)}
-                        >
-                          {agent.agentName}
-                        </h3>
-                        {agent.agentTelephone && (
-                          <p className="text-sm text-muted-foreground" data-testid={`text-telephone-${agent.id}`}>{agent.agentTelephone}</p>
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedClearanceAgents.map((agent) => (
+                  <Card key={agent.id} data-testid={`card-clearance-agent-${agent.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 
+                            className="font-semibold text-lg cursor-pointer hover:underline" 
+                            data-testid={`text-agent-name-${agent.id}`}
+                            onClick={() => handleViewDetails(agent)}
+                          >
+                            {agent.agentName}
+                          </h3>
+                          {agent.agentTelephone && (
+                            <p className="text-sm text-muted-foreground" data-testid={`text-telephone-${agent.id}`}>{agent.agentTelephone}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEdit(agent)}
+                            data-testid={`button-edit-${agent.id}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDelete(agent.id)}
+                            data-testid={`button-delete-${agent.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        {agent.agentImportEmail && agent.agentImportEmail.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs text-muted-foreground">Import Emails:</p>
+                            <div className="space-y-0.5">
+                              {agent.agentImportEmail.slice(0, 2).map((email, idx) => (
+                                <p key={idx} data-testid={`text-import-email-${agent.id}-${idx}`}>
+                                  <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
+                                </p>
+                              ))}
+                              {agent.agentImportEmail.length > 2 && (
+                                <span className="text-xs text-muted-foreground">+{agent.agentImportEmail.length - 2} more</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {agent.agentExportEmail && agent.agentExportEmail.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs text-muted-foreground">Export Emails:</p>
+                            <div className="space-y-0.5">
+                              {agent.agentExportEmail.slice(0, 2).map((email, idx) => (
+                                <p key={idx} data-testid={`text-export-email-${agent.id}-${idx}`}>
+                                  <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
+                                </p>
+                              ))}
+                              {agent.agentExportEmail.length > 2 && (
+                                <span className="text-xs text-muted-foreground">+{agent.agentExportEmail.length - 2} more</span>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEdit(agent)}
-                          data-testid={`button-edit-${agent.id}`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDelete(agent.id)}
-                          data-testid={`button-delete-${agent.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Pagination Controls */}
+              {getTotalPages(filteredClearanceAgents.length) > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage.clearanceagent - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage.clearanceagent * ITEMS_PER_PAGE, filteredClearanceAgents.length)} of {filteredClearanceAgents.length} customers
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("clearanceagent", currentPage.clearanceagent - 1)}
+                      disabled={currentPage.clearanceagent === 1}
+                      data-testid="button-prev-page"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                      Page {currentPage.clearanceagent} of {getTotalPages(filteredClearanceAgents.length)}
                     </div>
-                    <div className="space-y-1 text-sm">
-                      {agent.agentImportEmail && agent.agentImportEmail.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs text-muted-foreground">Import Emails:</p>
-                          <div className="space-y-0.5">
-                            {agent.agentImportEmail.slice(0, 2).map((email, idx) => (
-                              <p key={idx} data-testid={`text-import-email-${agent.id}-${idx}`}>
-                                <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
-                              </p>
-                            ))}
-                            {agent.agentImportEmail.length > 2 && (
-                              <span className="text-xs text-muted-foreground">+{agent.agentImportEmail.length - 2} more</span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {agent.agentExportEmail && agent.agentExportEmail.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs text-muted-foreground">Export Emails:</p>
-                          <div className="space-y-0.5">
-                            {agent.agentExportEmail.slice(0, 2).map((email, idx) => (
-                              <p key={idx} data-testid={`text-export-email-${agent.id}-${idx}`}>
-                                <a href={`mailto:${email}`} className="text-muted-foreground hover:underline text-xs">{email}</a>
-                              </p>
-                            ))}
-                            {agent.agentExportEmail.length > 2 && (
-                              <span className="text-xs text-muted-foreground">+{agent.agentExportEmail.length - 2} more</span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange("clearanceagent", currentPage.clearanceagent + 1)}
+                      disabled={currentPage.clearanceagent >= getTotalPages(filteredClearanceAgents.length)}
+                      data-testid="button-next-page"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
       </Tabs>
