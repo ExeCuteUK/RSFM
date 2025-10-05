@@ -164,12 +164,15 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       minimizeWindow(activeWindow.id)
     }
 
+    // Create the restored window state
+    const restoredWindow = { ...window, isMinimized: false }
+
     setWindows(prev =>
-      prev.map(w => w.id === id ? { ...w, isMinimized: false } : w)
+      prev.map(w => w.id === id ? restoredWindow : w)
     )
 
     setMinimizedWindows(prev => prev.filter(w => w.id !== id))
-    setActiveWindowState(window)
+    setActiveWindowState(restoredWindow)
   }
 
   const updateWindowPayload = (id: string, payload: any) => {
