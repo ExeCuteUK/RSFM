@@ -144,10 +144,16 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       prev.map(w => w.id === id ? { ...w, isMinimized: true } : w)
     )
 
-    setMinimizedWindows(prev => [
-      ...prev,
-      { id: window.id, type: window.type, title: window.title }
-    ])
+    setMinimizedWindows(prev => {
+      // Check if already in minimized windows to prevent duplicates
+      if (prev.some(w => w.id === id)) {
+        return prev
+      }
+      return [
+        ...prev,
+        { id: window.id, type: window.type, title: window.title }
+      ]
+    })
 
     if (activeWindow?.id === id) {
       const remaining = windows.filter(w => w.id !== id && !w.isMinimized)
@@ -174,6 +180,10 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
       setMinimizedWindows(prev => {
         const filtered = prev.filter(w => w.id !== id)
+        // Check if activeWindow is already in minimized windows to prevent duplicates
+        if (filtered.some(w => w.id === activeWindow.id)) {
+          return filtered
+        }
         return [
           ...filtered,
           { id: activeWindow.id, type: activeWindow.type, title: activeWindow.title }
