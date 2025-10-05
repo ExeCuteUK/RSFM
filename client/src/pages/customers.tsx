@@ -33,20 +33,18 @@ type CustomerType = "import" | "export" | "receiver" | "haulier" | "shippingline
 
 // Job History Component
 function JobHistory({ customerId, type }: { customerId: string; type: "import" | "export" }) {
+  const [isOpen, setIsOpen] = useState(false);
   const endpoint = type === "import" 
     ? `/api/import-customers/${customerId}/shipments`
     : `/api/export-customers/${customerId}/shipments`;
     
-  const { data: shipments = [] } = useQuery<ImportShipment[] | ExportShipment[]>({
+  const { data: shipments = [], isLoading } = useQuery<ImportShipment[] | ExportShipment[]>({
     queryKey: [endpoint],
+    enabled: isOpen,
   });
 
-  if (shipments.length === 0) {
-    return null;
-  }
-
   return (
-    <Accordion type="single" collapsible className="mt-3">
+    <Accordion type="single" collapsible className="mt-3" onValueChange={(value) => setIsOpen(value === "history")}>
       <AccordionItem value="history" className="border-0">
         <AccordionTrigger className="py-2 hover:no-underline" data-testid={`accordion-job-history-${customerId}`}>
           <div className="flex items-center gap-2 text-sm">
@@ -55,45 +53,51 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div className="space-y-2 pt-2">
-            {shipments.map((shipment) => {
-              const importShipment = type === "import" ? shipment as ImportShipment : null;
-              const exportShipment = type === "export" ? shipment as ExportShipment : null;
-              
-              return (
-                <div 
-                  key={shipment.id} 
-                  className="flex items-center justify-between p-2 bg-background/50 rounded text-xs"
-                  data-testid={`job-history-item-${shipment.id}`}
-                >
-                  <div className="flex-1">
-                    <Link 
-                      href={`${type === "import" ? "/import-shipments" : "/export-shipments"}?search=${shipment.jobRef}`}
-                      className="font-medium text-primary hover:underline"
-                      data-testid={`link-job-${shipment.jobRef}`}
-                    >
-                      {shipment.jobRef}
-                    </Link>
-                    {importShipment?.containerNo && (
-                      <p className="text-muted-foreground">{importShipment.containerNo}</p>
-                    )}
-                    {exportShipment?.exporterRef && (
-                      <p className="text-muted-foreground">{exportShipment.exporterRef}</p>
-                    )}
+          {isLoading ? (
+            <div className="text-xs text-muted-foreground p-2">Loading...</div>
+          ) : shipments.length === 0 ? (
+            <div className="text-xs text-muted-foreground p-2">No job history</div>
+          ) : (
+            <div className="space-y-2 pt-2">
+              {shipments.map((shipment) => {
+                const importShipment = type === "import" ? shipment as ImportShipment : null;
+                const exportShipment = type === "export" ? shipment as ExportShipment : null;
+                
+                return (
+                  <div 
+                    key={shipment.id} 
+                    className="flex items-center justify-between p-2 bg-background/50 rounded text-xs"
+                    data-testid={`job-history-item-${shipment.id}`}
+                  >
+                    <div className="flex-1">
+                      <Link 
+                        href={`${type === "import" ? "/import-shipments" : "/export-shipments"}?search=${shipment.jobRef}`}
+                        className="font-medium text-primary hover:underline"
+                        data-testid={`link-job-${shipment.jobRef}`}
+                      >
+                        {shipment.jobRef}
+                      </Link>
+                      {importShipment?.containerNo && (
+                        <p className="text-muted-foreground">{importShipment.containerNo}</p>
+                      )}
+                      {exportShipment?.exporterRef && (
+                        <p className="text-muted-foreground">{exportShipment.exporterRef}</p>
+                      )}
+                    </div>
+                    {importShipment?.dateReceived ? (
+                      <p className="text-muted-foreground">
+                        {format(new Date(importShipment.dateReceived), "dd/MM/yy")}
+                      </p>
+                    ) : exportShipment?.bookingDate ? (
+                      <p className="text-muted-foreground">
+                        {format(new Date(exportShipment.bookingDate), "dd/MM/yy")}
+                      </p>
+                    ) : null}
                   </div>
-                  {importShipment?.dateReceived ? (
-                    <p className="text-muted-foreground">
-                      {format(new Date(importShipment.dateReceived), "dd/MM/yy")}
-                    </p>
-                  ) : exportShipment?.bookingDate ? (
-                    <p className="text-muted-foreground">
-                      {format(new Date(exportShipment.bookingDate), "dd/MM/yy")}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </AccordionContent>
       </AccordionItem>
     </Accordion>
