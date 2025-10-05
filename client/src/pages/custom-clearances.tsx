@@ -356,7 +356,10 @@ export default function CustomClearances() {
       id: `custom-clearance-new-${Date.now()}`,
       type: 'custom-clearance',
       title: 'New Custom Clearance',
-      payload: {}
+      payload: {
+        mode: 'create' as const,
+        defaultValues: {}
+      }
     })
   }
 
@@ -365,7 +368,10 @@ export default function CustomClearances() {
       id: `custom-clearance-${clearance.id}`,
       type: 'custom-clearance',
       title: `Edit Custom Clearance #${clearance.jobRef}`,
-      payload: { clearance }
+      payload: {
+        mode: 'edit' as const,
+        defaultValues: clearance
+      }
     })
   }
 
