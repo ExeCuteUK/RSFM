@@ -2,10 +2,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Global error handler to catch unhandled errors
+// Global error handler to catch unhandled errors - must be added FIRST with capture phase
 window.addEventListener('error', (event) => {
   // Suppress harmless ResizeObserver browser warning
   if (event.message?.includes('ResizeObserver loop')) {
+    event.stopImmediatePropagation(); // Stop other listeners from seeing this
     event.preventDefault();
     return;
   }
@@ -19,7 +20,7 @@ window.addEventListener('error', (event) => {
     errorType: typeof event.error,
     errorString: String(event.error)
   });
-});
+}, true); // Use capture phase to catch it before Replit plugin
 
 // Global promise rejection handler
 window.addEventListener('unhandledrejection', (event) => {
