@@ -85,10 +85,12 @@ const secondaryItems = [
 export function AppSidebar() {
   const [location] = useLocation()
   
-  const { data: unreadCount = 0 } = useQuery<number>({
+  const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread-count"],
     refetchInterval: 30000,
   })
+  
+  const unreadCount = unreadData?.count || 0
 
   return (
     <Sidebar data-testid="sidebar-app">
