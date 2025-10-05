@@ -122,6 +122,8 @@ export function EmailProvider({ children }: { children: ReactNode }) {
         delete newDrafts[emailComposerData.id]
         return newDrafts
       })
+      // Actually close the window
+      closeWindow(emailComposerData.id)
     }
   }
 

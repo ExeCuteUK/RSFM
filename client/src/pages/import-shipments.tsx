@@ -550,7 +550,10 @@ export default function ImportShipments() {
       id: `import-shipment-new-${Date.now()}`,
       type: 'import-shipment',
       title: 'New Import Shipment',
-      payload: {}
+      payload: { 
+        mode: 'create' as const,
+        defaultValues: {} 
+      }
     })
   }
 
@@ -559,7 +562,10 @@ export default function ImportShipments() {
       id: `import-shipment-${shipment.id}`,
       type: 'import-shipment',
       title: `Edit Import Shipment #${shipment.jobRef}`,
-      payload: { shipment }
+      payload: { 
+        mode: 'edit' as const,
+        defaultValues: shipment 
+      }
     })
   }
 
@@ -1752,7 +1758,10 @@ export default function ImportShipments() {
                         id: `import-shipment-${viewingShipment.id}`,
                         type: 'import-shipment',
                         title: `Edit Import Shipment #${viewingShipment.jobRef}`,
-                        payload: { shipment: viewingShipment }
+                        payload: { 
+                          mode: 'edit' as const,
+                          defaultValues: viewingShipment 
+                        }
                       })
                       setViewingShipment(null)
                     }

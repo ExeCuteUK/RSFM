@@ -2,34 +2,4 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Global error handler to catch unhandled errors - must be added FIRST with capture phase
-window.addEventListener('error', (event) => {
-  // Suppress harmless ResizeObserver browser warning
-  if (event.message?.includes('ResizeObserver loop')) {
-    event.stopImmediatePropagation(); // Stop other listeners from seeing this
-    event.preventDefault();
-    return;
-  }
-  
-  console.error('Global error caught:', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    error: event.error,
-    errorType: typeof event.error,
-    errorString: String(event.error)
-  });
-}, true); // Use capture phase to catch it before Replit plugin
-
-// Global promise rejection handler
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', {
-    reason: event.reason,
-    reasonType: typeof event.reason,
-    reasonString: String(event.reason),
-    promise: event.promise
-  });
-});
-
 createRoot(document.getElementById("root")!).render(<App />);

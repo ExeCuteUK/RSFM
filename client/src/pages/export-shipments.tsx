@@ -165,7 +165,10 @@ export default function ExportShipments() {
       id: `export-shipment-new-${Date.now()}`,
       type: 'export-shipment',
       title: 'New Export Shipment',
-      payload: {}
+      payload: { 
+        mode: 'create' as const,
+        defaultValues: {} 
+      }
     })
   }
 
@@ -174,7 +177,10 @@ export default function ExportShipments() {
       id: `export-shipment-${shipment.id}`,
       type: 'export-shipment',
       title: `Edit Export Shipment #${shipment.jobRef}`,
-      payload: { shipment }
+      payload: { 
+        mode: 'edit' as const,
+        defaultValues: shipment 
+      }
     })
   }
 

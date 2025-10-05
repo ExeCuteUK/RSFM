@@ -5,10 +5,10 @@
       // Suppress ResizeObserver warning BEFORE Replit plugin loads
       window.addEventListener('error', function(event) {
         if (event.message && event.message.includes('ResizeObserver loop')) {
-          event.stopImmediatePropagation();
           event.preventDefault();
+          return false;
         }
-      }, true);
+      });
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
