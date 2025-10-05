@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -72,6 +72,23 @@ export default function Messages() {
       attachments: [],
     },
   });
+
+  // Handle userId parameter from URL to auto-open composer
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const userIdParam = params.get('userId');
+    
+    if (userIdParam && users.length > 0) {
+      const targetUser = users.find(u => u.id === userIdParam);
+      if (targetUser && targetUser.id !== user?.id) {
+        form.setValue('recipientId', userIdParam);
+        setIsComposerOpen(true);
+        
+        // Clear the URL parameter
+        window.history.replaceState({}, '', '/messages');
+      }
+    }
+  }, [users, user, form]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (data: MessageFormData) => {

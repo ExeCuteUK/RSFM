@@ -26,6 +26,14 @@ The application now includes comprehensive file upload functionality integrated 
 - Export customers show related export shipments with exporter references and booking dates
 - API endpoints: `/api/import-customers/:id/shipments` and `/api/export-customers/:id/shipments`
 - Job history automatically updates when new shipments are created
+- Clickable job references navigate to shipment pages with auto-populated search and "All" filter selected
+
+**Quick User Access:**
+- Other registered users displayed as avatar icons in the application header
+- User avatars positioned to the right of theme toggle, before current user menu
+- Clicking any user avatar opens the Messages page with that user pre-selected as recipient
+- Enables instant one-click messaging between team members
+- Component: `OtherUsersMenu` fetches all users via `/api/users` endpoint
 
 ## User Preferences
 
