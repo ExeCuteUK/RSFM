@@ -2,6 +2,9 @@ import { useWindowManager } from '@/contexts/WindowManagerContext'
 import { DraggableWindow } from './DraggableWindow'
 import { ExportShipmentForm } from './export-shipment-form'
 import type { InsertExportShipment } from '@shared/schema'
+import { useMutation } from '@tanstack/react-query'
+import { apiRequest, queryClient } from '@/lib/queryClient'
+import { useToast } from '@/hooks/use-toast'
 
 interface ExportShipmentWindowProps {
   windowId: string
@@ -14,13 +17,55 @@ interface ExportShipmentWindowProps {
 
 export function ExportShipmentWindow({ windowId, payload, onSubmitSuccess }: ExportShipmentWindowProps) {
   const { closeWindow, minimizeWindow } = useWindowManager()
+  const { toast } = useToast()
 
-  const handleSubmit = (data: InsertExportShipment) => {
-    try {
+  const createMutation = useMutation({
+    mutationFn: async (data: InsertExportShipment) => {
+      const response = await apiRequest('POST', '/api/export-shipments', data)
+      return response.json()
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] })
+      toast({ title: 'Success', description: 'Export shipment created successfully' })
       onSubmitSuccess()
       closeWindow(windowId)
-    } catch (error) {
-      console.error('Error in handleSubmit:', error)
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create export shipment',
+        variant: 'destructive'
+      })
+    }
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: async (data: InsertExportShipment) => {
+      const id = (payload.defaultValues as any)?.id
+      if (!id) throw new Error('No ID provided for update')
+      const response = await apiRequest('PATCH', `/api/export-shipments/${id}`, data)
+      return response.json()
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] })
+      toast({ title: 'Success', description: 'Export shipment updated successfully' })
+      onSubmitSuccess()
+      closeWindow(windowId)
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update export shipment',
+        variant: 'destructive'
+      })
+    }
+  })
+
+  const handleSubmit = (data: InsertExportShipment) => {
+    if (payload.mode === 'create') {
+      createMutation.mutate(data)
+    } else {
+      updateMutation.mutate(data)
     }
   }
 

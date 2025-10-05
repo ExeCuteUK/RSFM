@@ -2,6 +2,9 @@ import { useWindowManager } from '@/contexts/WindowManagerContext'
 import { DraggableWindow } from './DraggableWindow'
 import { ImportShipmentForm } from './import-shipment-form'
 import type { InsertImportShipment } from '@shared/schema'
+import { useMutation } from '@tanstack/react-query'
+import { apiRequest, queryClient } from '@/lib/queryClient'
+import { useToast } from '@/hooks/use-toast'
 
 interface ImportShipmentWindowProps {
   windowId: string
@@ -14,13 +17,57 @@ interface ImportShipmentWindowProps {
 
 export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: ImportShipmentWindowProps) {
   const { closeWindow, minimizeWindow } = useWindowManager()
+  const { toast } = useToast()
 
-  const handleSubmit = (data: InsertImportShipment) => {
-    try {
+  const createMutation = useMutation({
+    mutationFn: async (data: InsertImportShipment) => {
+      const response = await apiRequest('POST', '/api/import-shipments', data)
+      return response.json()
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] })
+      await queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] })
+      toast({ title: 'Success', description: 'Import shipment created successfully' })
       onSubmitSuccess()
       closeWindow(windowId)
-    } catch (error) {
-      console.error('Error in handleSubmit:', error)
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create import shipment',
+        variant: 'destructive'
+      })
+    }
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: async (data: InsertImportShipment) => {
+      const id = (payload.defaultValues as any)?.id
+      if (!id) throw new Error('No ID provided for update')
+      const response = await apiRequest('PATCH', `/api/import-shipments/${id}`, data)
+      return response.json()
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] })
+      await queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] })
+      toast({ title: 'Success', description: 'Import shipment updated successfully' })
+      onSubmitSuccess()
+      closeWindow(windowId)
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update import shipment',
+        variant: 'destructive'
+      })
+    }
+  })
+
+  const handleSubmit = (data: InsertImportShipment) => {
+    if (payload.mode === 'create') {
+      createMutation.mutate(data)
+    } else {
+      updateMutation.mutate(data)
     }
   }
 
