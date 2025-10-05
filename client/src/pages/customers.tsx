@@ -524,8 +524,8 @@ export default function Customers() {
     setCurrentPage(prev => ({ ...prev, [tabType]: newPage }))
   }
 
-  const filteredImportCustomers = filterContacts(importCustomers)
-  const filteredExportCustomers = filterContacts(exportCustomers)
+  const filteredImportCustomers = filterContacts(importCustomers).reverse()
+  const filteredExportCustomers = filterContacts(exportCustomers).reverse()
   const filteredExportReceivers = filterContacts(exportReceivers)
   const filteredHauliers = filterContacts(hauliers)
   const filteredShippingLines = filterContacts(shippingLines)
