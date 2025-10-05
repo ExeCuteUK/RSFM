@@ -2558,19 +2558,18 @@ ${messageText}
       
       // Add signature if enabled
       if (user.useSignature) {
-        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-          : process.env.REPL_SLUG 
-            ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-            : 'http://localhost:5000';
-        const logoUrl = `${baseUrl}/assets/rs-logo.jpg`;
+        // Read logo image and convert to base64 data URI
+        const logoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
+        const logoBuffer = await fs.readFile(logoPath);
+        const logoBase64 = logoBuffer.toString('base64');
+        const logoDataUri = `data:image/jpeg;base64,${logoBase64}`;
         
         const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
         let signatureTemplate = await fs.readFile(templatePath, 'utf-8');
         
         signatureTemplate = signatureTemplate
           .replace(/{{USER_NAME}}/g, user.fullName || user.username)
-          .replace(/{{LOGO_URL}}/g, logoUrl);
+          .replace(/{{LOGO_URL}}/g, logoDataUri);
         
         messageText += signatureTemplate;
       }
