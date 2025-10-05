@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,6 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User, Settings } from "lucide-react";
 import { useLocation } from "wouter";
@@ -15,6 +21,11 @@ import { useLocation } from "wouter";
 export function UserMenu() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+
+  const { data: unreadCount = 0 } = useQuery<number>({
+    queryKey: ["/api/messages/unread-count"],
+    refetchInterval: 30000,
+  });
 
   if (!user) {
     return null;
@@ -34,15 +45,26 @@ export function UserMenu() {
     setLocation("/login");
   };
 
+  const hasUnreadMessages = unreadCount > 0;
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="button-user-menu">
+              <Avatar className={`h-9 w-9 ${hasUnreadMessages ? 'ring-2 ring-yellow-400 animate-glow-yellow' : ''}`}>
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        {hasUnreadMessages && (
+          <TooltipContent>
+            <p>You have {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}</p>
+          </TooltipContent>
+        )}
+      </Tooltip>
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
