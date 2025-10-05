@@ -2,6 +2,8 @@ import {
   type User, 
   type InsertUser,
   type UpdateUser,
+  type Message,
+  type InsertMessage,
   type ImportCustomer,
   type InsertImportCustomer,
   type ExportCustomer,
@@ -35,7 +37,8 @@ import {
   exportShipments,
   customClearances,
   jobFileGroups,
-  users
+  users,
+  messages
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db, pool } from "./db";
@@ -56,6 +59,15 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<UpdateUser>): Promise<User | undefined>;
   deleteUser(id: string): Promise<boolean>;
+
+  // Message methods
+  getAllMessages(): Promise<Message[]>;
+  getMessagesByUser(userId: string): Promise<Message[]>;
+  getMessage(id: string): Promise<Message | undefined>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  markMessageAsRead(id: string): Promise<Message | undefined>;
+  deleteMessage(id: string): Promise<boolean>;
+  getUnreadCount(userId: string): Promise<number>;
 
   // Import Customer methods
   getAllImportCustomers(): Promise<ImportCustomer[]>;
@@ -209,6 +221,35 @@ export class MemStorage implements IStorage {
 
   async deleteUser(id: string): Promise<boolean> {
     return this.users.delete(id);
+  }
+
+  // Message methods (stubs - not used in production)
+  async getAllMessages(): Promise<Message[]> {
+    return [];
+  }
+
+  async getMessagesByUser(_userId: string): Promise<Message[]> {
+    return [];
+  }
+
+  async getMessage(_id: string): Promise<Message | undefined> {
+    return undefined;
+  }
+
+  async createMessage(_message: InsertMessage): Promise<Message> {
+    throw new Error("Messages not supported in MemStorage");
+  }
+
+  async markMessageAsRead(_id: string): Promise<Message | undefined> {
+    return undefined;
+  }
+
+  async deleteMessage(_id: string): Promise<boolean> {
+    return false;
+  }
+
+  async getUnreadCount(_userId: string): Promise<number> {
+    return 0;
   }
 
   // Import Customer methods
@@ -1015,6 +1056,47 @@ export class DatabaseStorage implements IStorage {
   async deleteUser(id: string): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Message methods
+  async getAllMessages(): Promise<Message[]> {
+    return await db.select().from(messages).orderBy(desc(messages.createdAt));
+  }
+
+  async getMessagesByUser(userId: string): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(sql`${messages.senderId} = ${userId} OR ${messages.recipientId} = ${userId}`)
+      .orderBy(desc(messages.createdAt));
+  }
+
+  async getMessage(id: string): Promise<Message | undefined> {
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message;
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [created] = await db.insert(messages).values(message).returning();
+    return created;
+  }
+
+  async markMessageAsRead(id: string): Promise<Message | undefined> {
+    const [updated] = await db.update(messages)
+      .set({ isRead: true })
+      .where(eq(messages.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMessage(id: string): Promise<boolean> {
+    const result = await db.delete(messages).where(eq(messages.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async getUnreadCount(userId: string): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`COUNT(*)` })
+      .from(messages)
+      .where(sql`${messages.recipientId} = ${userId} AND ${messages.isRead} = false`);
+    return result.count;
   }
 
   // Import Customer methods

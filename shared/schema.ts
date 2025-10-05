@@ -38,6 +38,26 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
 
+// Messages Database
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  senderId: varchar("sender_id").notNull(),
+  recipientId: varchar("recipient_id").notNull(),
+  subject: text("subject").notNull(),
+  content: text("content").notNull(),
+  attachments: text("attachments").array().default([]),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
+
 // Import Customers Database
 export const importCustomers = pgTable("import_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
