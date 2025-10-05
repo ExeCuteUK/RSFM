@@ -2519,7 +2519,7 @@ ${messageText}
   app.post("/api/gmail/send-with-attachments", requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
-      const { to, subject, body, attachmentUrls } = req.body;
+      const { to, cc, bcc, subject, body, attachmentUrls } = req.body;
       
       if (!to || !subject || !Array.isArray(attachmentUrls)) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -2592,6 +2592,8 @@ ${messageText}
       
       const messageParts = [
         `To: ${to}`,
+        ...(cc ? [`Cc: ${cc}`] : []),
+        ...(bcc ? [`Bcc: ${bcc}`] : []),
         `Subject: ${subject}`,
         'MIME-Version: 1.0',
         `Content-Type: multipart/mixed; boundary="${boundary}"`,

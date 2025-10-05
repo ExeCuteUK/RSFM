@@ -56,12 +56,16 @@ export default function ImportShipments() {
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [emailComposerData, setEmailComposerData] = useState<{ 
     show: boolean; 
-    to: string; 
+    to: string;
+    cc: string;
+    bcc: string; 
     subject: string; 
     body: string; 
     attachments: string[] 
   } | null>(null)
   const [emailPopoverOpen, setEmailPopoverOpen] = useState(false)
+  const [ccPopoverOpen, setCcPopoverOpen] = useState(false)
+  const [bccPopoverOpen, setBccPopoverOpen] = useState(false)
   const [recentEmails, setRecentEmails] = useState<string[]>([])
   const { toast} = useToast()
   const [, setLocation] = useLocation()
@@ -553,9 +557,11 @@ export default function ImportShipments() {
   })
 
   const sendEmail = useMutation({
-    mutationFn: async ({ to, subject, body, attachmentUrls }: { to: string; subject: string; body: string; attachmentUrls: string[] }) => {
+    mutationFn: async ({ to, cc, bcc, subject, body, attachmentUrls }: { to: string; cc?: string; bcc?: string; subject: string; body: string; attachmentUrls: string[] }) => {
       return apiRequest('POST', '/api/gmail/send-with-attachments', {
         to,
+        cc,
+        bcc,
         subject,
         body,
         attachmentUrls
@@ -566,6 +572,8 @@ export default function ImportShipments() {
       toast({ title: 'Email sent successfully' })
       setEmailComposerData(null)
       setEmailPopoverOpen(false)
+      setCcPopoverOpen(false)
+      setBccPopoverOpen(false)
     },
     onError: (error: any) => {
       toast({ title: 'Failed to send email', description: error.message || 'Please try again', variant: 'destructive' })
@@ -938,6 +946,8 @@ export default function ImportShipments() {
     setEmailComposerData({
       show: true,
       to: agentEmail,
+      cc: "",
+      bcc: "",
       subject: subject,
       body: body,
       attachments: transportDocs
@@ -2802,6 +2812,194 @@ export default function ImportShipments() {
                 </PopoverContent>
               </Popover>
             </div>
+            
+            {/* CC and BCC Fields in a row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">CC (Optional):</label>
+                <Popover open={ccPopoverOpen} onOpenChange={setCcPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={ccPopoverOpen}
+                      className="w-full justify-start font-normal"
+                      data-testid="button-cc-combobox"
+                    >
+                      {emailComposerData?.cc || "Select or type email..."}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[350px] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Type CC email address..."
+                        value={emailComposerData?.cc || ""}
+                        onValueChange={(value) => setEmailComposerData(prev => prev ? {...prev, cc: value} : null)}
+                        data-testid="input-cc-search"
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          {emailComposerData?.cc ? `Press Enter to use: ${emailComposerData.cc}` : 'No emails found'}
+                        </CommandEmpty>
+                        {recentEmails.length > 0 && (
+                          <CommandGroup heading="Recent">
+                            {recentEmails
+                              .filter(email => !emailComposerData?.cc || email.toLowerCase().includes(emailComposerData.cc.toLowerCase()))
+                              .map((email) => (
+                              <CommandItem
+                                key={`cc-recent-${email}`}
+                                value={email}
+                                onSelect={(currentValue) => {
+                                  setEmailComposerData(prev => prev ? {...prev, cc: currentValue} : null)
+                                  setCcPopoverOpen(false)
+                                }}
+                                data-testid={`cc-option-${email}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    emailComposerData?.cc === email ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {email}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                        {contactEmails.length > 0 && (
+                          <CommandGroup heading={`Contacts`}>
+                            {contactEmails
+                              .filter(contact => !emailComposerData?.cc || 
+                                contact.email.toLowerCase().includes(emailComposerData.cc.toLowerCase()) ||
+                                contact.name.toLowerCase().includes(emailComposerData.cc.toLowerCase()))
+                              .slice(0, 30)
+                              .map((contact) => (
+                              <CommandItem
+                                key={`cc-contact-${contact.email}`}
+                                value={contact.email}
+                                onSelect={(currentValue) => {
+                                  setEmailComposerData(prev => prev ? {...prev, cc: currentValue} : null)
+                                  setCcPopoverOpen(false)
+                                }}
+                                data-testid={`cc-option-${contact.email}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    emailComposerData?.cc === contact.email ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span className="text-sm">{contact.email}</span>
+                                  {contact.name && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {contact.name}
+                                    </span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">BCC (Optional):</label>
+                <Popover open={bccPopoverOpen} onOpenChange={setBccPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={bccPopoverOpen}
+                      className="w-full justify-start font-normal"
+                      data-testid="button-bcc-combobox"
+                    >
+                      {emailComposerData?.bcc || "Select or type email..."}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[350px] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Type BCC email address..."
+                        value={emailComposerData?.bcc || ""}
+                        onValueChange={(value) => setEmailComposerData(prev => prev ? {...prev, bcc: value} : null)}
+                        data-testid="input-bcc-search"
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          {emailComposerData?.bcc ? `Press Enter to use: ${emailComposerData.bcc}` : 'No emails found'}
+                        </CommandEmpty>
+                        {recentEmails.length > 0 && (
+                          <CommandGroup heading="Recent">
+                            {recentEmails
+                              .filter(email => !emailComposerData?.bcc || email.toLowerCase().includes(emailComposerData.bcc.toLowerCase()))
+                              .map((email) => (
+                              <CommandItem
+                                key={`bcc-recent-${email}`}
+                                value={email}
+                                onSelect={(currentValue) => {
+                                  setEmailComposerData(prev => prev ? {...prev, bcc: currentValue} : null)
+                                  setBccPopoverOpen(false)
+                                }}
+                                data-testid={`bcc-option-${email}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    emailComposerData?.bcc === email ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {email}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                        {contactEmails.length > 0 && (
+                          <CommandGroup heading={`Contacts`}>
+                            {contactEmails
+                              .filter(contact => !emailComposerData?.bcc || 
+                                contact.email.toLowerCase().includes(emailComposerData.bcc.toLowerCase()) ||
+                                contact.name.toLowerCase().includes(emailComposerData.bcc.toLowerCase()))
+                              .slice(0, 30)
+                              .map((contact) => (
+                              <CommandItem
+                                key={`bcc-contact-${contact.email}`}
+                                value={contact.email}
+                                onSelect={(currentValue) => {
+                                  setEmailComposerData(prev => prev ? {...prev, bcc: currentValue} : null)
+                                  setBccPopoverOpen(false)
+                                }}
+                                data-testid={`bcc-option-${contact.email}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    emailComposerData?.bcc === contact.email ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span className="text-sm">{contact.email}</span>
+                                  {contact.name && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {contact.name}
+                                    </span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
             <div>
               <label className="text-sm font-medium">Subject:</label>
               <Input value={emailComposerData?.subject || ""} onChange={(e) => setEmailComposerData(prev => prev ? {...prev, subject: e.target.value} : null)} />
@@ -2827,6 +3025,8 @@ export default function ImportShipments() {
               if (emailComposerData) {
                 sendEmail.mutate({
                   to: emailComposerData.to,
+                  cc: emailComposerData.cc,
+                  bcc: emailComposerData.bcc,
                   subject: emailComposerData.subject,
                   body: emailComposerData.body,
                   attachmentUrls: emailComposerData.attachments
