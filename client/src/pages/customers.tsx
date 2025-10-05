@@ -49,7 +49,7 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
         <AccordionTrigger className="py-2 hover:no-underline" data-testid={`accordion-job-history-${customerId}`}>
           <div className="flex items-center gap-2 text-sm">
             <Package className="h-4 w-4" />
-            <span>Job History ({shipments.length})</span>
+            <span>Job History</span>
           </div>
         </AccordionTrigger>
         <AccordionContent>
