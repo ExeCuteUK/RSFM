@@ -1018,10 +1018,12 @@ export class DatabaseStorage implements IStorage {
   public sessionStore: session.Store;
 
   constructor() {
-    // Use memory store for sessions (simpler and works immediately)
-    const MemoryStore = createMemoryStore(session);
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000, // 24 hours
+    // Use PostgreSQL store for sessions (persists across restarts)
+    const PgStore = connectPg(session);
+    this.sessionStore = new PgStore({
+      pool: pool,
+      tableName: 'session',
+      createTableIfMissing: true,
     });
   }
 
