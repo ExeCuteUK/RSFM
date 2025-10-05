@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/protected-route";
 import { UserMenu } from "@/components/user-menu";
+import { MessageNotificationIcon } from "@/components/message-notification-icon";
 
 // Pages
 import Dashboard from "@/pages/dashboard";
@@ -130,6 +131,7 @@ function AppContent() {
             <header className="flex items-center justify-between p-4 border-b border-border gap-4">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
               <div className="flex items-center gap-4">
+                <MessageNotificationIcon />
                 <ThemeToggle />
                 <UserMenu />
               </div>

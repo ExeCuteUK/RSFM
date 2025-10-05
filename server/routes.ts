@@ -237,6 +237,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Message Routes ==========
+  
+  // Get messages for current user
+  app.get("/api/messages", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const messages = await storage.getMessagesByUser(user.id);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  // Get unread count for current user
+  app.get("/api/messages/unread-count", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const count = await storage.getUnreadCount(user.id);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch unread count" });
+    }
+  });
+
+  // Create a new message
+  app.post("/api/messages", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const message = await storage.createMessage({
+        ...req.body,
+        senderId: user.id,
+      });
+      res.status(201).json(message);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to create message" });
+    }
+  });
+
+  // Mark message as read
+  app.patch("/api/messages/:id/read", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const message = await storage.getMessage(req.params.id);
+      
+      if (!message) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+      
+      // Only recipient can mark as read
+      if (message.recipientId !== user.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const updated = await storage.markMessageAsRead(req.params.id);
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to mark message as read" });
+    }
+  });
+
+  // Delete message
+  app.delete("/api/messages/:id", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const message = await storage.getMessage(req.params.id);
+      
+      if (!message) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+      
+      // Only sender or recipient can delete
+      if (message.senderId !== user.id && message.recipientId !== user.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const success = await storage.deleteMessage(req.params.id);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete message" });
+    }
+  });
+
   // ========== Import Customers Routes ==========
   // ========== Import Customers Routes ==========
   
