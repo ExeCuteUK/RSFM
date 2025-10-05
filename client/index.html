@@ -2,8 +2,9 @@
 <html lang="en">
   <head>
     <script>
-      // Patch ResizeObserver to silently ignore the harmless "loop limit exceeded" error
+      // Comprehensive error suppression for ResizeObserver
       (function() {
+        // 1. Patch ResizeObserver to prevent the error
         const OriginalResizeObserver = window.ResizeObserver;
         window.ResizeObserver = function(callback) {
           const wrappedCallback = function(entries, observer) {
@@ -14,6 +15,25 @@
           return new OriginalResizeObserver(wrappedCallback);
         };
         window.ResizeObserver.prototype = OriginalResizeObserver.prototype;
+        
+        // 2. Global error suppression
+        window.addEventListener('error', function(e) {
+          if (e.message && e.message.includes('ResizeObserver')) {
+            console.log('Blocked ResizeObserver error from showing modal');
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return false;
+          }
+        }, true);
+        
+        // 3. Debounced ResizeObserver as fallback
+        const debounce = (fn, delay) => {
+          let timeoutId;
+          return function(...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => fn.apply(this, args), delay);
+          };
+        };
       })();
     </script>
     <meta charset="UTF-8" />
