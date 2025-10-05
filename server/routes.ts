@@ -982,6 +982,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked custom clearance with changed fields
       let syncedToClearance = false;
+      console.log('[SYNC-DEBUG] Import shipment linkedClearanceId:', shipment.linkedClearanceId);
+      console.log('[SYNC-DEBUG] Request body keys:', Object.keys(req.body));
       if (shipment.linkedClearanceId) {
         const clearanceUpdate: any = {};
         
@@ -1008,11 +1010,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (req.body.customerReferenceNumber !== undefined) clearanceUpdate.customerReferenceNumber = shipment.customerReferenceNumber;
         if (req.body.supplierName !== undefined) clearanceUpdate.supplierName = shipment.supplierName;
         
+        console.log('[SYNC-DEBUG] Clearance update fields:', Object.keys(clearanceUpdate));
         if (Object.keys(clearanceUpdate).length > 0) {
+          console.log('[SYNC-DEBUG] Syncing to clearance:', shipment.linkedClearanceId);
           await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdate);
           syncedToClearance = true;
         }
       }
+      console.log('[SYNC-DEBUG] syncedToClearance:', syncedToClearance);
       
       res.json({ ...shipment, _syncedToClearance: syncedToClearance });
     } catch (error: any) {
@@ -1308,6 +1313,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked custom clearance with changed fields
       let syncedToClearance = false;
+      console.log('[SYNC-DEBUG] Export shipment linkedClearanceId:', shipment.linkedClearanceId);
+      console.log('[SYNC-DEBUG] Request body keys:', Object.keys(req.body));
       if (shipment.linkedClearanceId) {
         const clearanceUpdate: any = {};
         
@@ -1339,11 +1346,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           clearanceUpdate.transportDocuments = shipment.attachments || [];
         }
         
+        console.log('[SYNC-DEBUG] Clearance update fields:', Object.keys(clearanceUpdate));
         if (Object.keys(clearanceUpdate).length > 0) {
+          console.log('[SYNC-DEBUG] Syncing to clearance:', shipment.linkedClearanceId);
           await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdate);
           syncedToClearance = true;
         }
       }
+      console.log('[SYNC-DEBUG] syncedToClearance:', syncedToClearance);
       
       res.json({ ...shipment, _syncedToClearance: syncedToClearance });
     } catch (error: any) {
@@ -1464,6 +1474,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked import or export shipment with changed fields
       let syncedToShipment = false;
+      console.log('[SYNC-DEBUG] Clearance createdFromId:', clearance.createdFromId, 'createdFromType:', clearance.createdFromType);
+      console.log('[SYNC-DEBUG] Request body keys:', Object.keys(req.body));
       if (clearance.createdFromId && clearance.createdFromType) {
         const shipmentUpdate: any = {};
         
@@ -1491,7 +1503,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.customerReferenceNumber !== undefined) shipmentUpdate.customerReferenceNumber = clearance.customerReferenceNumber;
           if (req.body.supplierName !== undefined) shipmentUpdate.supplierName = clearance.supplierName;
           
+          console.log('[SYNC-DEBUG] Import shipment update fields:', Object.keys(shipmentUpdate));
           if (Object.keys(shipmentUpdate).length > 0) {
+            console.log('[SYNC-DEBUG] Syncing to import shipment:', clearance.createdFromId);
             await storage.updateImportShipment(clearance.createdFromId, shipmentUpdate);
             syncedToShipment = true;
           }
@@ -1524,12 +1538,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             shipmentUpdate.attachments = clearance.transportDocuments || [];
           }
           
+          console.log('[SYNC-DEBUG] Export shipment update fields:', Object.keys(shipmentUpdate));
           if (Object.keys(shipmentUpdate).length > 0) {
+            console.log('[SYNC-DEBUG] Syncing to export shipment:', clearance.createdFromId);
             await storage.updateExportShipment(clearance.createdFromId, shipmentUpdate);
             syncedToShipment = true;
           }
         }
       }
+      console.log('[SYNC-DEBUG] syncedToShipment:', syncedToShipment);
       
       res.json({ ...clearance, _syncedToShipment: syncedToShipment });
     } catch (error) {
