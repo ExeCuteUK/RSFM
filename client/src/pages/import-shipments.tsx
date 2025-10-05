@@ -2600,9 +2600,10 @@ export default function ImportShipments() {
 
       {/* Clearance Agent Selection Dialog */}
       <Dialog open={clearanceAgentDialog?.show || false} onOpenChange={(open) => !open && setClearanceAgentDialog(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="clearance-agent-description">
           <DialogHeader>
             <DialogTitle>Select Clearance Agent</DialogTitle>
+            <p id="clearance-agent-description" className="sr-only">Choose a clearance agent to email about this shipment</p>
           </DialogHeader>
           <div className="space-y-3 max-h-[400px] overflow-y-auto">
             {clearanceAgents.length === 0 ? (

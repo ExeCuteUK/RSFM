@@ -90,23 +90,28 @@ export function EmailProvider({ children }: { children: ReactNode }) {
   }, [user?.id])
 
   const openEmailComposer = (data: Omit<EmailComposerData, 'isMinimized'>) => {
-    // Save current email draft if there's one open
-    if (emailComposerData && !emailComposerData.isMinimized) {
-      const { isMinimized: _, ...draftData } = emailComposerData
-      setEmailDrafts(prev => ({
-        ...prev,
-        [emailComposerData.id]: draftData
-      }))
+    try {
+      // Save current email draft if there's one open
+      if (emailComposerData && !emailComposerData.isMinimized) {
+        const { isMinimized: _, ...draftData } = emailComposerData
+        setEmailDrafts(prev => ({
+          ...prev,
+          [emailComposerData.id]: draftData
+        }))
+      }
+      
+      // Open email window using WindowManager
+      const { id, to, cc, bcc, subject, body, attachments } = data
+      openWindow({
+        id,
+        type: 'email',
+        title: subject || 'New Email',
+        payload: { to, cc, bcc, subject, body, attachments }
+      })
+    } catch (error) {
+      console.error('Error in openEmailComposer:', error)
+      throw error
     }
-    
-    // Open email window using WindowManager
-    const { id, to, cc, bcc, subject, body, attachments } = data
-    openWindow({
-      id,
-      type: 'email',
-      title: subject || 'New Email',
-      payload: { to, cc, bcc, subject, body, attachments }
-    })
   }
 
   const closeEmailComposer = () => {
