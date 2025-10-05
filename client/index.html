@@ -2,21 +2,19 @@
 <html lang="en">
   <head>
     <script>
-      // Suppress ResizeObserver warning BEFORE Replit plugin loads
-      window.addEventListener('error', function(event) {
-        // Log the error details to see what's happening
-        console.log('Error intercepted:', {
-          message: event.message,
-          filename: event.filename,
-          error: event.error
-        });
-        
-        if (event.message && event.message.includes('ResizeObserver loop')) {
-          console.log('Suppressing ResizeObserver error');
-          event.preventDefault();
-          return false;
-        }
-      });
+      // Patch ResizeObserver to silently ignore the harmless "loop limit exceeded" error
+      (function() {
+        const OriginalResizeObserver = window.ResizeObserver;
+        window.ResizeObserver = function(callback) {
+          const wrappedCallback = function(entries, observer) {
+            window.requestAnimationFrame(function() {
+              callback(entries, observer);
+            });
+          };
+          return new OriginalResizeObserver(wrappedCallback);
+        };
+        window.ResizeObserver.prototype = OriginalResizeObserver.prototype;
+      })();
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
