@@ -722,7 +722,13 @@ export default function CustomClearances() {
                     )}
                     {clearance.portOfArrival && (
                       <p data-testid={`text-port-${clearance.id}`}>
-                        <span className="font-medium">Port:</span> {clearance.portOfArrival}
+                        <span className="font-medium">
+                          {clearance.containerShipment === "Road Shipment" 
+                            ? "Destination:" 
+                            : clearance.containerShipment === "Air Freight"
+                            ? "Airport:"
+                            : "Port:"}
+                        </span> {clearance.portOfArrival}
                       </p>
                     )}
                     {clearance.etaPort && (
