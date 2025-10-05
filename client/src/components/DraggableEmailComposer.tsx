@@ -126,7 +126,7 @@ export function DraggableEmailComposer({
         const uploadResponse = await fetch('/api/objects/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileName: file.name }),
+          body: JSON.stringify({ filename: file.name }),
         });
 
         if (!uploadResponse.ok) {
