@@ -126,10 +126,10 @@ export function DraggableEmailComposer({
           throw new Error('Failed to get upload URL');
         }
 
-        const { uploadUrl, objectPath } = await uploadResponse.json();
+        const { uploadURL } = await uploadResponse.json();
 
         // Upload file to presigned URL
-        const uploadFileResponse = await fetch(uploadUrl, {
+        const uploadFileResponse = await fetch(uploadURL, {
           method: 'PUT',
           body: file,
           headers: { 'Content-Type': file.type },
@@ -143,7 +143,7 @@ export function DraggableEmailComposer({
         const normalizeResponse = await fetch('/api/objects/normalize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ urls: [uploadUrl] }),
+          body: JSON.stringify({ urls: [uploadURL] }),
         });
 
         const { paths } = await normalizeResponse.json();
