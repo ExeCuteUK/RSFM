@@ -4,6 +4,12 @@ import "./index.css";
 
 // Global error handler to catch unhandled errors
 window.addEventListener('error', (event) => {
+  // Suppress harmless ResizeObserver browser warning
+  if (event.message?.includes('ResizeObserver loop')) {
+    event.preventDefault();
+    return;
+  }
+  
   console.error('Global error caught:', {
     message: event.message,
     filename: event.filename,
