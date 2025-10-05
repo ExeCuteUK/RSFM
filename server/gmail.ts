@@ -141,3 +141,70 @@ export async function sendEmailWithAttachment(options: {
   
   return result.data;
 }
+
+export async function sendEmailWithMultipleAttachments(options: {
+  to: string;
+  subject: string;
+  body: string;
+  attachmentUrls: string[];
+}) {
+  const gmail = await getUncachableGmailClient();
+  
+  const boundary = '----boundary';
+  const messageParts = [
+    `To: ${options.to}`,
+    'MIME-Version: 1.0',
+    `Subject: ${options.subject}`,
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    '',
+    options.body,
+    ''
+  ];
+  
+  // Process each attachment
+  for (const attachmentUrl of options.attachmentUrls) {
+    const response = await fetch(attachmentUrl);
+    const arrayBuffer = await response.arrayBuffer();
+    const base64File = Buffer.from(arrayBuffer).toString('base64');
+    
+    // Extract filename from URL
+    const filename = attachmentUrl.split('/').pop() || 'attachment';
+    
+    // Determine content type based on file extension
+    let contentType = 'application/octet-stream';
+    if (filename.toLowerCase().endsWith('.pdf')) {
+      contentType = 'application/pdf';
+    } else if (filename.toLowerCase().match(/\.(jpg|jpeg)$/)) {
+      contentType = 'image/jpeg';
+    } else if (filename.toLowerCase().endsWith('.png')) {
+      contentType = 'image/png';
+    }
+    
+    messageParts.push(
+      `--${boundary}`,
+      `Content-Type: ${contentType}; name="${filename}"`,
+      'Content-Transfer-Encoding: base64',
+      `Content-Disposition: attachment; filename="${filename}"`,
+      '',
+      base64File,
+      ''
+    );
+  }
+  
+  messageParts.push(`--${boundary}--`);
+  
+  const message = messageParts.join('\r\n');
+  const encodedMessage = Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  
+  const result = await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: {
+      raw: encodedMessage
+    }
+  });
+  
+  return result.data;
+}

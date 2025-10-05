@@ -2515,6 +2515,154 @@ ${messageText}
     }
   });
 
+  // Send email with multiple attachments (per-user Gmail OAuth)
+  app.post("/api/gmail/send-with-attachments", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { to, subject, body, attachmentUrls } = req.body;
+      
+      if (!to || !subject || !Array.isArray(attachmentUrls)) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Check if user has Gmail connected
+      if (!user.gmailAccessToken || !user.gmailRefreshToken) {
+        return res.status(401).json({ error: "Gmail not connected. Please connect your Gmail account in Settings." });
+      }
+
+      const { google } = await import("googleapis");
+      const oauth2Client = new google.auth.OAuth2(
+        process.env.GMAIL_CLIENT_ID,
+        process.env.GMAIL_CLIENT_SECRET
+      );
+
+      // Set credentials with refresh token support
+      oauth2Client.setCredentials({
+        access_token: user.gmailAccessToken,
+        refresh_token: user.gmailRefreshToken,
+        expiry_date: user.gmailTokenExpiry ? new Date(user.gmailTokenExpiry).getTime() : undefined,
+      });
+
+      // Auto-refresh access token if expired
+      oauth2Client.on('tokens', async (tokens) => {
+        if (tokens.access_token) {
+          await storage.updateUser(user.id, {
+            gmailAccessToken: tokens.access_token,
+            gmailTokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
+          });
+        }
+      });
+
+      // Build email body with signature
+      let messageText = body ? body.replace(/\n/g, '<br>') : '';
+      
+      // Add signature if enabled
+      if (user.useSignature) {
+        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+          : process.env.REPL_SLUG 
+            ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+            : 'http://localhost:5000';
+        const logoUrl = `${baseUrl}/assets/rs-logo.jpg`;
+        
+        const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+        let signatureTemplate = await fs.readFile(templatePath, 'utf-8');
+        
+        signatureTemplate = signatureTemplate
+          .replace(/{{USER_NAME}}/g, user.fullName || user.username)
+          .replace(/{{LOGO_URL}}/g, logoUrl);
+        
+        messageText += signatureTemplate;
+      }
+      
+      const htmlBody = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif;">
+${messageText}
+</body>
+</html>`;
+      
+      const htmlBodyBase64 = Buffer.from(htmlBody).toString('base64');
+      const boundary = '----=_Part_' + Date.now();
+      const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+      
+      const messageParts = [
+        `To: ${to}`,
+        `Subject: ${subject}`,
+        'MIME-Version: 1.0',
+        `Content-Type: multipart/mixed; boundary="${boundary}"`,
+        '',
+        `--${boundary}`,
+        'Content-Type: text/html; charset=UTF-8',
+        'Content-Transfer-Encoding: base64',
+        '',
+        htmlBodyBase64,
+        ''
+      ];
+
+      // Process each attachment
+      for (const attachmentUrl of attachmentUrls) {
+        let fullAttachmentUrl = attachmentUrl;
+        if (attachmentUrl.startsWith('/')) {
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+            : process.env.REPL_SLUG 
+              ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+              : 'http://localhost:5000';
+          fullAttachmentUrl = `${baseUrl}${attachmentUrl}`;
+        }
+
+        const fileResponse = await fetch(fullAttachmentUrl);
+        if (!fileResponse.ok) {
+          console.error(`Failed to fetch file: ${fullAttachmentUrl}`);
+          continue;
+        }
+        
+        const fileBuffer = Buffer.from(await fileResponse.arrayBuffer());
+        const fileBase64 = fileBuffer.toString('base64');
+        const filename = attachmentUrl.split('/').pop() || 'attachment';
+        
+        let contentType = 'application/octet-stream';
+        if (filename.toLowerCase().endsWith('.pdf')) {
+          contentType = 'application/pdf';
+        } else if (filename.toLowerCase().match(/\.(jpg|jpeg)$/)) {
+          contentType = 'image/jpeg';
+        } else if (filename.toLowerCase().endsWith('.png')) {
+          contentType = 'image/png';
+        }
+
+        messageParts.push(
+          `--${boundary}`,
+          `Content-Type: ${contentType}`,
+          'Content-Transfer-Encoding: base64',
+          `Content-Disposition: attachment; filename="${filename}"`,
+          '',
+          fileBase64,
+          ''
+        );
+      }
+
+      messageParts.push(`--${boundary}--`);
+      const message = messageParts.join('\r\n');
+      const encodedMessage = Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+      const result = await gmail.users.messages.send({
+        userId: 'me',
+        requestBody: {
+          raw: encodedMessage,
+        },
+      });
+
+      res.json({ success: true, messageId: result.data.id });
+    } catch (error) {
+      console.error("Gmail send with attachments error:", error);
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
