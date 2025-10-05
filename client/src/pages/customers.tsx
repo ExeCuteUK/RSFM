@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { queryClient, apiRequest } from "@/lib/queryClient"
+import { Link } from "wouter"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -62,7 +63,13 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
                 data-testid={`job-history-item-${shipment.id}`}
               >
                 <div className="flex-1">
-                  <p className="font-medium">#{shipment.jobRef}</p>
+                  <Link 
+                    href={type === "import" ? "/import-shipments" : "/export-shipments"}
+                    className="font-medium text-primary hover:underline"
+                    data-testid={`link-job-${shipment.jobRef}`}
+                  >
+                    {shipment.jobRef}
+                  </Link>
                   {type === "import" && 'containerNo' in shipment && shipment.containerNo && (
                     <p className="text-muted-foreground">{shipment.containerNo}</p>
                   )}
