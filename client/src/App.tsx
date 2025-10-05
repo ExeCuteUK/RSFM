@@ -14,6 +14,11 @@ import { OtherUsersMenu } from "@/components/other-users-menu";
 import { EmailProvider, useEmail } from "@/contexts/EmailContext";
 import { DraggableEmailComposer } from "@/components/DraggableEmailComposer";
 import { EmailTaskbar } from "@/components/EmailTaskbar";
+import { WindowManagerProvider, useWindowManager } from "@/contexts/WindowManagerContext";
+import { WindowTaskbar } from "@/components/WindowTaskbar";
+import { ImportShipmentWindow } from "@/components/ImportShipmentWindow";
+import { ExportShipmentWindow } from "@/components/ExportShipmentWindow";
+import { CustomClearanceWindow } from "@/components/CustomClearanceWindow";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useRef, useEffect } from "react";
@@ -134,6 +139,7 @@ function AppContent() {
   const { toast } = useToast();
   const previousUnreadCount = useRef<number>(0);
   const { emailComposerData, minimizedEmails } = useEmail();
+  const { windows, activeWindow } = useWindowManager();
   
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread-count"],
@@ -184,6 +190,32 @@ function AppContent() {
         <>
           {minimizedEmails.length > 0 && <EmailTaskbar />}
           {emailComposerData && !emailComposerData.isMinimized && <DraggableEmailComposer />}
+          <WindowTaskbar />
+          {activeWindow && !activeWindow.isMinimized && (
+            <>
+              {activeWindow.type === 'import-shipment' && (
+                <ImportShipmentWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'export-shipment' && (
+                <ExportShipmentWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+              {activeWindow.type === 'custom-clearance' && (
+                <CustomClearanceWindow
+                  windowId={activeWindow.id}
+                  payload={activeWindow.payload}
+                  onSubmitSuccess={() => {}}
+                />
+              )}
+            </>
+          )}
         </>
       )}
     </SidebarProvider>
@@ -197,8 +229,10 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <EmailProvider>
-              <AppContent />
-              <Toaster />
+              <WindowManagerProvider>
+                <AppContent />
+                <Toaster />
+              </WindowManagerProvider>
             </EmailProvider>
           </AuthProvider>
         </TooltipProvider>
