@@ -62,7 +62,7 @@ export function OtherUsersMenu() {
               onClick={() => handleUserClick(user.id)}
               data-testid={`button-user-${user.id}`}
             >
-              <Avatar className="h-9 w-9 ring-2 ring-green-500">
+              <Avatar className="h-9 w-9">
                 <AvatarFallback className="text-xs">
                   {getInitials(user)}
                 </AvatarFallback>
@@ -70,14 +70,8 @@ export function OtherUsersMenu() {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <div>
-                <p className="text-sm font-medium">{user.fullName || user.username}</p>
-                {user.email && <p className="text-xs text-muted-foreground">{user.email}</p>}
-                <p className="text-xs text-green-500">Online</p>
-              </div>
-            </div>
+            <p className="text-sm font-medium">{user.fullName || user.username}</p>
+            {user.email && <p className="text-xs text-muted-foreground">{user.email}</p>}
           </TooltipContent>
         </Tooltip>
       ))}
