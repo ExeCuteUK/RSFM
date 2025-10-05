@@ -148,7 +148,7 @@ export function AppSidebar() {
                       {item.title === "Messages" && unreadCount > 0 && (
                         <Badge 
                           variant="destructive" 
-                          className="ml-auto h-5 min-w-5 px-1 text-[10px] font-semibold"
+                          className="ml-auto h-5 min-w-5 flex items-center justify-center px-1.5 text-[10px] font-semibold"
                           data-testid="badge-unread-count"
                         >
                           {unreadCount}

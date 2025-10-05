@@ -10,7 +10,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/protected-route";
 import { UserMenu } from "@/components/user-menu";
-import { MessageNotificationIcon } from "@/components/message-notification-icon";
 import { OtherUsersMenu } from "@/components/other-users-menu";
 
 // Pages
@@ -143,7 +142,6 @@ function AppContent() {
                 <OtherUsersMenu />
               </div>
               <div className="flex items-center gap-4">
-                <MessageNotificationIcon />
                 <ThemeToggle />
                 <UserMenu />
               </div>
