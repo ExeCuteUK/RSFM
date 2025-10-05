@@ -18,7 +18,14 @@ The application now includes comprehensive file upload functionality integrated 
 - Message notification icon in header with badge displaying unread message count
 - Database schema includes sender, recipient, subject, content, attachments, and read status
 - RESTful API endpoints for creating, reading, marking as read, and deleting messages
-- Foundation ready for full messaging page implementation
+- Complete Messages page with inbox/sent tabs, composer with file attachments, and message management
+
+**Job History Display:**
+- Customer contact cards now display job history in collapsible accordions
+- Import customers show related import shipments with container numbers and dates
+- Export customers show related export shipments with exporter references and booking dates
+- API endpoints: `/api/import-customers/:id/shipments` and `/api/export-customers/:id/shipments`
+- Job history automatically updates when new shipments are created
 
 ## User Preferences
 
@@ -80,8 +87,8 @@ The backend is developed with Express.js and TypeScript on Node.js, utilizing an
 ### API Endpoints
 
 The API provides standard RESTful endpoints for managing:
--   **Import Customers**: GET, POST, PATCH, DELETE `/api/import-customers`
--   **Export Customers**: GET, POST, PATCH, DELETE `/api/export-customers`
+-   **Import Customers**: GET, POST, PATCH, DELETE `/api/import-customers`, GET `/api/import-customers/:id/shipments` (job history)
+-   **Export Customers**: GET, POST, PATCH, DELETE `/api/export-customers`, GET `/api/export-customers/:id/shipments` (job history)
 -   **Export Receivers**: GET, POST, PATCH, DELETE `/api/export-receivers`
 -   **Hauliers**: GET, POST, PATCH, DELETE `/api/hauliers`
 -   **Shipping Lines**: GET, POST, PATCH, DELETE `/api/shipping-lines`
