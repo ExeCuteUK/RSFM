@@ -28,18 +28,16 @@ import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, Fil
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
-import { DraggableEmailComposer } from "@/components/DraggableEmailComposer"
-import { EmailTaskbar } from "@/components/EmailTaskbar"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/hooks/use-auth"
+import { useEmail } from "@/contexts/EmailContext"
 import { format } from "date-fns"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 export default function ImportShipments() {
-  const { user } = useAuth()
+  const { openEmailComposer } = useEmail()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingShipment, setEditingShipment] = useState<ImportShipment | null>(null)
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
@@ -58,37 +56,7 @@ export default function ImportShipments() {
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
-  const [emailComposerData, setEmailComposerData] = useState<{ 
-    id: string;
-    to: string;
-    cc: string;
-    bcc: string; 
-    subject: string; 
-    body: string; 
-    attachments: string[];
-    isMinimized: boolean;
-  } | null>(null)
-  const [minimizedEmails, setMinimizedEmails] = useState<{ id: string; to: string; subject: string }[]>(() => {
-    // Load from localStorage on mount
-    if (!user) return []
-    const stored = localStorage.getItem(`emailMinimized_${user.id}`)
-    return stored ? JSON.parse(stored) : []
-  })
-  const [emailDrafts, setEmailDrafts] = useState<Record<string, {
-    to: string;
-    cc: string;
-    bcc: string;
-    subject: string;
-    body: string;
-    attachments: string[];
-  }>>(() => {
-    // Load from localStorage on mount
-    if (!user) return {}
-    const stored = localStorage.getItem(`emailDrafts_${user.id}`)
-    return stored ? JSON.parse(stored) : {}
-  })
-  const [recentEmails, setRecentEmails] = useState<string[]>([])
-  const { toast} = useToast()
+  const { toast } = useToast()
   const [, setLocation] = useLocation()
 
   // Read search parameter from URL on mount
@@ -116,55 +84,6 @@ export default function ImportShipments() {
   const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
     queryKey: ["/api/clearance-agents"],
   })
-
-  // Fetch contact emails for email autocomplete
-  interface ContactEmail {
-    email: string;
-    name: string;
-    type: string;
-  }
-  
-  const { data: contactEmails = [] } = useQuery<ContactEmail[]>({
-    queryKey: ['/api/contacts/emails'],
-    staleTime: 5 * 60 * 1000
-  })
-
-  // Load recent emails from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('recentEmails')
-    if (stored) {
-      try {
-        setRecentEmails(JSON.parse(stored))
-      } catch (e) {
-        setRecentEmails([])
-      }
-    }
-  }, [])
-
-  // Save email drafts to localStorage whenever they change
-  useEffect(() => {
-    if (user && Object.keys(emailDrafts).length > 0) {
-      localStorage.setItem(`emailDrafts_${user.id}`, JSON.stringify(emailDrafts))
-    } else if (user && Object.keys(emailDrafts).length === 0) {
-      localStorage.removeItem(`emailDrafts_${user.id}`)
-    }
-  }, [emailDrafts, user])
-
-  // Save minimized emails to localStorage whenever they change
-  useEffect(() => {
-    if (user && minimizedEmails.length > 0) {
-      localStorage.setItem(`emailMinimized_${user.id}`, JSON.stringify(minimizedEmails))
-    } else if (user && minimizedEmails.length === 0) {
-      localStorage.removeItem(`emailMinimized_${user.id}`)
-    }
-  }, [minimizedEmails, user])
-
-  // Save email to recent list
-  const addToRecentEmails = (email: string) => {
-    const updated = [email, ...recentEmails.filter(e => e !== email)].slice(0, 10)
-    setRecentEmails(updated)
-    localStorage.setItem('recentEmails', JSON.stringify(updated))
-  }
 
   // Fetch shared documents for all import shipments
   const jobRefs = allShipments.map(s => s.jobRef).filter((ref): ref is number => ref !== undefined)
@@ -595,34 +514,6 @@ export default function ImportShipments() {
     },
   })
 
-  const sendEmail = useMutation({
-    mutationFn: async ({ to, cc, bcc, subject, body, attachmentUrls }: { to: string; cc?: string; bcc?: string; subject: string; body: string; attachmentUrls: string[] }) => {
-      return apiRequest('POST', '/api/gmail/send-with-attachments', {
-        to,
-        cc,
-        bcc,
-        subject,
-        body,
-        attachmentUrls
-      })
-    },
-    onSuccess: (_data, variables) => {
-      addToRecentEmails(variables.to)
-      toast({ title: 'Email sent successfully' })
-      // Remove from drafts storage
-      if (emailComposerData) {
-        setEmailDrafts(prev => {
-          const updated = {...prev}
-          delete updated[emailComposerData.id]
-          return updated
-        })
-      }
-      setEmailComposerData(null)
-    },
-    onError: (error: any) => {
-      toast({ title: 'Failed to send email', description: error.message || 'Please try again', variant: 'destructive' })
-    },
-  })
 
   const formatCurrency = (currency: string | null | undefined) => {
     if (!currency) return ""
@@ -986,25 +877,15 @@ export default function ImportShipments() {
     // Get transport documents
     const transportDocs = parseAttachments(shipment.attachments).map(normalizeFilePath)
     
-    // Create email data
-    const emailId = `email-${Date.now()}`
-    const newEmailData = {
+    // Open email composer
+    openEmailComposer({
+      id: `email-${Date.now()}`,
       to: agentEmail,
       cc: "",
       bcc: "",
       subject: subject,
       body: body,
       attachments: transportDocs,
-    }
-    
-    // Save to drafts storage
-    setEmailDrafts(prev => ({...prev, [emailId]: newEmailData}))
-    
-    // Open email composer
-    setEmailComposerData({
-      id: emailId,
-      ...newEmailData,
-      isMinimized: false
     })
     
     setClearanceAgentDialog(null)
@@ -2768,118 +2649,6 @@ export default function ImportShipments() {
         </DialogContent>
       </Dialog>
 
-      {/* Draggable Email Composer */}
-      {emailComposerData && !emailComposerData.isMinimized && (
-        <DraggableEmailComposer
-          data={{
-            to: emailComposerData.to,
-            cc: emailComposerData.cc,
-            bcc: emailComposerData.bcc,
-            subject: emailComposerData.subject,
-            body: emailComposerData.body,
-            attachments: emailComposerData.attachments
-          }}
-          onClose={() => {
-            if (emailComposerData) {
-              // Remove from drafts storage
-              setEmailDrafts(prev => {
-                const updated = {...prev}
-                delete updated[emailComposerData.id]
-                return updated
-              })
-            }
-            setEmailComposerData(null)
-          }}
-          onSend={(data) => {
-            sendEmail.mutate({
-              to: data.to,
-              cc: data.cc,
-              bcc: data.bcc,
-              subject: data.subject,
-              body: data.body,
-              attachmentUrls: data.attachments
-            })
-          }}
-          onMinimize={() => {
-            if (emailComposerData) {
-              setMinimizedEmails(prev => [...prev, {
-                id: emailComposerData.id,
-                to: emailComposerData.to,
-                subject: emailComposerData.subject
-              }])
-              setEmailComposerData(prev => prev ? {...prev, isMinimized: true} : null)
-            }
-          }}
-          isMinimized={false}
-          isSending={sendEmail.isPending}
-          recentEmails={recentEmails}
-          contactEmails={contactEmails}
-          onDataChange={(data) => {
-            setEmailComposerData(prev => {
-              if (!prev) return null
-              const updated = {...prev, ...data}
-              // Sync with drafts storage
-              setEmailDrafts(drafts => ({...drafts, [prev.id]: {
-                to: updated.to,
-                cc: updated.cc,
-                bcc: updated.bcc,
-                subject: updated.subject,
-                body: updated.body,
-                attachments: updated.attachments
-              }}))
-              return updated
-            })
-          }}
-        />
-      )}
-
-      {/* Email Taskbar */}
-      <EmailTaskbar
-        minimizedEmails={minimizedEmails}
-        onRestore={(id) => {
-          // If there's a currently displayed email (not minimized) and it's a different one, minimize it first
-          if (emailComposerData && !emailComposerData.isMinimized && emailComposerData.id !== id) {
-            // Add current email to minimized list
-            setMinimizedEmails(prev => [...prev, {
-              id: emailComposerData.id,
-              to: emailComposerData.to,
-              subject: emailComposerData.subject
-            }])
-            // Set current email as minimized
-            setEmailComposerData(prev => prev ? {...prev, isMinimized: true} : null)
-          }
-          
-          // Restore the requested email from drafts storage
-          const draftData = emailDrafts[id]
-          if (draftData) {
-            setEmailComposerData({
-              id,
-              ...draftData,
-              isMinimized: false
-            })
-          } else if (emailComposerData && emailComposerData.id === id) {
-            // Fallback: if it's the same email already in composer, just un-minimize it
-            setEmailComposerData(prev => prev ? {...prev, isMinimized: false} : null)
-          }
-          
-          // Remove from minimized emails list
-          setMinimizedEmails(prev => prev.filter(email => email.id !== id))
-        }}
-        onClose={(id) => {
-          // Remove from minimized list
-          setMinimizedEmails(prev => prev.filter(email => email.id !== id))
-          // Remove from drafts storage
-          setEmailDrafts(prev => {
-            const updated = {...prev}
-            delete updated[id]
-            return updated
-          })
-          // Clear composer if it's the current email
-          if (emailComposerData?.id === id) {
-            setEmailComposerData(null)
-          }
-        }}
-      />
     </div>
   )
 }
