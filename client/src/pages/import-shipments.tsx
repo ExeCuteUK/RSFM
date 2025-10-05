@@ -2767,7 +2767,20 @@ export default function ImportShipments() {
           recentEmails={recentEmails}
           contactEmails={contactEmails}
           onDataChange={(data) => {
-            setEmailComposerData(prev => prev ? {...prev, ...data} : null)
+            setEmailComposerData(prev => {
+              if (!prev) return null
+              const updated = {...prev, ...data}
+              // Sync with drafts storage
+              setEmailDrafts(drafts => ({...drafts, [prev.id]: {
+                to: updated.to,
+                cc: updated.cc,
+                bcc: updated.bcc,
+                subject: updated.subject,
+                body: updated.body,
+                attachments: updated.attachments
+              }}))
+              return updated
+            })
           }}
         />
       )}
