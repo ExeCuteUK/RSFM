@@ -4,7 +4,15 @@
     <script>
       // Suppress ResizeObserver warning BEFORE Replit plugin loads
       window.addEventListener('error', function(event) {
+        // Log the error details to see what's happening
+        console.log('Error intercepted:', {
+          message: event.message,
+          filename: event.filename,
+          error: event.error
+        });
+        
         if (event.message && event.message.includes('ResizeObserver loop')) {
+          console.log('Suppressing ResizeObserver error');
           event.preventDefault();
           return false;
         }
