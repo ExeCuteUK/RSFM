@@ -1364,7 +1364,8 @@ export default function ImportShipments() {
                                         >
                                           {fileName}
                                         </a>
-                                        <OCRDialog filePath={filePath} fileName={fileName} />
+                                        {/* OCR hidden - backend system remains available for future use */}
+                                        {/* <OCRDialog filePath={filePath} fileName={fileName} /> */}
                                         <button
                                           onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
@@ -1418,7 +1419,8 @@ export default function ImportShipments() {
                                         >
                                           {fileName}
                                         </a>
-                                        <OCRDialog filePath={filePath} fileName={fileName} />
+                                        {/* OCR hidden - backend system remains available for future use */}
+                                        {/* <OCRDialog filePath={filePath} fileName={fileName} /> */}
                                         <button
                                           onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
@@ -2320,7 +2322,8 @@ export default function ImportShipments() {
                                       >
                                         {fileName}
                                       </a>
-                                      <OCRDialog filePath={filePath} fileName={fileName} />
+                                      {/* OCR hidden - backend system remains available for future use */}
+                                      {/* <OCRDialog filePath={filePath} fileName={fileName} /> */}
                                     </div>
                                   )
                                 })}
@@ -2351,7 +2354,8 @@ export default function ImportShipments() {
                                       >
                                         {fileName}
                                       </a>
-                                      <OCRDialog filePath={filePath} fileName={fileName} />
+                                      {/* OCR hidden - backend system remains available for future use */}
+                                      {/* <OCRDialog filePath={filePath} fileName={fileName} /> */}
                                     </div>
                                   )
                                 })}
