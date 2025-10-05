@@ -626,7 +626,7 @@ export const insertCustomClearanceSchema = createInsertSchema(customClearances).
   goodsDescription: z.string().min(1, "Goods Description is required"),
   currency: z.string().min(1, "Currency is required"),
   invoiceValue: z.string().min(1, "Invoice Value is required"),
-  clearanceType: z.string().min(1, "Clearance Type is required"),
+  clearanceType: z.string().nullable().optional(),
 });
 
 export type InsertCustomClearance = z.infer<typeof insertCustomClearanceSchema>;
