@@ -1,19 +1,10 @@
 import { Mail, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEmail } from "@/contexts/EmailContext";
 
-interface MinimizedEmail {
-  id: string;
-  to: string;
-  subject: string;
-}
-
-interface EmailTaskbarProps {
-  minimizedEmails: MinimizedEmail[];
-  onRestore: (id: string) => void;
-  onClose: (id: string) => void;
-}
-
-export function EmailTaskbar({ minimizedEmails, onRestore, onClose }: EmailTaskbarProps) {
+export function EmailTaskbar() {
+  const { minimizedEmails, restoreEmail, removeMinimizedEmail } = useEmail();
+  
   if (minimizedEmails.length === 0) return null;
 
   return (
@@ -25,7 +16,7 @@ export function EmailTaskbar({ minimizedEmails, onRestore, onClose }: EmailTaskb
         <div
           key={email.id}
           className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md hover-elevate cursor-pointer max-w-xs"
-          onClick={() => onRestore(email.id)}
+          onClick={() => restoreEmail(email.id)}
           data-testid={`minimized-email-${email.id}`}
         >
           <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -43,7 +34,7 @@ export function EmailTaskbar({ minimizedEmails, onRestore, onClose }: EmailTaskb
             className="h-6 w-6 flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
-              onClose(email.id);
+              removeMinimizedEmail(email.id);
             }}
             data-testid={`button-close-minimized-${email.id}`}
           >

@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Minus, GripHorizontal, Paperclip, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEmail } from "@/contexts/EmailContext";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -20,38 +23,25 @@ import {
 } from "@/components/ui/command";
 import { Check } from "lucide-react";
 
-interface EmailComposerData {
-  to: string;
-  cc: string;
-  bcc: string;
-  subject: string;
-  body: string;
-  attachments: string[];
-}
-
-interface DraggableEmailComposerProps {
-  data: EmailComposerData;
-  onClose: () => void;
-  onSend: (data: EmailComposerData) => void;
-  onMinimize: () => void;
-  isMinimized: boolean;
-  isSending: boolean;
-  recentEmails: string[];
-  contactEmails: { email: string; name: string; type: string }[];
-  onDataChange: (data: EmailComposerData) => void;
-}
-
-export function DraggableEmailComposer({
-  data,
-  onClose,
-  onSend,
-  onMinimize,
-  isMinimized,
-  isSending,
-  recentEmails,
-  contactEmails,
-  onDataChange,
-}: DraggableEmailComposerProps) {
+export function DraggableEmailComposer() {
+  const { 
+    emailComposerData, 
+    closeEmailComposer, 
+    minimizeEmail, 
+    updateEmailDraft,
+    removeEmailDraft,
+    recentEmails,
+    addToRecentEmails 
+  } = useEmail();
+  
+  const { data: contactEmails = [] } = useQuery<{ email: string; name: string; type: string }[]>({
+    queryKey: ['/api/contacts/emails'],
+    staleTime: 5 * 60 * 1000
+  });
+  
+  if (!emailComposerData || emailComposerData.isMinimized) return null;
+  
+  const data = emailComposerData;
   const [position, setPosition] = useState(() => {
     const width = 600;
     const height = 690;
@@ -69,6 +59,33 @@ export function DraggableEmailComposer({
   const composerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Helper function to update email data
+  const handleDataChange = (updatedData: typeof data) => {
+    const { isMinimized: _, ...draftData } = updatedData;
+    updateEmailDraft(data.id, draftData);
+  };
+
+  // Send email mutation
+  const sendEmailMutation = useMutation({
+    mutationFn: async (emailData: typeof data) => {
+      const { isMinimized: _, ...sendData } = emailData;
+      return apiRequest("POST", "/api/gmail/send", sendData);
+    },
+    onSuccess: () => {
+      toast({ title: "Email sent successfully" });
+      if (data.to) addToRecentEmails(data.to);
+      removeEmailDraft(data.id);
+      closeEmailComposer();
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to send email",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -160,7 +177,7 @@ export function DraggableEmailComposer({
       }
 
       // Update attachments
-      onDataChange({
+      handleDataChange({
         ...data,
         attachments: [...data.attachments, ...uploadedUrls],
       });
@@ -186,15 +203,21 @@ export function DraggableEmailComposer({
   const handleRemoveAttachment = (index: number) => {
     const newAttachments = [...data.attachments];
     newAttachments.splice(index, 1);
-    onDataChange({
+    handleDataChange({
       ...data,
       attachments: newAttachments,
     });
   };
 
-  if (isMinimized) {
-    return null; // Taskbar will handle minimized display
-  }
+  const handleMinimize = () => {
+    const { isMinimized: _, ...draftData } = data;
+    minimizeEmail({
+      id: data.id,
+      to: data.to,
+      subject: data.subject
+    });
+    updateEmailDraft(data.id, draftData);
+  };
 
   return (
     <div
@@ -223,7 +246,7 @@ export function DraggableEmailComposer({
             size="icon"
             variant="ghost"
             className="h-8 w-8"
-            onClick={onMinimize}
+            onClick={handleMinimize}
             data-testid="button-minimize-email"
           >
             <Minus className="h-4 w-4" />
@@ -232,7 +255,7 @@ export function DraggableEmailComposer({
             size="icon"
             variant="ghost"
             className="h-8 w-8"
-            onClick={onClose}
+            onClick={closeEmailComposer}
             data-testid="button-close-email"
           >
             <X className="h-4 w-4" />
@@ -262,7 +285,7 @@ export function DraggableEmailComposer({
                 <CommandInput
                   placeholder="Type recipient email..."
                   value={data.to}
-                  onValueChange={(value) => onDataChange({ ...data, to: value })}
+                  onValueChange={(value) => handleDataChange({ ...data, to: value })}
                   data-testid="input-to-search"
                 />
                 <CommandList>
@@ -278,7 +301,7 @@ export function DraggableEmailComposer({
                           key={`recent-${email}`}
                           value={email}
                           onSelect={(currentValue) => {
-                            onDataChange({ ...data, to: currentValue });
+                            handleDataChange({ ...data, to: currentValue });
                             setEmailPopoverOpen(false);
                           }}
                           data-testid={`email-option-${email}`}
@@ -306,7 +329,7 @@ export function DraggableEmailComposer({
                           key={`contact-${contact.email}`}
                           value={contact.email}
                           onSelect={(currentValue) => {
-                            onDataChange({ ...data, to: currentValue });
+                            handleDataChange({ ...data, to: currentValue });
                             setEmailPopoverOpen(false);
                           }}
                           data-testid={`email-option-${contact.email}`}
@@ -356,7 +379,7 @@ export function DraggableEmailComposer({
                   <CommandInput
                     placeholder="Type CC email..."
                     value={data.cc}
-                    onValueChange={(value) => onDataChange({ ...data, cc: value })}
+                    onValueChange={(value) => handleDataChange({ ...data, cc: value })}
                     data-testid="input-cc-search"
                   />
                   <CommandList>
@@ -372,7 +395,7 @@ export function DraggableEmailComposer({
                             key={`cc-recent-${email}`}
                             value={email}
                             onSelect={(currentValue) => {
-                              onDataChange({ ...data, cc: currentValue });
+                              handleDataChange({ ...data, cc: currentValue });
                               setCcPopoverOpen(false);
                             }}
                             data-testid={`cc-option-${email}`}
@@ -400,7 +423,7 @@ export function DraggableEmailComposer({
                             key={`cc-contact-${contact.email}`}
                             value={contact.email}
                             onSelect={(currentValue) => {
-                              onDataChange({ ...data, cc: currentValue });
+                              handleDataChange({ ...data, cc: currentValue });
                               setCcPopoverOpen(false);
                             }}
                             data-testid={`cc-option-${contact.email}`}
@@ -448,7 +471,7 @@ export function DraggableEmailComposer({
                   <CommandInput
                     placeholder="Type BCC email..."
                     value={data.bcc}
-                    onValueChange={(value) => onDataChange({ ...data, bcc: value })}
+                    onValueChange={(value) => handleDataChange({ ...data, bcc: value })}
                     data-testid="input-bcc-search"
                   />
                   <CommandList>
@@ -464,7 +487,7 @@ export function DraggableEmailComposer({
                             key={`bcc-recent-${email}`}
                             value={email}
                             onSelect={(currentValue) => {
-                              onDataChange({ ...data, bcc: currentValue });
+                              handleDataChange({ ...data, bcc: currentValue });
                               setBccPopoverOpen(false);
                             }}
                             data-testid={`bcc-option-${email}`}
@@ -492,7 +515,7 @@ export function DraggableEmailComposer({
                             key={`bcc-contact-${contact.email}`}
                             value={contact.email}
                             onSelect={(currentValue) => {
-                              onDataChange({ ...data, bcc: currentValue });
+                              handleDataChange({ ...data, bcc: currentValue });
                               setBccPopoverOpen(false);
                             }}
                             data-testid={`bcc-option-${contact.email}`}
@@ -527,7 +550,7 @@ export function DraggableEmailComposer({
           <label className="text-sm font-medium">Subject:</label>
           <Input
             value={data.subject}
-            onChange={(e) => onDataChange({ ...data, subject: e.target.value })}
+            onChange={(e) => handleDataChange({ ...data, subject: e.target.value })}
             data-testid="input-subject"
           />
         </div>
@@ -538,7 +561,7 @@ export function DraggableEmailComposer({
           <Textarea
             rows={7}
             value={data.body}
-            onChange={(e) => onDataChange({ ...data, body: e.target.value })}
+            onChange={(e) => handleDataChange({ ...data, body: e.target.value })}
             data-testid="textarea-body"
           />
         </div>
@@ -598,15 +621,15 @@ export function DraggableEmailComposer({
 
       {/* Footer Buttons */}
       <div className="flex justify-end gap-2 px-4 py-3 border-t bg-muted/50">
-        <Button variant="outline" onClick={onClose} data-testid="button-cancel-email">
+        <Button variant="outline" onClick={closeEmailComposer} data-testid="button-cancel-email">
           Cancel
         </Button>
         <Button
-          onClick={() => onSend(data)}
-          disabled={isSending}
+          onClick={() => sendEmailMutation.mutate(data)}
+          disabled={sendEmailMutation.isPending}
           data-testid="button-send-email"
         >
-          {isSending ? 'Sending...' : 'Send Email'}
+          {sendEmailMutation.isPending ? 'Sending...' : 'Send Email'}
         </Button>
       </div>
     </div>
