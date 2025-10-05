@@ -49,6 +49,7 @@ import { format, parseISO } from "date-fns"
 import { CalendarIcon, Plus, FileText, X, Download } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ImportCustomerForm } from "./import-customer-form"
+import { ContactCombobox } from "./ContactCombobox"
 import { apiRequest, queryClient } from "@/lib/queryClient"
 import { useToast } from "@/hooks/use-toast"
 
@@ -129,8 +130,11 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
     },
   })
 
-  const { data: importCustomers } = useQuery<ImportCustomer[]>({
-    queryKey: ["/api/import-customers"],
+  const selectedCustomerId = form.watch("importCustomerId")
+
+  const { data: selectedCustomer } = useQuery<ImportCustomer>({
+    queryKey: ["/api/import-customers", selectedCustomerId],
+    enabled: !!selectedCustomerId,
   })
 
   const { data: hauliers } = useQuery<Haulier[]>({
@@ -163,8 +167,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       })
     },
   })
-
-  const selectedCustomerId = form.watch("importCustomerId")
   const rsToClear = form.watch("rsToClear")
   const containerShipment = form.watch("containerShipment")
   const handoverContainerAtPort = form.watch("handoverContainerAtPort")
@@ -202,16 +204,13 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   }
 
   useEffect(() => {
-    if (selectedCustomerId && importCustomers) {
-      const customer = importCustomers.find(c => c.id === selectedCustomerId)
-      if (customer) {
-        form.setValue("rsToClear", customer.rsProcessCustomsClearance ?? false)
-        form.setValue("customsClearanceAgent", customer.agentInDover || "")
-        form.setValue("deliveryAddress", customer.defaultDeliveryAddress || "")
-        form.setValue("supplierName", customer.defaultSuppliersName || "")
-      }
+    if (selectedCustomer) {
+      form.setValue("rsToClear", selectedCustomer.rsProcessCustomsClearance ?? false)
+      form.setValue("customsClearanceAgent", selectedCustomer.agentInDover || "")
+      form.setValue("deliveryAddress", selectedCustomer.defaultDeliveryAddress || "")
+      form.setValue("supplierName", selectedCustomer.defaultSuppliersName || "")
     }
-  }, [selectedCustomerId, importCustomers, form])
+  }, [selectedCustomer, form])
 
   useEffect(() => {
     if (additionalCommodityCodes && additionalCommodityCodes > 1) {
@@ -344,20 +343,15 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   <FormItem>
                     <FormLabel>Import Customer</FormLabel>
                     <div className="flex gap-2">
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-import-customer" className="flex-1">
-                            <SelectValue placeholder="Select import customer" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {importCustomers?.sort((a, b) => a.companyName.localeCompare(b.companyName)).map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>
-                              {customer.companyName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <ContactCombobox
+                          type="import-customer"
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
+                          placeholder="Select import customer"
+                          className="flex-1"
+                        />
+                      </FormControl>
                       <Button
                         type="button"
                         variant="outline"
