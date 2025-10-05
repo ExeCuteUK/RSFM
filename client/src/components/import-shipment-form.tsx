@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { insertImportShipmentSchema, type InsertImportShipment, type ImportCustomer, type InsertImportCustomer, type Haulier, type ShippingLine } from "@shared/schema"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -59,6 +60,46 @@ interface ImportShipmentFormProps {
   defaultValues?: Partial<InsertImportShipment>
 }
 
+// Validation helpers
+const numericWithDecimalsRegex = /^(\d+\.?\d*|\.\d+)?$/;
+
+const importShipmentFormSchema = insertImportShipmentSchema.superRefine((data: any, ctx: z.RefinementCtx) => {
+  // Numeric field validations
+  const numericFields = [
+    { field: 'weight', label: 'Weight' },
+    { field: 'numberOfPieces', label: 'Number of pieces' },
+    { field: 'cube', label: 'Cube' },
+    { field: 'invoiceValue', label: 'Invoice value' },
+    { field: 'freightCharge', label: 'Freight charge' },
+    { field: 'clearanceCharge', label: 'Clearance charge' },
+    { field: 'freightRateOut', label: 'Freight rate out' },
+    { field: 'haulierFreightRateIn', label: 'Haulier freight rate in' },
+  ];
+
+  numericFields.forEach(({ field, label }) => {
+    const value = data[field];
+    if (value && !numericWithDecimalsRegex.test(value)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${label} must be a number (decimals allowed)`,
+        path: [field],
+      });
+    }
+  });
+
+  // Container number validation
+  if (data.containerShipment === "Container Shipment" && data.trailerOrContainerNumber) {
+    const containerNo = data.trailerOrContainerNumber.replace(/\s/g, "");
+    if (containerNo.length !== 11) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Container number must be exactly 11 characters with no spaces",
+        path: ["trailerOrContainerNumber"],
+      });
+    }
+  }
+});
+
 export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: ImportShipmentFormProps) {
   const { toast } = useToast()
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
@@ -69,7 +110,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
 
   const form = useForm<InsertImportShipment>({
-    resolver: zodResolver(insertImportShipmentSchema),
+    resolver: zodResolver(importShipmentFormSchema),
     defaultValues: {
       jobType: "import",
       status: "Awaiting Collection",

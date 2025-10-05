@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { insertExportShipmentSchema, type InsertExportShipment, type ExportReceiver, type ExportCustomer, type InsertExportCustomer, type InsertExportReceiver, type Haulier, type ShippingLine } from "@shared/schema"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -48,6 +49,45 @@ interface ExportShipmentFormProps {
   defaultValues?: Partial<InsertExportShipment>
 }
 
+// Validation helpers
+const numericWithDecimalsRegex = /^(\d+\.?\d*|\.\d+)?$/;
+
+const exportShipmentFormSchema = insertExportShipmentSchema.superRefine((data: any, ctx: z.RefinementCtx) => {
+  // Numeric field validations
+  const numericFields = [
+    { field: 'weight', label: 'Weight' },
+    { field: 'numberOfPieces', label: 'Number of pieces' },
+    { field: 'cube', label: 'Cube' },
+    { field: 'value', label: 'Invoice value' },
+    { field: 'freightRateOut', label: 'Freight rate out' },
+    { field: 'clearanceCharge', label: 'Clearance charge' },
+    { field: 'arrivalClearanceCost', label: 'Arrival clearance cost' },
+  ];
+
+  numericFields.forEach(({ field, label }) => {
+    const value = data[field];
+    if (value && !numericWithDecimalsRegex.test(value)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${label} must be a number (decimals allowed)`,
+        path: [field],
+      });
+    }
+  });
+
+  // Container number validation
+  if (data.containerShipment === "Container Shipment" && data.trailerNo) {
+    const containerNo = data.trailerNo.replace(/\s/g, "");
+    if (containerNo.length !== 11) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Container number must be exactly 11 characters with no spaces",
+        path: ["trailerNo"],
+      });
+    }
+  }
+});
+
 export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: ExportShipmentFormProps) {
   const { toast } = useToast()
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
@@ -56,7 +96,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const [pendingAttachments, setPendingAttachments] = useState<string[]>([])
 
   const form = useForm<InsertExportShipment>({
-    resolver: zodResolver(insertExportShipmentSchema),
+    resolver: zodResolver(exportShipmentFormSchema),
     defaultValues: {
       jobType: "export",
       status: "Awaiting Collection",
