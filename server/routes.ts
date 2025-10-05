@@ -1380,6 +1380,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update booking confirmed status indicator
+  app.patch("/api/export-shipments/:id/booking-confirmed-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateExportShipment(req.params.id, { 
+        bookingConfirmedStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update booking confirmed status" });
+    }
+  });
+
+  // Update transport arranged status indicator
+  app.patch("/api/export-shipments/:id/transport-arranged-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateExportShipment(req.params.id, { 
+        transportArrangedStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update transport arranged status" });
+    }
+  });
+
+  // Update customs submitted status indicator
+  app.patch("/api/export-shipments/:id/customs-submitted-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateExportShipment(req.params.id, { 
+        customsSubmittedStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update customs submitted status" });
+    }
+  });
+
+  // Update invoice customer status indicator
+  app.patch("/api/export-shipments/:id/invoice-customer-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateExportShipment(req.params.id, { 
+        invoiceCustomerStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update invoice customer status" });
+    }
+  });
+
+  // Update send docs to customer status indicator
+  app.patch("/api/export-shipments/:id/send-docs-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateExportShipment(req.params.id, { 
+        sendDocsToCustomerStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update send docs to customer status" });
+    }
+  });
+
   // ========== Custom Clearances Routes ==========
   
   // Get all custom clearances
