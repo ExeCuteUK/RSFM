@@ -5,7 +5,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import {
@@ -2604,10 +2604,10 @@ export default function ImportShipments() {
 
       {/* Clearance Agent Selection Dialog */}
       <Dialog open={clearanceAgentDialog?.show || false} onOpenChange={(open) => !open && setClearanceAgentDialog(null)}>
-        <DialogContent className="max-w-2xl" aria-describedby="clearance-agent-description">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Select Clearance Agent</DialogTitle>
-            <p id="clearance-agent-description" className="sr-only">Choose a clearance agent to email about this shipment</p>
+            <DialogDescription>Choose a clearance agent to email about this shipment</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 max-h-[400px] overflow-y-auto">
             {clearanceAgents.length === 0 ? (
