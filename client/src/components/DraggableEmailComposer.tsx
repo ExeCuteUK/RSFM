@@ -68,7 +68,7 @@ export function DraggableEmailComposer({
 
       // Keep window within viewport bounds
       const maxX = window.innerWidth - 600; // composer width
-      const maxY = window.innerHeight - 500; // composer height
+      const maxY = window.innerHeight - 600; // composer height
 
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
@@ -114,7 +114,7 @@ export function DraggableEmailComposer({
         left: `${position.x}px`,
         top: `${position.y}px`,
         width: "600px",
-        maxHeight: "80vh",
+        maxHeight: "96vh",
       }}
       data-testid="draggable-email-composer"
     >
