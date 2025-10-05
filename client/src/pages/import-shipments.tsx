@@ -910,13 +910,15 @@ export default function ImportShipments() {
     body += `${customerName}\n`
     body += `${shipment.numberOfPieces || ""} ${shipment.packaging || ""}.\n`
     body += `${shipment.goodsDescription || ""}\n`
-    body += `${shipment.weight || ""}kgs, Invoice value ${shipment.currency || ""} ${shipment.invoiceValue || ""}\n`
+    body += `${shipment.weight || ""}, Invoice value ${shipment.currency || ""} ${shipment.invoiceValue || ""}\n`
     
     if (shipment.freightCharge) {
       body += `Transport Costs : ${shipment.freightCharge}\n`
     }
     
-    body += `\nVAT Payment Method : ${vatPaymentMethod}\n`
+    // Replace "R.S Deferment" with "Via Your Deferment"
+    const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
+    body += `\nVAT Payment Method : ${displayVatMethod}\n`
     
     if (shipment.vatZeroRated) {
       body += `VAT Zero Rated\n`
