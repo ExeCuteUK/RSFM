@@ -2024,6 +2024,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const createdInvoices = await storage.createManyPurchaseInvoices(invoices);
       res.status(201).json(createdInvoices);
     } catch (error) {
+      console.error("Error creating purchase invoices:", error);
       res.status(500).json({ error: "Failed to create purchase invoices" });
     }
   });
