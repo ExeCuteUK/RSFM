@@ -1648,8 +1648,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.status !== undefined && clearance.status === "Request CC") {
             shipmentUpdate.clearanceStatusIndicator = 1;
           }
-          // If status changed to "Awaiting Entry", set clearance status indicator to green (3)
-          if (req.body.status !== undefined && clearance.status === "Awaiting Entry") {
+          // If status changed to workflow statuses, set clearance status indicator to green (3)
+          if (req.body.status !== undefined && ["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
             shipmentUpdate.clearanceStatusIndicator = 3;
           }
           
@@ -1692,8 +1692,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.status !== undefined && clearance.status === "Request CC") {
             shipmentUpdate.adviseClearanceToAgentStatusIndicator = 1;
           }
-          // If status changed to "Awaiting Entry", set advise clearance to agent status indicator to green (3)
-          if (req.body.status !== undefined && clearance.status === "Awaiting Entry") {
+          // If status changed to workflow statuses, set advise clearance to agent status indicator to green (3)
+          if (req.body.status !== undefined && ["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
             shipmentUpdate.adviseClearanceToAgentStatusIndicator = 3;
           }
           
@@ -1706,13 +1706,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Also update the clearance's own advise agent status if status changed to "Request CC" or "Awaiting Entry"
+      // Also update the clearance's own advise agent status if status changed
       if (req.body.status !== undefined) {
         if (clearance.status === "Request CC") {
           await storage.updateCustomClearance(req.params.id, {
             adviseAgentStatusIndicator: 1
           });
-        } else if (clearance.status === "Awaiting Entry") {
+        } else if (["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
           await storage.updateCustomClearance(req.params.id, {
             adviseAgentStatusIndicator: 3
           });
