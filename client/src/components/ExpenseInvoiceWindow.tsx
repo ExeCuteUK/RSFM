@@ -242,7 +242,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   }
 
   const handleAmountKeyPress = (e: React.KeyboardEvent, invoiceId: string) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault()
       addInvoiceRow(invoiceId)
     }
@@ -370,28 +370,15 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       width={1100}
       height={720}
     >
-      <div className="p-6 flex flex-col h-full">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold">Invoice Details</h3>
-          <Button
-            onClick={() => addInvoiceRow()}
-            variant="outline"
-            size="sm"
-            data-testid="button-add-invoice-row"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Invoice
-          </Button>
-        </div>
-
-        <div ref={scrollContainerRef} className="flex-1 overflow-auto mb-4">
+      <div className="p-4 flex flex-col h-full">
+        <div ref={scrollContainerRef} className="flex-1 overflow-auto mb-3">
           <div className="space-y-2">
             {invoices.map((invoice, index) => {
               const jobInfo = jobInfoMap[invoice.id]
               return (
                 <div key={invoice.id} className="space-y-1">
                   <div
-                    className="grid grid-cols-[110px_1fr_0.67fr_130px_80px_auto_auto] gap-2 items-end p-3 border rounded-md bg-card"
+                    className="grid grid-cols-[110px_1fr_0.67fr_130px_80px_auto_auto] gap-2 items-end p-2 border rounded-md bg-card"
                     data-testid={`invoice-row-${index}`}
                   >
                     <div>
@@ -403,7 +390,6 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         value={invoice.jobRef}
                         onChange={(e) => handleJobRefChange(invoice.id, e.target.value)}
                         placeholder="26001"
-                        className="mt-1"
                         data-testid={`input-job-ref-${index}`}
                       />
                     </div>
@@ -415,7 +401,6 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         value={invoice.companyName}
                         onChange={(e) => handleCompanyNameChange(invoice.id, e.target.value)}
                         placeholder="Company name"
-                        className="mt-1"
                         list={`companyNames-${invoice.id}`}
                         data-testid={`input-company-name-${index}`}
                       />
@@ -439,7 +424,6 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         value={invoice.invoiceNumber}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceNumber', e.target.value)}
                         placeholder="Invoice #"
-                        className="mt-1"
                         data-testid={`input-invoice-number-${index}`}
                       />
                     </div>
@@ -451,7 +435,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         type="date"
                         value={invoice.invoiceDate}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceDate', e.target.value)}
-                        className="mt-1 [&::-webkit-calendar-picker-indicator]:hidden"
+                        className="[&::-webkit-calendar-picker-indicator]:hidden"
                         data-testid={`input-invoice-date-${index}`}
                       />
                     </div>
@@ -466,7 +450,6 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceAmount', e.target.value)}
                         onKeyPress={(e) => handleAmountKeyPress(e, invoice.id)}
                         placeholder="0.00"
-                        className="mt-1"
                         data-testid={`input-invoice-amount-${index}`}
                       />
                     </div>
@@ -475,7 +458,6 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => addInvoiceRow(invoice.id)}
-                      className="mt-1"
                       title="Add new line"
                       data-testid={`button-add-after-${index}`}
                     >
@@ -487,7 +469,6 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                       size="icon"
                       onClick={() => removeInvoiceRow(invoice.id)}
                       disabled={invoices.length === 1}
-                      className="mt-1"
                       title="Remove line"
                       data-testid={`button-remove-invoice-${index}`}
                     >
