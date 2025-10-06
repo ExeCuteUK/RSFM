@@ -1201,12 +1201,14 @@ export default function ImportShipments() {
                     </h3>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <ClipboardCheck 
-                          className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" 
+                        <button
                           onClick={() => setClearanceAgentDialog({ show: true, shipmentId: shipment.id })}
                           data-testid={`button-advise-clearance-${shipment.id}`}
                           title="Send clearance details to agent"
-                        />
+                          className="p-0 border-0 bg-transparent"
+                        >
+                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                        </button>
                         <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           Advise Clearance to Agent
                         </p>
