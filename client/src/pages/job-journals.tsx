@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Calendar } from "lucide-react"
+import { Search, Calendar, Plus } from "lucide-react"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from "@shared/schema"
 
 interface JobJournalEntry {
@@ -70,6 +71,7 @@ const getJobTypeAbbreviation = (jobType: string): string => {
 export default function JobJournals() {
   const currentDate = new Date()
   const [, setLocation] = useLocation()
+  const { openWindow } = useWindowManager()
   const [filterMode, setFilterMode] = useState<"month" | "range">("month")
   const [selectedMonth, setSelectedMonth] = useState((currentDate.getMonth() + 1).toString())
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString())
@@ -85,6 +87,13 @@ export default function JobJournals() {
     } else if (jobType === 'Export') {
       setLocation('/export-shipments')
     }
+  }
+  
+  const handleAddExpenseInvoices = () => {
+    openWindow({
+      type: "expense-invoice",
+      title: "Add Expense Invoices",
+    })
   }
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
@@ -317,9 +326,19 @@ export default function JobJournals() {
 
   return (
     <div className="h-full flex flex-col p-6 gap-4 overflow-hidden">
-      <div>
-        <h1 className="text-3xl font-bold">Job Journals</h1>
-        <p className="text-muted-foreground mt-1">Financial tracking for all jobs</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Job Journals</h1>
+          <p className="text-muted-foreground mt-1">Financial tracking for all jobs</p>
+        </div>
+        <Button
+          onClick={handleAddExpenseInvoices}
+          size="default"
+          data-testid="button-add-expense-invoices"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Expense Invoices
+        </Button>
       </div>
 
       <div className="flex gap-4 items-center">
