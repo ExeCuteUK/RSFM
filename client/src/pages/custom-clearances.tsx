@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2 } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
 import {
   DropdownMenu,
@@ -691,6 +691,17 @@ export default function CustomClearances() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                          {clearance.createdFromId && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              title="Linked to shipment"
+                              data-testid={`button-link-${clearance.id}`}
+                              className="h-7 w-7"
+                            >
+                              <Link2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
