@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send, Shield } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -1294,10 +1294,10 @@ Hope all is OK.`
                         <p className="font-semibold text-base">{getReceiverName(viewingShipment.receiverId)}</p>
                       </div>
                     </div>
-                    {viewingShipment.exportersReference && (
+                    {viewingShipment.customerReferenceNumber && (
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Exporter's Reference</p>
-                        <p className="text-base">{viewingShipment.exportersReference}</p>
+                        <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
+                        <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
                       </div>
                     )}
                   </div>
@@ -1311,6 +1311,12 @@ Hope all is OK.`
                     <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Shipment Details</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {viewingShipment.containerShipment && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Shipment Type</p>
+                        <p className="font-semibold text-base">{viewingShipment.containerShipment}</p>
+                      </div>
+                    )}
                     {viewingShipment.trailerNo && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">
@@ -1352,7 +1358,7 @@ Hope all is OK.`
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Key Dates</h3>
+                    <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Important Dates</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {viewingShipment.collectionDate && (
@@ -1414,34 +1420,116 @@ Hope all is OK.`
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+              <Card className="bg-purple-50/50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <h3 className="font-semibold text-lg text-purple-900 dark:text-purple-100">Customs Clearance</h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {viewingShipment.exportClearanceAgent && (
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <p className="text-xs text-muted-foreground mb-1">Export Clearance Agent</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.exportClearanceAgent}</p>
+                      </div>
+                    )}
+                    {viewingShipment.arrivalClearanceAgent && (
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <p className="text-xs text-muted-foreground mb-1">Arrival Clearance Agent</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.arrivalClearanceAgent}</p>
+                      </div>
+                    )}
+                    {viewingShipment.clearanceType && (
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <p className="text-xs text-muted-foreground mb-1">Clearance Type</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.clearanceType}</p>
+                      </div>
+                    )}
+                    {viewingShipment.value && (
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.value}</p>
+                      </div>
+                    )}
+                    {viewingShipment.additionalCommodityCodes !== null && (
+                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <p className="text-xs text-muted-foreground mb-1">Additional Commodity Codes</p>
+                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.additionalCommodityCodes}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <PoundSterling className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Charges Out</h3>
+                      <PoundSterling className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">R.S Charges / Income</h3>
+                      {(() => {
+                        const total = [
+                          viewingShipment.freightRateOut,
+                          viewingShipment.clearanceCharge,
+                          viewingShipment.arrivalClearanceCost,
+                          viewingShipment.additionalCommodityCodeCharge,
+                          ...(viewingShipment.expensesToChargeOut || []).map((e: { amount: string }) => e.amount)
+                        ]
+                          .filter(Boolean)
+                          .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0);
+                        
+                        return total > 0 ? (
+                          <Badge variant="outline" className="ml-auto text-xs border-green-300 dark:border-green-700">
+                            {formatCurrency(viewingShipment.currency || "GBP")}{total.toFixed(2)}
+                          </Badge>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="space-y-3">
-                      {viewingShipment.freightRateOut && (
-                        <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Freight Rate Out</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.freightRateOut}</p>
-                        </div>
-                      )}
-                      {viewingShipment.clearanceCharge && (
-                        <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge Out</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.clearanceCharge}</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        {viewingShipment.freightRateOut && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Freight Rate</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.freightRateOut}</p>
+                          </div>
+                        )}
+                        {viewingShipment.exportClearanceAgent === "R.S" && viewingShipment.clearanceCharge && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Export Clearance</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.clearanceCharge}</p>
+                          </div>
+                        )}
+                        {viewingShipment.arrivalClearanceCost && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Destination Clearance</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.arrivalClearanceCost}</p>
+                          </div>
+                        )}
+                      </div>
+                      {viewingShipment.additionalCommodityCodes !== null && viewingShipment.additionalCommodityCodes > 1 && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Total Commodity Codes</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{viewingShipment.additionalCommodityCodes}</p>
+                          </div>
+                          {viewingShipment.additionalCommodityCodeCharge && (
+                            <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                              <p className="text-xs text-muted-foreground mb-1">Additional HS Code Charge</p>
+                              <p className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">
+                                {formatCurrency(viewingShipment.currency || "GBP")}{((viewingShipment.additionalCommodityCodes - 1) * parseFloat(viewingShipment.additionalCommodityCodeCharge)).toFixed(2)}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
                       {viewingShipment.expensesToChargeOut && viewingShipment.expensesToChargeOut.length > 0 && (
-                        <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
                           <p className="text-xs text-muted-foreground mb-2">Additional Charges Out</p>
                           <div className="space-y-1">
                             {viewingShipment.expensesToChargeOut.map((expense: { description: string; amount: string }, idx: number) => (
                               <div key={idx} className="flex justify-between items-center">
-                                <span className="text-sm text-blue-900 dark:text-blue-100">{expense.description}</span>
-                                <span className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{expense.amount}</span>
+                                <span className="text-sm text-green-900 dark:text-green-100">{expense.description}</span>
+                                <span className="font-semibold text-sm text-green-900 dark:text-green-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{expense.amount}</span>
                               </div>
                             ))}
                           </div>
@@ -1455,21 +1543,45 @@ Hope all is OK.`
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <PoundSterling className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Expenses In</h3>
+                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Job Expenses</h3>
+                      {(() => {
+                        const total = [
+                          viewingShipment.haulierFreightRateIn,
+                          viewingShipment.exportClearanceChargeIn,
+                          viewingShipment.destinationClearanceCostIn,
+                          ...(viewingShipment.additionalExpensesIn || []).map((e: { amount: string }) => e.amount)
+                        ]
+                          .filter(Boolean)
+                          .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0);
+                        
+                        return total > 0 ? (
+                          <Badge variant="outline" className="ml-auto text-xs border-orange-300 dark:border-orange-700">
+                            {formatCurrency(viewingShipment.currencyIn || "GBP")}{total.toFixed(2)}
+                          </Badge>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="space-y-3">
-                      {viewingShipment.haulierFreightRateIn && (
-                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                          <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate In</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
-                        </div>
-                      )}
-                      {viewingShipment.exportClearanceChargeIn && (
-                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge In</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
-                        </div>
-                      )}
+                      <div className="grid grid-cols-3 gap-3">
+                        {viewingShipment.haulierFreightRateIn && (
+                          <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <p className="text-xs text-muted-foreground mb-1">Haulier Freight</p>
+                            <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
+                          </div>
+                        )}
+                        {viewingShipment.exportClearanceChargeIn && (
+                          <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <p className="text-xs text-muted-foreground mb-1">Export Clearance</p>
+                            <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
+                          </div>
+                        )}
+                        {viewingShipment.destinationClearanceCostIn && (
+                          <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <p className="text-xs text-muted-foreground mb-1">Destination Clearance</p>
+                            <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.destinationClearanceCostIn}</p>
+                          </div>
+                        )}
+                      </div>
                       {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                           <p className="text-xs text-muted-foreground mb-2">Additional Expenses In</p>
