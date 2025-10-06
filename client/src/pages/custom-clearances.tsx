@@ -40,6 +40,7 @@ export default function CustomClearances() {
   const [dragOver, setDragOver] = useState<{ clearanceId: string; type: "transport" | "clearance" } | null>(null)
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const [redButtonPrompt, setRedButtonPrompt] = useState<{ clearanceId: string; statusType: string; statusValue: number } | null>(null)
+  const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "transport" | "clearance"; fileName: string } | null>(null)
   const { toast } = useToast()
   const [location] = useLocation()
 
@@ -351,6 +352,22 @@ export default function CustomClearances() {
   const handleSaveNotes = () => {
     if (!notesClearanceId) return
     updateNotes.mutate({ id: notesClearanceId, notes: notesValue })
+  }
+
+  const handleDeleteFile = (id: string, filePath: string, fileType: "transport" | "clearance") => {
+    const fileName = filePath.split('/').pop() || filePath
+    setDeletingFile({ id, filePath, fileType, fileName })
+  }
+
+  const confirmDeleteFile = () => {
+    if (deletingFile) {
+      deleteFile.mutate({ 
+        id: deletingFile.id, 
+        filePath: deletingFile.filePath, 
+        fileType: deletingFile.fileType 
+      })
+      setDeletingFile(null)
+    }
   }
 
   const handleCreateNew = () => {
@@ -915,7 +932,7 @@ export default function CustomClearances() {
                                         {fileName}
                                       </a>
                                       <button
-                                        onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "transport" })}
+                                        onClick={() => handleDeleteFile(clearance.id, filePath, "transport")}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-delete-transport-${clearance.id}-${idx}`}
                                       >
@@ -962,7 +979,7 @@ export default function CustomClearances() {
                                         {fileName}
                                       </a>
                                       <button
-                                        onClick={() => deleteFile.mutate({ id: clearance.id, filePath, fileType: "clearance" })}
+                                        onClick={() => handleDeleteFile(clearance.id, filePath, "clearance")}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-delete-clearance-${clearance.id}-${idx}`}
                                       >
@@ -998,6 +1015,21 @@ export default function CustomClearances() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deletingFile} onOpenChange={(open) => !open && setDeletingFile(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete File</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingFile?.fileName}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteFile}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
