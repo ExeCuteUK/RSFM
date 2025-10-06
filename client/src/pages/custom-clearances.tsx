@@ -479,12 +479,30 @@ export default function CustomClearances() {
       // Build email subject
       const truckContainerFlight = clearance.trailerOrContainerNumber || "TBA"
       const eta = formatDate(clearance.etaPort) || "TBA"
-      const subject = `${clearance.jobType === "import" ? "Import" : "Export"} Clearance / ${customerName} / Our Ref : ${clearance.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      
+      let subject: string
+      if (clearance.jobType === "export") {
+        // Export subject: no ETA field
+        subject = `Export Clearance / ${customerName} / Our Ref : ${clearance.jobRef} / ${truckContainerFlight}`
+      } else {
+        // Import subject: includes ETA
+        subject = `Import Clearance / ${customerName} / Our Ref : ${clearance.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      }
       
       // Build email body
-      let body = `Hi Team,\n\nPlease could you arrange clearance on the below shipment. Our Ref : ${clearance.jobRef}\n\n`
-      body += `Consignment will arrive on ${clearance.containerShipment === "Road Shipment" ? "Trailer" : clearance.containerShipment === "Air Freight" ? "Flight" : "Container"} : ${clearance.trailerOrContainerNumber || "TBA"} Into ${clearance.portOfArrival || "TBA"} on ${formatDate(clearance.etaPort) || "TBA"}.\n\n`
-      body += `${customerName}\n`
+      const clearanceTypeText = clearance.jobType === "export" ? "an Export Clearance" : "clearance"
+      let body = `Hi Team,\n\nPlease could you arrange ${clearanceTypeText} on the below shipment. Our Ref : ${clearance.jobRef}\n\n`
+      
+      const arrivalDepartureText = clearance.jobType === "export" ? "depart" : "arrive"
+      body += `Consignment will ${arrivalDepartureText} on ${clearance.containerShipment === "Road Shipment" ? "Trailer" : clearance.containerShipment === "Air Freight" ? "Flight" : "Container"} : ${clearance.trailerOrContainerNumber || "TBA"} Into ${clearance.portOfArrival || "TBA"} on ${formatDate(clearance.etaPort) || "TBA"}.\n\n`
+      
+      // Add customer name with prefix for exports
+      if (clearance.jobType === "export") {
+        body += `Exporter : ${customerName}\n`
+      } else {
+        body += `${customerName}\n`
+      }
+      
       body += `${clearance.numberOfPieces || ""} ${clearance.packaging || ""}.\n`
       body += `${clearance.goodsDescription || ""}\n`
       body += `${clearance.weight || ""}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
@@ -501,9 +519,10 @@ export default function CustomClearances() {
         if (clearance.vatZeroRated) {
           body += `VAT Zero Rated\n`
         }
+        
+        // Add clearance type only for imports
+        body += `Clearance Type : ${clearance.clearanceType || "N/A"}\n`
       }
-      
-      body += `Clearance Type : ${clearance.clearanceType || "N/A"}\n`
       
       // Get agent's email based on job type
       const agentEmail = clearance.jobType === "import" 
