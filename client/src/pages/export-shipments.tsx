@@ -432,10 +432,11 @@ export default function ExportShipments() {
         return
       }
 
-      // Build email recipient data - jobContactEmail is now an array
-      const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) ? shipment.jobContactEmail : []
-      const toEmails = jobContactEmailArray.slice(0, 1)  // First email goes to "To"
-      const ccEmails = jobContactEmailArray.slice(1)  // Rest go to "CC"
+      // Build email recipient data
+      const jobContactEmailRaw = shipment.jobContactEmail || ""
+      const emailList = jobContactEmailRaw.split(',').map(email => email.trim()).filter(email => email.length > 0)
+      const jobContactEmail = emailList[0] || ""
+      const ccEmails = emailList.slice(1).join(", ")
       
       // Build subject
       const customerRef = shipment.customerReferenceNumber
@@ -458,17 +459,18 @@ export default function ExportShipments() {
       const yourRefPart = customerRef ? `Your Ref: ${customerRef} / ` : ""
       const subject = `Export Delivery Update / ${yourRefPart}Our Ref: ${jobRef} / ${truckContainerFlight} / Delivery Date: ${deliveryDate}`
       
-      // Build message body - handle multiple contact names from array
+      // Build message body - conditionally include "your ref" only if customerRef exists
+      // Handle multiple contact names separated by commas
       let greeting = "Hi there"
-      const jobContactNames = Array.isArray(shipment.jobContactName) ? shipment.jobContactName : []
-      if (jobContactNames.length > 0) {
-        if (jobContactNames.length === 1) {
-          greeting = `Hi ${jobContactNames[0]}`
-        } else if (jobContactNames.length === 2) {
-          greeting = `Hi ${jobContactNames[0]} and ${jobContactNames[1]}`
-        } else {
-          const allButLast = jobContactNames.slice(0, -1).join(', ')
-          greeting = `Hi ${allButLast}, and ${jobContactNames[jobContactNames.length - 1]}`
+      if (shipment.jobContactName && shipment.jobContactName.trim()) {
+        const names = shipment.jobContactName.split(',').map(name => name.trim()).filter(name => name.length > 0)
+        if (names.length === 1) {
+          greeting = `Hi ${names[0]}`
+        } else if (names.length === 2) {
+          greeting = `Hi ${names[0]} and ${names[1]}`
+        } else if (names.length > 2) {
+          const allButLast = names.slice(0, -1).join(', ')
+          greeting = `Hi ${allButLast}, and ${names[names.length - 1]}`
         }
       }
       
@@ -491,9 +493,9 @@ Hope all is OK.`
       // Open email composer
       openEmailComposer({
         id: `email-${Date.now()}`,
-        to: toEmails,
+        to: jobContactEmail,
         cc: ccEmails,
-        bcc: [],
+        bcc: "",
         subject: subject,
         body: body,
         attachments: podFiles,
@@ -569,9 +571,9 @@ Hope all is OK.`
       
       openEmailComposer({
         id: `email-${Date.now()}`,
-        to: agent.agentExportEmail?.[0] ? [agent.agentExportEmail[0]] : [],
-        cc: [],
-        bcc: [],
+        to: agent.agentExportEmail?.[0] || "",
+        cc: "",
+        bcc: "",
         subject,
         body,
         attachments,
