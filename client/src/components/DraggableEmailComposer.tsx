@@ -378,14 +378,18 @@ export function DraggableEmailComposer() {
                 <Input
                   placeholder="Add recipient email..."
                   value={newToEmail}
-                  onChange={(e) => setNewToEmail(e.target.value)}
+                  onChange={(e) => {
+                    setNewToEmail(e.target.value);
+                    if (e.target.value.trim()) {
+                      setEmailPopoverOpen(true);
+                    }
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       addToEmail(newToEmail);
                     }
                   }}
-                  onFocus={() => setEmailPopoverOpen(true)}
                   data-testid="input-to-email"
                   className="flex-1"
                 />
@@ -483,14 +487,18 @@ export function DraggableEmailComposer() {
                   <Input
                     placeholder="Add CC email..."
                     value={newCcEmail}
-                    onChange={(e) => setNewCcEmail(e.target.value)}
+                    onChange={(e) => {
+                      setNewCcEmail(e.target.value);
+                      if (e.target.value.trim()) {
+                        setCcPopoverOpen(true);
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         addCcEmail(newCcEmail);
                       }
                     }}
-                    onFocus={() => setCcPopoverOpen(true)}
                     data-testid="input-cc-email"
                   />
                 </PopoverTrigger>
@@ -585,14 +593,18 @@ export function DraggableEmailComposer() {
                   <Input
                     placeholder="Add BCC email..."
                     value={newBccEmail}
-                    onChange={(e) => setNewBccEmail(e.target.value)}
+                    onChange={(e) => {
+                      setNewBccEmail(e.target.value);
+                      if (e.target.value.trim()) {
+                        setBccPopoverOpen(true);
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         addBccEmail(newBccEmail);
                       }
                     }}
-                    onFocus={() => setBccPopoverOpen(true)}
                     data-testid="input-bcc-email"
                   />
                 </PopoverTrigger>
