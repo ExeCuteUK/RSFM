@@ -551,13 +551,14 @@ export default function ExportShipments() {
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
                         {shipment.jobRef}
                       </h3>
-                      <div className="flex gap-1">
+                      <div className="flex -space-x-1">
                         <Button
                           size="icon"
                           variant="ghost"
                           onClick={() => handleOpenNotes(shipment)}
                           data-testid={`button-notes-${shipment.id}`}
                           title={shipment.additionalNotes || "Additional Notes"}
+                          className="h-7 w-7"
                         >
                           <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
                         </Button>
@@ -566,6 +567,7 @@ export default function ExportShipments() {
                           variant="ghost"
                           onClick={() => handleEdit(shipment)}
                           data-testid={`button-edit-${shipment.id}`}
+                          className="h-7 w-7"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -574,6 +576,7 @@ export default function ExportShipments() {
                           variant="ghost"
                           onClick={() => handleDelete(shipment.id)}
                           data-testid={`button-delete-${shipment.id}`}
+                          className="h-7 w-7"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -644,63 +647,51 @@ export default function ExportShipments() {
                       {shipment.vesselName}
                     </p>
                   )}
+                  <p data-testid={`text-collection-date-${shipment.id}`}>
+                    <span>Collection Date:</span>{' '}
+                    {formatDate(shipment.collectionDate) || (
+                      <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
+                    )}
+                  </p>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <p data-testid={`text-collection-date-${shipment.id}`}>
-                      <span>Collection Date:</span>{' '}
-                      {formatDate(shipment.collectionDate) || (
-                        <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
-                      )}
-                    </p>
                     <p data-testid={`text-delivery-date-${shipment.id}`}>
                       <span>Delivery Date:</span>{' '}
                       {formatDate(shipment.deliveryDate) || (
                         <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                       )}
                     </p>
+                    {shipment.portOfArrival && (
+                      <p data-testid={`text-port-${shipment.id}`}>
+                        <span>
+                          {shipment.containerShipment === "Container Shipment" 
+                            ? "Port Of Arrival:" 
+                            : shipment.containerShipment === "Air Freight"
+                            ? "Arrival Airport:"
+                            : "Destination:"}
+                        </span>{' '}
+                        {shipment.portOfArrival}
+                      </p>
+                    )}
                   </div>
-                  {shipment.portOfArrival && (
-                    <p data-testid={`text-port-${shipment.id}`}>
-                      <span>
-                        {shipment.containerShipment === "Container Shipment" 
-                          ? "Port Of Arrival:" 
-                          : shipment.containerShipment === "Air Freight"
-                          ? "Arrival Airport:"
-                          : "Destination:"}
-                      </span>{' '}
-                      {shipment.portOfArrival}
-                    </p>
-                  )}
-                  {(shipment.weight || shipment.numberOfPieces || shipment.packaging) && (
-                    <p data-testid={`text-weight-packaging-${shipment.id}`}>
-                      {shipment.weight && <span>Weight: {shipment.weight}</span>}
-                      {shipment.weight && (shipment.numberOfPieces || shipment.packaging) && <span> | </span>}
-                      {shipment.numberOfPieces && <span>Pieces: {shipment.numberOfPieces}</span>}
-                      {shipment.numberOfPieces && shipment.packaging && <span> | </span>}
-                      {shipment.packaging && <span>Packaging: {shipment.packaging}</span>}
-                    </p>
-                  )}
-                  {shipment.goodsDescription && (
-                    <p className="text-muted-foreground line-clamp-1" data-testid={`text-description-${shipment.id}`}>
-                      {shipment.goodsDescription}
-                    </p>
-                  )}
-                  {(() => {
-                    const files = parseAttachments(shipment.attachments)
-                    if (files.length > 0) {
-                      return (
-                        <div className="flex items-center gap-1 pt-1" data-testid={`attachments-${shipment.id}`}>
-                          <Paperclip className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {files.length} {files.length === 1 ? 'file' : 'files'} attached
-                          </span>
-                        </div>
-                      )
-                    }
-                    return null
-                  })()}
+                  <div className="pt-2 mt-2 border-t space-y-1">
+                    {shipment.goodsDescription && (
+                      <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${shipment.id}`}>
+                        {shipment.goodsDescription}
+                      </p>
+                    )}
+                    {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
+                      <p className="text-muted-foreground" data-testid={`text-weight-pieces-${shipment.id}`}>
+                        {shipment.weight && <>Weight: {shipment.weight} kgs</>}
+                        {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
+                        {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
+                      </p>
+                    )}
+                  </div>
                   
-                  <div className="mt-2 pt-2 border-t space-y-1.5">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">To-Do List</p>
+                  <div className="pt-2 mt-2 border-t">
+                    <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${shipment.id}`}>
+                      To-Do List
+                    </h3>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
                         <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
@@ -960,6 +951,120 @@ export default function ExportShipments() {
                       </div>
                     </div>
                   </div>
+                  {(() => {
+                    const attachmentFiles = parseAttachments(shipment.attachments)
+                    const podFiles = parseAttachments(shipment.proofOfDelivery)
+                    return (
+                      <div className="mt-2 pt-2 border-t">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div 
+                            className="space-y-1"
+                            onDragOver={(e) => handleFileDragOver(e, shipment.id, "attachment")}
+                            onDragLeave={handleFileDragLeave}
+                            onDrop={(e) => handleFileDrop(e, shipment.id, "attachment")}
+                          >
+                            <p className="text-xs font-medium text-muted-foreground">Documents</p>
+                            <div className={`min-h-[2.5rem] p-1.5 rounded border-2 border-dashed transition-colors ${
+                              dragOver?.shipmentId === shipment.id && dragOver?.type === "attachment"
+                                ? "border-green-400 bg-green-50 dark:bg-green-950/20"
+                                : "border-transparent"
+                            }`}>
+                              {attachmentFiles.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {attachmentFiles.map((filePath: string, idx: number) => {
+                                    const fileName = filePath.split('/').pop() || filePath
+                                    const downloadPath = normalizeFilePath(filePath)
+                                    return (
+                                      <div key={idx} className="flex items-center gap-1 group">
+                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                        <a
+                                          href={downloadPath}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-xs text-primary hover:underline truncate flex-1 cursor-pointer"
+                                          title={fileName}
+                                        >
+                                          {fileName}
+                                        </a>
+                                        <button
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                          data-testid={`button-delete-attachment-${idx}`}
+                                          title="Delete file"
+                                        >
+                                          <X className="h-3 w-3 text-destructive" />
+                                        </button>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              ) : (
+                                <p className={`text-xs italic transition-colors ${
+                                  dragOver?.shipmentId === shipment.id && dragOver?.type === "attachment"
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-muted-foreground"
+                                }`}>
+                                  {dragOver?.shipmentId === shipment.id && dragOver?.type === "attachment" ? "Drop files here" : "None"}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div 
+                            className="space-y-1"
+                            onDragOver={(e) => handleFileDragOver(e, shipment.id, "pod")}
+                            onDragLeave={handleFileDragLeave}
+                            onDrop={(e) => handleFileDrop(e, shipment.id, "pod")}
+                          >
+                            <p className="text-xs font-medium text-muted-foreground">POD</p>
+                            <div className={`min-h-[2.5rem] p-1.5 rounded border-2 border-dashed transition-colors ${
+                              dragOver?.shipmentId === shipment.id && dragOver?.type === "pod"
+                                ? "border-green-400 bg-green-50 dark:bg-green-950/20"
+                                : "border-transparent"
+                            }`}>
+                              {podFiles.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {podFiles.map((filePath: string, idx: number) => {
+                                    const fileName = filePath.split('/').pop() || filePath
+                                    const downloadPath = normalizeFilePath(filePath)
+                                    return (
+                                      <div key={idx} className="flex items-center gap-1 group">
+                                        <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                        <a
+                                          href={downloadPath}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-xs text-primary hover:underline truncate flex-1 cursor-pointer"
+                                          title={fileName}
+                                        >
+                                          {fileName}
+                                        </a>
+                                        <button
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
+                                          data-testid={`button-delete-pod-${idx}`}
+                                          title="Delete file"
+                                        >
+                                          <X className="h-3 w-3 text-destructive" />
+                                        </button>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              ) : (
+                                <p className={`text-xs italic transition-colors ${
+                                  dragOver?.shipmentId === shipment.id && dragOver?.type === "pod"
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-muted-foreground"
+                                }`}>
+                                  {dragOver?.shipmentId === shipment.id && dragOver?.type === "pod" ? "Drop files here" : "None"}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               </CardContent>
             </Card>
