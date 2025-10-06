@@ -199,20 +199,35 @@ export default function ExportShipments() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "attachment" | "pod" }) => {
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("fileType", fileType)
-      
-      const response = await fetch(`/api/export-shipments/${id}/upload`, {
+      // Get upload URL
+      const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name })
+      })
+      const { uploadURL } = await uploadResponse.json()
+      
+      // Upload file to storage
+      await fetch(uploadURL, {
+        method: "PUT",
+        body: file
       })
       
-      if (!response.ok) {
-        throw new Error("Upload failed")
-      }
+      // Get the file path (remove query params)
+      const filePath = uploadURL.split('?')[0]
       
-      return response.json()
+      // Update shipment with new file
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      const currentFiles = fileType === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
+      const updatedFiles = [...currentFiles, filePath]
+      
+      await apiRequest("PATCH", `/api/export-shipments/${id}`, {
+        [fileType === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
+      })
+      
+      return { filePath }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
@@ -225,10 +240,19 @@ export default function ExportShipments() {
 
   const deleteFile = useMutation({
     mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
-      return apiRequest("DELETE", `/api/export-shipments/${id}/file`, { filePath, fileType })
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      const currentFiles = fileType === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
+      const updatedFiles = currentFiles.filter(f => f !== filePath)
+      
+      return apiRequest("PATCH", `/api/export-shipments/${id}`, {
+        [fileType === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       toast({ title: "File deleted successfully" })
     },
   })
