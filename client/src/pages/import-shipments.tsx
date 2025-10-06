@@ -237,15 +237,6 @@ export default function ImportShipments() {
     },
   })
 
-  const updateSendHaulierEadStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: number | null }) => {
-      return apiRequest("PATCH", `/api/import-shipments/${id}/send-haulier-ead-status`, { status })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
-    },
-  })
-
   const deleteFile = useMutation({
     mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
       return apiRequest("DELETE", `/api/import-shipments/${id}/files`, { filePath, fileType })
@@ -648,10 +639,6 @@ export default function ImportShipments() {
     updateSendPodToCustomerStatus.mutate({ id, status })
   }
 
-  const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
-    updateSendHaulierEadStatus.mutate({ id, status })
-  }
-
   const handleBookDeliveryCustomerEmail = (shipment: ImportShipment) => {
     try {
       // Get customer and agent email
@@ -829,94 +816,6 @@ Hope all is OK.`
     }
   }
 
-  const handleSendHaulierEadEmail = (shipment: ImportShipment) => {
-    try {
-      // Check if attachments (Export Entry documents) exist
-      const sharedDocs = shipment.jobRef ? (sharedDocsMap[shipment.jobRef] || []) : []
-      const attachmentFiles = sharedDocs.length > 0 ? sharedDocs : parseAttachments(shipment.attachments)
-      
-      if (!attachmentFiles || attachmentFiles.length === 0) {
-        toast({
-          title: "No Export Entry Files",
-          description: "No documents are attached to this Job. Please upload an Export Entry to the job file and then try again.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Build email recipient data (handle both array and legacy string formats)
-      const haulierEmailArray = Array.isArray(shipment.haulierEmail) 
-        ? shipment.haulierEmail 
-        : (shipment.haulierEmail ? [shipment.haulierEmail] : [])
-      const haulierEmail = haulierEmailArray[0] || ""
-      const ccEmails = haulierEmailArray.slice(1).join(", ")
-      
-      // Build subject
-      const jobRef = shipment.jobRef || "N/A"
-      const trailerNumber = shipment.trailerOrContainerNumber || ""
-      const haulierRef = shipment.haulierReference || ""
-      
-      // Build subject parts conditionally
-      let subject = `Export Job Update - EAD File / Our Ref: ${jobRef}`
-      
-      if (trailerNumber) {
-        subject += ` / Trailer Number: ${trailerNumber}`
-      }
-      
-      if (haulierRef) {
-        subject += ` / Your Ref: ${haulierRef}`
-      }
-      
-      // Build message body - handle multiple contact names (handle both array and legacy string formats)
-      let greeting = "Hi there"
-      const haulierContactNameArray = Array.isArray(shipment.haulierContactName)
-        ? shipment.haulierContactName
-        : (shipment.haulierContactName ? [shipment.haulierContactName] : [])
-      
-      if (haulierContactNameArray.length > 0) {
-        if (haulierContactNameArray.length === 1) {
-          greeting = `Hi ${haulierContactNameArray[0]}`
-        } else if (haulierContactNameArray.length === 2) {
-          greeting = `Hi ${haulierContactNameArray[0]} and ${haulierContactNameArray[1]}`
-        } else if (haulierContactNameArray.length > 2) {
-          const allButLast = haulierContactNameArray.slice(0, -1).join(', ')
-          greeting = `Hi ${allButLast}, and ${haulierContactNameArray[haulierContactNameArray.length - 1]}`
-        }
-      }
-      
-      const body = `${greeting},
-
-Please find attached Export Entry for this shipment.
-
-Hope all is OK.`
-      
-      // Get attachment file paths and normalize them
-      const eadFiles = attachmentFiles.map(normalizeFilePath).filter(Boolean)
-      
-      // Open email composer
-      openEmailComposer({
-        id: `email-${Date.now()}`,
-        to: haulierEmail,
-        cc: ccEmails,
-        bcc: "",
-        subject: subject,
-        body: body,
-        attachments: eadFiles,
-        metadata: {
-          source: 'send-haulier-ead',
-          shipmentId: shipment.id
-        }
-      })
-    } catch (error) {
-      console.error('Error opening email composer:', error)
-      toast({
-        title: "Failed to open email",
-        description: "Please try again",
-        variant: "destructive",
-      })
-    }
-  }
-
   const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
     const fileName = filePath.split('/').pop() || filePath
     setDeletingFile({ id, filePath, fileType, fileName })
@@ -1060,17 +959,6 @@ Hope all is OK.`
   }
 
   const getSendPodToCustomerStatusColor = (status: number | null) => {
-    switch (status) {
-      case 1:
-      case null:
-      default: return "text-yellow-600 dark:text-yellow-400"
-      case 2: return "text-orange-600 dark:text-orange-400"
-      case 3: return "text-green-600 dark:text-green-400"
-      case 4: return "text-red-600 dark:text-red-400"
-    }
-  }
-
-  const getSendHaulierEadStatusColor = (status: number | null) => {
     switch (status) {
       case 1:
       case null:
@@ -1574,46 +1462,6 @@ Hope all is OK.`
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-delivery-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleSendHaulierEadEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                          data-testid={`button-send-haulier-ead-email-${shipment.id}`}
-                          title="Send Export Entry to Haulier"
-                        >
-                          <Send className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                        <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <p className={`text-xs font-medium ${getSendHaulierEadStatusColor(shipment.sendHaulierEadStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
-                          {shipment.deliveryRelease === "Line" ? "Book Delivery with Line / Send Haulier EAD" : "Book Delivery With Haulier / Send Haulier EAD"}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => updateSendHaulierEadStatus.mutate({ id: shipment.id, status: null })}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendHaulierEadStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                          }`}
-                          data-testid={`button-haulier-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendHaulierEadStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
-                          }`}
-                          data-testid={`button-haulier-status-green-${shipment.id}`}
                           title="Completed"
                         />
                       </div>

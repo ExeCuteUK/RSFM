@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
-import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup, ClearanceAgent } from "@shared/schema"
+import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup, ClearanceAgent, ExportShipment } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { useEmail } from "@/contexts/EmailContext"
@@ -74,6 +74,10 @@ export default function CustomClearances() {
 
   const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
     queryKey: ["/api/clearance-agents"],
+  })
+
+  const { data: exportShipments = [] } = useQuery<any[]>({
+    queryKey: ["/api/export-shipments"],
   })
 
   // Fetch shared documents for all clearances
@@ -281,6 +285,91 @@ export default function CustomClearances() {
 
   const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
     updateSendHaulierEadStatus.mutate({ id, status })
+  }
+
+  const handleSendHaulierEadEmail = (clearance: CustomClearance) => {
+    // Validation: Check if clearance documents exist
+    if (!clearance.clearanceDocuments || clearance.clearanceDocuments.length === 0) {
+      toast({
+        title: "No Export Entry documents",
+        description: "Please upload Export Entry documents before sending the email",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Get the linked export shipment
+    const linkedExportShipment = clearance.createdFromId
+      ? exportShipments.find(s => s.id === clearance.createdFromId)
+      : null
+
+    if (!linkedExportShipment) {
+      toast({
+        title: "No linked export shipment found",
+        description: "Cannot send email without a linked export shipment",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Get haulier email(s) - support both array and legacy string format
+    const haulierEmailField = linkedExportShipment.haulierEmail
+    const haulierEmails = Array.isArray(haulierEmailField)
+      ? haulierEmailField.filter(Boolean)
+      : typeof haulierEmailField === 'string' && haulierEmailField
+        ? haulierEmailField.split(',').map(e => e.trim()).filter(Boolean)
+        : []
+
+    if (haulierEmails.length === 0) {
+      toast({
+        title: "No haulier email found",
+        description: "Please add a haulier email to the linked export shipment",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Get haulier contact name(s) - support both array and legacy string format
+    const haulierContactField = linkedExportShipment.haulierContactName
+    const haulierContacts = Array.isArray(haulierContactField)
+      ? haulierContactField.filter(Boolean)
+      : typeof haulierContactField === 'string' && haulierContactField
+        ? haulierContactField.split('/').map(c => c.trim()).filter(Boolean)
+        : []
+
+    // Build "Dear" line with proper grammar
+    let dearLine = "Dear Sir/Madam"
+    if (haulierContacts.length === 1) {
+      dearLine = `Dear ${haulierContacts[0]}`
+    } else if (haulierContacts.length === 2) {
+      dearLine = `Dear ${haulierContacts[0]} & ${haulierContacts[1]}`
+    } else if (haulierContacts.length > 2) {
+      const lastContact = haulierContacts[haulierContacts.length - 1]
+      const otherContacts = haulierContacts.slice(0, -1).join(', ')
+      dearLine = `Dear ${otherContacts} & ${lastContact}`
+    }
+
+    // Build subject with conditional Trailer Number and Haulier Reference
+    let subjectParts = [`Job Ref: ${clearance.jobRef}`]
+    if (linkedExportShipment.trailerNumber) {
+      subjectParts.push(`Trailer Number: ${linkedExportShipment.trailerNumber}`)
+    }
+    if (linkedExportShipment.haulierReference) {
+      subjectParts.push(`Haulier Reference: ${linkedExportShipment.haulierReference}`)
+    }
+    const subject = subjectParts.join(' - ')
+
+    const body = `${dearLine},\n\nPlease find attached Export Entry for the above.\n\nKind Regards`
+
+    // Open email composer with Export Entry documents
+    openEmailComposer({
+      to: haulierEmails,
+      subject,
+      body,
+      attachments: clearance.clearanceDocuments || [],
+      source: 'send-haulier-ead',
+      sourceId: clearance.id,
+    })
   }
 
   const handleSendEntryStatusUpdate = (id: string, status: number) => {
@@ -959,6 +1048,14 @@ export default function CustomClearances() {
                         {clearance.jobType === "export" && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleSendHaulierEadEmail(clearance)}
+                                className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                                data-testid={`button-send-haulier-ead-email-${clearance.id}`}
+                                title="Send Export Entry to Haulier"
+                              >
+                                <Send className="h-4 w-4 text-muted-foreground" />
+                              </button>
                               <FileOutput className="h-4 w-4 text-muted-foreground shrink-0" />
                               <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`todo-send-ead-${clearance.id}`}>
                                 Send Haulier EAD
