@@ -75,8 +75,10 @@ export function DraggableEmailComposer() {
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
       // Auto-update status based on metadata
+      console.log('Email metadata:', emailComposerData.metadata);
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
         const { source, shipmentId } = emailComposerData.metadata;
+        console.log('Updating status:', { source, shipmentId });
         
         try {
           if (source === 'book-delivery-customer') {
