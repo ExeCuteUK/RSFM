@@ -1078,6 +1078,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update book delivery customer status indicator
+  app.patch("/api/import-shipments/:id/book-delivery-customer-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 2, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      }
+      const shipment = await storage.updateImportShipment(req.params.id, { 
+        bookDeliveryCustomerStatusIndicator: status 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update book delivery customer status" });
+    }
+  });
+
   // Update haulier booking status indicator
   app.patch("/api/import-shipments/:id/haulier-booking-status", async (req, res) => {
     try {

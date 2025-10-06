@@ -89,7 +89,7 @@ export function DraggableEmailComposer() {
             queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           } else if (source === 'advise-clearance-agent-export') {
             // Update Advise Clearance to Agent status to Green (3) for export
-            await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-agent-status`, { status: 3 });
+            await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
           }
         } catch (error) {
