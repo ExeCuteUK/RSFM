@@ -127,7 +127,9 @@ export function DraggableEmailComposer() {
 
   // Helper function to update email data
   const handleDataChange = (updatedData: typeof data) => {
+    console.log('[handleDataChange] updatedData:', JSON.stringify(updatedData, null, 2));
     const { isMinimized: _, ...draftData } = updatedData;
+    console.log('[handleDataChange] draftData (after removing isMinimized):', JSON.stringify(draftData, null, 2));
     updateEmailDraft(data.id, draftData);
   };
 

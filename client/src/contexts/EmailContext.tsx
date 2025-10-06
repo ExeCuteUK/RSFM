@@ -136,11 +136,13 @@ export function EmailProvider({ children }: { children: ReactNode }) {
   }
 
   const updateEmailDraft = (id: string, draft: EmailDraft) => {
+    console.log('[updateEmailDraft] Received draft:', JSON.stringify(draft, null, 2));
     setEmailDrafts(prev => ({
       ...prev,
       [id]: draft
     }))
     // Also update the window payload so restored windows have latest data
+    console.log('[updateEmailDraft] Calling updateWindowPayload with:', JSON.stringify(draft, null, 2));
     updateWindowPayload(id, draft)
   }
 
