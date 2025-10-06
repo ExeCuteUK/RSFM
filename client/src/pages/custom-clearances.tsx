@@ -667,15 +667,17 @@ export default function CustomClearances() {
                           >
                             <StickyNote className={`h-4 w-4 ${clearance.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
                           </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleEdit(clearance)}
-                            data-testid={`button-edit-${clearance.id}`}
-                            className="h-7 w-7"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                          {!clearance.createdFromId && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleEdit(clearance)}
+                              data-testid={`button-edit-${clearance.id}`}
+                              className="h-7 w-7"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             size="icon"
                             variant="ghost"
