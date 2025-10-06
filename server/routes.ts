@@ -1052,8 +1052,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adviseAgentStatusIndicator: status
         };
         
-        // If status is green (3), update the clearance status to "Awaiting Entry"
-        if (status === 3) {
+        // Update clearance status based on indicator
+        if (status === 1) {
+          clearanceUpdate.status = "Request CC";
+        } else if (status === 3) {
           clearanceUpdate.status = "Awaiting Entry";
         }
         
@@ -1446,8 +1448,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adviseAgentStatusIndicator: status
         };
         
-        // If status is green (3), update the clearance status to "Awaiting Entry"
-        if (status === 3) {
+        // Update clearance status based on indicator
+        if (status === 1) {
+          clearanceUpdate.status = "Request CC";
+        } else if (status === 3) {
           clearanceUpdate.status = "Awaiting Entry";
         }
         
@@ -1715,8 +1719,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         adviseAgentStatusIndicator: status 
       };
       
-      // If status is green (3), update the clearance status to "Awaiting Entry"
-      if (status === 3) {
+      // Update clearance status based on indicator
+      if (status === 1) {
+        updateData.status = "Request CC";
+      } else if (status === 3) {
         updateData.status = "Awaiting Entry";
       }
       
