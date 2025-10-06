@@ -115,6 +115,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       jobType: "import",
       status: "Awaiting Collection",
       importCustomerId: "",
+      jobContactName: "",
+      jobContactEmail: "",
       bookingDate: defaultValues?.bookingDate || format(new Date(), "yyyy-MM-dd"),
       collectionDate: "",
       dispatchDate: "",
@@ -215,6 +217,25 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const haulierEmails = form.watch("haulierEmail") || []
   const haulierContactNames = form.watch("haulierContactName") || []
   const additionalCommodityCodes = form.watch("additionalCommodityCodes")
+
+  // Auto-populate Job Contact Name and Email when customer is selected (only for new shipments)
+  useEffect(() => {
+    if (selectedCustomer && !defaultValues?.jobContactName && !defaultValues?.jobContactEmail) {
+      // Prioritize agent contact name if available, otherwise use contact name
+      if (selectedCustomer.agentContactName && selectedCustomer.agentContactName.length > 0) {
+        form.setValue("jobContactName", selectedCustomer.agentContactName[0])
+      } else if (selectedCustomer.contactName && selectedCustomer.contactName.length > 0) {
+        form.setValue("jobContactName", selectedCustomer.contactName[0])
+      }
+
+      // Prioritize agent email if agent name is present, otherwise use contact email
+      if (selectedCustomer.agentName && selectedCustomer.agentEmail && selectedCustomer.agentEmail.length > 0) {
+        form.setValue("jobContactEmail", selectedCustomer.agentEmail[0])
+      } else if (selectedCustomer.email && selectedCustomer.email.length > 0) {
+        form.setValue("jobContactEmail", selectedCustomer.email[0])
+      }
+    }
+  }, [selectedCustomer, defaultValues?.jobContactName, defaultValues?.jobContactEmail, form])
 
   const addHaulierContactName = () => {
     if (!newHaulierContactName.trim()) return
@@ -403,6 +424,34 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="jobContactName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job Contact Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-job-contact-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="jobContactEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job Contact Email</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-job-contact-email" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
