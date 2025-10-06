@@ -103,6 +103,10 @@ export function DraggableEmailComposer() {
             // Update Send POD To Customer status to Green (3)
             await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-pod-to-customer-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+          } else if (source === 'send-pod-customer-export') {
+            // Update Send POD To Customer status to Green (3) for export shipments
+            await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/send-pod-to-customer-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
           }
         } catch (error) {
           console.error('Failed to update status:', error);

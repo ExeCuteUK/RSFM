@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -418,6 +418,84 @@ export default function ExportShipments() {
 
   const handleSendPodToCustomerStatusUpdate = (id: string, status: number) => {
     updateSendPodToCustomerStatus.mutate({ id, status })
+  }
+
+  const handleSendPodToCustomerEmail = (shipment: ExportShipment) => {
+    try {
+      // Check if POD documents exist
+      if (!shipment.proofOfDelivery || shipment.proofOfDelivery.length === 0) {
+        toast({
+          title: "No Proof Of Delivery Files",
+          description: "No Proof Of Delivery Files are attached to this Job. Please upload a POD to the job file and then try again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Build email recipient data
+      const jobContactEmailRaw = shipment.jobContactEmail || ""
+      const emailList = jobContactEmailRaw.split(',').map(email => email.trim()).filter(email => email.length > 0)
+      const jobContactEmail = emailList[0] || ""
+      const ccEmails = emailList.slice(1).join(", ")
+      
+      // Build subject
+      const customerRef = shipment.customerReferenceNumber || "N/A"
+      const jobRef = shipment.jobRef || "N/A"
+      const containerNumber = shipment.trailerNo || "N/A"
+      const deliveryDate = formatDate(shipment.deliveryDate) || "N/A"
+      
+      let truckContainerFlight = ""
+      if (shipment.containerShipment === "Container Shipment") {
+        truckContainerFlight = `Container Number: ${containerNumber}`
+      } else if (shipment.containerShipment === "Road Shipment") {
+        truckContainerFlight = `Trailer Number: ${containerNumber}`
+      } else if (shipment.containerShipment === "Air Freight") {
+        truckContainerFlight = `Flight Number: ${containerNumber}`
+      } else {
+        truckContainerFlight = `Container or Trailer or Flight Number: ${containerNumber}`
+      }
+      
+      const subject = `Export Delivery Update / Your Ref: ${customerRef} / Our Ref: ${jobRef} / ${truckContainerFlight} / Delivery Date: ${deliveryDate}`
+      
+      // Build message body
+      const jobContactName = shipment.jobContactName || "there"
+      const body = `Hi ${jobContactName},
+
+Please find enclosed Proof Of Delivery attached for this shipment, your ref ${customerRef}.
+
+Hope all is OK.`
+      
+      // Get POD file paths and normalize them
+      const normalizeFilePath = (path: string) => {
+        if (!path) return ""
+        if (path.startsWith("/objects/")) return path
+        if (path.startsWith("objects/")) return `/${path}`
+        return path
+      }
+      const podFiles = parseAttachments(shipment.proofOfDelivery).map(normalizeFilePath).filter(Boolean)
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: jobContactEmail,
+        cc: ccEmails,
+        bcc: "",
+        subject: subject,
+        body: body,
+        attachments: podFiles,
+        metadata: {
+          source: 'send-pod-customer-export',
+          shipmentId: shipment.id
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
   }
 
   const formatDate = (dateStr: string | null) => {
@@ -851,7 +929,14 @@ export default function ExportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <FileArchive className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <button
+                          onClick={() => handleSendPodToCustomerEmail(shipment)}
+                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                          data-testid={`button-send-pod-email-${shipment.id}`}
+                          title="Send POD email to customer"
+                        >
+                          <Send className="h-4 w-4 text-muted-foreground" />
+                        </button>
                         <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-${shipment.id}`}>
                           Send POD To Customer
                         </p>
