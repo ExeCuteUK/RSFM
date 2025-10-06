@@ -684,9 +684,22 @@ export default function ImportShipments() {
         body += `Your Reference : ${customerRef}\n`
       }
       
-      body += `\nDelivery Address :-\n${shipment.deliveryAddress || "N/A"}\n\n`
-      body += `We have been advised that delivery can be made on *\n\n`
-      body += `If you can advise if this date is good for you and any other information required such as delivery time, references that would be great.\n\n`
+      // Delivery address - show "Please advise" if blank
+      const deliveryAddress = shipment.deliveryAddress || "Please advise"
+      body += `\nDelivery Address :-\n${deliveryAddress}\n\n`
+      
+      // Get delivery date
+      const deliveryDate = formatDate(shipment.deliveryDate) || "DD/MM/YY"
+      body += `We have been advised that delivery can be made on ${deliveryDate}\n\n`
+      
+      // Confirmation message based on whether delivery address is present
+      if (shipment.deliveryAddress) {
+        body += `If you can advise if this date/delivery address is OK and any other information required such as delivery time, references that would be great.\n\n`
+      } else {
+        body += `If you can advise if this date is OK and any other information required such as delivery time, references that would be great.\n\n`
+        body += `Please also note we do not seem to have the delivery address noted on this job file. If you can confirm the delivery address for this shipment Ill get the job file updated.\n\n`
+      }
+      
       body += `Many Thanks,`
       
       // Open email composer
