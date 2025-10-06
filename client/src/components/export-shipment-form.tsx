@@ -837,7 +837,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   name="etaPortDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>ETA Port Date</FormLabel>
+                      <FormLabel>ETA Customs</FormLabel>
                       <div className="flex gap-2">
                         <Popover>
                           <PopoverTrigger asChild>

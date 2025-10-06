@@ -73,6 +73,12 @@ export default function ExportShipments() {
     return receiver?.companyName || "N/A"
   }
 
+  const getCustomerName = (customerId: string | null) => {
+    if (!customerId) return "N/A"
+    const customer = exportCustomers.find(c => c.id === customerId)
+    return customer?.companyName || "N/A"
+  }
+
   const filteredByStatus = selectedStatuses.length === 0
     ? allShipments 
     : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
@@ -81,13 +87,13 @@ export default function ExportShipments() {
     ? filteredByStatus
     : filteredByStatus.filter(s => {
         const searchLower = searchText.toLowerCase()
-        const receiverName = getReceiverName(s.receiverId).toLowerCase()
+        const customerName = getCustomerName(s.destinationCustomerId).toLowerCase()
         const jobRef = s.jobRef.toString()
         const trailer = (s.trailerNo || "").toLowerCase()
         const vessel = (s.vesselName || "").toLowerCase()
         
         return jobRef.includes(searchLower) ||
-               receiverName.includes(searchLower) ||
+               customerName.includes(searchLower) ||
                trailer.includes(searchLower) ||
                vessel.includes(searchLower)
       })
@@ -424,7 +430,7 @@ export default function ExportShipments() {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null
     const date = new Date(dateStr)
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })
   }
 
   return (
@@ -583,7 +589,7 @@ export default function ExportShipments() {
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
-                      {getReceiverName(shipment.receiverId)}
+                      {getCustomerName(shipment.destinationCustomerId)}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-2">
@@ -634,7 +640,7 @@ export default function ExportShipments() {
                           {shipment.trailerNo}
                         </p>
                         <p className="font-semibold text-lg" data-testid={`text-eta-port-date-${shipment.id}`}>
-                          <span>ETA Port Date:</span>{' '}
+                          <span>ETA Customs:</span>{' '}
                           {formatDate(shipment.etaPortDate) || (
                             <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                           )}
@@ -645,6 +651,11 @@ export default function ExportShipments() {
                   {shipment.containerShipment === "Container Shipment" && shipment.vesselName && (
                     <p className="font-semibold text-lg" data-testid={`text-vessel-name-${shipment.id}`}>
                       {shipment.vesselName}
+                    </p>
+                  )}
+                  {shipment.haulierName && (
+                    <p className="font-semibold text-lg" data-testid={`text-haulier-name-${shipment.id}`}>
+                      {shipment.haulierName}
                     </p>
                   )}
                   <p data-testid={`text-collection-date-${shipment.id}`}>
