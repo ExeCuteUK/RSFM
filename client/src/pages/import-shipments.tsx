@@ -1156,6 +1156,11 @@ export default function ImportShipments() {
                           {shipment.shippingLine}
                         </p>
                       )}
+                      {shipment.containerShipment === "Road Shipment" && shipment.haulierName && (
+                        <p className="font-semibold text-lg" data-testid={`text-haulier-name-${shipment.id}`}>
+                          {shipment.haulierName}
+                        </p>
+                      )}
                     </>
                   )}
                   {shipment.containerShipment === "Container Shipment" && shipment.vesselName && (
