@@ -47,13 +47,19 @@ export default function ExportShipments() {
   const { toast} = useToast()
   const [, setLocation] = useLocation()
 
-  // Read search parameter from URL on mount
+  // Read search parameter from URL or localStorage on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const searchParam = params.get('search')
+    const storedJobRef = localStorage.getItem('shipmentSearchJobRef')
+    
     if (searchParam) {
       setSearchText(searchParam)
       setSelectedStatuses([]) // Select "All" filter
+    } else if (storedJobRef) {
+      setSearchText(storedJobRef)
+      setSelectedStatuses([]) // Select "All" filter
+      localStorage.removeItem('shipmentSearchJobRef') // Clear after use
     }
   }, [])
 
@@ -1411,12 +1417,6 @@ Hope all is OK.`
                            viewingShipment.containerShipment === "Air Freight" ? "Flight Details" : "Carrier"}
                         </p>
                         <p className="text-base">{viewingShipment.vesselName}</p>
-                      </div>
-                    )}
-                    {viewingShipment.haulierName && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Haulier</p>
-                        <p className="text-base">{viewingShipment.haulierName}</p>
                       </div>
                     )}
                     {viewingShipment.portOfArrival && (

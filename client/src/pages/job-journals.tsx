@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useLocation } from "wouter"
 import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -68,10 +69,20 @@ const getJobTypeAbbreviation = (jobType: string): string => {
 
 export default function JobJournals() {
   const currentDate = new Date()
+  const [, setLocation] = useLocation()
   const [selectedMonth, setSelectedMonth] = useState((currentDate.getMonth() + 1).toString())
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString())
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(["Import", "Export", "Customs"])
   const [searchText, setSearchText] = useState("")
+  
+  const handleJobRefClick = (jobRef: number, jobType: string) => {
+    localStorage.setItem('shipmentSearchJobRef', jobRef.toString())
+    if (jobType === 'Import') {
+      setLocation('/import-shipments')
+    } else if (jobType === 'Export') {
+      setLocation('/export-shipments')
+    }
+  }
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -382,7 +393,13 @@ export default function JobJournals() {
                       {getJobTypeAbbreviation(entry.jobType)}
                     </td>
                     <td className="p-2 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
-                      {entry.jobRef}
+                      <button
+                        onClick={() => handleJobRefClick(entry.jobRef, entry.jobType)}
+                        className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                        data-testid={`link-jobref-${entry.jobRef}`}
+                      >
+                        {entry.jobRef}
+                      </button>
                     </td>
                     <td className="p-2 text-center border-r border-border" data-testid={`text-customer-${entry.jobRef}`}>
                       {entry.customerName}

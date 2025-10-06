@@ -60,13 +60,19 @@ export default function ImportShipments() {
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
-  // Read search parameter from URL on mount
+  // Read search parameter from URL or localStorage on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const searchParam = params.get('search')
+    const storedJobRef = localStorage.getItem('shipmentSearchJobRef')
+    
     if (searchParam) {
       setSearchText(searchParam)
       setSelectedStatuses([]) // Select "All" filter
+    } else if (storedJobRef) {
+      setSearchText(storedJobRef)
+      setSelectedStatuses([]) // Select "All" filter
+      localStorage.removeItem('shipmentSearchJobRef') // Clear after use
     }
   }, [])
 
@@ -1999,50 +2005,64 @@ Hope all is OK.`
                           )}
                         </div>
                         
-                        {hasAgent && (
+                        {!hasAgent && viewingShipment.customerReferenceNumber && (
                           <div className="grid grid-cols-4 gap-4">
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Agent Name</p>
-                              <p className="text-base">{customer.agentName}</p>
-                            </div>
-                            {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
-                                <p className="text-base">{viewingShipment.jobContactName.join(', ')}</p>
-                              </div>
-                            )}
-                            {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">Email</p>
-                                <div className="flex flex-col gap-1">
-                                  {viewingShipment.jobContactEmail.map((email, idx) => (
-                                    <a 
-                                      key={idx} 
-                                      href={`mailto:${email}`} 
-                                      className="text-base text-blue-600 dark:text-blue-400 hover:underline"
-                                    >
-                                      {email}
-                                    </a>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {customer.agentTelephone && (
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">Telephone</p>
-                                <p className="text-base">{customer.agentTelephone}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          {viewingShipment.customerReferenceNumber && (
                             <div>
                               <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
                               <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
                             </div>
-                          )}
+                          </div>
+                        )}
+                        
+                        {hasAgent && (
+                          <>
+                            <div className="grid grid-cols-4 gap-4">
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Agent Name</p>
+                                <p className="text-base">{customer.agentName}</p>
+                              </div>
+                              {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
+                                  <p className="text-base">{viewingShipment.jobContactName.join(', ')}</p>
+                                </div>
+                              )}
+                              {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Email</p>
+                                  <div className="flex flex-col gap-1">
+                                    {viewingShipment.jobContactEmail.map((email, idx) => (
+                                      <a 
+                                        key={idx} 
+                                        href={`mailto:${email}`} 
+                                        className="text-base text-blue-600 dark:text-blue-400 hover:underline"
+                                      >
+                                        {email}
+                                      </a>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {customer.agentTelephone && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                                  <p className="text-base">{customer.agentTelephone}</p>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {viewingShipment.customerReferenceNumber && (
+                              <div className="grid grid-cols-4 gap-4">
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
+                                  <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        
+                        <div className="grid grid-cols-2 gap-4">
                           {viewingShipment.supplierName && (
                             <div>
                               <p className="text-xs text-muted-foreground mb-1">Supplier Name</p>
