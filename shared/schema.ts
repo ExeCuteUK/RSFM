@@ -687,3 +687,22 @@ export const insertJobFileGroupSchema = createInsertSchema(jobFileGroups).omit({
 
 export type InsertJobFileGroup = z.infer<typeof insertJobFileGroupSchema>;
 export type JobFileGroup = typeof jobFileGroups.$inferSelect;
+
+// Purchase Invoices (Expense Invoices)
+export const purchaseInvoices = pgTable("purchase_invoices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobRef: integer("job_ref").notNull(),
+  companyName: text("company_name").notNull(),
+  invoiceNumber: text("invoice_number").notNull(),
+  invoiceDate: text("invoice_date").notNull(),
+  invoiceAmount: text("invoice_amount").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertPurchaseInvoiceSchema = createInsertSchema(purchaseInvoices).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPurchaseInvoice = z.infer<typeof insertPurchaseInvoiceSchema>;
+export type PurchaseInvoice = typeof purchaseInvoices.$inferSelect;

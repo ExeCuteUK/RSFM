@@ -26,6 +26,8 @@ import {
   type InsertCustomClearance,
   type JobFileGroup,
   type InsertJobFileGroup,
+  type PurchaseInvoice,
+  type InsertPurchaseInvoice,
   importCustomers,
   exportCustomers,
   exportReceivers,
@@ -37,6 +39,7 @@ import {
   exportShipments,
   customClearances,
   jobFileGroups,
+  purchaseInvoices,
   users,
   messages
 } from "@shared/schema";
@@ -154,6 +157,15 @@ export interface IStorage {
   // Job History methods
   getImportShipmentsByCustomerId(customerId: string): Promise<ImportShipment[]>;
   getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]>;
+
+  // Purchase Invoice methods
+  getAllPurchaseInvoices(): Promise<PurchaseInvoice[]>;
+  getPurchaseInvoicesByJobRef(jobRef: number): Promise<PurchaseInvoice[]>;
+  getPurchaseInvoice(id: string): Promise<PurchaseInvoice | undefined>;
+  createPurchaseInvoice(invoice: InsertPurchaseInvoice): Promise<PurchaseInvoice>;
+  createManyPurchaseInvoices(invoices: InsertPurchaseInvoice[]): Promise<PurchaseInvoice[]>;
+  updatePurchaseInvoice(id: string, invoice: Partial<InsertPurchaseInvoice>): Promise<PurchaseInvoice | undefined>;
+  deletePurchaseInvoice(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -1801,6 +1813,63 @@ export class DatabaseStorage implements IStorage {
       .where(eq(exportShipments.destinationCustomerId, customerId))
       .orderBy(desc(exportShipments.jobRef));
     return shipments;
+  }
+
+  // Purchase Invoice methods
+  async getAllPurchaseInvoices(): Promise<PurchaseInvoice[]> {
+    const invoices = await db.select()
+      .from(purchaseInvoices)
+      .orderBy(desc(purchaseInvoices.createdAt));
+    return invoices;
+  }
+
+  async getPurchaseInvoicesByJobRef(jobRef: number): Promise<PurchaseInvoice[]> {
+    const invoices = await db.select()
+      .from(purchaseInvoices)
+      .where(eq(purchaseInvoices.jobRef, jobRef))
+      .orderBy(desc(purchaseInvoices.createdAt));
+    return invoices;
+  }
+
+  async getPurchaseInvoice(id: string): Promise<PurchaseInvoice | undefined> {
+    const [invoice] = await db.select()
+      .from(purchaseInvoices)
+      .where(eq(purchaseInvoices.id, id));
+    return invoice;
+  }
+
+  async createPurchaseInvoice(insertInvoice: InsertPurchaseInvoice): Promise<PurchaseInvoice> {
+    const [invoice] = await db.insert(purchaseInvoices)
+      .values({
+        ...insertInvoice,
+        createdAt: new Date().toISOString(),
+      })
+      .returning();
+    return invoice;
+  }
+
+  async createManyPurchaseInvoices(insertInvoices: InsertPurchaseInvoice[]): Promise<PurchaseInvoice[]> {
+    const invoices = await db.insert(purchaseInvoices)
+      .values(insertInvoices.map(inv => ({
+        ...inv,
+        createdAt: new Date().toISOString(),
+      })))
+      .returning();
+    return invoices;
+  }
+
+  async updatePurchaseInvoice(id: string, updates: Partial<InsertPurchaseInvoice>): Promise<PurchaseInvoice | undefined> {
+    const [updated] = await db.update(purchaseInvoices)
+      .set(updates)
+      .where(eq(purchaseInvoices.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deletePurchaseInvoice(id: string): Promise<boolean> {
+    const result = await db.delete(purchaseInvoices)
+      .where(eq(purchaseInvoices.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 
