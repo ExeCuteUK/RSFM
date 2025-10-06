@@ -38,6 +38,7 @@ export default function ExportShipments() {
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
+  const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
   const { toast} = useToast()
   const [, setLocation] = useLocation()
 
@@ -310,8 +311,18 @@ export default function ExportShipments() {
   }
 
   const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
-    if (confirm("Are you sure you want to delete this file?")) {
-      deleteFile.mutate({ id, filePath, fileType })
+    const fileName = filePath.split('/').pop() || filePath
+    setDeletingFile({ id, filePath, fileType, fileName })
+  }
+
+  const confirmDeleteFile = () => {
+    if (deletingFile) {
+      deleteFile.mutate({ 
+        id: deletingFile.id, 
+        filePath: deletingFile.filePath, 
+        fileType: deletingFile.fileType 
+      })
+      setDeletingFile(null)
     }
   }
 
@@ -1121,6 +1132,21 @@ export default function ExportShipments() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deletingFile} onOpenChange={(open) => !open && setDeletingFile(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete File</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingFile?.fileName}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteFile}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
