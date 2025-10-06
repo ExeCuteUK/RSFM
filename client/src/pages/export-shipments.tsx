@@ -810,7 +810,7 @@ Hope all is OK.`
                           {shipment.trailerNo}
                         </p>
                         <p className="font-semibold text-lg" data-testid={`text-eta-port-date-${shipment.id}`}>
-                          <span>ETA Customs:</span>{' '}
+                          <span>{shipment.containerShipment === "Air Freight" ? "ETA Airport:" : "ETA Customs:"}</span>{' '}
                           {formatDate(shipment.etaPortDate) || (
                             <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                           )}
