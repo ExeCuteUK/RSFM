@@ -287,6 +287,12 @@ export function DraggableEmailComposer() {
                   placeholder="Type recipient email..."
                   value={data.to}
                   onValueChange={(value) => handleDataChange({ ...data, to: value })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && data.to) {
+                      e.preventDefault();
+                      setEmailPopoverOpen(false);
+                    }
+                  }}
                   data-testid="input-to-search"
                 />
                 <CommandList>
@@ -381,6 +387,12 @@ export function DraggableEmailComposer() {
                     placeholder="Type CC email..."
                     value={data.cc}
                     onValueChange={(value) => handleDataChange({ ...data, cc: value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && data.cc) {
+                        e.preventDefault();
+                        setCcPopoverOpen(false);
+                      }
+                    }}
                     data-testid="input-cc-search"
                   />
                   <CommandList>
@@ -473,6 +485,12 @@ export function DraggableEmailComposer() {
                     placeholder="Type BCC email..."
                     value={data.bcc}
                     onValueChange={(value) => handleDataChange({ ...data, bcc: value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && data.bcc) {
+                        e.preventDefault();
+                        setBccPopoverOpen(false);
+                      }
+                    }}
                     data-testid="input-bcc-search"
                   />
                   <CommandList>
