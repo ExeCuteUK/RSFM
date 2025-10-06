@@ -105,6 +105,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       status: "Awaiting Collection",
       receiverId: "",
       destinationCustomerId: "",
+      jobContactName: "",
+      jobContactEmail: "",
       customerReferenceNumber: "",
       bookingDate: format(new Date(), "yyyy-MM-dd"),
       collectionDate: "",
@@ -157,10 +159,16 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   })
 
   const receiverId = form.watch("receiverId")
+  const destinationCustomerId = form.watch("destinationCustomerId")
 
   const { data: selectedReceiver } = useQuery<ExportReceiver>({
     queryKey: ["/api/export-receivers", receiverId],
     enabled: !!receiverId,
+  })
+
+  const { data: selectedCustomer } = useQuery<ExportCustomer>({
+    queryKey: ["/api/export-customers", destinationCustomerId],
+    enabled: !!destinationCustomerId,
   })
 
   const { data: hauliers } = useQuery<Haulier[]>({
@@ -253,6 +261,25 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
     const currentEmails = form.getValues("haulierEmail") || []
     form.setValue("haulierEmail", currentEmails.filter(e => e !== email))
   }
+
+  // Auto-populate Job Contact Name and Email when customer is selected (only for new shipments)
+  useEffect(() => {
+    if (selectedCustomer && !defaultValues?.jobContactName && !defaultValues?.jobContactEmail) {
+      // Prioritize agent contact name if available, otherwise use contact name
+      if (selectedCustomer.agentContactName && selectedCustomer.agentContactName.length > 0) {
+        form.setValue("jobContactName", selectedCustomer.agentContactName[0])
+      } else if (selectedCustomer.contactName && selectedCustomer.contactName.length > 0) {
+        form.setValue("jobContactName", selectedCustomer.contactName[0])
+      }
+
+      // Prioritize agent email if agent name is present, otherwise use contact email
+      if (selectedCustomer.agentName && selectedCustomer.agentEmail && selectedCustomer.agentEmail.length > 0) {
+        form.setValue("jobContactEmail", selectedCustomer.agentEmail[0])
+      } else if (selectedCustomer.email && selectedCustomer.email.length > 0) {
+        form.setValue("jobContactEmail", selectedCustomer.email[0])
+      }
+    }
+  }, [selectedCustomer, defaultValues?.jobContactName, defaultValues?.jobContactEmail, form])
 
   useEffect(() => {
     if (dispatchDate && status === "Awaiting Collection") {
@@ -393,6 +420,36 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   </FormItem>
                 )}
               />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="jobContactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Contact Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-job-contact-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="jobContactEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Contact Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-job-contact-email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

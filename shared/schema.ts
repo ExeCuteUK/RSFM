@@ -426,6 +426,8 @@ export const exportShipments = pgTable("export_shipments", {
   // Customer References
   receiverId: varchar("receiver_id"),
   destinationCustomerId: varchar("destination_customer_id"),
+  jobContactName: text("job_contact_name"),
+  jobContactEmail: text("job_contact_email"),
   customerReferenceNumber: text("customer_reference_number"),
   
   // Shipment Details
