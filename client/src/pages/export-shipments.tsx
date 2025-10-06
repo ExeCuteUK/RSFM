@@ -27,13 +27,16 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
-import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance } from "@shared/schema"
+import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
+import { useEmail } from "@/contexts/EmailContext"
 
 export default function ExportShipments() {
   const { openWindow } = useWindowManager()
+  const { openEmailComposer } = useEmail()
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
+  const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
   const [searchText, setSearchText] = useState("")
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
@@ -68,6 +71,10 @@ export default function ExportShipments() {
 
   const { data: customClearances = [] } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
+  })
+
+  const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
+    queryKey: ["/api/clearance-agents"],
   })
 
   const getReceiverName = (receiverId: string | null) => {
@@ -463,6 +470,61 @@ export default function ExportShipments() {
     return "£"
   }
 
+  const handleClearanceAgentSelected = (agent: ClearanceAgent) => {
+    try {
+      if (!clearanceAgentDialog) return
+      
+      const shipment = allShipments.find(s => s.id === clearanceAgentDialog.shipmentId)
+      if (!shipment) return
+      
+      // Get customer name
+      const customer = exportCustomers.find(c => c.id === shipment.destinationCustomerId)
+      const customerName = customer?.companyName || "N/A"
+      
+      // Build email subject (Export - no ETA field)
+      const truckContainerFlight = shipment.trailerNo || "TBA"
+      const subject = `Export Clearance / ${customerName} / Our Ref : ${shipment.jobRef} / ${truckContainerFlight}`
+      
+      // Build email body
+      let body = `Hi Team,\n\nPlease could you arrange an Export Clearance on the below shipment. Our Ref : ${shipment.jobRef}\n\n`
+      
+      body += `Consignment will depart on ${shipment.containerShipment === "Road Shipment" ? "Trailer" : shipment.containerShipment === "Air Freight" ? "Flight" : "Container"} : ${shipment.trailerNo || "TBA"} Into ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.bookingDate) || "TBA"}.\n\n`
+      
+      body += `Exporter : ${customerName}\n`
+      body += `${shipment.numberOfPieces || ""} ${shipment.packaging || ""}.\n`
+      body += `${shipment.goodsDescription || ""}\n`
+      
+      // Add weight with "kgs" suffix if weight exists
+      const weightText = shipment.weight ? `${shipment.weight} kgs` : ""
+      body += `${weightText}\n\n`
+      
+      body += `Kind Regards`
+      
+      // Get attachments (transport documents)
+      const attachments = shipment.attachments || []
+      
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: agent.agentExportEmail?.[0] || "",
+        cc: "",
+        bcc: "",
+        subject,
+        body,
+        attachments
+      })
+      
+      setClearanceAgentDialog(null)
+    } catch (error) {
+      console.error('Error composing email:', error)
+      toast({
+        title: "Error composing email",
+        description: "Failed to prepare email. Please try again.",
+        variant: "destructive"
+      })
+      setClearanceAgentDialog(null)
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -772,7 +834,13 @@ export default function ExportShipments() {
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
-                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                          <button
+                            onClick={() => setClearanceAgentDialog({ show: true, shipmentId: shipment.id })}
+                            className="hover-elevate rounded p-0.5"
+                            data-testid={`button-advise-clearance-icon-${shipment.id}`}
+                          >
+                            <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                          </button>
                           <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.adviseClearanceToAgentStatusIndicator)}`} data-testid={`text-advise-clearance-${shipment.id}`}>
                             Advise Clearance to Agent
                           </p>
@@ -1089,6 +1157,28 @@ export default function ExportShipments() {
             >
               {updateNotes.isPending ? "Saving..." : "Save/Update"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!clearanceAgentDialog} onOpenChange={(open) => !open && setClearanceAgentDialog(null)}>
+        <DialogContent className="max-w-md" aria-describedby="clearance-agent-description">
+          <DialogHeader>
+            <DialogTitle>Select Clearance Agent</DialogTitle>
+            <p id="clearance-agent-description" className="sr-only">Choose a clearance agent to send the clearance request</p>
+          </DialogHeader>
+          <div className="space-y-2">
+            {clearanceAgents.map((agent) => (
+              <Button
+                key={agent.id}
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => handleClearanceAgentSelected(agent)}
+                data-testid={`button-agent-${agent.id}`}
+              >
+                {agent.agentName}
+              </Button>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
