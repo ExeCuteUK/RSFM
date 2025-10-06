@@ -83,19 +83,26 @@ export function DraggableEmailComposer() {
         try {
           if (source === 'book-delivery-customer') {
             // Update Book Delivery Customer status to Orange (2)
-            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/book-delivery-customer-status`, { status: 2 });
+            console.log('Making API call to:', `/api/import-shipments/${shipmentId}/book-delivery-customer-status`);
+            const result = await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/book-delivery-customer-status`, { status: 2 });
+            console.log('API result:', result);
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
           } else if (source === 'advise-clearance-agent') {
             // Update Advise Clearance to Agent status to Green (3)
-            await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
+            console.log('Making API call to:', `/api/custom-clearances/${shipmentId}/advise-agent-status`);
+            const result = await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
+            console.log('API result:', result);
             queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           } else if (source === 'advise-clearance-agent-export') {
             // Update Advise Clearance to Agent status to Green (3) for export
-            await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`, { status: 3 });
+            console.log('Making API call to:', `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`);
+            const result = await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`, { status: 3 });
+            console.log('API result:', result);
             queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
           }
         } catch (error) {
           console.error('Failed to update status:', error);
+          console.error('Error details:', JSON.stringify(error, null, 2));
         }
       }
       
