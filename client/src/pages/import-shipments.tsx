@@ -985,6 +985,10 @@ export default function ImportShipments() {
         subject: subject || "Import Clearance",
         body: body || "",
         attachments: transportDocs || [],
+        metadata: {
+          source: 'advise-clearance-agent-import',
+          shipmentId: shipment.id
+        }
       })
       
       setClearanceAgentDialog(null)

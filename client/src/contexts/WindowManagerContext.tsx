@@ -85,7 +85,6 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
     const storedWindows = localStorage.getItem(`windows_${user.id}`)
     if (storedWindows) {
       const parsed = JSON.parse(storedWindows)
-      console.log('[WindowManager] Loading windows from localStorage:', parsed);
       setWindows(parsed)
       const active = parsed.find((w: WindowData) => !w.isMinimized)
       setActiveWindowState(active || null)
@@ -99,19 +98,15 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
   const openWindow = (data: Omit<WindowData, 'isMinimized'>) => {
     try {
-      console.log('[openWindow] Received data:', JSON.stringify(data, null, 2));
-      
       // Check if window with same id already exists
       const existingWindow = windows.find(w => w.id === data.id)
       
       if (existingWindow) {
-        console.log('[openWindow] Window exists, existing:', existingWindow);
         // If it exists and is minimized, restore it
         if (existingWindow.isMinimized) {
           restoreWindow(data.id)
         } else {
           // Update its payload if it's already open
-          console.log('[openWindow] Updating existing window payload with:', data.payload);
           updateWindowPayload(data.id, data.payload)
         }
         return
@@ -122,7 +117,6 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         ...data,
         isMinimized: false
       }
-      console.log('[openWindow] Creating new window:', JSON.stringify(newWindow, null, 2));
 
       if (activeWindow && !activeWindow.isMinimized) {
         // Minimize current active window and add new window together

@@ -72,15 +72,12 @@ export function DraggableEmailComposer() {
     onSuccess: async () => {
       if (!emailComposerData) return;
       
-      console.log('[onSuccess] emailComposerData.metadata:', emailComposerData.metadata);
-      
       toast({ title: "Email sent successfully" });
       
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
       // Auto-update status based on metadata
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
-        console.log('[onSuccess] Processing metadata update:', emailComposerData.metadata);
         const { source, shipmentId } = emailComposerData.metadata;
         
         try {
@@ -88,8 +85,12 @@ export function DraggableEmailComposer() {
             // Update Book Delivery Customer status to Orange (2)
             await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/book-delivery-customer-status`, { status: 2 });
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+          } else if (source === 'advise-clearance-agent-import') {
+            // Update Advise Clearance to Agent status to Green (3) for import
+            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/clearance-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
           } else if (source === 'advise-clearance-agent') {
-            // Update Advise Clearance to Agent status to Green (3)
+            // Update Advise Clearance to Agent status to Green (3) for custom clearances
             await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           } else if (source === 'advise-clearance-agent-export') {
@@ -124,14 +125,10 @@ export function DraggableEmailComposer() {
     const { isMinimized: _, ...draftData } = updatedData;
     
     // CRITICAL: Preserve metadata from the active window's payload if it exists
-    console.log('[handleDataChange] activeWindow?.payload:', activeWindow?.payload);
-    console.log('[handleDataChange] draftData.metadata:', draftData.metadata);
     const existingMetadata = activeWindow?.payload?.metadata;
-    console.log('[handleDataChange] existingMetadata:', existingMetadata);
     const finalDraftData = existingMetadata 
       ? { ...draftData, metadata: existingMetadata }
       : draftData;
-    console.log('[handleDataChange] finalDraftData:', finalDraftData);
     
     updateEmailDraft(data.id, finalDraftData);
   };
