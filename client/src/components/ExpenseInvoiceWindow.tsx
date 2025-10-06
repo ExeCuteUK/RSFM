@@ -4,7 +4,7 @@ import { DraggableWindow } from './DraggableWindow'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, X, CheckCircle2, XCircle } from 'lucide-react'
+import { Plus, X, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiRequest, queryClient } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
@@ -271,6 +271,47 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     }
   }
 
+  const checkDateDiscrepancy = (invoiceDate: string, bookingDate: string | undefined): { type: 'none' | 'warning' | 'error', message: string } => {
+    if (!invoiceDate || !bookingDate) {
+      return { type: 'none', message: '' }
+    }
+
+    try {
+      const invDate = new Date(invoiceDate)
+      const bookDate = new Date(bookingDate)
+
+      // Check if dates are valid
+      if (isNaN(invDate.getTime()) || isNaN(bookDate.getTime())) {
+        return { type: 'none', message: '' }
+      }
+
+      const invYear = invDate.getFullYear()
+      const invMonth = invDate.getMonth()
+      const bookYear = bookDate.getFullYear()
+      const bookMonth = bookDate.getMonth()
+
+      // Calculate month difference
+      const monthDiff = (invYear - bookYear) * 12 + (invMonth - bookMonth)
+      const absMonthDiff = Math.abs(monthDiff)
+
+      if (absMonthDiff >= 3) {
+        return { 
+          type: 'error', 
+          message: 'Advisory: Invoice date and job booking date are more than 3 months apart'
+        }
+      } else if (absMonthDiff > 0) {
+        return { 
+          type: 'warning', 
+          message: 'Advisory: Supplier invoice date is not issued in the same month as the job booking month'
+        }
+      }
+
+      return { type: 'none', message: '' }
+    } catch {
+      return { type: 'none', message: '' }
+    }
+  }
+
   const handleSubmit = () => {
     // Validate and prepare invoices
     const validInvoices = invoices.filter(inv => 
@@ -493,31 +534,57 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                   </div>
 
                   {invoice.jobRef.length >= 5 && (
-                    <div className="ml-4 px-3 py-1.5 border-l-4 bg-muted/30 rounded-r-md text-xs">
+                    <div className="ml-4 px-3 py-1.5 border-l-4 bg-muted/30 rounded-r-md text-xs space-y-1">
                       {jobInfo?.exists ? (
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <span className="font-semibold text-green-600 dark:text-green-400">
-                              Job #{invoice.jobRef} - Valid {jobInfo.type} Job
-                            </span>
-                            <span className="text-muted-foreground">•</span>
-                            <span>
-                              <span className="text-muted-foreground">Customer: </span>
-                              <span className="font-medium">{jobInfo.customerName}</span>
-                            </span>
-                            <span className="text-muted-foreground">•</span>
-                            <span>
-                              <span className="text-muted-foreground">Identifier: </span>
-                              <span className="font-medium">{jobInfo.identifier}</span>
-                            </span>
-                            <span className="text-muted-foreground">•</span>
-                            <span>
-                              <span className="text-muted-foreground">Booking Date: </span>
-                              <span className="font-medium">{formatDate(jobInfo.bookingDate)}</span>
-                            </span>
+                        <>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <span className="font-semibold text-green-600 dark:text-green-400">
+                                Job #{invoice.jobRef} - Valid {jobInfo.type} Job
+                              </span>
+                              <span className="text-muted-foreground">•</span>
+                              <span>
+                                <span className="text-muted-foreground">Customer: </span>
+                                <span className="font-medium">{jobInfo.customerName}</span>
+                              </span>
+                              <span className="text-muted-foreground">•</span>
+                              <span>
+                                <span className="text-muted-foreground">Identifier: </span>
+                                <span className="font-medium">{jobInfo.identifier}</span>
+                              </span>
+                              <span className="text-muted-foreground">•</span>
+                              <span>
+                                <span className="text-muted-foreground">Booking Date: </span>
+                                <span className="font-medium">{formatDate(jobInfo.bookingDate)}</span>
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                          {(() => {
+                            const dateCheck = checkDateDiscrepancy(invoice.invoiceDate, jobInfo.bookingDate)
+                            if (dateCheck.type !== 'none') {
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <AlertTriangle 
+                                    className={`h-4 w-4 flex-shrink-0 ${
+                                      dateCheck.type === 'error' 
+                                        ? 'text-red-600 dark:text-red-400' 
+                                        : 'text-yellow-600 dark:text-yellow-400'
+                                    }`} 
+                                  />
+                                  <span className={`font-semibold ${
+                                    dateCheck.type === 'error' 
+                                      ? 'text-red-600 dark:text-red-400' 
+                                      : 'text-yellow-600 dark:text-yellow-400'
+                                  }`}>
+                                    {dateCheck.message}
+                                  </span>
+                                </div>
+                              )
+                            }
+                            return null
+                          })()}
+                        </>
                       ) : (
                         <div className="flex items-center gap-2">
                           <XCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
