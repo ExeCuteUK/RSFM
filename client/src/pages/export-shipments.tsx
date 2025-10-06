@@ -801,7 +801,7 @@ export default function ExportShipments() {
                     </h3>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.bookJobWithHaulierStatusIndicator)}`} data-testid={`text-book-haulier-${shipment.id}`}>
                           Book Job with Haulier
                         </p>
@@ -836,10 +836,10 @@ export default function ExportShipments() {
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setClearanceAgentDialog({ show: true, shipmentId: shipment.id })}
-                            className="hover-elevate rounded p-0.5"
+                            className="hover-elevate rounded p-0 shrink-0"
                             data-testid={`button-advise-clearance-icon-${shipment.id}`}
                           >
-                            <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                            <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                           </button>
                           <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.adviseClearanceToAgentStatusIndicator)}`} data-testid={`text-advise-clearance-${shipment.id}`}>
                             Advise Clearance to Agent
@@ -874,7 +874,7 @@ export default function ExportShipments() {
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
-                          <FileOutput className="h-3.5 w-3.5 text-muted-foreground" />
+                          <FileOutput className="h-4 w-4 text-muted-foreground shrink-0" />
                           <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendHaulierEadStatusIndicator)}`} data-testid={`text-send-ead-${shipment.id}`}>
                             Send Haulier EAD
                           </p>
@@ -907,7 +907,7 @@ export default function ExportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <PoundSterling className="h-3.5 w-3.5 text-muted-foreground" />
+                        <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
                           Invoice Customer
                         </p>
@@ -939,7 +939,7 @@ export default function ExportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <FileArchive className="h-3.5 w-3.5 text-muted-foreground" />
+                        <FileArchive className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-${shipment.id}`}>
                           Send POD To Customer
                         </p>

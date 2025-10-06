@@ -905,10 +905,10 @@ export default function CustomClearances() {
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => setClearanceAgentDialog({ show: true, clearanceId: clearance.id })}
-                              className="hover-elevate rounded p-0.5"
+                              className="hover-elevate rounded p-0 shrink-0"
                               data-testid={`button-advise-clearance-icon-${clearance.id}`}
                             >
-                              <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                              <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                             </button>
                             <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium`} data-testid={`todo-advise-agent-${clearance.id}`}>
                               Advise Clearance To Agent
@@ -940,7 +940,7 @@ export default function CustomClearances() {
 
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
-                            <Send className="h-3.5 w-3.5 text-muted-foreground" />
+                            <Send className="h-4 w-4 text-muted-foreground shrink-0" />
                             <p className={`text-xs ${getStatusColor(clearance.sendEntryToCustomerStatusIndicator)} font-medium`} data-testid={`todo-send-entry-${clearance.id}`}>
                               {clearance.jobType === "import" ? "Send Import Entry to Customer" : "Send Export Entry to Customer"}
                             </p>
@@ -972,7 +972,7 @@ export default function CustomClearances() {
                         {!clearance.createdFromId && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
-                              <PoundSterling className="h-3.5 w-3.5 text-muted-foreground" />
+                              <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
                               <p className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium`} data-testid={`todo-invoice-${clearance.id}`}>
                                 Invoice Customer
                               </p>
@@ -1005,7 +1005,7 @@ export default function CustomClearances() {
                         {clearance.jobType === "import" && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
-                              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                              <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                               <p className={`text-xs ${getStatusColor(clearance.sendClearedEntryStatusIndicator)} font-medium`} data-testid={`todo-cleared-entry-${clearance.id}`}>
                                 Send Cleared Entry to Customer
                               </p>

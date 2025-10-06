@@ -1275,9 +1275,9 @@ export default function ImportShipments() {
                           onClick={() => setClearanceAgentDialog({ show: true, shipmentId: shipment.id })}
                           data-testid={`button-advise-clearance-${shipment.id}`}
                           title="Send clearance details to agent"
-                          className="p-0 border-0 bg-transparent"
+                          className="p-0 border-0 bg-transparent shrink-0"
                         >
-                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                          <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                         </button>
                         <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           Advise Clearance to Agent
@@ -1312,11 +1312,11 @@ export default function ImportShipments() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => handleBookDeliveryCustomerEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0.5 rounded"
+                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
                           data-testid={`button-book-delivery-email-${shipment.id}`}
                           title="Send booking email to customer"
                         >
-                          <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                          <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                         </button>
                         <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
                           Book Delivery Customer
@@ -1359,7 +1359,7 @@ export default function ImportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
                           {shipment.deliveryRelease === "Line" ? "Book Delivery with Line" : "Book Delivery Haulier"}
                         </p>
@@ -1402,7 +1402,7 @@ export default function ImportShipments() {
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
-                          <Unlock className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Unlock className="h-4 w-4 text-muted-foreground shrink-0" />
                           <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
                             {shipment.deliveryRelease === "Line" 
                               ? "Pay Line for Delivery" 
@@ -1447,7 +1447,7 @@ export default function ImportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <PoundSterling className="h-3.5 w-3.5 text-muted-foreground" />
+                        <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
                           Invoice Customer
                         </p>
@@ -1479,7 +1479,7 @@ export default function ImportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <Send className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Send className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
                           {shipment.rsToClear ? "Send POD & Import Entry to Customer" : "Send POD to Customer"}
                         </p>
