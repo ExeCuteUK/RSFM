@@ -1370,7 +1370,7 @@ export default function ImportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                        <PoundSterling className="h-3.5 w-3.5 text-muted-foreground" />
                         <p className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
                           Invoice Customer
                         </p>
