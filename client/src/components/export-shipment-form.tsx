@@ -97,6 +97,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const [pendingAttachments, setPendingAttachments] = useState<string[]>([])
   const [newHaulierEmail, setNewHaulierEmail] = useState("")
   const [newHaulierContactName, setNewHaulierContactName] = useState("")
+  const [newJobContactName, setNewJobContactName] = useState("")
+  const [newJobContactEmail, setNewJobContactEmail] = useState("")
 
   const form = useForm<InsertExportShipment>({
     resolver: zodResolver(exportShipmentFormSchema),
@@ -105,8 +107,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       status: "Awaiting Collection",
       receiverId: "",
       destinationCustomerId: "",
-      jobContactName: "",
-      jobContactEmail: "",
+      jobContactName: [],
+      jobContactEmail: [],
       customerReferenceNumber: "",
       bookingDate: format(new Date(), "yyyy-MM-dd"),
       collectionDate: "",
@@ -233,6 +235,36 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const additionalCommodityCodes = form.watch("additionalCommodityCodes")
   const haulierEmails = form.watch("haulierEmail") || []
   const haulierContactNames = form.watch("haulierContactName") || []
+  const jobContactNames = form.watch("jobContactName") || []
+  const jobContactEmails = form.watch("jobContactEmail") || []
+
+  const addJobContactName = () => {
+    if (!newJobContactName.trim()) return
+    const currentNames = form.getValues("jobContactName") || []
+    if (!currentNames.includes(newJobContactName.trim())) {
+      form.setValue("jobContactName", [...currentNames, newJobContactName.trim()])
+      setNewJobContactName("")
+    }
+  }
+
+  const removeJobContactName = (name: string) => {
+    const currentNames = form.getValues("jobContactName") || []
+    form.setValue("jobContactName", currentNames.filter(n => n !== name))
+  }
+
+  const addJobContactEmail = () => {
+    if (!newJobContactEmail.trim()) return
+    const currentEmails = form.getValues("jobContactEmail") || []
+    if (!currentEmails.includes(newJobContactEmail.trim())) {
+      form.setValue("jobContactEmail", [...currentEmails, newJobContactEmail.trim()])
+      setNewJobContactEmail("")
+    }
+  }
+
+  const removeJobContactEmail = (email: string) => {
+    const currentEmails = form.getValues("jobContactEmail") || []
+    form.setValue("jobContactEmail", currentEmails.filter(e => e !== email))
+  }
 
   const addHaulierContactName = () => {
     if (!newHaulierContactName.trim()) return
@@ -264,19 +296,19 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
   // Auto-populate Job Contact Name and Email when customer is selected (only for new shipments)
   useEffect(() => {
-    if (selectedCustomer && !defaultValues?.jobContactName && !defaultValues?.jobContactEmail) {
+    if (selectedCustomer && (!defaultValues?.jobContactName || defaultValues.jobContactName.length === 0) && (!defaultValues?.jobContactEmail || defaultValues.jobContactEmail.length === 0)) {
       // Prioritize agent contact name if available, otherwise use contact name
       if (selectedCustomer.agentContactName && selectedCustomer.agentContactName.length > 0) {
-        form.setValue("jobContactName", selectedCustomer.agentContactName[0])
+        form.setValue("jobContactName", [selectedCustomer.agentContactName[0]])
       } else if (selectedCustomer.contactName && selectedCustomer.contactName.length > 0) {
-        form.setValue("jobContactName", selectedCustomer.contactName[0])
+        form.setValue("jobContactName", [selectedCustomer.contactName[0]])
       }
 
       // Prioritize agent email if agent name is present, otherwise use contact email
       if (selectedCustomer.agentName && selectedCustomer.agentEmail && selectedCustomer.agentEmail.length > 0) {
-        form.setValue("jobContactEmail", selectedCustomer.agentEmail[0])
+        form.setValue("jobContactEmail", [selectedCustomer.agentEmail[0]])
       } else if (selectedCustomer.email && selectedCustomer.email.length > 0) {
-        form.setValue("jobContactEmail", selectedCustomer.email[0])
+        form.setValue("jobContactEmail", [selectedCustomer.email[0]])
       }
     }
   }, [selectedCustomer, defaultValues?.jobContactName, defaultValues?.jobContactEmail, form])
@@ -425,11 +457,52 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 <FormField
                   control={form.control}
                   name="jobContactName"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
-                      <FormLabel>Job Contact Name</FormLabel>
+                      <FormLabel>Job Contact Name(s)</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-job-contact-name" />
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Input
+                              value={newJobContactName}
+                              onChange={(e) => setNewJobContactName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addJobContactName()
+                                }
+                              }}
+                              placeholder="Add job contact name"
+                              data-testid="input-new-job-contact-name"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={addJobContactName}
+                              data-testid="button-add-job-contact-name"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {jobContactNames.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {jobContactNames.map((name) => (
+                                <Badge key={name} variant="secondary" className="gap-1">
+                                  {name}
+                                  <button
+                                    type="button"
+                                    onClick={() => removeJobContactName(name)}
+                                    className="hover-elevate active-elevate-2 rounded-full"
+                                    data-testid={`button-remove-job-contact-name-${name}`}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -439,11 +512,52 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                 <FormField
                   control={form.control}
                   name="jobContactEmail"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
-                      <FormLabel>Job Contact Email</FormLabel>
+                      <FormLabel>Job Contact Email(s)</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-job-contact-email" />
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Input
+                              value={newJobContactEmail}
+                              onChange={(e) => setNewJobContactEmail(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addJobContactEmail()
+                                }
+                              }}
+                              placeholder="Add job contact email"
+                              data-testid="input-new-job-contact-email"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={addJobContactEmail}
+                              data-testid="button-add-job-contact-email"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {jobContactEmails.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {jobContactEmails.map((email) => (
+                                <Badge key={email} variant="secondary" className="gap-1">
+                                  {email}
+                                  <button
+                                    type="button"
+                                    onClick={() => removeJobContactEmail(email)}
+                                    className="hover-elevate active-elevate-2 rounded-full"
+                                    data-testid={`button-remove-job-contact-email-${email}`}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

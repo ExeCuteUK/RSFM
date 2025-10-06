@@ -258,8 +258,8 @@ export const importShipments = pgTable("import_shipments", {
   
   // Customer Reference
   importCustomerId: varchar("import_customer_id"),
-  jobContactName: text("job_contact_name"),
-  jobContactEmail: text("job_contact_email"),
+  jobContactName: text("job_contact_name").array(),
+  jobContactEmail: text("job_contact_email").array(),
   
   // Shipment Details
   bookingDate: text("booking_date"),
@@ -426,8 +426,8 @@ export const exportShipments = pgTable("export_shipments", {
   // Customer References
   receiverId: varchar("receiver_id"),
   destinationCustomerId: varchar("destination_customer_id"),
-  jobContactName: text("job_contact_name"),
-  jobContactEmail: text("job_contact_email"),
+  jobContactName: text("job_contact_name").array(),
+  jobContactEmail: text("job_contact_email").array(),
   customerReferenceNumber: text("customer_reference_number"),
   
   // Shipment Details
