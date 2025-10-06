@@ -432,11 +432,12 @@ export default function ExportShipments() {
         return
       }
 
-      // Build email recipient data
-      const jobContactEmailRaw = shipment.jobContactEmail || ""
-      const emailList = jobContactEmailRaw.split(',').map(email => email.trim()).filter(email => email.length > 0)
-      const jobContactEmail = emailList[0] || ""
-      const ccEmails = emailList.slice(1).join(", ")
+      // Build email recipient data (handle both array and legacy string formats)
+      const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
+        ? shipment.jobContactEmail 
+        : (shipment.jobContactEmail ? [shipment.jobContactEmail] : [])
+      const jobContactEmail = jobContactEmailArray[0] || ""
+      const ccEmails = jobContactEmailArray.slice(1).join(", ")
       
       // Build subject
       const customerRef = shipment.customerReferenceNumber
@@ -460,17 +461,20 @@ export default function ExportShipments() {
       const subject = `Export Delivery Update / ${yourRefPart}Our Ref: ${jobRef} / ${truckContainerFlight} / Delivery Date: ${deliveryDate}`
       
       // Build message body - conditionally include "your ref" only if customerRef exists
-      // Handle multiple contact names separated by commas
+      // Handle multiple contact names (handle both array and legacy string formats)
       let greeting = "Hi there"
-      if (shipment.jobContactName && shipment.jobContactName.trim()) {
-        const names = shipment.jobContactName.split(',').map(name => name.trim()).filter(name => name.length > 0)
-        if (names.length === 1) {
-          greeting = `Hi ${names[0]}`
-        } else if (names.length === 2) {
-          greeting = `Hi ${names[0]} and ${names[1]}`
-        } else if (names.length > 2) {
-          const allButLast = names.slice(0, -1).join(', ')
-          greeting = `Hi ${allButLast}, and ${names[names.length - 1]}`
+      const jobContactNameArray = Array.isArray(shipment.jobContactName)
+        ? shipment.jobContactName
+        : (shipment.jobContactName ? [shipment.jobContactName] : [])
+      
+      if (jobContactNameArray.length > 0) {
+        if (jobContactNameArray.length === 1) {
+          greeting = `Hi ${jobContactNameArray[0]}`
+        } else if (jobContactNameArray.length === 2) {
+          greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
+        } else if (jobContactNameArray.length > 2) {
+          const allButLast = jobContactNameArray.slice(0, -1).join(', ')
+          greeting = `Hi ${allButLast}, and ${jobContactNameArray[jobContactNameArray.length - 1]}`
         }
       }
       
