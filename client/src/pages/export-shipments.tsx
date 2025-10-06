@@ -277,10 +277,11 @@ export default function ExportShipments() {
     }
   }
 
-  const parseAttachments = (attachments: string | null) => {
+  const parseAttachments = (attachments: string[] | null) => {
     if (!attachments) return []
+    if (Array.isArray(attachments)) return attachments
     try {
-      return JSON.parse(attachments)
+      return JSON.parse(attachments as any)
     } catch {
       return []
     }
@@ -476,41 +477,39 @@ export default function ExportShipments() {
                       <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
                         {shipment.jobRef}
                       </h3>
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleOpenNotes(shipment)}
+                          data-testid={`button-notes-${shipment.id}`}
+                          title={shipment.additionalNotes || "Additional Notes"}
+                        >
+                          <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(shipment)}
+                          data-testid={`button-edit-${shipment.id}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDelete(shipment.id)}
+                          data-testid={`button-delete-${shipment.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
                       {getReceiverName(shipment.receiverId)}
                     </p>
                   </div>
-                  <div className="flex gap-1 ml-2">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleOpenNotes(shipment)}
-                      data-testid={`button-notes-${shipment.id}`}
-                      title={shipment.additionalNotes || "Additional Notes"}
-                    >
-                      <StickyNote className={`h-4 w-4 ${shipment.additionalNotes ? 'text-yellow-600 dark:text-yellow-400' : ''}`} />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleEdit(shipment)}
-                      data-testid={`button-edit-${shipment.id}`}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleDelete(shipment.id)}
-                      data-testid={`button-delete-${shipment.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                  <div className="flex flex-col items-start gap-1">
+                  <div className="flex flex-col items-end gap-1 ml-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button 
@@ -557,9 +556,9 @@ export default function ExportShipments() {
                         <p className="font-semibold text-lg" data-testid={`text-trailer-${shipment.id}`}>
                           {shipment.trailerNo}
                         </p>
-                        <p className="font-semibold text-lg" data-testid={`text-booking-date-${shipment.id}`}>
-                          <span>Booking Date:</span>{' '}
-                          {formatDate(shipment.bookingDate) || (
+                        <p className="font-semibold text-lg" data-testid={`text-eta-port-date-${shipment.id}`}>
+                          <span>ETA Port Date:</span>{' '}
+                          {formatDate(shipment.etaPortDate) || (
                             <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                           )}
                         </p>
@@ -578,12 +577,34 @@ export default function ExportShipments() {
                         <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                       )}
                     </p>
-                    {shipment.portOfArrival && (
-                      <p data-testid={`text-port-${shipment.id}`}>
-                        <span>Port:</span> {shipment.portOfArrival}
-                      </p>
-                    )}
+                    <p data-testid={`text-delivery-date-${shipment.id}`}>
+                      <span>Delivery Date:</span>{' '}
+                      {formatDate(shipment.deliveryDate) || (
+                        <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
+                      )}
+                    </p>
                   </div>
+                  {shipment.portOfArrival && (
+                    <p data-testid={`text-port-${shipment.id}`}>
+                      <span>
+                        {shipment.containerShipment === "Container Shipment" 
+                          ? "Port Of Arrival:" 
+                          : shipment.containerShipment === "Air Freight"
+                          ? "Arrival Airport:"
+                          : "Destination:"}
+                      </span>{' '}
+                      {shipment.portOfArrival}
+                    </p>
+                  )}
+                  {(shipment.weight || shipment.numberOfPieces || shipment.packaging) && (
+                    <p data-testid={`text-weight-packaging-${shipment.id}`}>
+                      {shipment.weight && <span>Weight: {shipment.weight}</span>}
+                      {shipment.weight && (shipment.numberOfPieces || shipment.packaging) && <span> | </span>}
+                      {shipment.numberOfPieces && <span>Pieces: {shipment.numberOfPieces}</span>}
+                      {shipment.numberOfPieces && shipment.packaging && <span> | </span>}
+                      {shipment.packaging && <span>Packaging: {shipment.packaging}</span>}
+                    </p>
+                  )}
                   {shipment.goodsDescription && (
                     <p className="text-muted-foreground line-clamp-1" data-testid={`text-description-${shipment.id}`}>
                       {shipment.goodsDescription}
@@ -605,6 +626,7 @@ export default function ExportShipments() {
                   })()}
                   
                   <div className="mt-2 pt-2 border-t space-y-1.5">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">To-Do List</p>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
                         <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
