@@ -803,16 +803,6 @@ export default function ExportShipments() {
                           data-testid={`button-booking-status-green-${shipment.id}`}
                           title="Completed"
                         />
-                        <button
-                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.bookingConfirmedStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-booking-status-red-${shipment.id}`}
-                          title="Issue, Check Notes?"
-                        />
                       </div>
                     </div>
                   </div>
@@ -854,16 +844,6 @@ export default function ExportShipments() {
                           }`}
                           data-testid={`button-transport-status-green-${shipment.id}`}
                           title="Completed"
-                        />
-                        <button
-                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.transportArrangedStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-transport-status-red-${shipment.id}`}
-                          title="Issue, Check Notes?"
                         />
                       </div>
                     </div>
@@ -907,16 +887,6 @@ export default function ExportShipments() {
                           data-testid={`button-customs-status-green-${shipment.id}`}
                           title="Completed"
                         />
-                        <button
-                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.customsSubmittedStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-customs-status-red-${shipment.id}`}
-                          title="Issue, Check Notes?"
-                        />
                       </div>
                     </div>
                   </div>
@@ -959,16 +929,6 @@ export default function ExportShipments() {
                           data-testid={`button-invoice-status-green-${shipment.id}`}
                           title="Completed"
                         />
-                        <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-invoice-status-red-${shipment.id}`}
-                          title="Issue, Check Notes?"
-                        />
                       </div>
                     </div>
                   </div>
@@ -1010,16 +970,6 @@ export default function ExportShipments() {
                           }`}
                           data-testid={`button-send-docs-status-green-${shipment.id}`}
                           title="Completed"
-                        />
-                        <button
-                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 4)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendDocsToCustomerStatusIndicator === 4
-                              ? 'bg-red-400 border-red-500 scale-110'
-                              : 'bg-red-200 border-red-300 hover-elevate'
-                          }`}
-                          data-testid={`button-send-docs-status-red-${shipment.id}`}
-                          title="Issue, Check Notes?"
                         />
                       </div>
                     </div>

@@ -1363,16 +1363,6 @@ export default function ImportShipments() {
                             data-testid={`button-container-status-green-${shipment.id}`}
                             title="Completed"
                           />
-                          <button
-                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 4)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.containerReleaseStatusIndicator === 4
-                                ? 'bg-red-400 border-red-500 scale-110'
-                                : 'bg-red-200 border-red-300 hover-elevate'
-                            }`}
-                            data-testid={`button-container-status-red-${shipment.id}`}
-                            title="Issue, Check Notes?"
-                          />
                         </div>
                       </div>
                     </div>
