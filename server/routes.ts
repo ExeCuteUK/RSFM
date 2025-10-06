@@ -1093,6 +1093,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(shipment);
     } catch (error) {
+      console.error('[ERROR] Failed to update book delivery customer status:', error);
       res.status(500).json({ error: "Failed to update book delivery customer status" });
     }
   });
