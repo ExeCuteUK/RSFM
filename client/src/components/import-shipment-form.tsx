@@ -984,7 +984,13 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   name="importDateEtaPort"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>ETA Port</FormLabel>
+                      <FormLabel>
+                        {containerShipment === "Air Freight" 
+                          ? "ETA Airport" 
+                          : containerShipment === "Road Shipment"
+                          ? "ETA Customs"
+                          : "ETA Port"}
+                      </FormLabel>
                       <div className="flex gap-2">
                         <Popover>
                           <PopoverTrigger asChild>
