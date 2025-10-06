@@ -109,12 +109,12 @@ export function EmailProvider({ children }: { children: ReactNode }) {
       }
       
       // Open email window using WindowManager
-      const { id, to, cc, bcc, subject, body, attachments } = data
+      const { id, to, cc, bcc, subject, body, attachments, metadata } = data
       openWindow({
         id,
         type: 'email',
         title: subject || 'New Email',
-        payload: { to, cc, bcc, subject, body, attachments }
+        payload: { to, cc, bcc, subject, body, attachments, metadata }
       })
     } catch (error) {
       console.error('Error in openEmailComposer:', error)
