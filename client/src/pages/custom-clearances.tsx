@@ -792,11 +792,14 @@ export default function CustomClearances() {
             variant={selectedShipmentTypes.includes("Container Shipment") ? "default" : "outline"}
             size="sm"
             onClick={() => {
-              setSelectedShipmentTypes(prev => 
-                prev.includes("Container Shipment") 
+              setSelectedShipmentTypes(prev => {
+                if (prev.includes("Container Shipment") && prev.length === 1) {
+                  return prev
+                }
+                return prev.includes("Container Shipment") 
                   ? prev.filter(t => t !== "Container Shipment")
                   : [...prev, "Container Shipment"]
-              )
+              })
             }}
             data-testid="filter-containers"
           >
@@ -807,11 +810,14 @@ export default function CustomClearances() {
             variant={selectedShipmentTypes.includes("Road Shipment") ? "default" : "outline"}
             size="sm"
             onClick={() => {
-              setSelectedShipmentTypes(prev => 
-                prev.includes("Road Shipment") 
+              setSelectedShipmentTypes(prev => {
+                if (prev.includes("Road Shipment") && prev.length === 1) {
+                  return prev
+                }
+                return prev.includes("Road Shipment") 
                   ? prev.filter(t => t !== "Road Shipment")
                   : [...prev, "Road Shipment"]
-              )
+              })
             }}
             data-testid="filter-road"
           >
@@ -822,11 +828,14 @@ export default function CustomClearances() {
             variant={selectedShipmentTypes.includes("Air Freight") ? "default" : "outline"}
             size="sm"
             onClick={() => {
-              setSelectedShipmentTypes(prev => 
-                prev.includes("Air Freight") 
+              setSelectedShipmentTypes(prev => {
+                if (prev.includes("Air Freight") && prev.length === 1) {
+                  return prev
+                }
+                return prev.includes("Air Freight") 
                   ? prev.filter(t => t !== "Air Freight")
                   : [...prev, "Air Freight"]
-              )
+              })
             }}
             data-testid="filter-air"
           >
