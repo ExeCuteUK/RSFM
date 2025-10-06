@@ -75,26 +75,33 @@ export function DraggableEmailComposer() {
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
       // Auto-update status based on metadata
+      console.log('[EMAIL-COMPOSER] Email sent, checking metadata:', emailComposerData.metadata);
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
         const { source, shipmentId } = emailComposerData.metadata;
+        console.log('[EMAIL-COMPOSER] Metadata found:', { source, shipmentId });
         
         try {
           if (source === 'book-delivery-customer') {
             // Update Book Delivery Customer status to Orange (2)
+            console.log('[EMAIL-COMPOSER] Updating book delivery customer status');
             await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/book-delivery-customer-status`, { status: 2 });
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
           } else if (source === 'advise-clearance-agent') {
             // Update Advise Clearance to Agent status to Green (3)
+            console.log('[EMAIL-COMPOSER] Updating advise clearance agent status (custom clearance)');
             await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           } else if (source === 'advise-clearance-agent-export') {
             // Update Advise Clearance to Agent status to Green (3) for export
+            console.log('[EMAIL-COMPOSER] Updating advise clearance agent status (export)');
             await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
           }
         } catch (error) {
           console.error('Failed to update status:', error);
         }
+      } else {
+        console.log('[EMAIL-COMPOSER] No metadata found for status update');
       }
       
       removeEmailDraft(emailComposerData.id);
