@@ -322,6 +322,7 @@ export const importShipments = pgTable("import_shipments", {
   containerReleaseStatusIndicator: integer("container_release_status_indicator").default(1),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
   sendPodToCustomerStatusIndicator: integer("send_pod_to_customer_status_indicator").default(1),
+  sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
   
   // Additional Details
   customerReferenceNumber: text("customer_reference_number"),

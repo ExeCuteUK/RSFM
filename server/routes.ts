@@ -1194,6 +1194,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update send haulier EAD status indicator
+  app.patch("/api/import-shipments/:id/send-haulier-ead-status", async (req, res) => {
+    try {
+      const sendHaulierEadStatusSchema = z.object({
+        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+      });
+      const { status } = sendHaulierEadStatusSchema.parse(req.body);
+      const shipment = await storage.updateImportShipment(req.params.id, { 
+        sendHaulierEadStatusIndicator: status ?? null 
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to update send haulier EAD status" });
+    }
+  });
+
   // Delete file from attachments or proofOfDelivery
   app.delete("/api/import-shipments/:id/files", async (req, res) => {
     try {
