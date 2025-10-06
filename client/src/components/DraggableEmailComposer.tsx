@@ -75,10 +75,8 @@ export function DraggableEmailComposer() {
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
       // Auto-update status based on metadata
-      console.log('[EMAIL] Checking metadata:', emailComposerData.metadata);
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
         const { source, shipmentId } = emailComposerData.metadata;
-        console.log('[EMAIL] Updating status for:', source, shipmentId);
         
         try {
           if (source === 'book-delivery-customer') {
@@ -87,7 +85,6 @@ export function DraggableEmailComposer() {
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
           } else if (source === 'advise-clearance-agent') {
             // Update Advise Clearance to Agent status to Green (3)
-            console.log('[EMAIL] Calling advise-agent-status API');
             await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           } else if (source === 'advise-clearance-agent-export') {
@@ -98,8 +95,6 @@ export function DraggableEmailComposer() {
         } catch (error) {
           console.error('Failed to update status:', error);
         }
-      } else {
-        console.log('[EMAIL] No metadata found for status update');
       }
       
       removeEmailDraft(emailComposerData.id);
