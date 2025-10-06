@@ -72,12 +72,15 @@ export function DraggableEmailComposer() {
     onSuccess: async () => {
       if (!emailComposerData) return;
       
+      console.log('[onSuccess] emailComposerData.metadata:', emailComposerData.metadata);
+      
       toast({ title: "Email sent successfully" });
       
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
       // Auto-update status based on metadata
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
+        console.log('[onSuccess] Processing metadata update:', emailComposerData.metadata);
         const { source, shipmentId } = emailComposerData.metadata;
         
         try {
