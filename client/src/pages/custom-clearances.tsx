@@ -340,7 +340,11 @@ export default function CustomClearances() {
       subject += ` / Your Ref: ${linkedExportShipment.haulierReference}`
     }
 
-    const body = `${greeting},\n\nPlease find attached Export Entry for this shipment.\n\nHope all is OK.`
+    // Build email body with conditional attachment text based on shipment type
+    const attachmentText = linkedExportShipment?.containerShipment === "Air Freight" 
+      ? "Airway Bill" 
+      : "Export Entry"
+    const body = `${greeting},\n\nPlease find attached ${attachmentText} for this shipment.\n\nHope all is OK.`
 
     // Open email composer with Export Entry documents
     openEmailComposer({
