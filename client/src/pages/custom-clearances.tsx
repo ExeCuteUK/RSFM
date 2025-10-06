@@ -321,12 +321,12 @@ export default function CustomClearances() {
       greeting = `Hi ${otherContacts}, and ${lastContact}`
     }
 
-    // Build subject: "Export Job Update - EAD File / Our Ref: {jobRef} / Trailer Number: {trailerNumber} / Your Ref: {haulierRef}"
+    // Build subject: "Export Job Update - EAD File / Our Ref: {jobRef} / Trailer Number: {trailerNo} / Your Ref: {haulierRef}"
     let subject = `Export Job Update - EAD File / Our Ref: ${clearance.jobRef}`
     
     // Add trailer number if available
-    if (linkedExportShipment?.trailerNumber) {
-      subject += ` / Trailer Number: ${linkedExportShipment.trailerNumber}`
+    if (linkedExportShipment?.trailerNo) {
+      subject += ` / Trailer Number: ${linkedExportShipment.trailerNo}`
     }
     
     // Add haulier reference if available
