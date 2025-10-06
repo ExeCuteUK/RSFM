@@ -1284,22 +1284,47 @@ Hope all is OK.`
                     <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Customer & Receiver Information</h3>
                   </div>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Customer (Exporter)</p>
+                        <p className="text-xs text-muted-foreground mb-1">Customer</p>
                         <p className="font-semibold text-base">{getCustomerName(viewingShipment.destinationCustomerId)}</p>
                       </div>
+                      {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
+                          <p className="text-base">{viewingShipment.jobContactName.join(", ")}</p>
+                        </div>
+                      )}
+                      {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Email</p>
+                          <div className="flex flex-col gap-1">
+                            {viewingShipment.jobContactEmail.map((email, idx) => (
+                              <a 
+                                key={idx} 
+                                href={`mailto:${email}`} 
+                                className="text-base text-green-600 dark:text-green-400 hover:underline"
+                              >
+                                {email}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {viewingShipment.customerReferenceNumber && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
+                          <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="border-t border-green-200 dark:border-green-800 my-3"></div>
+                    <div className="grid grid-cols-4 gap-4">
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Receiver</p>
                         <p className="font-semibold text-base">{getReceiverName(viewingShipment.receiverId)}</p>
                       </div>
                     </div>
-                    {viewingShipment.customerReferenceNumber && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
-                        <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -1383,42 +1408,91 @@ Hope all is OK.`
                 </CardContent>
               </Card>
 
-              <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Box className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Cargo Details</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {viewingShipment.goodsDescription && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Goods Description</p>
-                        <p className="text-base">{viewingShipment.goodsDescription}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Box className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Cargo</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {viewingShipment.goodsDescription && (
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                          <p className="text-xs text-muted-foreground mb-1">Goods Description</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.goodsDescription}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        {viewingShipment.numberOfPieces && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Pieces</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.numberOfPieces} {viewingShipment.packaging}</p>
+                          </div>
+                        )}
+                        {viewingShipment.weight && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Weight</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.weight} kgs</p>
+                          </div>
+                        )}
+                        {viewingShipment.cube && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800 col-span-2">
+                            <p className="text-xs text-muted-foreground mb-1">Cube</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.cube}</p>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {viewingShipment.numberOfPieces && (
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Truck className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Haulier Information</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {viewingShipment.haulierName && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                          <p className="text-xs text-muted-foreground mb-1">Number of Pieces</p>
-                          <p className="font-semibold text-sm">{viewingShipment.numberOfPieces}</p>
+                          <p className="text-xs text-muted-foreground mb-1">Haulier</p>
+                          <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.haulierName}</p>
                         </div>
                       )}
-                      {viewingShipment.packaging && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {viewingShipment.haulierContactName && viewingShipment.haulierContactName.length > 0 && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.haulierContactName.join(", ")}</p>
+                          </div>
+                        )}
+                        {viewingShipment.haulierTelephone && (
+                          <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.haulierTelephone}</p>
+                          </div>
+                        )}
+                      </div>
+                      {viewingShipment.haulierEmail && viewingShipment.haulierEmail.length > 0 && (
                         <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                          <p className="text-xs text-muted-foreground mb-1">Packaging</p>
-                          <p className="font-semibold text-sm">{viewingShipment.packaging}</p>
-                        </div>
-                      )}
-                      {viewingShipment.weight && (
-                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                          <p className="text-xs text-muted-foreground mb-1">Weight</p>
-                          <p className="font-semibold text-sm">{viewingShipment.weight} kgs</p>
+                          <p className="text-xs text-muted-foreground mb-1">Email</p>
+                          <div className="flex flex-col gap-1">
+                            {viewingShipment.haulierEmail.map((email, idx) => (
+                              <a 
+                                key={idx} 
+                                href={`mailto:${email}`} 
+                                className="font-semibold text-sm text-green-600 dark:text-green-400 hover:underline"
+                              >
+                                {email}
+                              </a>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
 
               <Card className="bg-purple-50/50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900">
                 <CardContent className="p-5">
@@ -1449,12 +1523,6 @@ Hope all is OK.`
                       <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
                         <p className="text-xs text-muted-foreground mb-1">Invoice Value</p>
                         <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.value}</p>
-                      </div>
-                    )}
-                    {viewingShipment.additionalCommodityCodes !== null && (
-                      <div className="bg-white dark:bg-purple-950/30 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <p className="text-xs text-muted-foreground mb-1">Additional Commodity Codes</p>
-                        <p className="font-semibold text-sm text-purple-900 dark:text-purple-100">{viewingShipment.additionalCommodityCodes}</p>
                       </div>
                     )}
                   </div>
