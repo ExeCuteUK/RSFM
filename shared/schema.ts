@@ -430,6 +430,7 @@ export const exportShipments = pgTable("export_shipments", {
   bookingDate: text("booking_date"),
   collectionDate: text("collection_date"),
   dispatchDate: text("dispatch_date"),
+  etaPortDate: text("eta_port_date"),
   deliveryDate: text("delivery_date"),
   deliveryTime: text("delivery_time"),
   deliveryReference: text("delivery_reference"),
