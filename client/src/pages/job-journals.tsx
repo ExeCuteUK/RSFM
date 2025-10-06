@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Calendar, Plus } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
+import { InvoiceEditDialog } from "@/components/InvoiceEditDialog"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice } from "@shared/schema"
 
 interface JobJournalEntry {
@@ -79,6 +80,8 @@ export default function JobJournals() {
   const [endDate, setEndDate] = useState("")
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(["Import", "Export", "Customs"])
   const [searchText, setSearchText] = useState("")
+  const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null)
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
   
   const handleJobRefClick = (jobRef: number, jobType: string) => {
     localStorage.setItem('shipmentSearchJobRef', jobRef.toString())
@@ -91,8 +94,10 @@ export default function JobJournals() {
   
   const handleAddExpenseInvoices = () => {
     openWindow({
+      id: `expense-invoice-${Date.now()}`,
       type: "expense-invoice",
       title: "Add Expense Invoices",
+      payload: {},
     })
   }
 
@@ -140,8 +145,8 @@ export default function JobJournals() {
   }
 
   const handleInvoiceClick = (invoice: PurchaseInvoice) => {
-    // TODO: Open edit/delete dialog for invoice
-    console.log('Invoice clicked:', invoice)
+    setSelectedInvoice(invoice)
+    setInvoiceDialogOpen(true)
   }
 
   const matchesFilter = (date: string): boolean => {
@@ -599,7 +604,7 @@ export default function JobJournals() {
                         return (
                           <div className="text-xs space-y-0.5">
                             {invoices.map((inv) => (
-                              <div key={inv.id}>£{inv.invoiceAmount.toFixed(2)}</div>
+                              <div key={inv.id}>£{Number(inv.invoiceAmount).toFixed(2)}</div>
                             ))}
                           </div>
                         )
@@ -653,6 +658,12 @@ export default function JobJournals() {
           </div>
         </CardContent>
       </Card>
+      
+      <InvoiceEditDialog
+        invoice={selectedInvoice}
+        open={invoiceDialogOpen}
+        onOpenChange={setInvoiceDialogOpen}
+      />
     </div>
   )
 }

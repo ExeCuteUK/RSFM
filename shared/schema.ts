@@ -695,7 +695,7 @@ export const purchaseInvoices = pgTable("purchase_invoices", {
   companyName: text("company_name").notNull(),
   invoiceNumber: text("invoice_number").notNull(),
   invoiceDate: text("invoice_date").notNull(),
-  invoiceAmount: text("invoice_amount").notNull(),
+  invoiceAmount: doublePrecision("invoice_amount").notNull(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 

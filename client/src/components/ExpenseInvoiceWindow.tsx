@@ -133,12 +133,28 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     }
 
     const jobRefNum = parseInt(jobRef)
+    
+    // Validate all amounts are valid numbers
+    const invalidAmounts = validInvoices.filter(inv => {
+      const amount = parseFloat(inv.invoiceAmount)
+      return isNaN(amount) || amount <= 0
+    })
+    
+    if (invalidAmounts.length > 0) {
+      toast({
+        title: 'Invalid Amount',
+        description: 'All invoice amounts must be valid positive numbers',
+        variant: 'destructive'
+      })
+      return
+    }
+    
     const invoiceData = validInvoices.map(inv => ({
       jobRef: jobRefNum,
-      companyName: inv.companyName,
-      invoiceNumber: inv.invoiceNumber,
+      companyName: inv.companyName.trim(),
+      invoiceNumber: inv.invoiceNumber.trim(),
       invoiceDate: inv.invoiceDate,
-      invoiceAmount: parseFloat(inv.invoiceAmount) || 0
+      invoiceAmount: parseFloat(inv.invoiceAmount)
     }))
 
     createMutation.mutate({ jobRef: jobRefNum, invoices: invoiceData })
