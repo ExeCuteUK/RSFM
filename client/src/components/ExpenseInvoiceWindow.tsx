@@ -40,6 +40,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   ])
   const [jobInfoMap, setJobInfoMap] = useState<{ [invoiceId: string]: JobInfo }>({})
   const jobRefInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const invoiceNumberInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const [focusRowId, setFocusRowId] = useState<string | null>(null)
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
@@ -199,6 +200,25 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     setInvoices(invoices.map(inv => 
       inv.id === id ? { ...inv, [field]: value } : inv
     ))
+  }
+
+  const handleCompanyNameChange = (invoiceId: string, value: string) => {
+    const previousValue = invoices.find(inv => inv.id === invoiceId)?.companyName || ''
+    updateInvoice(invoiceId, 'companyName', value)
+    
+    // Check if value matches one of the datalist options (autocomplete was used)
+    const existingCompanyNames = invoices
+      .filter(inv => inv.id !== invoiceId && inv.companyName.trim())
+      .map(inv => inv.companyName)
+      .filter((name, idx, arr) => arr.indexOf(name) === idx)
+    
+    // If the value changed to match an existing company name and it wasn't just a character being typed
+    if (value && existingCompanyNames.includes(value) && value !== previousValue && value.length > previousValue.length) {
+      // Focus the invoice number field
+      setTimeout(() => {
+        invoiceNumberInputRefs.current[invoiceId]?.focus()
+      }, 0)
+    }
   }
 
   const validateJobRef = (jobRefStr: string): boolean => {
@@ -378,7 +398,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                       <Input
                         id={`companyName-${invoice.id}`}
                         value={invoice.companyName}
-                        onChange={(e) => updateInvoice(invoice.id, 'companyName', e.target.value)}
+                        onChange={(e) => handleCompanyNameChange(invoice.id, e.target.value)}
                         placeholder="Company name"
                         className="mt-2"
                         list={`companyNames-${invoice.id}`}
@@ -399,6 +419,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                     <div>
                       <Label htmlFor={`invoiceNumber-${invoice.id}`}>Invoice Number</Label>
                       <Input
+                        ref={(el) => (invoiceNumberInputRefs.current[invoice.id] = el)}
                         id={`invoiceNumber-${invoice.id}`}
                         value={invoice.invoiceNumber}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceNumber', e.target.value)}
@@ -415,7 +436,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         type="date"
                         value={invoice.invoiceDate}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceDate', e.target.value)}
-                        className="mt-2"
+                        className="mt-2 [&::-webkit-calendar-picker-indicator]:hidden"
                         data-testid={`input-invoice-date-${index}`}
                       />
                     </div>
@@ -460,24 +481,29 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                   </div>
 
                   {invoice.jobRef.length >= 5 && (
-                    <div className="ml-4 px-4 py-2 border-l-4 bg-muted/30 rounded-r-md text-sm">
+                    <div className="ml-4 px-3 py-1.5 border-l-4 bg-muted/30 rounded-r-md text-xs">
                       {jobInfo?.exists ? (
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                          <div className="space-y-1">
-                            <div className="font-semibold text-green-600 dark:text-green-400">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <span className="font-semibold text-green-600 dark:text-green-400">
                               Job #{invoice.jobRef} - Valid {jobInfo.type} Job
-                            </div>
-                            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-                              <span className="text-muted-foreground">Customer:</span>
+                            </span>
+                            <span className="text-muted-foreground">•</span>
+                            <span>
+                              <span className="text-muted-foreground">Customer: </span>
                               <span className="font-medium">{jobInfo.customerName}</span>
-                              
-                              <span className="text-muted-foreground">Identifier:</span>
+                            </span>
+                            <span className="text-muted-foreground">•</span>
+                            <span>
+                              <span className="text-muted-foreground">Identifier: </span>
                               <span className="font-medium">{jobInfo.identifier}</span>
-                              
-                              <span className="text-muted-foreground">Booking Date:</span>
+                            </span>
+                            <span className="text-muted-foreground">•</span>
+                            <span>
+                              <span className="text-muted-foreground">Booking Date: </span>
                               <span className="font-medium">{formatDate(jobInfo.bookingDate)}</span>
-                            </div>
+                            </span>
                           </div>
                         </div>
                       ) : (
