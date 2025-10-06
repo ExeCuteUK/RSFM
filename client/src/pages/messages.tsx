@@ -238,16 +238,11 @@ export default function Messages() {
 
   const handleRemoveAttachment = (index: number) => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-    const files = uppy.getFiles();
-    if (files[index]) {
-      uppy.removeFile(files[index].id);
-    }
   };
 
   const handleComposerClose = (open: boolean) => {
     if (!open) {
       // Reset files when closing
-      uppy.cancelAll();
       setUploadedFiles([]);
     }
     setIsComposerOpen(open);
