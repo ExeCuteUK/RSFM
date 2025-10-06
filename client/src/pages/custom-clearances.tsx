@@ -408,9 +408,9 @@ export default function CustomClearances() {
     if (clearance.jobType === "import" && clearance.importCustomerId) {
       const customer = importCustomers.find(c => c.id === clearance.importCustomerId)
       return customer?.companyName || "N/A"
-    } else if (clearance.jobType === "export" && clearance.receiverId) {
-      const receiver = exportReceivers.find(r => r.id === clearance.receiverId)
-      return receiver?.companyName || "N/A"
+    } else if (clearance.jobType === "export" && clearance.exportCustomerId) {
+      const exportCustomer = exportCustomers.find(c => c.id === clearance.exportCustomerId)
+      return exportCustomer?.companyName || "N/A"
     }
     return "N/A"
   }
