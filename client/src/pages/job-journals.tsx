@@ -362,12 +362,12 @@ export default function JobJournals() {
                   <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Invoice No</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Amount</th>
-                  <th className="text-center p-2 font-semibold underline border-r-4 border-border bg-background">Reserve</th>
+                  <th className="text-center p-2 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
                   <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border bg-background">Invoice To</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Invoice No</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
                   <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Amount</th>
-                  <th className="text-center p-2 font-semibold underline border-r-4 border-border bg-background">Reserve</th>
+                  <th className="text-center p-2 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
                   <th className="text-center p-2 font-semibold underline border-l-2 bg-background">P/L</th>
                 </tr>
               </thead>
