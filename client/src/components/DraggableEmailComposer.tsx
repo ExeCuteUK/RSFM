@@ -62,8 +62,12 @@ export function DraggableEmailComposer() {
   // Send email mutation - MUST be called before conditional return
   const sendEmailMutation = useMutation({
     mutationFn: async (emailData: any) => {
-      const { isMinimized: _, ...sendData } = emailData;
-      return apiRequest("POST", "/api/gmail/send", sendData);
+      const { isMinimized: _, attachments, ...restData } = emailData;
+      const sendData = {
+        ...restData,
+        attachmentUrls: attachments || []
+      };
+      return apiRequest("POST", "/api/gmail/send-with-attachments", sendData);
     },
     onSuccess: () => {
       if (!emailComposerData) return;
