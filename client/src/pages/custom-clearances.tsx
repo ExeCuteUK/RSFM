@@ -505,11 +505,10 @@ export default function CustomClearances() {
       
       body += `${clearance.numberOfPieces || ""} ${clearance.packaging || ""}.\n`
       body += `${clearance.goodsDescription || ""}\n`
-      body += `${clearance.weight || ""}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
       
-      if (clearance.transportCosts) {
-        body += `Transport Costs : ${clearance.transportCosts}\n`
-      }
+      // Add weight with "kgs" suffix if weight exists
+      const weightText = clearance.weight ? `${clearance.weight} kgs` : ""
+      body += `${weightText}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
       
       // Add VAT info for import clearances
       if (clearance.jobType === "import") {
