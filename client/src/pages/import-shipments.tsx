@@ -736,13 +736,9 @@ export default function ImportShipments() {
         return
       }
 
-      // Get customer data
-      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
-      
       // Build email recipient data
       const jobContactEmail = shipment.jobContactEmail || ""
-      const additionalEmails = customer?.email || []
-      const ccEmails = additionalEmails.filter(email => email !== jobContactEmail).join(", ")
+      const ccEmails = ""
       
       // Build subject
       const customerRef = shipment.customerReferenceNumber || "N/A"
