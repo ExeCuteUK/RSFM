@@ -224,11 +224,11 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
   const updateWindowPayload = (id: string, payload: any) => {
     setWindows(prev =>
-      prev.map(w => w.id === id ? { ...w, payload } : w)
+      prev.map(w => w.id === id ? { ...w, payload: { ...w.payload, ...payload } } : w)
     )
 
     if (activeWindow?.id === id) {
-      setActiveWindowState(prev => prev ? { ...prev, payload } : null)
+      setActiveWindowState(prev => prev ? { ...prev, payload: { ...prev.payload, ...payload } } : null)
     }
   }
 

@@ -1422,25 +1422,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update advise clearance to agent status indicator
   app.patch("/api/export-shipments/:id/advise-clearance-to-agent-status", async (req, res) => {
     try {
-      console.log('[DEBUG] Advise clearance to agent (export) - ID:', req.params.id, 'Status:', req.body.status);
       const { status } = req.body;
       if (![1, 3, 4].includes(status)) {
-        console.log('[DEBUG] Invalid status value');
         return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
         adviseClearanceToAgentStatusIndicator: status 
       });
       if (!shipment) {
-        console.log('[DEBUG] Export shipment not found');
         return res.status(404).json({ error: "Export shipment not found" });
       }
       
-      console.log('[DEBUG] Export shipment updated:', shipment.id, 'New status:', shipment.adviseClearanceToAgentStatusIndicator);
-      
       // If linked to custom clearance, update the custom clearance status as well
       if (shipment.linkedClearanceId) {
-        console.log('[DEBUG] Syncing to custom clearance:', shipment.linkedClearanceId);
         await storage.updateCustomClearance(shipment.linkedClearanceId, {
           adviseAgentStatusIndicator: status
         });
@@ -1448,7 +1442,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(shipment);
     } catch (error) {
-      console.error('[DEBUG] Error updating advise clearance to agent status:', error);
       res.status(500).json({ error: "Failed to update advise clearance to agent status" });
     }
   });
@@ -1703,21 +1696,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update advise agent status indicator
   app.patch("/api/custom-clearances/:id/advise-agent-status", async (req, res) => {
     try {
-      console.log('[DEBUG] Advise agent status - ID:', req.params.id, 'Status:', req.body.status);
       const { status } = req.body;
       const clearance = await storage.updateCustomClearance(req.params.id, { 
         adviseAgentStatusIndicator: status 
       });
       if (!clearance) {
-        console.log('[DEBUG] Clearance not found');
         return res.status(404).json({ error: "Custom clearance not found" });
       }
       
-      console.log('[DEBUG] Clearance updated:', clearance.id, 'New status:', clearance.adviseAgentStatusIndicator);
-      
       // Sync to linked import shipment if it was created from import
       if (clearance.createdFromType === "import" && clearance.createdFromId) {
-        console.log('[DEBUG] Syncing to import shipment:', clearance.createdFromId);
         await storage.updateImportShipment(clearance.createdFromId, {
           clearanceStatusIndicator: status
         });
@@ -1725,7 +1713,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(clearance);
     } catch (error) {
-      console.error('[DEBUG] Error updating advise agent status:', error);
       res.status(500).json({ error: "Failed to update status" });
     }
   });
