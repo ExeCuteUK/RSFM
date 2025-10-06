@@ -294,12 +294,24 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       const monthDiff = (invYear - bookYear) * 12 + (invMonth - bookMonth)
       const absMonthDiff = Math.abs(monthDiff)
 
+      // Check if 3+ months apart (highest priority)
       if (absMonthDiff >= 3) {
         return { 
           type: 'error', 
           message: 'Advisory: Invoice date and job booking date are more than 3 months apart'
         }
-      } else if (absMonthDiff > 0) {
+      }
+      
+      // Check if invoice date is before booking date
+      if (invDate < bookDate) {
+        return { 
+          type: 'warning', 
+          message: 'Advisory: Supplier invoice has been issued before job booking date'
+        }
+      }
+      
+      // Check if different months
+      if (absMonthDiff > 0) {
         return { 
           type: 'warning', 
           message: 'Advisory: Supplier invoice date is not issued in the same month as the job booking month'
@@ -356,6 +368,26 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
         variant: 'destructive'
       })
       return
+    }
+    
+    // Check if any invoices have date advisories
+    const invoicesWithAdvisories = validInvoices.filter(inv => {
+      const jobInfo = jobInfoMap[inv.id]
+      if (jobInfo?.exists && jobInfo.bookingDate) {
+        const dateCheck = checkDateDiscrepancy(inv.invoiceDate, jobInfo.bookingDate)
+        return dateCheck.type !== 'none'
+      }
+      return false
+    })
+    
+    // If there are advisories, ask for confirmation
+    if (invoicesWithAdvisories.length > 0) {
+      const confirmed = window.confirm(
+        `${invoicesWithAdvisories.length} invoice(s) have date advisories. Do you want to proceed with saving these invoices?`
+      )
+      if (!confirmed) {
+        return
+      }
     }
     
     const invoiceData = validInvoices.map(inv => ({
