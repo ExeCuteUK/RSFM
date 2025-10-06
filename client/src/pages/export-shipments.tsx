@@ -363,7 +363,9 @@ export default function ExportShipments() {
   }
 
   const getClearanceStatusBadgeClass = (status: string) => {
-    if (status === "Fully Cleared") {
+    if (status === "Request CC") {
+      return "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300"
+    } else if (status === "Fully Cleared") {
       return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
     } else if (status === "Waiting Arrival") {
       return "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
