@@ -1717,6 +1717,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update send haulier EAD status indicator
+  app.patch("/api/custom-clearances/:id/send-haulier-ead-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.updateCustomClearance(req.params.id, { 
+        sendHaulierEadStatusIndicator: status 
+      });
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
   // Update send entry to customer status indicator
   app.patch("/api/custom-clearances/:id/send-entry-status", async (req, res) => {
     try {

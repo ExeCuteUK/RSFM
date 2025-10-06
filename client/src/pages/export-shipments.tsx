@@ -172,16 +172,6 @@ export default function ExportShipments() {
     },
   })
 
-  const updateSendHaulierEadStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/export-shipments/${id}/send-haulier-ead-status`, { status })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-    },
-  })
-
   const updateInvoiceCustomerStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
       return apiRequest("PATCH", `/api/export-shipments/${id}/invoice-customer-status`, { status })
@@ -420,10 +410,6 @@ export default function ExportShipments() {
 
   const handleAdviseClearanceToAgentStatusUpdate = (id: string, status: number) => {
     updateAdviseClearanceToAgentStatus.mutate({ id, status })
-  }
-
-  const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
-    updateSendHaulierEadStatus.mutate({ id, status })
   }
 
   const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
@@ -829,40 +815,6 @@ export default function ExportShipments() {
                       </div>
                     </div>
                   </div>
-                  )}
-                  {shipment.exportClearanceAgent === "R.S" && (
-                    <div className="mt-1">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5">
-                          <FileOutput className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendHaulierEadStatusIndicator)}`} data-testid={`text-send-ead-${shipment.id}`}>
-                            Send Haulier EAD
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 1)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendHaulierEadStatusIndicator === 1 || shipment.sendHaulierEadStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-send-ead-status-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <button
-                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendHaulierEadStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
-                            }`}
-                            data-testid={`button-send-ead-status-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
-                      </div>
-                    </div>
                   )}
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">

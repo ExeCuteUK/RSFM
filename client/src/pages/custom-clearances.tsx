@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, FileOutput } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
 import {
   DropdownMenu,
@@ -155,6 +155,15 @@ export default function CustomClearances() {
     },
   })
 
+  const updateSendHaulierEadStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/send-haulier-ead-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
   const updateSendEntryStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
       return apiRequest("PATCH", `/api/custom-clearances/${id}/send-entry-status`, { status })
@@ -267,6 +276,10 @@ export default function CustomClearances() {
     } else {
       updateAdviseAgentStatus.mutate({ id, status })
     }
+  }
+
+  const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
+    updateSendHaulierEadStatus.mutate({ id, status })
   }
 
   const handleSendEntryStatusUpdate = (id: string, status: number) => {
@@ -941,6 +954,39 @@ export default function CustomClearances() {
                             />
                           </div>
                         </div>
+
+                        {clearance.jobType === "export" && (
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              <FileOutput className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`todo-send-ead-${clearance.id}`}>
+                                Send Haulier EAD
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 1)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendHaulierEadStatusIndicator === 1 || clearance.sendHaulierEadStatusIndicator === null
+                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                    : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                }`}
+                                data-testid={`button-send-ead-yellow-${clearance.id}`}
+                                title="To Do"
+                              />
+                              <button
+                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 3)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendHaulierEadStatusIndicator === 3
+                                    ? 'bg-green-400 border-green-500 scale-110'
+                                    : 'bg-green-200 border-green-300 hover-elevate'
+                                }`}
+                                data-testid={`button-send-ead-green-${clearance.id}`}
+                                title="Completed"
+                              />
+                            </div>
+                          </div>
+                        )}
 
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
