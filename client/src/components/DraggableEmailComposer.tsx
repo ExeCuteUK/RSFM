@@ -61,6 +61,9 @@ export function DraggableEmailComposer() {
   const [newBccEmail, setNewBccEmail] = useState("");
   const composerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
+  const ccInputRef = useRef<HTMLInputElement>(null);
+  const bccInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
   // Send email mutation - MUST be called before conditional return
@@ -78,7 +81,9 @@ export function DraggableEmailComposer() {
       
       toast({ title: "Email sent successfully" });
       
-      if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
+      if (emailComposerData.to && emailComposerData.to.length > 0) {
+        emailComposerData.to.forEach(email => addToRecentEmails(email));
+      }
       
       // Auto-update status based on metadata
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
@@ -155,6 +160,7 @@ export function DraggableEmailComposer() {
       handleDataChange({ ...data, to: [...data.to, trimmedEmail] });
       setNewToEmail("");
       setEmailPopoverOpen(false);
+      toInputRef.current?.blur();
     }
   };
 
@@ -169,6 +175,7 @@ export function DraggableEmailComposer() {
       handleDataChange({ ...data, cc: [...data.cc, trimmedEmail] });
       setNewCcEmail("");
       setCcPopoverOpen(false);
+      ccInputRef.current?.blur();
     }
   };
 
@@ -183,6 +190,7 @@ export function DraggableEmailComposer() {
       handleDataChange({ ...data, bcc: [...data.bcc, trimmedEmail] });
       setNewBccEmail("");
       setBccPopoverOpen(false);
+      bccInputRef.current?.blur();
     }
   };
 
@@ -376,13 +384,11 @@ export function DraggableEmailComposer() {
             <Popover open={emailPopoverOpen} onOpenChange={setEmailPopoverOpen}>
               <PopoverTrigger asChild>
                 <Input
+                  ref={toInputRef}
                   placeholder="Add recipient email..."
                   value={newToEmail}
                   onChange={(e) => {
                     setNewToEmail(e.target.value);
-                    if (e.target.value.trim()) {
-                      setEmailPopoverOpen(true);
-                    }
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -390,6 +396,7 @@ export function DraggableEmailComposer() {
                       addToEmail(newToEmail);
                     }
                   }}
+                  onFocus={() => setEmailPopoverOpen(true)}
                   data-testid="input-to-email"
                   className="flex-1"
                 />
@@ -485,13 +492,11 @@ export function DraggableEmailComposer() {
               <Popover open={ccPopoverOpen} onOpenChange={setCcPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Input
+                    ref={ccInputRef}
                     placeholder="Add CC email..."
                     value={newCcEmail}
                     onChange={(e) => {
                       setNewCcEmail(e.target.value);
-                      if (e.target.value.trim()) {
-                        setCcPopoverOpen(true);
-                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -499,6 +504,7 @@ export function DraggableEmailComposer() {
                         addCcEmail(newCcEmail);
                       }
                     }}
+                    onFocus={() => setCcPopoverOpen(true)}
                     data-testid="input-cc-email"
                   />
                 </PopoverTrigger>
@@ -591,13 +597,11 @@ export function DraggableEmailComposer() {
               <Popover open={bccPopoverOpen} onOpenChange={setBccPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Input
+                    ref={bccInputRef}
                     placeholder="Add BCC email..."
                     value={newBccEmail}
                     onChange={(e) => {
                       setNewBccEmail(e.target.value);
-                      if (e.target.value.trim()) {
-                        setBccPopoverOpen(true);
-                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -605,6 +609,7 @@ export function DraggableEmailComposer() {
                         addBccEmail(newBccEmail);
                       }
                     }}
+                    onFocus={() => setBccPopoverOpen(true)}
                     data-testid="input-bcc-email"
                   />
                 </PopoverTrigger>
