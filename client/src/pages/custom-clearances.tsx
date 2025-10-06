@@ -42,7 +42,7 @@ export default function CustomClearances() {
   const [redButtonPrompt, setRedButtonPrompt] = useState<{ clearanceId: string; statusType: string; statusValue: number } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "transport" | "clearance"; fileName: string } | null>(null)
   const { toast } = useToast()
-  const [location] = useLocation()
+  const [location, setLocation] = useLocation()
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -657,7 +657,16 @@ export default function CustomClearances() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                        <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${clearance.id}`}>
+                        <h3 
+                          className={`font-semibold text-lg ${clearance.createdFromId ? 'text-purple-600 dark:text-purple-400 hover:underline cursor-pointer' : ''}`}
+                          onClick={() => {
+                            if (clearance.createdFromId) {
+                              const targetPage = clearance.jobType === 'import' ? '/import-shipments' : '/export-shipments'
+                              setLocation(`${targetPage}?search=${clearance.jobRef}`)
+                            }
+                          }}
+                          data-testid={`text-job-ref-${clearance.id}`}
+                        >
                           {clearance.jobRef}
                         </h3>
                         <div className="flex -space-x-1">
