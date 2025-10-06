@@ -356,7 +356,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
               return (
                 <div key={invoice.id} className="space-y-2">
                   <div
-                    className="grid grid-cols-[110px_1fr_1fr_130px_120px_auto_auto] gap-3 items-end p-4 border rounded-md bg-card"
+                    className="grid grid-cols-[110px_1fr_0.67fr_130px_80px_auto_auto] gap-3 items-end p-4 border rounded-md bg-card"
                     data-testid={`invoice-row-${index}`}
                   >
                     <div>
@@ -381,8 +381,19 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         onChange={(e) => updateInvoice(invoice.id, 'companyName', e.target.value)}
                         placeholder="Company name"
                         className="mt-2"
+                        list={`companyNames-${invoice.id}`}
                         data-testid={`input-company-name-${index}`}
                       />
+                      <datalist id={`companyNames-${invoice.id}`}>
+                        {invoices
+                          .filter(inv => inv.id !== invoice.id && inv.companyName.trim())
+                          .map(inv => inv.companyName)
+                          .filter((name, idx, arr) => arr.indexOf(name) === idx)
+                          .map((name, idx) => (
+                            <option key={idx} value={name} />
+                          ))
+                        }
+                      </datalist>
                     </div>
 
                     <div>
