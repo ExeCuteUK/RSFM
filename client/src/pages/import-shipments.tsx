@@ -639,6 +639,76 @@ export default function ImportShipments() {
     updateSendPodToCustomerStatus.mutate({ id, status })
   }
 
+  const handleBookDeliveryCustomerEmail = (shipment: ImportShipment) => {
+    try {
+      // Get customer and agent email
+      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
+      const agentEmail = customer?.agentEmail && customer.agentEmail.length > 0 ? customer.agentEmail[0] : ""
+      
+      // Build subject
+      const customerRef = shipment.customerReferenceNumber
+      const jobRef = shipment.jobRef || "N/A"
+      const containerNumber = shipment.trailerOrContainerNumber || "TBA"
+      const eta = formatDate(shipment.importDateEtaPort) || "TBA"
+      
+      let truckContainerFlight = ""
+      if (shipment.containerShipment === "Container Shipment") {
+        truckContainerFlight = `Container ${containerNumber}`
+      } else if (shipment.containerShipment === "Road Shipment") {
+        truckContainerFlight = `Truck ${containerNumber}`
+      } else if (shipment.containerShipment === "Air Freight") {
+        truckContainerFlight = `Flight ${containerNumber}`
+      }
+      
+      const subject = customerRef 
+        ? `Import Deliver Booking / Your Ref : ${customerRef} / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+        : `Import Deliver Booking / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      
+      // Build message body
+      let body = `Hi,\n\nPlease find below details of an import job due to be delivered to yourselves. If you can advise on the below that would be great.\n\n`
+      
+      // Container/Truck/Flight info
+      if (shipment.containerShipment === "Container Shipment") {
+        body += `Container Number ${containerNumber}\n`
+      } else if (shipment.containerShipment === "Road Shipment") {
+        body += `Truck Number ${containerNumber}\n`
+      } else if (shipment.containerShipment === "Air Freight") {
+        body += `Flight Number ${containerNumber}\n`
+      }
+      
+      body += `ETA Port : ${eta}\n`
+      body += `${shipment.goodsDescription || ""}, ${shipment.numberOfPieces || ""} ${shipment.packaging || ""}, ${shipment.weight || ""}kgs\n`
+      
+      // Customer reference if present
+      if (customerRef) {
+        body += `Your Reference : ${customerRef}\n`
+      }
+      
+      body += `\nDelivery Address :-\n${shipment.deliveryAddress || "N/A"}\n\n`
+      body += `We have been advised that delivery can be made on *\n\n`
+      body += `If you can advise if this date is good for you and any other information required such as delivery time, references that would be great.\n\n`
+      body += `Many Thanks,`
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: agentEmail || "",
+        cc: "",
+        bcc: "",
+        subject: subject,
+        body: body,
+        attachments: [],
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
     const fileName = filePath.split('/').pop() || filePath
     setDeletingFile({ id, filePath, fileType, fileName })
@@ -1240,7 +1310,14 @@ export default function ImportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <button
+                          onClick={() => handleBookDeliveryCustomerEmail(shipment)}
+                          className="hover-elevate active-elevate-2 p-0.5 rounded"
+                          data-testid={`button-book-delivery-email-${shipment.id}`}
+                          title="Send booking email to customer"
+                        >
+                          <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        </button>
                         <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
                           Book Delivery Customer
                         </p>
