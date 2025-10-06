@@ -258,6 +258,8 @@ export const importShipments = pgTable("import_shipments", {
   
   // Customer Reference
   importCustomerId: varchar("import_customer_id"),
+  jobContactName: text("job_contact_name"),
+  jobContactEmail: text("job_contact_email"),
   
   // Shipment Details
   bookingDate: text("booking_date"),
