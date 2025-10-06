@@ -140,6 +140,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       haulierTelephone: "",
       haulierReference: "",
       deliveryAddress: "",
+      clearanceType: "",
       collectionAddress: "",
       collectionContactName: "",
       collectionContactTelephone: "",
@@ -1256,6 +1257,34 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {exportClearanceAgent === "R.S" && (
+                  <FormField
+                    control={form.control}
+                    name="clearanceType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Clearance Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-clearance-type">
+                              <SelectValue placeholder="Select clearance type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="T1">T1</SelectItem>
+                            <SelectItem value="Import">Import</SelectItem>
+                            <SelectItem value="Export">Export</SelectItem>
+                            <SelectItem value="Export Accompanied">Export Accompanied</SelectItem>
+                            <SelectItem value="Simplified Frontier / T1">Simplified Frontier / T1</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
