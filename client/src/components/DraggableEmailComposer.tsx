@@ -62,6 +62,7 @@ export function DraggableEmailComposer() {
   // Send email mutation - MUST be called before conditional return
   const sendEmailMutation = useMutation({
     mutationFn: async (emailData: any) => {
+      console.log('[SEND] emailData:', JSON.stringify(emailData, null, 2));
       const { isMinimized: _, attachments, metadata, ...restData } = emailData;
       const sendData = {
         ...restData,
@@ -71,6 +72,7 @@ export function DraggableEmailComposer() {
     },
     onSuccess: async () => {
       if (!emailComposerData) return;
+      console.log('[SUCCESS] emailComposerData:', JSON.stringify(emailComposerData, null, 2));
       toast({ title: "Email sent successfully" });
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
