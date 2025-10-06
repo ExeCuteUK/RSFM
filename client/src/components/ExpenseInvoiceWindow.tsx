@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useWindowManager } from '@/contexts/WindowManagerContext'
 import { DraggableWindow } from './DraggableWindow'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ interface ExpenseInvoiceWindowProps {
 
 interface InvoiceRow {
   id: string
+  jobRef: string
   companyName: string
   invoiceNumber: string
   invoiceDate: string
@@ -25,10 +26,11 @@ interface InvoiceRow {
 export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   const { closeWindow, minimizeWindow } = useWindowManager()
   const { toast } = useToast()
-  const [jobRef, setJobRef] = useState('')
   const [invoices, setInvoices] = useState<InvoiceRow[]>([
-    { id: '1', companyName: '', invoiceNumber: '', invoiceDate: '', invoiceAmount: '' }
+    { id: '1', jobRef: '', companyName: '', invoiceNumber: '', invoiceDate: '', invoiceAmount: '' }
   ])
+  const jobRefInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const [focusRowId, setFocusRowId] = useState<string | null>(null)
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -42,8 +44,16 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     queryKey: ["/api/custom-clearances"],
   })
 
+  // Focus the job ref input when a new row is added
+  useEffect(() => {
+    if (focusRowId && jobRefInputRefs.current[focusRowId]) {
+      jobRefInputRefs.current[focusRowId]?.focus()
+      setFocusRowId(null)
+    }
+  }, [focusRowId])
+
   const createMutation = useMutation({
-    mutationFn: async (data: { jobRef: number; invoices: any[] }) => {
+    mutationFn: async (data: { invoices: any[] }) => {
       const response = await apiRequest('POST', '/api/purchase-invoices/batch', {
         invoices: data.invoices
       })
@@ -63,12 +73,20 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     }
   })
 
-  const addInvoiceRow = () => {
+  const addInvoiceRow = (afterId?: string) => {
     const newId = (Math.max(...invoices.map(i => parseInt(i.id)), 0) + 1).toString()
-    setInvoices([
-      ...invoices,
-      { id: newId, companyName: '', invoiceNumber: '', invoiceDate: '', invoiceAmount: '' }
-    ])
+    const newRow = { id: newId, jobRef: '', companyName: '', invoiceNumber: '', invoiceDate: '', invoiceAmount: '' }
+    
+    if (afterId) {
+      const index = invoices.findIndex(inv => inv.id === afterId)
+      const newInvoices = [...invoices]
+      newInvoices.splice(index + 1, 0, newRow)
+      setInvoices(newInvoices)
+    } else {
+      setInvoices([...invoices, newRow])
+    }
+    
+    setFocusRowId(newId)
   }
 
   const removeInvoiceRow = (id: string) => {
@@ -83,14 +101,9 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     ))
   }
 
-  const validateJobRef = (): boolean => {
-    const jobRefNum = parseInt(jobRef)
+  const validateJobRef = (jobRefStr: string): boolean => {
+    const jobRefNum = parseInt(jobRefStr)
     if (isNaN(jobRefNum) || jobRefNum < 26001) {
-      toast({
-        title: 'Invalid Job Reference',
-        description: 'Job reference must be a number (26001 or higher)',
-        variant: 'destructive'
-      })
       return false
     }
 
@@ -100,23 +113,20 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       exportShipments.some(s => s.jobRef === jobRefNum) ||
       customClearances.some(c => c.jobRef === jobRefNum)
 
-    if (!jobExists) {
-      toast({
-        title: 'Job Not Found',
-        description: `Job reference #${jobRefNum} does not exist`,
-        variant: 'destructive'
-      })
-      return false
-    }
+    return jobExists
+  }
 
-    return true
+  const handleAmountKeyPress = (e: React.KeyboardEvent, invoiceId: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addInvoiceRow(invoiceId)
+    }
   }
 
   const handleSubmit = () => {
-    if (!validateJobRef()) return
-
-    // Validate invoices
+    // Validate and prepare invoices
     const validInvoices = invoices.filter(inv => 
+      inv.jobRef.trim() &&
       inv.companyName.trim() && 
       inv.invoiceNumber.trim() && 
       inv.invoiceDate && 
@@ -132,7 +142,17 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       return
     }
 
-    const jobRefNum = parseInt(jobRef)
+    // Validate job references
+    const invalidJobRefs = validInvoices.filter(inv => !validateJobRef(inv.jobRef))
+    if (invalidJobRefs.length > 0) {
+      const invalidRefs = invalidJobRefs.map(inv => inv.jobRef).join(', ')
+      toast({
+        title: 'Invalid Job Reference(s)',
+        description: `The following job references do not exist: ${invalidRefs}`,
+        variant: 'destructive'
+      })
+      return
+    }
     
     // Validate all amounts are valid numbers
     const invalidAmounts = validInvoices.filter(inv => {
@@ -150,14 +170,14 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     }
     
     const invoiceData = validInvoices.map(inv => ({
-      jobRef: jobRefNum,
+      jobRef: parseInt(inv.jobRef),
       companyName: inv.companyName.trim(),
       invoiceNumber: inv.invoiceNumber.trim(),
       invoiceDate: inv.invoiceDate,
       invoiceAmount: parseFloat(inv.invoiceAmount)
     }))
 
-    createMutation.mutate({ jobRef: jobRefNum, invoices: invoiceData })
+    createMutation.mutate({ invoices: invoiceData })
   }
 
   const handleCancel = () => {
@@ -170,27 +190,14 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       title="Add Expense Invoices"
       onClose={handleCancel}
       onMinimize={() => minimizeWindow(windowId)}
-      width={900}
+      width={1100}
       height={600}
     >
       <div className="p-6 flex flex-col h-full">
-        <div className="mb-6">
-          <Label htmlFor="jobRef">Job Reference</Label>
-          <Input
-            id="jobRef"
-            type="number"
-            value={jobRef}
-            onChange={(e) => setJobRef(e.target.value)}
-            placeholder="Enter job reference (e.g., 26001)"
-            className="mt-2"
-            data-testid="input-job-ref"
-          />
-        </div>
-
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Invoice Details</h3>
           <Button
-            onClick={addInvoiceRow}
+            onClick={() => addInvoiceRow()}
             variant="outline"
             size="sm"
             data-testid="button-add-invoice-row"
@@ -205,9 +212,23 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
             {invoices.map((invoice, index) => (
               <div
                 key={invoice.id}
-                className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-end p-4 border rounded-md bg-card"
+                className="grid grid-cols-[110px_1fr_1fr_130px_120px_auto_auto] gap-3 items-end p-4 border rounded-md bg-card"
                 data-testid={`invoice-row-${index}`}
               >
+                <div>
+                  <Label htmlFor={`jobRef-${invoice.id}`}>Job Ref</Label>
+                  <Input
+                    ref={(el) => (jobRefInputRefs.current[invoice.id] = el)}
+                    id={`jobRef-${invoice.id}`}
+                    type="number"
+                    value={invoice.jobRef}
+                    onChange={(e) => updateInvoice(invoice.id, 'jobRef', e.target.value)}
+                    placeholder="26001"
+                    className="mt-2"
+                    data-testid={`input-job-ref-${index}`}
+                  />
+                </div>
+
                 <div>
                   <Label htmlFor={`companyName-${invoice.id}`}>Company Name</Label>
                   <Input
@@ -252,6 +273,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                     step="0.01"
                     value={invoice.invoiceAmount}
                     onChange={(e) => updateInvoice(invoice.id, 'invoiceAmount', e.target.value)}
+                    onKeyPress={(e) => handleAmountKeyPress(e, invoice.id)}
                     placeholder="0.00"
                     className="mt-2"
                     data-testid={`input-invoice-amount-${index}`}
@@ -261,9 +283,21 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => addInvoiceRow(invoice.id)}
+                  className="mt-2"
+                  title="Add new line"
+                  data-testid={`button-add-after-${index}`}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => removeInvoiceRow(invoice.id)}
                   disabled={invoices.length === 1}
                   className="mt-2"
+                  title="Remove line"
                   data-testid={`button-remove-invoice-${index}`}
                 >
                   <X className="h-4 w-4" />
