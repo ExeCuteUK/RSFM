@@ -743,7 +743,7 @@ export default function ImportShipments() {
       const ccEmails = emailList.slice(1).join(", ")
       
       // Build subject
-      const customerRef = shipment.customerReferenceNumber || "N/A"
+      const customerRef = shipment.customerReferenceNumber
       const jobRef = shipment.jobRef || "N/A"
       const containerNumber = shipment.trailerOrContainerNumber || "N/A"
       const eta = formatDate(shipment.importDateEtaPort) || "N/A"
@@ -759,13 +759,29 @@ export default function ImportShipments() {
         truckContainerFlight = `Container or Trailer or Flight Number: ${containerNumber}`
       }
       
-      const subject = `Import Delivery Update / Your Ref : ${customerRef} / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      // Conditionally include "Your Ref" only if customerRef exists
+      const yourRefPart = customerRef ? `Your Ref : ${customerRef} / ` : ""
+      const subject = `Import Delivery Update / ${yourRefPart}Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
       
-      // Build message body
-      const jobContactName = shipment.jobContactName || "there"
-      const body = `Hi ${jobContactName},
+      // Build message body - handle multiple contact names separated by commas
+      let greeting = "Hi there"
+      if (shipment.jobContactName && shipment.jobContactName.trim()) {
+        const names = shipment.jobContactName.split(',').map(name => name.trim()).filter(name => name.length > 0)
+        if (names.length === 1) {
+          greeting = `Hi ${names[0]}`
+        } else if (names.length === 2) {
+          greeting = `Hi ${names[0]} and ${names[1]}`
+        } else if (names.length > 2) {
+          const allButLast = names.slice(0, -1).join(', ')
+          greeting = `Hi ${allButLast}, and ${names[names.length - 1]}`
+        }
+      }
+      
+      // Conditionally include "your ref" only if customerRef exists
+      const yourRefText = customerRef ? `, your ref ${customerRef}` : ""
+      const body = `${greeting},
 
-Please find enclosed Proof Of Delivery attached for this shipment, your ref ${customerRef}.
+Please find enclosed Proof Of Delivery attached for this shipment${yourRefText}.
 
 Hope all is OK.`
       
