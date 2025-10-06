@@ -12,7 +12,7 @@ interface EmailComposerData {
   attachments: string[]
   isMinimized: boolean
   metadata?: {
-    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export'
+    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export' | 'send-pod-customer'
     shipmentId?: string
   }
 }
@@ -25,7 +25,7 @@ interface EmailDraft {
   body: string
   attachments: string[]
   metadata?: {
-    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export'
+    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export' | 'send-pod-customer'
     shipmentId?: string
   }
 }
