@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/contexts/EmailContext";
 import { useWindowManager } from "@/contexts/WindowManagerContext";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -62,17 +62,41 @@ export function DraggableEmailComposer() {
   // Send email mutation - MUST be called before conditional return
   const sendEmailMutation = useMutation({
     mutationFn: async (emailData: any) => {
-      const { isMinimized: _, attachments, ...restData } = emailData;
+      const { isMinimized: _, attachments, metadata, ...restData } = emailData;
       const sendData = {
         ...restData,
         attachmentUrls: attachments || []
       };
       return apiRequest("POST", "/api/gmail/send-with-attachments", sendData);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       if (!emailComposerData) return;
       toast({ title: "Email sent successfully" });
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
+      
+      // Auto-update status based on metadata
+      if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
+        const { source, shipmentId } = emailComposerData.metadata;
+        
+        try {
+          if (source === 'book-delivery-customer') {
+            // Update Book Delivery Customer status to Orange (2)
+            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/book-delivery-customer-status`, { status: 2 });
+            queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+          } else if (source === 'advise-clearance-agent') {
+            // Update Advise Clearance to Agent status to Green (3)
+            await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
+          } else if (source === 'advise-clearance-agent-export') {
+            // Update Advise Clearance to Agent status to Green (3) for export
+            await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-agent-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
+          }
+        } catch (error) {
+          console.error('Failed to update status:', error);
+        }
+      }
+      
       removeEmailDraft(emailComposerData.id);
       closeEmailComposer();
     },

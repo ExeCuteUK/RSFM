@@ -543,6 +543,10 @@ export default function CustomClearances() {
         subject: subject || `${clearance.jobType === "import" ? "Import" : "Export"} Clearance`,
         body: body || "",
         attachments: transportDocs || [],
+        metadata: {
+          source: 'advise-clearance-agent',
+          shipmentId: clearance.id
+        }
       })
       
       setClearanceAgentDialog(null)

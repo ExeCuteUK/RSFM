@@ -709,6 +709,10 @@ export default function ImportShipments() {
         subject: subject,
         body: body,
         attachments: [],
+        metadata: {
+          source: 'book-delivery-customer',
+          shipmentId: shipment.id
+        }
       })
     } catch (error) {
       console.error('Error opening email composer:', error)

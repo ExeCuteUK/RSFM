@@ -510,7 +510,11 @@ export default function ExportShipments() {
         bcc: "",
         subject,
         body,
-        attachments
+        attachments,
+        metadata: {
+          source: 'advise-clearance-agent-export',
+          shipmentId: shipment.id
+        }
       })
       
       setClearanceAgentDialog(null)

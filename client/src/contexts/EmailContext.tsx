@@ -11,6 +11,10 @@ interface EmailComposerData {
   body: string
   attachments: string[]
   isMinimized: boolean
+  metadata?: {
+    source?: 'book-delivery-customer' | 'advise-clearance-agent' | 'advise-clearance-agent-export'
+    shipmentId?: string
+  }
 }
 
 interface EmailDraft {
