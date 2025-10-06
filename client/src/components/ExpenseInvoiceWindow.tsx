@@ -41,6 +41,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   const [jobInfoMap, setJobInfoMap] = useState<{ [invoiceId: string]: JobInfo }>({})
   const jobRefInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const invoiceNumberInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [focusRowId, setFocusRowId] = useState<string | null>(null)
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
@@ -70,6 +71,20 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       setFocusRowId(null)
     }
   }, [focusRowId])
+
+  // Scroll to bottom when entering data in the last row
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
+    }
+  }
+
+  useEffect(() => {
+    // When a new invoice row is added, scroll to bottom
+    if (invoices.length > 1) {
+      scrollToBottom()
+    }
+  }, [invoices.length])
 
   const createMutation = useMutation({
     mutationFn: async (data: { invoices: any[] }) => {
@@ -353,10 +368,10 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       onClose={handleCancel}
       onMinimize={() => minimizeWindow(windowId)}
       width={1100}
-      height={600}
+      height={720}
     >
       <div className="p-6 flex flex-col h-full">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold">Invoice Details</h3>
           <Button
             onClick={() => addInvoiceRow()}
@@ -369,18 +384,18 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
           </Button>
         </div>
 
-        <div className="flex-1 overflow-auto mb-6">
-          <div className="space-y-4">
+        <div ref={scrollContainerRef} className="flex-1 overflow-auto mb-4">
+          <div className="space-y-2">
             {invoices.map((invoice, index) => {
               const jobInfo = jobInfoMap[invoice.id]
               return (
-                <div key={invoice.id} className="space-y-2">
+                <div key={invoice.id} className="space-y-1">
                   <div
-                    className="grid grid-cols-[110px_1fr_0.67fr_130px_80px_auto_auto] gap-3 items-end p-4 border rounded-md bg-card"
+                    className="grid grid-cols-[110px_1fr_0.67fr_130px_80px_auto_auto] gap-2 items-end p-3 border rounded-md bg-card"
                     data-testid={`invoice-row-${index}`}
                   >
                     <div>
-                      <Label htmlFor={`jobRef-${invoice.id}`}>Job Ref</Label>
+                      <Label htmlFor={`jobRef-${invoice.id}`} className="text-xs">Job Ref</Label>
                       <Input
                         ref={(el) => (jobRefInputRefs.current[invoice.id] = el)}
                         id={`jobRef-${invoice.id}`}
@@ -388,19 +403,19 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         value={invoice.jobRef}
                         onChange={(e) => handleJobRefChange(invoice.id, e.target.value)}
                         placeholder="26001"
-                        className="mt-2"
+                        className="mt-1"
                         data-testid={`input-job-ref-${index}`}
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor={`companyName-${invoice.id}`}>Company Name</Label>
+                      <Label htmlFor={`companyName-${invoice.id}`} className="text-xs">Company Name</Label>
                       <Input
                         id={`companyName-${invoice.id}`}
                         value={invoice.companyName}
                         onChange={(e) => handleCompanyNameChange(invoice.id, e.target.value)}
                         placeholder="Company name"
-                        className="mt-2"
+                        className="mt-1"
                         list={`companyNames-${invoice.id}`}
                         data-testid={`input-company-name-${index}`}
                       />
@@ -417,32 +432,32 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                     </div>
 
                     <div>
-                      <Label htmlFor={`invoiceNumber-${invoice.id}`}>Invoice Number</Label>
+                      <Label htmlFor={`invoiceNumber-${invoice.id}`} className="text-xs">Invoice Number</Label>
                       <Input
                         ref={(el) => (invoiceNumberInputRefs.current[invoice.id] = el)}
                         id={`invoiceNumber-${invoice.id}`}
                         value={invoice.invoiceNumber}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceNumber', e.target.value)}
                         placeholder="Invoice #"
-                        className="mt-2"
+                        className="mt-1"
                         data-testid={`input-invoice-number-${index}`}
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor={`invoiceDate-${invoice.id}`}>Invoice Date</Label>
+                      <Label htmlFor={`invoiceDate-${invoice.id}`} className="text-xs">Invoice Date</Label>
                       <Input
                         id={`invoiceDate-${invoice.id}`}
                         type="date"
                         value={invoice.invoiceDate}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceDate', e.target.value)}
-                        className="mt-2 [&::-webkit-calendar-picker-indicator]:hidden"
+                        className="mt-1 [&::-webkit-calendar-picker-indicator]:hidden"
                         data-testid={`input-invoice-date-${index}`}
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor={`invoiceAmount-${invoice.id}`}>Amount (£)</Label>
+                      <Label htmlFor={`invoiceAmount-${invoice.id}`} className="text-xs">Amount (£)</Label>
                       <Input
                         id={`invoiceAmount-${invoice.id}`}
                         type="number"
@@ -451,7 +466,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceAmount', e.target.value)}
                         onKeyPress={(e) => handleAmountKeyPress(e, invoice.id)}
                         placeholder="0.00"
-                        className="mt-2"
+                        className="mt-1"
                         data-testid={`input-invoice-amount-${index}`}
                       />
                     </div>
@@ -460,7 +475,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => addInvoiceRow(invoice.id)}
-                      className="mt-2"
+                      className="mt-1"
                       title="Add new line"
                       data-testid={`button-add-after-${index}`}
                     >
@@ -472,7 +487,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                       size="icon"
                       onClick={() => removeInvoiceRow(invoice.id)}
                       disabled={invoices.length === 1}
-                      className="mt-2"
+                      className="mt-1"
                       title="Remove line"
                       data-testid={`button-remove-invoice-${index}`}
                     >
