@@ -658,6 +658,54 @@ Hope all is OK.`
         </div>
         <div className="flex gap-2">
           <Button
+            variant={selectedShipmentTypes.includes("Container Shipment") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedShipmentTypes(prev => 
+                prev.includes("Container Shipment") 
+                  ? prev.filter(t => t !== "Container Shipment")
+                  : [...prev, "Container Shipment"]
+              )
+            }}
+            data-testid="filter-containers"
+          >
+            <Container className="h-4 w-4 mr-1" />
+            Containers
+          </Button>
+          <Button
+            variant={selectedShipmentTypes.includes("Road Shipment") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedShipmentTypes(prev => 
+                prev.includes("Road Shipment") 
+                  ? prev.filter(t => t !== "Road Shipment")
+                  : [...prev, "Road Shipment"]
+              )
+            }}
+            data-testid="filter-road"
+          >
+            <Truck className="h-4 w-4 mr-1" />
+            Road Transport
+          </Button>
+          <Button
+            variant={selectedShipmentTypes.includes("Air Freight") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedShipmentTypes(prev => 
+                prev.includes("Air Freight") 
+                  ? prev.filter(t => t !== "Air Freight")
+                  : [...prev, "Air Freight"]
+              )
+            }}
+            data-testid="filter-air"
+          >
+            <Plane className="h-4 w-4 mr-1" />
+            Air Freight
+          </Button>
+        </div>
+        <div className="h-8 w-px bg-border"></div>
+        <div className="flex gap-2">
+          <Button
             variant={selectedStatuses.length === 0 ? "default" : "outline"}
             size="sm"
             onClick={() => setSelectedStatuses([])}
@@ -720,56 +768,6 @@ Hope all is OK.`
             data-testid="filter-completed"
           >
             Completed
-          </Button>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={selectedShipmentTypes.includes("Container Shipment") ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setSelectedShipmentTypes(prev => 
-                prev.includes("Container Shipment") 
-                  ? prev.filter(t => t !== "Container Shipment")
-                  : [...prev, "Container Shipment"]
-              )
-            }}
-            className={selectedShipmentTypes.includes("Container Shipment") ? "bg-orange-600 hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700" : "hover:bg-orange-50 dark:hover:bg-orange-950"}
-            data-testid="filter-containers"
-          >
-            <Container className="h-4 w-4 mr-1" />
-            Containers
-          </Button>
-          <Button
-            variant={selectedShipmentTypes.includes("Road Shipment") ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setSelectedShipmentTypes(prev => 
-                prev.includes("Road Shipment") 
-                  ? prev.filter(t => t !== "Road Shipment")
-                  : [...prev, "Road Shipment"]
-              )
-            }}
-            className={selectedShipmentTypes.includes("Road Shipment") ? "bg-orange-600 hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700" : "hover:bg-orange-50 dark:hover:bg-orange-950"}
-            data-testid="filter-road"
-          >
-            <Truck className="h-4 w-4 mr-1" />
-            Road Transport
-          </Button>
-          <Button
-            variant={selectedShipmentTypes.includes("Air Freight") ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setSelectedShipmentTypes(prev => 
-                prev.includes("Air Freight") 
-                  ? prev.filter(t => t !== "Air Freight")
-                  : [...prev, "Air Freight"]
-              )
-            }}
-            className={selectedShipmentTypes.includes("Air Freight") ? "bg-orange-600 hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700" : "hover:bg-orange-50 dark:hover:bg-orange-950"}
-            data-testid="filter-air"
-          >
-            <Plane className="h-4 w-4 mr-1" />
-            Air Freight
           </Button>
         </div>
       </div>
