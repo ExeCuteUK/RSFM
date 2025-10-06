@@ -1048,9 +1048,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Sync to linked custom clearance if it exists
       if (shipment.linkedClearanceId) {
-        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+        const clearanceUpdate: any = {
           adviseAgentStatusIndicator: status
-        });
+        };
+        
+        // If status is green (3), update the clearance status to "Awaiting Entry"
+        if (status === 3) {
+          clearanceUpdate.status = "Awaiting Entry";
+        }
+        
+        await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdate);
       }
       
       res.json(shipment);
@@ -1435,9 +1442,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If linked to custom clearance, update the custom clearance status as well
       if (shipment.linkedClearanceId) {
-        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+        const clearanceUpdate: any = {
           adviseAgentStatusIndicator: status
-        });
+        };
+        
+        // If status is green (3), update the clearance status to "Awaiting Entry"
+        if (status === 3) {
+          clearanceUpdate.status = "Awaiting Entry";
+        }
+        
+        await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdate);
       }
       
       res.json(shipment);
@@ -1697,9 +1711,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/custom-clearances/:id/advise-agent-status", async (req, res) => {
     try {
       const { status } = req.body;
-      const clearance = await storage.updateCustomClearance(req.params.id, { 
+      const updateData: any = { 
         adviseAgentStatusIndicator: status 
-      });
+      };
+      
+      // If status is green (3), update the clearance status to "Awaiting Entry"
+      if (status === 3) {
+        updateData.status = "Awaiting Entry";
+      }
+      
+      const clearance = await storage.updateCustomClearance(req.params.id, updateData);
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
