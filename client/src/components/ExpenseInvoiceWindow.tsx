@@ -244,7 +244,21 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   const handleAmountKeyPress = (e: React.KeyboardEvent, invoiceId: string) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault()
-      addInvoiceRow(invoiceId)
+      
+      // Find the current invoice index
+      const currentIndex = invoices.findIndex(inv => inv.id === invoiceId)
+      const isLastRow = currentIndex === invoices.length - 1
+      
+      if (isLastRow) {
+        // If it's the last row, add a new row
+        addInvoiceRow(invoiceId)
+      } else {
+        // If there's a row below, focus the next row's job ref field
+        const nextInvoice = invoices[currentIndex + 1]
+        if (nextInvoice && jobRefInputRefs.current[nextInvoice.id]) {
+          jobRefInputRefs.current[nextInvoice.id]?.focus()
+        }
+      }
     }
   }
 
@@ -390,6 +404,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         value={invoice.jobRef}
                         onChange={(e) => handleJobRefChange(invoice.id, e.target.value)}
                         placeholder="26001"
+                        className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         data-testid={`input-job-ref-${index}`}
                       />
                     </div>
@@ -450,6 +465,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceAmount', e.target.value)}
                         onKeyDown={(e) => handleAmountKeyPress(e, invoice.id)}
                         placeholder="0.00"
+                        className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         data-testid={`input-invoice-amount-${index}`}
                       />
                     </div>
