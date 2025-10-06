@@ -1086,7 +1086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
       }
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        bookDeliveryCustomerStatusIndicator: status 
+        deliveryBookedStatusIndicator: status 
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
