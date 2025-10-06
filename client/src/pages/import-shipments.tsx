@@ -724,6 +724,80 @@ export default function ImportShipments() {
     }
   }
 
+  const handleSendPodToCustomerEmail = (shipment: ImportShipment) => {
+    try {
+      // Check if POD documents exist
+      if (!shipment.proofOfDelivery || shipment.proofOfDelivery.length === 0) {
+        toast({
+          title: "No Proof Of Delivery Files",
+          description: "No Proof Of Delivery Files are attached to this Job. Please upload a POD to the job file and then try again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Get customer data
+      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
+      
+      // Build email recipient data
+      const jobContactEmail = shipment.jobContactEmail || ""
+      const additionalEmails = customer?.email || []
+      const ccEmails = additionalEmails.filter(email => email !== jobContactEmail).join(", ")
+      
+      // Build subject
+      const customerRef = shipment.customerReferenceNumber || "N/A"
+      const jobRef = shipment.jobRef || "N/A"
+      const containerNumber = shipment.trailerOrContainerNumber || "N/A"
+      const eta = formatDate(shipment.importDateEtaPort) || "N/A"
+      
+      let truckContainerFlight = ""
+      if (shipment.containerShipment === "Container Shipment") {
+        truckContainerFlight = `Container Number: ${containerNumber}`
+      } else if (shipment.containerShipment === "Road Shipment") {
+        truckContainerFlight = `Trailer Number: ${containerNumber}`
+      } else if (shipment.containerShipment === "Air Freight") {
+        truckContainerFlight = `Flight Number: ${containerNumber}`
+      } else {
+        truckContainerFlight = `Container or Trailer or Flight Number: ${containerNumber}`
+      }
+      
+      const subject = `Import Delivery Update / Your Ref : ${customerRef} / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      
+      // Build message body
+      const jobContactName = shipment.jobContactName || "there"
+      const body = `Hi ${jobContactName},
+
+Please find enclosed Proof Of Delivery attached for this shipment, your ref ${customerRef}.
+
+Hope all is OK.`
+      
+      // Get POD file paths and normalize them
+      const podFiles = parseAttachments(shipment.proofOfDelivery).map(normalizeFilePath).filter(Boolean)
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: jobContactEmail,
+        cc: ccEmails,
+        bcc: "",
+        subject: subject,
+        body: body,
+        attachments: podFiles,
+        metadata: {
+          source: 'send-pod-customer',
+          shipmentId: shipment.id
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
     const fileName = filePath.split('/').pop() || filePath
     setDeletingFile({ id, filePath, fileType, fileName })
@@ -1498,7 +1572,14 @@ export default function ImportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <Send className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <button
+                          onClick={() => handleSendPodToCustomerEmail(shipment)}
+                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                          data-testid={`button-send-pod-email-${shipment.id}`}
+                          title="Send POD email to customer"
+                        >
+                          <Send className="h-4 w-4 text-muted-foreground" />
+                        </button>
                         <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
                           Send POD To Customer
                         </p>
