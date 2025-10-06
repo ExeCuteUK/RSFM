@@ -1536,13 +1536,16 @@ export class DatabaseStorage implements IStorage {
       updates.linkedClearanceId = clearance.id;
     }
 
+    console.log('[DEBUG-STORAGE] About to update import shipment in DB');
     const [updated] = await db.update(importShipments)
       .set(updates)
       .where(eq(importShipments.id, id))
       .returning();
+    console.log('[DEBUG-STORAGE] Update completed, checking file sync');
     
     // Sync files to job_file_groups if jobRef exists and attachments were updated
     if (updated.jobRef && updates.attachments !== undefined) {
+      console.log('[DEBUG-STORAGE] Syncing files to job_file_groups');
       const newDocuments = updated.attachments || [];
       
       // Get existing job file group
@@ -1572,6 +1575,7 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
+    console.log('[DEBUG-STORAGE] Returning updated shipment');
     return updated;
   }
 
