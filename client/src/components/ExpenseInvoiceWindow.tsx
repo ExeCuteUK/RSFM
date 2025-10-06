@@ -271,8 +271,9 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     }
   }
 
-  const checkDateDiscrepancy = (invoiceDate: string, bookingDate: string | undefined): { type: 'none' | 'warning' | 'error', message: string } => {
-    if (!invoiceDate || !bookingDate) {
+  const checkDateDiscrepancy = (invoiceDate: string, bookingDate: string | undefined): { type: 'none' | 'warning', message: string } => {
+    // Only show advisory if invoice date is fully filled out (length 10 for YYYY-MM-DD format)
+    if (!invoiceDate || invoiceDate.length < 10 || !bookingDate) {
       return { type: 'none', message: '' }
     }
 
@@ -294,10 +295,10 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       const monthDiff = (invYear - bookYear) * 12 + (invMonth - bookMonth)
       const absMonthDiff = Math.abs(monthDiff)
 
-      // Check if 3+ months apart (highest priority)
+      // Check if 3+ months apart (all advisories in yellow)
       if (absMonthDiff >= 3) {
         return { 
-          type: 'error', 
+          type: 'warning', 
           message: 'Advisory: Invoice date and job booking date are more than 3 months apart'
         }
       }
@@ -451,7 +452,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   return (
     <DraggableWindow
       id={windowId}
-      title="Add Expense Invoices"
+      title="Add Batch Invoices / Credits"
       onClose={handleCancel}
       onMinimize={() => minimizeWindow(windowId)}
       width={1100}
@@ -597,18 +598,8 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                             if (dateCheck.type !== 'none') {
                               return (
                                 <div className="flex items-center gap-2">
-                                  <AlertTriangle 
-                                    className={`h-4 w-4 flex-shrink-0 ${
-                                      dateCheck.type === 'error' 
-                                        ? 'text-red-600 dark:text-red-400' 
-                                        : 'text-yellow-600 dark:text-yellow-400'
-                                    }`} 
-                                  />
-                                  <span className={`font-semibold ${
-                                    dateCheck.type === 'error' 
-                                      ? 'text-red-600 dark:text-red-400' 
-                                      : 'text-yellow-600 dark:text-yellow-400'
-                                  }`}>
+                                  <AlertTriangle className="h-4 w-4 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
+                                  <span className="font-semibold text-yellow-600 dark:text-yellow-400">
                                     {dateCheck.message}
                                   </span>
                                 </div>
