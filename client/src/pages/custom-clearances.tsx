@@ -989,37 +989,6 @@ export default function CustomClearances() {
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <Send className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <p className={`text-xs ${getStatusColor(clearance.sendEntryToCustomerStatusIndicator)} font-medium`} data-testid={`todo-send-entry-${clearance.id}`}>
-                              {clearance.jobType === "import" ? "Send Import Entry to Customer" : "Send Export Entry to Customer"}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 1)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendEntryToCustomerStatusIndicator === 1 || clearance.sendEntryToCustomerStatusIndicator === null
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                              }`}
-                              data-testid={`button-entry-yellow-${clearance.id}`}
-                              title="To Do"
-                            />
-                            <button
-                              onClick={() => handleSendEntryStatusUpdate(clearance.id, 3)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendEntryToCustomerStatusIndicator === 3
-                                  ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover-elevate'
-                              }`}
-                              data-testid={`button-entry-green-${clearance.id}`}
-                              title="Completed"
-                            />
-                          </div>
-                        </div>
-
                         {!clearance.createdFromId && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
@@ -1047,39 +1016,6 @@ export default function CustomClearances() {
                                     : 'bg-green-200 border-green-300 hover-elevate'
                                 }`}
                                 data-testid={`button-invoice-green-${clearance.id}`}
-                                title="Completed"
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {clearance.jobType === "import" && (
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <div className="flex items-center gap-1.5">
-                              <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                              <p className={`text-xs ${getStatusColor(clearance.sendClearedEntryStatusIndicator)} font-medium`} data-testid={`todo-cleared-entry-${clearance.id}`}>
-                                Send Cleared Entry to Customer
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 1)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendClearedEntryStatusIndicator === 1 || clearance.sendClearedEntryStatusIndicator === null
-                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                    : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                                }`}
-                                data-testid={`button-cleared-yellow-${clearance.id}`}
-                                title="To Do"
-                              />
-                              <button
-                                onClick={() => handleSendClearedEntryStatusUpdate(clearance.id, 3)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendClearedEntryStatusIndicator === 3
-                                    ? 'bg-green-400 border-green-500 scale-110'
-                                    : 'bg-green-200 border-green-300 hover-elevate'
-                                }`}
-                                data-testid={`button-cleared-green-${clearance.id}`}
                                 title="Completed"
                               />
                             </div>
