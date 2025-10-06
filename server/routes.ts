@@ -1648,6 +1648,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.status !== undefined && clearance.status === "Request CC") {
             shipmentUpdate.clearanceStatusIndicator = 1;
           }
+          // If status changed to "Awaiting Entry", set clearance status indicator to green (3)
+          if (req.body.status !== undefined && clearance.status === "Awaiting Entry") {
+            shipmentUpdate.clearanceStatusIndicator = 3;
+          }
           
           console.log('[SYNC-DEBUG] Import shipment update fields:', Object.keys(shipmentUpdate));
           if (Object.keys(shipmentUpdate).length > 0) {
@@ -1688,6 +1692,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.status !== undefined && clearance.status === "Request CC") {
             shipmentUpdate.adviseClearanceToAgentStatusIndicator = 1;
           }
+          // If status changed to "Awaiting Entry", set advise clearance to agent status indicator to green (3)
+          if (req.body.status !== undefined && clearance.status === "Awaiting Entry") {
+            shipmentUpdate.adviseClearanceToAgentStatusIndicator = 3;
+          }
           
           console.log('[SYNC-DEBUG] Export shipment update fields:', Object.keys(shipmentUpdate));
           if (Object.keys(shipmentUpdate).length > 0) {
@@ -1698,11 +1706,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Also update the clearance's own advise agent status if status changed to "Request CC"
-      if (req.body.status !== undefined && clearance.status === "Request CC") {
-        await storage.updateCustomClearance(req.params.id, {
-          adviseAgentStatusIndicator: 1
-        });
+      // Also update the clearance's own advise agent status if status changed to "Request CC" or "Awaiting Entry"
+      if (req.body.status !== undefined) {
+        if (clearance.status === "Request CC") {
+          await storage.updateCustomClearance(req.params.id, {
+            adviseAgentStatusIndicator: 1
+          });
+        } else if (clearance.status === "Awaiting Entry") {
+          await storage.updateCustomClearance(req.params.id, {
+            adviseAgentStatusIndicator: 3
+          });
+        }
       }
       console.log('[SYNC-DEBUG] syncedToShipment:', syncedToShipment);
       
