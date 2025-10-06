@@ -1582,16 +1582,24 @@ Hope all is OK.`
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleSendHaulierEadEmail(shipment)}
+                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                          data-testid={`button-send-haulier-ead-email-${shipment.id}`}
+                          title="Send Export Entry to Haulier"
+                        >
+                          <Send className="h-4 w-4 text-muted-foreground" />
+                        </button>
                         <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
-                          {shipment.deliveryRelease === "Line" ? "Book Delivery with Line" : "Book Delivery With Haulier"}
+                        <p className={`text-xs font-medium ${getSendHaulierEadStatusColor(shipment.sendHaulierEadStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
+                          {shipment.deliveryRelease === "Line" ? "Book Delivery with Line / Send Haulier EAD" : "Book Delivery With Haulier / Send Haulier EAD"}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 1)}
+                          onClick={() => updateSendHaulierEadStatus.mutate({ id: shipment.id, status: null })}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.haulierBookingStatusIndicator === 1 || shipment.haulierBookingStatusIndicator === null
+                            shipment.sendHaulierEadStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
@@ -1599,19 +1607,9 @@ Hope all is OK.`
                           title="To Do"
                         />
                         <button
-                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 2)}
+                          onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.haulierBookingStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-haulier-status-orange-${shipment.id}`}
-                          title="Waiting for Reply"
-                        />
-                        <button
-                          onClick={() => handleHaulierBookingStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.haulierBookingStatusIndicator === 3
+                            shipment.sendHaulierEadStatusIndicator === 3
                               ? 'bg-green-400 border-green-500 scale-110'
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
@@ -1733,45 +1731,6 @@ Hope all is OK.`
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
                           data-testid={`button-send-pod-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleSendHaulierEadEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                          data-testid={`button-send-haulier-ead-email-${shipment.id}`}
-                          title="Send Export Entry to Haulier"
-                        >
-                          <Send className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                        <p className={`text-xs font-medium ${getSendHaulierEadStatusColor(shipment.sendHaulierEadStatusIndicator)}`} data-testid={`text-send-haulier-ead-${shipment.id}`}>
-                          Send Haulier EAD
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => updateSendHaulierEadStatus.mutate({ id: shipment.id, status: null })}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendHaulierEadStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                          }`}
-                          data-testid={`button-send-haulier-ead-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendHaulierEadStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
-                          }`}
-                          data-testid={`button-send-haulier-ead-status-green-${shipment.id}`}
                           title="Completed"
                         />
                       </div>
