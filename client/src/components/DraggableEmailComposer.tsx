@@ -75,37 +75,25 @@ export function DraggableEmailComposer() {
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
       // Auto-update status based on metadata
-      console.log('Email metadata:', emailComposerData.metadata);
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
         const { source, shipmentId } = emailComposerData.metadata;
-        console.log('Updating status:', { source, shipmentId });
         
         try {
           if (source === 'book-delivery-customer') {
             // Update Book Delivery Customer status to Orange (2)
-            console.log('Making API call to:', `/api/import-shipments/${shipmentId}/book-delivery-customer-status`);
-            const result = await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/book-delivery-customer-status`, { status: 2 });
-            console.log('API result:', result);
+            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/book-delivery-customer-status`, { status: 2 });
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
           } else if (source === 'advise-clearance-agent') {
             // Update Advise Clearance to Agent status to Green (3)
-            console.log('Making API call to:', `/api/custom-clearances/${shipmentId}/advise-agent-status`);
-            const result = await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
-            console.log('API result:', result);
+            await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/advise-agent-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           } else if (source === 'advise-clearance-agent-export') {
             // Update Advise Clearance to Agent status to Green (3) for export
-            console.log('Making API call to:', `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`);
-            const result = await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`, { status: 3 });
-            console.log('API result:', result);
+            await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/advise-clearance-to-agent-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
           }
         } catch (error) {
           console.error('Failed to update status:', error);
-          if (error instanceof Error) {
-            console.error('Error message:', error.message);
-            console.error('Error stack:', error.stack);
-          }
         }
       }
       

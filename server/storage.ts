@@ -1481,14 +1481,8 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getImportShipment(id);
     if (!existing) return undefined;
 
-    console.log('[DEBUG-STORAGE] Update import shipment:', id);
-    console.log('[DEBUG-STORAGE] Existing rsToClear:', existing.rsToClear);
-    console.log('[DEBUG-STORAGE] Update rsToClear:', updates.rsToClear);
-    console.log('[DEBUG-STORAGE] Existing linkedClearanceId:', existing.linkedClearanceId);
-
     // If rsToClear is being changed from true to false, delete the linked clearance
     if (existing.rsToClear && updates.rsToClear === false && existing.linkedClearanceId) {
-      console.log('[DEBUG-STORAGE] Deleting linked clearance');
       await db.delete(customClearances).where(eq(customClearances.id, existing.linkedClearanceId));
       updates.linkedClearanceId = null;
     }
@@ -1496,7 +1490,6 @@ export class DatabaseStorage implements IStorage {
     // If rsToClear is true and there's no linked clearance, create one
     const finalRsToClear = updates.rsToClear !== undefined ? updates.rsToClear : existing.rsToClear;
     if (finalRsToClear === true && !existing.linkedClearanceId) {
-      console.log('[DEBUG-STORAGE] Creating linked clearance for rsToClear=true');
       const updatedShipment = { ...existing, ...updates };
       
       const [clearance] = await db.insert(customClearances).values({
@@ -1536,16 +1529,13 @@ export class DatabaseStorage implements IStorage {
       updates.linkedClearanceId = clearance.id;
     }
 
-    console.log('[DEBUG-STORAGE] About to update import shipment in DB');
     const [updated] = await db.update(importShipments)
       .set(updates)
       .where(eq(importShipments.id, id))
       .returning();
-    console.log('[DEBUG-STORAGE] Update completed, checking file sync');
     
     // Sync files to job_file_groups if jobRef exists and attachments were updated
     if (updated.jobRef && updates.attachments !== undefined) {
-      console.log('[DEBUG-STORAGE] Syncing files to job_file_groups');
       const newDocuments = updated.attachments || [];
       
       // Get existing job file group
@@ -1575,7 +1565,6 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
-    console.log('[DEBUG-STORAGE] Returning updated shipment');
     return updated;
   }
 
