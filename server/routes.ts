@@ -2723,14 +2723,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Build email body with signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
+      let signatureLogoBase64 = '';
       
       // Add signature if enabled
       if (user.useSignature) {
-        // Read logo image and convert to base64 data URI
+        // Read logo image for CID attachment
         const logoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
         const logoBuffer = await fs.readFile(logoPath);
-        const logoBase64 = logoBuffer.toString('base64');
-        const logoDataUri = `data:image/jpeg;base64,${logoBase64}`;
+        signatureLogoBase64 = logoBuffer.toString('base64');
         
         // Read signature template from file
         const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
@@ -2739,7 +2739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Replace placeholders
         signatureTemplate = signatureTemplate
           .replace(/{{USER_NAME}}/g, user.fullName || user.username)
-          .replace(/{{LOGO_URL}}/g, logoDataUri);
+          .replace(/{{LOGO_URL}}/g, 'cid:rs-logo');
         
         messageText += signatureTemplate;
       }
@@ -2761,18 +2761,48 @@ ${messageText}
       const htmlBodyBase64 = Buffer.from(htmlBody).toString('base64');
       
       const boundary = '----=_Part_' + Date.now();
-      const message = [
+      const relatedBoundary = '----=_Related_' + Date.now();
+      
+      const messageParts = [
         `To: ${to}`,
         `Subject: ${subject}`,
         'MIME-Version: 1.0',
         `Content-Type: multipart/mixed; boundary="${boundary}"`,
         '',
         `--${boundary}`,
+        `Content-Type: multipart/related; boundary="${relatedBoundary}"`,
+        '',
+        `--${relatedBoundary}`,
         'Content-Type: text/html; charset=UTF-8',
         'Content-Transfer-Encoding: base64',
         '',
         htmlBodyBase64,
-        '',
+        ''
+      ];
+
+      // Add logo as inline CID attachment if signature is enabled
+      if (user.useSignature && signatureLogoBase64) {
+        messageParts.push(
+          `--${relatedBoundary}`,
+          'Content-Type: image/jpeg',
+          'Content-Transfer-Encoding: base64',
+          'Content-ID: <rs-logo>',
+          'Content-Disposition: inline',
+          '',
+          signatureLogoBase64,
+          '',
+          `--${relatedBoundary}--`,
+          ''
+        );
+      } else {
+        messageParts.push(
+          `--${relatedBoundary}--`,
+          ''
+        );
+      }
+
+      // Add PDF attachment
+      messageParts.push(
         `--${boundary}`,
         'Content-Type: application/pdf',
         'Content-Transfer-Encoding: base64',
@@ -2781,7 +2811,9 @@ ${messageText}
         pdfBase64,
         '',
         `--${boundary}--`
-      ].join('\r\n');
+      );
+      
+      const message = messageParts.join('\r\n');
 
       const encodedMessage = Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
@@ -2839,21 +2871,21 @@ ${messageText}
 
       // Build email body with signature
       let messageText = body ? body.replace(/\n/g, '<br>') : '';
+      let logoBase64 = '';
       
       // Add signature if enabled
       if (user.useSignature) {
-        // Read logo image and convert to base64 data URI
+        // Read logo image for CID attachment
         const logoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
         const logoBuffer = await fs.readFile(logoPath);
-        const logoBase64 = logoBuffer.toString('base64');
-        const logoDataUri = `data:image/jpeg;base64,${logoBase64}`;
+        logoBase64 = logoBuffer.toString('base64');
         
         const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
         let signatureTemplate = await fs.readFile(templatePath, 'utf-8');
         
         signatureTemplate = signatureTemplate
           .replace(/{{USER_NAME}}/g, user.fullName || user.username)
-          .replace(/{{LOGO_URL}}/g, logoDataUri);
+          .replace(/{{LOGO_URL}}/g, 'cid:rs-logo');
         
         messageText += signatureTemplate;
       }
@@ -2872,6 +2904,7 @@ ${messageText}
       
       const htmlBodyBase64 = Buffer.from(htmlBody).toString('base64');
       const boundary = '----=_Part_' + Date.now();
+      const relatedBoundary = '----=_Related_' + Date.now();
       const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
       
       const messageParts = [
@@ -2883,12 +2916,36 @@ ${messageText}
         `Content-Type: multipart/mixed; boundary="${boundary}"`,
         '',
         `--${boundary}`,
+        `Content-Type: multipart/related; boundary="${relatedBoundary}"`,
+        '',
+        `--${relatedBoundary}`,
         'Content-Type: text/html; charset=UTF-8',
         'Content-Transfer-Encoding: base64',
         '',
         htmlBodyBase64,
         ''
       ];
+
+      // Add logo as inline CID attachment if signature is enabled
+      if (user.useSignature && logoBase64) {
+        messageParts.push(
+          `--${relatedBoundary}`,
+          'Content-Type: image/jpeg',
+          'Content-Transfer-Encoding: base64',
+          'Content-ID: <rs-logo>',
+          'Content-Disposition: inline',
+          '',
+          logoBase64,
+          '',
+          `--${relatedBoundary}--`,
+          ''
+        );
+      } else {
+        messageParts.push(
+          `--${relatedBoundary}--`,
+          ''
+        );
+      }
 
       // Process each attachment
       for (const attachmentUrl of attachmentUrls) {
