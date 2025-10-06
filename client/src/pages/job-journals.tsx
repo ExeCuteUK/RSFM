@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Calendar, Plus } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
-import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from "@shared/schema"
+import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice } from "@shared/schema"
 
 interface JobJournalEntry {
   jobRef: number
@@ -116,6 +116,10 @@ export default function JobJournals() {
     queryKey: ["/api/export-customers"],
   })
 
+  const { data: purchaseInvoices = [] } = useQuery<PurchaseInvoice[]>({
+    queryKey: ["/api/purchase-invoices"],
+  })
+
   const getCustomerName = (
     customerId: string | null | undefined,
     customerType: "import" | "export"
@@ -129,6 +133,15 @@ export default function JobJournals() {
       const customer = exportCustomers.find(c => c.id === customerId)
       return customer?.companyName || "Unassigned"
     }
+  }
+
+  const getInvoicesForJob = (jobRef: number): PurchaseInvoice[] => {
+    return purchaseInvoices.filter(inv => inv.jobRef === jobRef)
+  }
+
+  const handleInvoiceClick = (invoice: PurchaseInvoice) => {
+    // TODO: Open edit/delete dialog for invoice
+    console.log('Invoice clicked:', invoice)
   }
 
   const matchesFilter = (date: string): boolean => {
@@ -532,17 +545,65 @@ export default function JobJournals() {
                     <td className="p-1 text-center border-r-4 border-border" data-testid={`text-reg-${entry.jobRef}`}>
                       {entry.regContainerFlight}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-l-2 border-r border-border" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
-                      
+                    <td className="p-1 bg-red-100 dark:bg-red-900 border-l-2 border-r border-border align-top" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
+                      {(() => {
+                        const invoices = getInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>{inv.companyName}</div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
-                      {entry.purchaseInvoiceNumber || ""}
+                    <td className="p-1 bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
+                      {(() => {
+                        const invoices = getInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>
+                                <button
+                                  onClick={() => handleInvoiceClick(inv)}
+                                  className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                                  data-testid={`link-invoice-${inv.id}`}
+                                >
+                                  {inv.invoiceNumber}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-date-${entry.jobRef}`}>
-                      {entry.purchaseInvoiceDate || ""}
+                    <td className="p-1 bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-date-${entry.jobRef}`}>
+                      {(() => {
+                        const invoices = getInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>{formatDateToDDMMYY(inv.invoiceDate)}</div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
-                      {entry.purchaseInvoiceAmount || ""}
+                    <td className="p-1 bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-amount-${entry.jobRef}`}>
+                      {(() => {
+                        const invoices = getInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>£{inv.invoiceAmount.toFixed(2)}</div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
                     <td className="p-1 text-center bg-red-50 dark:bg-red-950 border-l-4 border-r-4 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
                       {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
