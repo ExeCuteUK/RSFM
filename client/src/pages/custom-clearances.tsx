@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
-import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportReceiver, JobFileGroup } from "@shared/schema"
+import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 
@@ -59,6 +59,10 @@ export default function CustomClearances() {
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
+  })
+
+  const { data: exportCustomers = [] } = useQuery<ExportCustomer[]>({
+    queryKey: ["/api/export-customers"],
   })
 
   const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({

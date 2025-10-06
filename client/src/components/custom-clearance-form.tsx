@@ -229,6 +229,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="Request CC">Request CC</SelectItem>
                         <SelectItem value="Awaiting Entry">Awaiting Entry</SelectItem>
                         <SelectItem value="Waiting Arrival">Waiting Arrival</SelectItem>
                         <SelectItem value="P.H Hold">P.H Hold</SelectItem>
