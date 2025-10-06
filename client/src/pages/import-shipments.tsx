@@ -1145,7 +1145,7 @@ export default function ImportShipments() {
                             title="Track Container"
                             className="h-7 w-7"
                           >
-                            <MapPinned className="h-4 w-4 text-white" />
+                            <MapPinned className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                           </Button>
                         )}
                         <Button
