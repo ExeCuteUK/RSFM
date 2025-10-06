@@ -37,6 +37,7 @@ export default function ExportShipments() {
   const [searchText, setSearchText] = useState("")
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
+  const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const { toast} = useToast()
   const [, setLocation] = useLocation()
 
@@ -190,6 +191,42 @@ export default function ExportShipments() {
     },
   })
 
+  const uploadFile = useMutation({
+    mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "attachment" | "pod" }) => {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("fileType", fileType)
+      
+      const response = await fetch(`/api/export-shipments/${id}/upload`, {
+        method: "POST",
+        body: formData,
+      })
+      
+      if (!response.ok) {
+        throw new Error("Upload failed")
+      }
+      
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      toast({ title: "File uploaded successfully" })
+    },
+    onError: () => {
+      toast({ title: "File upload failed", variant: "destructive" })
+    },
+  })
+
+  const deleteFile = useMutation({
+    mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
+      return apiRequest("DELETE", `/api/export-shipments/${id}/file`, { filePath, fileType })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      toast({ title: "File deleted successfully" })
+    },
+  })
+
   const handleOpenNotes = (shipment: ExportShipment) => {
     setNotesShipmentId(shipment.id)
     setNotesValue(shipment.additionalNotes || "")
@@ -237,6 +274,43 @@ export default function ExportShipments() {
     if (!deletingShipmentId) return
     deleteShipment.mutate(deletingShipmentId)
     setDeletingShipmentId(null)
+  }
+
+  const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
+    if (confirm("Are you sure you want to delete this file?")) {
+      deleteFile.mutate({ id, filePath, fileType })
+    }
+  }
+
+  const handleFileDragOver = (e: React.DragEvent, shipmentId: string, type: "attachment" | "pod") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver({ shipmentId, type })
+  }
+
+  const handleFileDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver(null)
+  }
+
+  const handleFileDrop = async (e: React.DragEvent, shipmentId: string, type: "attachment" | "pod") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragOver(null)
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length === 0) return
+
+    for (const file of files) {
+      uploadFile.mutate({ id: shipmentId, file, fileType: type })
+    }
+  }
+
+  const normalizeFilePath = (filePath: string) => {
+    if (filePath.startsWith('/objects/')) return filePath
+    if (filePath.startsWith('objects/')) return `/${filePath}`
+    return filePath
   }
 
   const getLinkedClearance = (linkedClearanceId: string | null) => {
