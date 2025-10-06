@@ -1283,49 +1283,101 @@ Hope all is OK.`
                     <User className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Customer & Receiver Information</h3>
                   </div>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Customer</p>
-                        <p className="font-semibold text-base">{getCustomerName(viewingShipment.destinationCustomerId)}</p>
-                      </div>
-                      {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
-                          <p className="text-base">{viewingShipment.jobContactName.join(", ")}</p>
+                  {(() => {
+                    const customer = exportCustomers.find(c => c.id === viewingShipment.destinationCustomerId)
+                    const hasAgent = customer?.agentName
+                    
+                    return (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-4 gap-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">{hasAgent ? "Agent Name" : "Customer"}</p>
+                            <p className="font-semibold text-base">
+                              {hasAgent ? customer.agentName : getCustomerName(viewingShipment.destinationCustomerId)}
+                            </p>
+                          </div>
+                          {hasAgent ? (
+                            <>
+                              {customer.agentContactName && customer.agentContactName.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Agent Contact Name</p>
+                                  <p className="text-base">{customer.agentContactName.join(", ")}</p>
+                                </div>
+                              )}
+                              {customer.agentEmail && customer.agentEmail.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Agent Email</p>
+                                  <div className="flex flex-col gap-1">
+                                    {customer.agentEmail.map((email, idx) => (
+                                      <a 
+                                        key={idx} 
+                                        href={`mailto:${email}`} 
+                                        className="text-base text-green-600 dark:text-green-400 hover:underline"
+                                      >
+                                        {email}
+                                      </a>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {customer.agentTelephone && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                                  <p className="text-base">{customer.agentTelephone}</p>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
+                                  <p className="text-base">{viewingShipment.jobContactName.join(", ")}</p>
+                                </div>
+                              )}
+                              {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Email</p>
+                                  <div className="flex flex-col gap-1">
+                                    {viewingShipment.jobContactEmail.map((email, idx) => (
+                                      <a 
+                                        key={idx} 
+                                        href={`mailto:${email}`} 
+                                        className="text-base text-green-600 dark:text-green-400 hover:underline"
+                                      >
+                                        {email}
+                                      </a>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {customer?.telephone && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                                  <p className="text-base">{customer.telephone}</p>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
-                      )}
-                      {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Email</p>
-                          <div className="flex flex-col gap-1">
-                            {viewingShipment.jobContactEmail.map((email, idx) => (
-                              <a 
-                                key={idx} 
-                                href={`mailto:${email}`} 
-                                className="text-base text-green-600 dark:text-green-400 hover:underline"
-                              >
-                                {email}
-                              </a>
-                            ))}
+                        <div className="border-t border-green-200 dark:border-green-800 my-3"></div>
+                        <div className="grid grid-cols-4 gap-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Receiver</p>
+                            <p className="font-semibold text-base">{getReceiverName(viewingShipment.receiverId)}</p>
+                          </div>
+                          <div className="col-start-4">
+                            {viewingShipment.customerReferenceNumber && (
+                              <>
+                                <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
+                                <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
+                              </>
+                            )}
                           </div>
                         </div>
-                      )}
-                      {viewingShipment.customerReferenceNumber && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Customer Reference</p>
-                          <p className="text-base">{viewingShipment.customerReferenceNumber}</p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="border-t border-green-200 dark:border-green-800 my-3"></div>
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Receiver</p>
-                        <p className="font-semibold text-base">{getReceiverName(viewingShipment.receiverId)}</p>
                       </div>
-                    </div>
-                  </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
