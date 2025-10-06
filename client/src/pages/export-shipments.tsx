@@ -1125,6 +1125,39 @@ Hope all is OK.`
           ))}
         </div>
       )}
+      
+      {!isLoading && filteredShipments.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(endIndex, filteredShipments.length)} of {filteredShipments.length} shipments
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              data-testid="button-prev-page"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <div className="text-sm font-medium">
+              Page {currentPage} of {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              data-testid="button-next-page"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <AlertDialog open={!!deletingShipmentId} onOpenChange={(open) => !open && setDeletingShipmentId(null)}>
         <AlertDialogContent>

@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, FileOutput } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, FileOutput, ChevronLeft, ChevronRight } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
 import {
   DropdownMenu,
@@ -44,8 +44,11 @@ export default function CustomClearances() {
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const [redButtonPrompt, setRedButtonPrompt] = useState<{ clearanceId: string; statusType: string; statusValue: number } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "transport" | "clearance"; fileName: string } | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
   const { toast } = useToast()
   const [location, setLocation] = useLocation()
+  
+  const ITEMS_PER_PAGE = 30
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -721,7 +724,7 @@ export default function CustomClearances() {
     ? clearances 
     : clearances.filter(c => selectedStatuses.includes(c.status))
 
-  const filteredClearances = searchText.trim() === ""
+  const allFilteredClearances = searchText.trim() === ""
     ? filteredByStatus
     : filteredByStatus.filter(c => {
         const searchLower = searchText.toLowerCase()
@@ -735,6 +738,17 @@ export default function CustomClearances() {
                trailer.includes(searchLower) ||
                vessel.includes(searchLower)
       })
+  
+  // Reset to first page when filters or search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, selectedStatuses])
+  
+  // Pagination
+  const totalPages = Math.ceil(allFilteredClearances.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const filteredClearances = allFilteredClearances.slice(startIndex, endIndex)
 
   return (
     <div className="p-6 space-y-6">
@@ -1214,6 +1228,39 @@ export default function CustomClearances() {
               </Card>
             )
           })}
+        </div>
+      )}
+      
+      {!isLoading && allFilteredClearances.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(endIndex, allFilteredClearances.length)} of {allFilteredClearances.length} clearances
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              data-testid="button-prev-page"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <div className="text-sm font-medium">
+              Page {currentPage} of {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              data-testid="button-next-page"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
       )}
 
