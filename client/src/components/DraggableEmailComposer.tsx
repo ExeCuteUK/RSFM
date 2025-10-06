@@ -124,10 +124,14 @@ export function DraggableEmailComposer() {
     const { isMinimized: _, ...draftData } = updatedData;
     
     // CRITICAL: Preserve metadata from the active window's payload if it exists
+    console.log('[handleDataChange] activeWindow?.payload:', activeWindow?.payload);
+    console.log('[handleDataChange] draftData.metadata:', draftData.metadata);
     const existingMetadata = activeWindow?.payload?.metadata;
+    console.log('[handleDataChange] existingMetadata:', existingMetadata);
     const finalDraftData = existingMetadata 
       ? { ...draftData, metadata: existingMetadata }
       : draftData;
+    console.log('[handleDataChange] finalDraftData:', finalDraftData);
     
     updateEmailDraft(data.id, finalDraftData);
   };
