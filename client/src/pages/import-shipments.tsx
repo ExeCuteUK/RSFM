@@ -737,8 +737,10 @@ export default function ImportShipments() {
       }
 
       // Build email recipient data
-      const jobContactEmail = shipment.jobContactEmail || ""
-      const ccEmails = ""
+      const jobContactEmailRaw = shipment.jobContactEmail || ""
+      const emailList = jobContactEmailRaw.split(',').map(email => email.trim()).filter(email => email.length > 0)
+      const jobContactEmail = emailList[0] || ""
+      const ccEmails = emailList.slice(1).join(", ")
       
       // Build subject
       const customerRef = shipment.customerReferenceNumber || "N/A"
