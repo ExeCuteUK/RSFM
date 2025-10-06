@@ -669,11 +669,11 @@ export default function ImportShipments() {
       
       // Container/Truck/Flight info
       if (shipment.containerShipment === "Container Shipment") {
-        body += `Container Number ${containerNumber}\n`
+        body += `Container Number: ${containerNumber}\n`
       } else if (shipment.containerShipment === "Road Shipment") {
-        body += `Truck Number ${containerNumber}\n`
+        body += `Truck Number: ${containerNumber}\n`
       } else if (shipment.containerShipment === "Air Freight") {
-        body += `Flight Number ${containerNumber}\n`
+        body += `Flight Number: ${containerNumber}\n`
       }
       
       body += `ETA Port : ${eta}\n`
@@ -694,13 +694,11 @@ export default function ImportShipments() {
       
       // Confirmation message based on whether delivery address is present
       if (shipment.deliveryAddress) {
-        body += `If you can advise if this date/delivery address is OK and any other information required such as delivery time, references that would be great.\n\n`
+        body += `If you can advise if this date/delivery address is OK and any other information required such as delivery time, references that would be great.\n`
       } else {
         body += `If you can advise if this date is OK and any other information required such as delivery time, references that would be great.\n\n`
-        body += `Please also note we do not seem to have the delivery address noted on this job file. If you can confirm the delivery address for this shipment Ill get the job file updated.\n\n`
+        body += `Please also note we do not seem to have the delivery address noted on this job file. If you can confirm the delivery address for this shipment Ill get the job file updated.\n`
       }
-      
-      body += `Many Thanks,`
       
       // Open email composer
       openEmailComposer({
