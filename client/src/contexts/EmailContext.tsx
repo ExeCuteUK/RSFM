@@ -99,9 +99,11 @@ export function EmailProvider({ children }: { children: ReactNode }) {
 
   const openEmailComposer = (data: Omit<EmailComposerData, 'isMinimized'>) => {
     try {
+      console.log('[openEmailComposer] Received data:', JSON.stringify(data, null, 2));
+      
       // Save current email draft if there's one open
       if (emailComposerData && !emailComposerData.isMinimized) {
-        const { isMinimized: _, ...draftData } = emailComposerData
+        const { isMinimized: _, ...draftData} = emailComposerData
         setEmailDrafts(prev => ({
           ...prev,
           [emailComposerData.id]: draftData
@@ -110,11 +112,13 @@ export function EmailProvider({ children }: { children: ReactNode }) {
       
       // Open email window using WindowManager
       const { id, to, cc, bcc, subject, body, attachments, metadata } = data
+      const payload = { to, cc, bcc, subject, body, attachments, metadata };
+      console.log('[openEmailComposer] Opening window with payload:', JSON.stringify(payload, null, 2));
       openWindow({
         id,
         type: 'email',
         title: subject || 'New Email',
-        payload: { to, cc, bcc, subject, body, attachments, metadata }
+        payload
       })
     } catch (error) {
       console.error('Error in openEmailComposer:', error)
