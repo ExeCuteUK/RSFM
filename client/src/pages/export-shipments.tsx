@@ -439,7 +439,7 @@ export default function ExportShipments() {
       const ccEmails = emailList.slice(1).join(", ")
       
       // Build subject
-      const customerRef = shipment.customerReferenceNumber || "N/A"
+      const customerRef = shipment.customerReferenceNumber
       const jobRef = shipment.jobRef || "N/A"
       const containerNumber = shipment.trailerNo || "N/A"
       const deliveryDate = formatDate(shipment.deliveryDate) || "N/A"
@@ -455,13 +455,16 @@ export default function ExportShipments() {
         truckContainerFlight = `Container or Trailer or Flight Number: ${containerNumber}`
       }
       
-      const subject = `Export Delivery Update / Your Ref: ${customerRef} / Our Ref: ${jobRef} / ${truckContainerFlight} / Delivery Date: ${deliveryDate}`
+      // Conditionally include "Your Ref" only if customerRef exists
+      const yourRefPart = customerRef ? `Your Ref: ${customerRef} / ` : ""
+      const subject = `Export Delivery Update / ${yourRefPart}Our Ref: ${jobRef} / ${truckContainerFlight} / Delivery Date: ${deliveryDate}`
       
-      // Build message body
+      // Build message body - conditionally include "your ref" only if customerRef exists
       const jobContactName = shipment.jobContactName || "there"
+      const yourRefText = customerRef ? `, your ref ${customerRef}` : ""
       const body = `Hi ${jobContactName},
 
-Please find enclosed Proof Of Delivery attached for this shipment, your ref ${customerRef}.
+Please find enclosed Proof Of Delivery attached for this shipment${yourRefText}.
 
 Hope all is OK.`
       
