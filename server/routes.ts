@@ -1340,6 +1340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (req.body.incoterms !== undefined) clearanceUpdate.incoterms = shipment.incoterms;
         if (req.body.customerReferenceNumber !== undefined) clearanceUpdate.customerReferenceNumber = shipment.customerReferenceNumber;
         if (req.body.supplier !== undefined) clearanceUpdate.supplierName = shipment.supplier;
+        if (req.body.clearanceType !== undefined) clearanceUpdate.clearanceType = shipment.clearanceType;
         
         // Sync attachments to transport documents
         if (req.body.attachments !== undefined) {
