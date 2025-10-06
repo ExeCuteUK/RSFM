@@ -1408,7 +1408,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     name="clearanceCharge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Export Clearance Charge</FormLabel>
+                        <FormLabel>Export Clearance Charge Out</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
                         </FormControl>
@@ -1424,7 +1424,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                     name="arrivalClearanceCost"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Arrival Clearance Cost</FormLabel>
+                        <FormLabel>Destination Clearance Charge Out</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
                         </FormControl>

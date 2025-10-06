@@ -1430,7 +1430,7 @@ Hope all is OK.`
                       )}
                       {viewingShipment.clearanceCharge && (
                         <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
+                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge Out</p>
                           <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.clearanceCharge}</p>
                         </div>
                       )}
