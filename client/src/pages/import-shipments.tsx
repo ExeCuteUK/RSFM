@@ -1338,7 +1338,7 @@ export default function ImportShipments() {
                           <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                         </button>
                         <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
-                          Book Delivery Customer
+                          Book Delivery With Customer
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
@@ -1380,7 +1380,7 @@ export default function ImportShipments() {
                       <div className="flex items-center gap-1.5">
                         <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getHaulierBookingStatusColor(shipment.haulierBookingStatusIndicator)}`} data-testid={`text-haulier-booking-${shipment.id}`}>
-                          {shipment.deliveryRelease === "Line" ? "Book Delivery with Line" : "Book Delivery Haulier"}
+                          {shipment.deliveryRelease === "Line" ? "Book Delivery with Line" : "Book Delivery With Haulier"}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
@@ -1500,7 +1500,7 @@ export default function ImportShipments() {
                       <div className="flex items-center gap-1.5">
                         <Send className="h-4 w-4 text-muted-foreground shrink-0" />
                         <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
-                          {shipment.rsToClear ? "Send POD & Import Entry to Customer" : "Send POD to Customer"}
+                          Send POD To Customer
                         </p>
                       </div>
                       <div className="flex items-center gap-1">

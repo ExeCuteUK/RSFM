@@ -162,16 +162,6 @@ export default function ExportShipments() {
     },
   })
 
-  const updateBookJobWithHaulierStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/export-shipments/${id}/book-job-with-haulier-status`, { status })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-    },
-  })
-
   const updateAdviseClearanceToAgentStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
       return apiRequest("PATCH", `/api/export-shipments/${id}/advise-clearance-to-agent-status`, { status })
@@ -426,10 +416,6 @@ export default function ExportShipments() {
     if (status === 3) return "text-green-600 dark:text-green-400"
     if (status === 4) return "text-red-600 dark:text-red-400"
     return "text-muted-foreground"
-  }
-
-  const handleBookJobWithHaulierStatusUpdate = (id: string, status: number) => {
-    updateBookJobWithHaulierStatus.mutate({ id, status })
   }
 
   const handleAdviseClearanceToAgentStatusUpdate = (id: string, status: number) => {
@@ -799,42 +785,11 @@ export default function ExportShipments() {
                     )}
                   </div>
                   
+                  {shipment.exportClearanceAgent === "R.S" && (
                   <div className="pt-2 mt-2 border-t">
                     <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${shipment.id}`}>
                       To-Do List
                     </h3>
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.bookJobWithHaulierStatusIndicator)}`} data-testid={`text-book-haulier-${shipment.id}`}>
-                          Book Job with Haulier
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleBookJobWithHaulierStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.bookJobWithHaulierStatusIndicator === 1 || shipment.bookJobWithHaulierStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                          }`}
-                          data-testid={`button-book-haulier-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleBookJobWithHaulierStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.bookJobWithHaulierStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
-                          }`}
-                          data-testid={`button-book-haulier-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {shipment.exportClearanceAgent === "R.S" && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
@@ -873,6 +828,7 @@ export default function ExportShipments() {
                         </div>
                       </div>
                     </div>
+                  </div>
                   )}
                   {shipment.exportClearanceAgent === "R.S" && (
                     <div className="mt-1">
