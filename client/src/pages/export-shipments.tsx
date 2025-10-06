@@ -1296,68 +1296,42 @@ Hope all is OK.`
                               {hasAgent ? customer.agentName : getCustomerName(viewingShipment.destinationCustomerId)}
                             </p>
                           </div>
+                          {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
+                              <p className="text-base">{viewingShipment.jobContactName.join(", ")}</p>
+                            </div>
+                          )}
+                          {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Email</p>
+                              <div className="flex flex-col gap-1">
+                                {viewingShipment.jobContactEmail.map((email, idx) => (
+                                  <a 
+                                    key={idx} 
+                                    href={`mailto:${email}`} 
+                                    className="text-base text-green-600 dark:text-green-400 hover:underline"
+                                  >
+                                    {email}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           {hasAgent ? (
-                            <>
-                              {customer.agentContactName && customer.agentContactName.length > 0 && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Agent Contact Name</p>
-                                  <p className="text-base">{customer.agentContactName.join(", ")}</p>
-                                </div>
-                              )}
-                              {customer.agentEmail && customer.agentEmail.length > 0 && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Agent Email</p>
-                                  <div className="flex flex-col gap-1">
-                                    {customer.agentEmail.map((email, idx) => (
-                                      <a 
-                                        key={idx} 
-                                        href={`mailto:${email}`} 
-                                        className="text-base text-green-600 dark:text-green-400 hover:underline"
-                                      >
-                                        {email}
-                                      </a>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              {customer.agentTelephone && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Telephone</p>
-                                  <p className="text-base">{customer.agentTelephone}</p>
-                                </div>
-                              )}
-                            </>
+                            customer.agentTelephone && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                                <p className="text-base">{customer.agentTelephone}</p>
+                              </div>
+                            )
                           ) : (
-                            <>
-                              {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
-                                  <p className="text-base">{viewingShipment.jobContactName.join(", ")}</p>
-                                </div>
-                              )}
-                              {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Email</p>
-                                  <div className="flex flex-col gap-1">
-                                    {viewingShipment.jobContactEmail.map((email, idx) => (
-                                      <a 
-                                        key={idx} 
-                                        href={`mailto:${email}`} 
-                                        className="text-base text-green-600 dark:text-green-400 hover:underline"
-                                      >
-                                        {email}
-                                      </a>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              {customer?.telephone && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">Telephone</p>
-                                  <p className="text-base">{customer.telephone}</p>
-                                </div>
-                              )}
-                            </>
+                            customer?.telephone && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Telephone</p>
+                                <p className="text-base">{customer.telephone}</p>
+                              </div>
+                            )
                           )}
                         </div>
                         <div className="border-t border-green-200 dark:border-green-800 my-3"></div>
