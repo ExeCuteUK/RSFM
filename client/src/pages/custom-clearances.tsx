@@ -1042,7 +1042,6 @@ export default function CustomClearances() {
                               >
                                 <Send className="h-4 w-4 text-muted-foreground" />
                               </button>
-                              <FileOutput className="h-4 w-4 text-muted-foreground shrink-0" />
                               <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`todo-send-ead-${clearance.id}`}>
                                 {clearance.containerShipment === "Air Freight" ? "Send Haulier AWB" : "Send Haulier EAD"}
                               </p>
