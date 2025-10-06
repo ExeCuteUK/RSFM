@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Minus, GripHorizontal, Paperclip, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { X, Minus, GripHorizontal, Paperclip, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/contexts/EmailContext";
 import { useWindowManager } from "@/contexts/WindowManagerContext";
@@ -55,6 +56,9 @@ export function DraggableEmailComposer() {
   const [ccPopoverOpen, setCcPopoverOpen] = useState(false);
   const [bccPopoverOpen, setBccPopoverOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [newToEmail, setNewToEmail] = useState("");
+  const [newCcEmail, setNewCcEmail] = useState("");
+  const [newBccEmail, setNewBccEmail] = useState("");
   const composerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -141,6 +145,49 @@ export function DraggableEmailComposer() {
       : draftData;
     
     updateEmailDraft(data.id, finalDraftData);
+  };
+
+  // Helper functions for managing email addresses
+  const addToEmail = (email: string) => {
+    if (!email.trim()) return;
+    const trimmedEmail = email.trim();
+    if (!data.to.includes(trimmedEmail)) {
+      handleDataChange({ ...data, to: [...data.to, trimmedEmail] });
+      setNewToEmail("");
+      setEmailPopoverOpen(false);
+    }
+  };
+
+  const removeToEmail = (email: string) => {
+    handleDataChange({ ...data, to: data.to.filter(e => e !== email) });
+  };
+
+  const addCcEmail = (email: string) => {
+    if (!email.trim()) return;
+    const trimmedEmail = email.trim();
+    if (!data.cc.includes(trimmedEmail)) {
+      handleDataChange({ ...data, cc: [...data.cc, trimmedEmail] });
+      setNewCcEmail("");
+      setCcPopoverOpen(false);
+    }
+  };
+
+  const removeCcEmail = (email: string) => {
+    handleDataChange({ ...data, cc: data.cc.filter(e => e !== email) });
+  };
+
+  const addBccEmail = (email: string) => {
+    if (!email.trim()) return;
+    const trimmedEmail = email.trim();
+    if (!data.bcc.includes(trimmedEmail)) {
+      handleDataChange({ ...data, bcc: [...data.bcc, trimmedEmail] });
+      setNewBccEmail("");
+      setBccPopoverOpen(false);
+    }
+  };
+
+  const removeBccEmail = (email: string) => {
+    handleDataChange({ ...data, bcc: data.bcc.filter(e => e !== email) });
   };
 
   useEffect(() => {
@@ -323,300 +370,313 @@ export function DraggableEmailComposer() {
       {/* Email Form Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {/* To Field */}
-        <div className="space-y-1">
+        <div className="space-y-2">
           <label className="text-sm font-medium">To:</label>
-          <Popover open={emailPopoverOpen} onOpenChange={setEmailPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={emailPopoverOpen}
-                className="w-full justify-start font-normal"
-                data-testid="button-to-combobox"
-              >
-                {data.to || "Select or type email..."}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[550px] p-0" align="start">
-              <Command shouldFilter={false}>
-                <CommandInput
-                  placeholder="Type recipient email..."
-                  value={data.to}
-                  onValueChange={(value) => handleDataChange({ ...data, to: value })}
+          <div className="flex gap-2">
+            <Popover open={emailPopoverOpen} onOpenChange={setEmailPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Input
+                  placeholder="Add recipient email..."
+                  value={newToEmail}
+                  onChange={(e) => setNewToEmail(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && data.to) {
+                    if (e.key === 'Enter') {
                       e.preventDefault();
-                      setEmailPopoverOpen(false);
+                      addToEmail(newToEmail);
                     }
                   }}
-                  data-testid="input-to-search"
+                  onFocus={() => setEmailPopoverOpen(true)}
+                  data-testid="input-to-email"
+                  className="flex-1"
                 />
-                <CommandList>
-                  <CommandEmpty>
-                    {data.to ? `Press Enter to use: ${data.to}` : 'No emails found'}
-                  </CommandEmpty>
-                  {recentEmails.length > 0 && (
-                    <CommandGroup heading="Recent">
-                      {recentEmails
-                        .filter(email => !data.to || email.toLowerCase().includes(data.to.toLowerCase()))
-                        .map((email) => (
-                        <CommandItem
-                          key={`recent-${email}`}
-                          value={email}
-                          onSelect={(currentValue) => {
-                            handleDataChange({ ...data, to: currentValue });
-                            setEmailPopoverOpen(false);
-                          }}
-                          data-testid={`email-option-${email}`}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              data.to === email ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {email}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )}
-                  {contactEmails.length > 0 && (
-                    <CommandGroup heading="Contacts">
-                      {contactEmails
-                        .filter(contact => !data.to || 
-                          contact.email.toLowerCase().includes(data.to.toLowerCase()) ||
-                          contact.name.toLowerCase().includes(data.to.toLowerCase()))
-                        .slice(0, 30)
-                        .map((contact) => (
-                        <CommandItem
-                          key={`contact-${contact.email}`}
-                          value={contact.email}
-                          onSelect={(currentValue) => {
-                            handleDataChange({ ...data, to: currentValue });
-                            setEmailPopoverOpen(false);
-                          }}
-                          data-testid={`email-option-${contact.email}`}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              data.to === contact.email ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          <div className="flex flex-col">
-                            <span>{contact.email}</span>
-                            {contact.name && (
-                              <span className="text-xs text-muted-foreground">
-                                {contact.name} • {contact.type}
-                              </span>
-                            )}
-                          </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )}
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+              </PopoverTrigger>
+              <PopoverContent className="w-[550px] p-0" align="start">
+                <Command shouldFilter={false}>
+                  <CommandList>
+                    <CommandEmpty>
+                      {newToEmail ? `Press Enter to add: ${newToEmail}` : 'Type to search...'}
+                    </CommandEmpty>
+                    {recentEmails.length > 0 && (
+                      <CommandGroup heading="Recent">
+                        {recentEmails
+                          .filter(email => !newToEmail || email.toLowerCase().includes(newToEmail.toLowerCase()))
+                          .filter(email => !data.to.includes(email))
+                          .map((email) => (
+                          <CommandItem
+                            key={`recent-${email}`}
+                            value={email}
+                            onSelect={() => addToEmail(email)}
+                            data-testid={`email-option-${email}`}
+                          >
+                            {email}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                    {contactEmails.length > 0 && (
+                      <CommandGroup heading="Contacts">
+                        {contactEmails
+                          .filter(contact => !newToEmail || 
+                            contact.email.toLowerCase().includes(newToEmail.toLowerCase()) ||
+                            contact.name.toLowerCase().includes(newToEmail.toLowerCase()))
+                          .filter(contact => !data.to.includes(contact.email))
+                          .slice(0, 30)
+                          .map((contact) => (
+                          <CommandItem
+                            key={`contact-${contact.email}`}
+                            value={contact.email}
+                            onSelect={() => addToEmail(contact.email)}
+                            data-testid={`email-option-${contact.email}`}
+                          >
+                            <div className="flex flex-col">
+                              <span>{contact.email}</span>
+                              {contact.name && (
+                                <span className="text-xs text-muted-foreground">
+                                  {contact.name} • {contact.type}
+                                </span>
+                              )}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              onClick={() => addToEmail(newToEmail)}
+              data-testid="button-add-to-email"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          {data.to.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {data.to.map((email) => (
+                <Badge key={email} variant="secondary" className="gap-1">
+                  {email}
+                  <button
+                    type="button"
+                    onClick={() => removeToEmail(email)}
+                    className="hover-elevate active-elevate-2 rounded-full"
+                    data-testid={`button-remove-to-${email}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* CC and BCC Fields */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
+          <div className="space-y-2">
             <label className="text-sm font-medium">CC (Optional):</label>
-            <Popover open={ccPopoverOpen} onOpenChange={setCcPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={ccPopoverOpen}
-                  className="w-full justify-start font-normal"
-                  data-testid="button-cc-combobox"
-                >
-                  {data.cc || "Select or type email..."}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[270px] p-0" align="start">
-                <Command shouldFilter={false}>
-                  <CommandInput
-                    placeholder="Type CC email..."
-                    value={data.cc}
-                    onValueChange={(value) => handleDataChange({ ...data, cc: value })}
+            <div className="flex gap-2">
+              <Popover open={ccPopoverOpen} onOpenChange={setCcPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Input
+                    placeholder="Add CC email..."
+                    value={newCcEmail}
+                    onChange={(e) => setNewCcEmail(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && data.cc) {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
-                        setCcPopoverOpen(false);
+                        addCcEmail(newCcEmail);
                       }
                     }}
-                    data-testid="input-cc-search"
+                    onFocus={() => setCcPopoverOpen(true)}
+                    data-testid="input-cc-email"
                   />
-                  <CommandList>
-                    <CommandEmpty>
-                      {data.cc ? `Press Enter to use: ${data.cc}` : 'No emails found'}
-                    </CommandEmpty>
-                    {recentEmails.length > 0 && (
-                      <CommandGroup heading="Recent">
-                        {recentEmails
-                          .filter(email => !data.cc || email.toLowerCase().includes(data.cc.toLowerCase()))
-                          .map((email) => (
-                          <CommandItem
-                            key={`cc-recent-${email}`}
-                            value={email}
-                            onSelect={(currentValue) => {
-                              handleDataChange({ ...data, cc: currentValue });
-                              setCcPopoverOpen(false);
-                            }}
-                            data-testid={`cc-option-${email}`}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                data.cc === email ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {email}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
-                    {contactEmails.length > 0 && (
-                      <CommandGroup heading="Contacts">
-                        {contactEmails
-                          .filter(contact => !data.cc || 
-                            contact.email.toLowerCase().includes(data.cc.toLowerCase()) ||
-                            contact.name.toLowerCase().includes(data.cc.toLowerCase()))
-                          .slice(0, 20)
-                          .map((contact) => (
-                          <CommandItem
-                            key={`cc-contact-${contact.email}`}
-                            value={contact.email}
-                            onSelect={(currentValue) => {
-                              handleDataChange({ ...data, cc: currentValue });
-                              setCcPopoverOpen(false);
-                            }}
-                            data-testid={`cc-option-${contact.email}`}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                data.cc === contact.email ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <div className="flex flex-col">
-                              <span className="text-sm">{contact.email}</span>
-                              {contact.name && (
-                                <span className="text-xs text-muted-foreground">
-                                  {contact.name}
-                                </span>
-                              )}
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                </PopoverTrigger>
+                <PopoverContent className="w-[270px] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandList>
+                      <CommandEmpty>
+                        {newCcEmail ? `Press Enter to add: ${newCcEmail}` : 'Type to search...'}
+                      </CommandEmpty>
+                      {recentEmails.length > 0 && (
+                        <CommandGroup heading="Recent">
+                          {recentEmails
+                            .filter(email => !newCcEmail || email.toLowerCase().includes(newCcEmail.toLowerCase()))
+                            .filter(email => !data.cc.includes(email))
+                            .map((email) => (
+                            <CommandItem
+                              key={`cc-recent-${email}`}
+                              value={email}
+                              onSelect={() => addCcEmail(email)}
+                              data-testid={`cc-option-${email}`}
+                            >
+                              {email}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                      {contactEmails.length > 0 && (
+                        <CommandGroup heading="Contacts">
+                          {contactEmails
+                            .filter(contact => !newCcEmail || 
+                              contact.email.toLowerCase().includes(newCcEmail.toLowerCase()) ||
+                              contact.name.toLowerCase().includes(newCcEmail.toLowerCase()))
+                            .filter(contact => !data.cc.includes(contact.email))
+                            .slice(0, 20)
+                            .map((contact) => (
+                            <CommandItem
+                              key={`cc-contact-${contact.email}`}
+                              value={contact.email}
+                              onSelect={() => addCcEmail(contact.email)}
+                              data-testid={`cc-option-${contact.email}`}
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-sm">{contact.email}</span>
+                                {contact.name && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {contact.name}
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={() => addCcEmail(newCcEmail)}
+                data-testid="button-add-cc-email"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {data.cc.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {data.cc.map((email) => (
+                  <Badge key={email} variant="secondary" className="gap-1">
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => removeCcEmail(email)}
+                      className="hover-elevate active-elevate-2 rounded-full"
+                      data-testid={`button-remove-cc-${email}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <label className="text-sm font-medium">BCC (Optional):</label>
-            <Popover open={bccPopoverOpen} onOpenChange={setBccPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={bccPopoverOpen}
-                  className="w-full justify-start font-normal"
-                  data-testid="button-bcc-combobox"
-                >
-                  {data.bcc || "Select or type email..."}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[270px] p-0" align="start">
-                <Command shouldFilter={false}>
-                  <CommandInput
-                    placeholder="Type BCC email..."
-                    value={data.bcc}
-                    onValueChange={(value) => handleDataChange({ ...data, bcc: value })}
+            <div className="flex gap-2">
+              <Popover open={bccPopoverOpen} onOpenChange={setBccPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Input
+                    placeholder="Add BCC email..."
+                    value={newBccEmail}
+                    onChange={(e) => setNewBccEmail(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && data.bcc) {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
-                        setBccPopoverOpen(false);
+                        addBccEmail(newBccEmail);
                       }
                     }}
-                    data-testid="input-bcc-search"
+                    onFocus={() => setBccPopoverOpen(true)}
+                    data-testid="input-bcc-email"
                   />
-                  <CommandList>
-                    <CommandEmpty>
-                      {data.bcc ? `Press Enter to use: ${data.bcc}` : 'No emails found'}
-                    </CommandEmpty>
-                    {recentEmails.length > 0 && (
-                      <CommandGroup heading="Recent">
-                        {recentEmails
-                          .filter(email => !data.bcc || email.toLowerCase().includes(data.bcc.toLowerCase()))
-                          .map((email) => (
-                          <CommandItem
-                            key={`bcc-recent-${email}`}
-                            value={email}
-                            onSelect={(currentValue) => {
-                              handleDataChange({ ...data, bcc: currentValue });
-                              setBccPopoverOpen(false);
-                            }}
-                            data-testid={`bcc-option-${email}`}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                data.bcc === email ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {email}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
-                    {contactEmails.length > 0 && (
-                      <CommandGroup heading="Contacts">
-                        {contactEmails
-                          .filter(contact => !data.bcc || 
-                            contact.email.toLowerCase().includes(data.bcc.toLowerCase()) ||
-                            contact.name.toLowerCase().includes(data.bcc.toLowerCase()))
-                          .slice(0, 20)
-                          .map((contact) => (
-                          <CommandItem
-                            key={`bcc-contact-${contact.email}`}
-                            value={contact.email}
-                            onSelect={(currentValue) => {
-                              handleDataChange({ ...data, bcc: currentValue });
-                              setBccPopoverOpen(false);
-                            }}
-                            data-testid={`bcc-option-${contact.email}`}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                data.bcc === contact.email ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <div className="flex flex-col">
-                              <span className="text-sm">{contact.email}</span>
-                              {contact.name && (
-                                <span className="text-xs text-muted-foreground">
-                                  {contact.name}
-                                </span>
-                              )}
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                </PopoverTrigger>
+                <PopoverContent className="w-[270px] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandList>
+                      <CommandEmpty>
+                        {newBccEmail ? `Press Enter to add: ${newBccEmail}` : 'Type to search...'}
+                      </CommandEmpty>
+                      {recentEmails.length > 0 && (
+                        <CommandGroup heading="Recent">
+                          {recentEmails
+                            .filter(email => !newBccEmail || email.toLowerCase().includes(newBccEmail.toLowerCase()))
+                            .filter(email => !data.bcc.includes(email))
+                            .map((email) => (
+                            <CommandItem
+                              key={`bcc-recent-${email}`}
+                              value={email}
+                              onSelect={() => addBccEmail(email)}
+                              data-testid={`bcc-option-${email}`}
+                            >
+                              {email}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                      {contactEmails.length > 0 && (
+                        <CommandGroup heading="Contacts">
+                          {contactEmails
+                            .filter(contact => !newBccEmail || 
+                              contact.email.toLowerCase().includes(newBccEmail.toLowerCase()) ||
+                              contact.name.toLowerCase().includes(newBccEmail.toLowerCase()))
+                            .filter(contact => !data.bcc.includes(contact.email))
+                            .slice(0, 20)
+                            .map((contact) => (
+                            <CommandItem
+                              key={`bcc-contact-${contact.email}`}
+                              value={contact.email}
+                              onSelect={() => addBccEmail(contact.email)}
+                              data-testid={`bcc-option-${contact.email}`}
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-sm">{contact.email}</span>
+                                {contact.name && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {contact.name}
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={() => addBccEmail(newBccEmail)}
+                data-testid="button-add-bcc-email"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {data.bcc.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {data.bcc.map((email) => (
+                  <Badge key={email} variant="secondary" className="gap-1">
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => removeBccEmail(email)}
+                      className="hover-elevate active-elevate-2 rounded-full"
+                      data-testid={`button-remove-bcc-${email}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

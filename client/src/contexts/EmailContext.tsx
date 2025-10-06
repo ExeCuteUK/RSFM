@@ -4,9 +4,9 @@ import { useWindowManager } from '@/contexts/WindowManagerContext'
 
 interface EmailComposerData {
   id: string
-  to: string
-  cc: string
-  bcc: string
+  to: string[]
+  cc: string[]
+  bcc: string[]
   subject: string
   body: string
   attachments: string[]
@@ -18,9 +18,9 @@ interface EmailComposerData {
 }
 
 interface EmailDraft {
-  to: string
-  cc: string
-  bcc: string
+  to: string[]
+  cc: string[]
+  bcc: string[]
   subject: string
   body: string
   attachments: string[]

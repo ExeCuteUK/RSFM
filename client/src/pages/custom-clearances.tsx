@@ -551,9 +551,9 @@ export default function CustomClearances() {
       // Open email composer
       openEmailComposer({
         id: `email-${Date.now()}`,
-        to: agentEmail || "",
-        cc: "",
-        bcc: "",
+        to: agentEmail ? [agentEmail] : [],
+        cc: [],
+        bcc: [],
         subject: subject || `${clearance.jobType === "import" ? "Import" : "Export"} Clearance`,
         body: body || "",
         attachments: transportDocs || [],
