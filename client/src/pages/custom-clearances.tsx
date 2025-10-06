@@ -288,49 +288,21 @@ export default function CustomClearances() {
   }
 
   const handleSendHaulierEadEmail = (clearance: CustomClearance) => {
-    // Validation: Check if clearance documents exist
-    if (!clearance.clearanceDocuments || clearance.clearanceDocuments.length === 0) {
-      toast({
-        title: "No Export Entry documents",
-        description: "Please upload Export Entry documents before sending the email",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Get the linked export shipment
+    // Get the linked export shipment (if available)
     const linkedExportShipment = clearance.createdFromId
       ? exportShipments.find(s => s.id === clearance.createdFromId)
       : null
 
-    if (!linkedExportShipment) {
-      toast({
-        title: "No linked export shipment found",
-        description: "Cannot send email without a linked export shipment",
-        variant: "destructive",
-      })
-      return
-    }
-
     // Get haulier email(s) - support both array and legacy string format
-    const haulierEmailField = linkedExportShipment.haulierEmail
+    const haulierEmailField = linkedExportShipment?.haulierEmail
     const haulierEmails = Array.isArray(haulierEmailField)
       ? haulierEmailField.filter(Boolean)
       : typeof haulierEmailField === 'string' && haulierEmailField
         ? haulierEmailField.split(',').map(e => e.trim()).filter(Boolean)
         : []
 
-    if (haulierEmails.length === 0) {
-      toast({
-        title: "No haulier email found",
-        description: "Please add a haulier email to the linked export shipment",
-        variant: "destructive",
-      })
-      return
-    }
-
     // Get haulier contact name(s) - support both array and legacy string format
-    const haulierContactField = linkedExportShipment.haulierContactName
+    const haulierContactField = linkedExportShipment?.haulierContactName
     const haulierContacts = Array.isArray(haulierContactField)
       ? haulierContactField.filter(Boolean)
       : typeof haulierContactField === 'string' && haulierContactField
@@ -351,10 +323,10 @@ export default function CustomClearances() {
 
     // Build subject with conditional Trailer Number and Haulier Reference
     let subjectParts = [`Job Ref: ${clearance.jobRef}`]
-    if (linkedExportShipment.trailerNumber) {
+    if (linkedExportShipment?.trailerNumber) {
       subjectParts.push(`Trailer Number: ${linkedExportShipment.trailerNumber}`)
     }
-    if (linkedExportShipment.haulierReference) {
+    if (linkedExportShipment?.haulierReference) {
       subjectParts.push(`Haulier Reference: ${linkedExportShipment.haulierReference}`)
     }
     const subject = subjectParts.join(' - ')
@@ -363,12 +335,17 @@ export default function CustomClearances() {
 
     // Open email composer with Export Entry documents
     openEmailComposer({
-      to: haulierEmails,
+      id: `email-${Date.now()}`,
+      to: haulierEmails.join(', '),
+      cc: '',
+      bcc: '',
       subject,
       body,
       attachments: clearance.clearanceDocuments || [],
-      source: 'send-haulier-ead',
-      sourceId: clearance.id,
+      metadata: {
+        source: 'send-haulier-ead',
+        shipmentId: clearance.id,
+      },
     })
   }
 
