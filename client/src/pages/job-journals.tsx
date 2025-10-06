@@ -550,7 +550,7 @@ export default function JobJournals() {
                     <td className="p-1 text-center border-r-4 border-border" data-testid={`text-reg-${entry.jobRef}`}>
                       {entry.regContainerFlight}
                     </td>
-                    <td className="p-1 bg-red-100 dark:bg-red-900 border-l-2 border-r border-border align-top" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-l-2 border-r border-border align-top" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -563,7 +563,7 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -584,7 +584,7 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-date-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-date-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -597,7 +597,7 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-amount-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-amount-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -631,8 +631,11 @@ export default function JobJournals() {
                     <td className="p-1 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {(() => {
                         const salesAmount = parseFloat(entry.salesInvoiceAmount || "0") || 0
-                        const purchaseAmount = parseFloat(entry.purchaseInvoiceAmount || "0") || 0
-                        const profitLoss = salesAmount - purchaseAmount
+                        
+                        const invoices = getInvoicesForJob(entry.jobRef)
+                        const totalPurchaseAmount = invoices.reduce((sum, inv) => sum + Number(inv.invoiceAmount), 0)
+                        
+                        const profitLoss = salesAmount - totalPurchaseAmount
                         
                         const formatted = profitLoss.toLocaleString('en-GB', {
                           minimumFractionDigits: 2,
