@@ -661,8 +661,8 @@ export default function ImportShipments() {
       }
       
       const subject = customerRef 
-        ? `Import Deliver Booking / Your Ref : ${customerRef} / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
-        : `Import Deliver Booking / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+        ? `Import Delivery Booking / Your Ref : ${customerRef} / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+        : `Import Delivery Booking / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
       
       // Build message body
       let body = `Hi,\n\nPlease find below details of an import job due to be delivered to yourselves. If you can advise on the below that would be great.\n\n`
