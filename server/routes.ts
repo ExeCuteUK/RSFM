@@ -1644,6 +1644,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.customerReferenceNumber !== undefined) shipmentUpdate.customerReferenceNumber = clearance.customerReferenceNumber;
           if (req.body.supplierName !== undefined) shipmentUpdate.supplierName = clearance.supplierName;
           
+          // If status changed to "Request CC", set clearance status indicator to yellow (1)
+          if (req.body.status !== undefined && clearance.status === "Request CC") {
+            shipmentUpdate.clearanceStatusIndicator = 1;
+          }
+          
           console.log('[SYNC-DEBUG] Import shipment update fields:', Object.keys(shipmentUpdate));
           if (Object.keys(shipmentUpdate).length > 0) {
             console.log('[SYNC-DEBUG] Syncing to import shipment:', clearance.createdFromId);
@@ -1679,6 +1684,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             shipmentUpdate.attachments = clearance.transportDocuments || [];
           }
           
+          // If status changed to "Request CC", set advise clearance to agent status indicator to yellow (1)
+          if (req.body.status !== undefined && clearance.status === "Request CC") {
+            shipmentUpdate.adviseClearanceToAgentStatusIndicator = 1;
+          }
+          
           console.log('[SYNC-DEBUG] Export shipment update fields:', Object.keys(shipmentUpdate));
           if (Object.keys(shipmentUpdate).length > 0) {
             console.log('[SYNC-DEBUG] Syncing to export shipment:', clearance.createdFromId);
@@ -1686,6 +1696,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             syncedToShipment = true;
           }
         }
+      }
+      
+      // Also update the clearance's own advise agent status if status changed to "Request CC"
+      if (req.body.status !== undefined && clearance.status === "Request CC") {
+        await storage.updateCustomClearance(req.params.id, {
+          adviseAgentStatusIndicator: 1
+        });
       }
       console.log('[SYNC-DEBUG] syncedToShipment:', syncedToShipment);
       
