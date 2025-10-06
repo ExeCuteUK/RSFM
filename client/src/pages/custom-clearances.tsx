@@ -324,9 +324,15 @@ export default function CustomClearances() {
     // Build subject: "Export Job Update - EAD File / Our Ref: {jobRef} / Trailer Number: {trailerNo} / Your Ref: {haulierRef}"
     let subject = `Export Job Update - EAD File / Our Ref: ${clearance.jobRef}`
     
-    // Add trailer number if available
+    // Add trailer/container/flight number if available with correct label based on shipment type
     if (linkedExportShipment?.trailerNo) {
-      subject += ` / Trailer Number: ${linkedExportShipment.trailerNo}`
+      let numberLabel = "Trailer Number"
+      if (linkedExportShipment.containerShipment === "Air Freight") {
+        numberLabel = "Flight Number"
+      } else if (linkedExportShipment.containerShipment === "Container Shipment") {
+        numberLabel = "Container Number"
+      }
+      subject += ` / ${numberLabel}: ${linkedExportShipment.trailerNo}`
     }
     
     // Add haulier reference if available
