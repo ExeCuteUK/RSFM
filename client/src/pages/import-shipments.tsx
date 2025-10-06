@@ -1969,37 +1969,32 @@ Hope all is OK.`
                             <p className="text-xs text-muted-foreground mb-1">Customer</p>
                             <p className="font-semibold text-base">{getCustomerName(viewingShipment.importCustomerId)}</p>
                           </div>
-                          {!hasAgent && customer?.contactName && customer.contactName.length > 0 && (
+                          {!hasAgent && viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
                             <div>
-                              <p className="text-xs text-muted-foreground mb-1">Customer Contact Name</p>
-                              <p className="text-base">{customer.contactName.join(', ')}</p>
+                              <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
+                              <p className="text-base">{viewingShipment.jobContactName.join(', ')}</p>
+                            </div>
+                          )}
+                          {!hasAgent && viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Email</p>
+                              <div className="flex flex-col gap-1">
+                                {viewingShipment.jobContactEmail.map((email, idx) => (
+                                  <a 
+                                    key={idx} 
+                                    href={`mailto:${email}`} 
+                                    className="text-base text-blue-600 dark:text-blue-400 hover:underline"
+                                  >
+                                    {email}
+                                  </a>
+                                ))}
+                              </div>
                             </div>
                           )}
                           {!hasAgent && customer?.telephone && (
                             <div>
-                              <p className="text-xs text-muted-foreground mb-1">Customer Telephone</p>
+                              <p className="text-xs text-muted-foreground mb-1">Telephone</p>
                               <p className="text-base">{customer.telephone}</p>
-                            </div>
-                          )}
-                          {!hasAgent && customer?.email && customer.email.length > 0 && (
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Customer Email</p>
-                              <div className="flex flex-col gap-1">
-                                {customer.email.map((email, idx) => {
-                                  const yourRefPart = viewingShipment.customerReferenceNumber ? `/ Your Ref : ${viewingShipment.customerReferenceNumber} ` : '';
-                                  const formattedDate = viewingShipment.bookingDate ? format(new Date(viewingShipment.bookingDate), 'dd/MM/yy') : '';
-                                  const subject = `Our Ref : ${viewingShipment.jobRef} ${yourRefPart}/ Booking Date : ${formattedDate} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
-                                  return (
-                                    <a 
-                                      key={idx} 
-                                      href={`mailto:${email}?subject=${encodeURIComponent(subject)}`} 
-                                      className="text-base text-blue-600 dark:text-blue-400 hover:underline"
-                                    >
-                                      {email}
-                                    </a>
-                                  );
-                                })}
-                              </div>
                             </div>
                           )}
                         </div>
@@ -2010,37 +2005,32 @@ Hope all is OK.`
                               <p className="text-xs text-muted-foreground mb-1">Agent Name</p>
                               <p className="text-base">{customer.agentName}</p>
                             </div>
-                            {customer.agentContactName && customer.agentContactName.length > 0 && (
+                            {viewingShipment.jobContactName && viewingShipment.jobContactName.length > 0 && (
                               <div>
-                                <p className="text-xs text-muted-foreground mb-1">Agent Contact Name</p>
-                                <p className="text-base">{customer.agentContactName.join(', ')}</p>
+                                <p className="text-xs text-muted-foreground mb-1">Contact Name</p>
+                                <p className="text-base">{viewingShipment.jobContactName.join(', ')}</p>
+                              </div>
+                            )}
+                            {viewingShipment.jobContactEmail && viewingShipment.jobContactEmail.length > 0 && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-1">Email</p>
+                                <div className="flex flex-col gap-1">
+                                  {viewingShipment.jobContactEmail.map((email, idx) => (
+                                    <a 
+                                      key={idx} 
+                                      href={`mailto:${email}`} 
+                                      className="text-base text-blue-600 dark:text-blue-400 hover:underline"
+                                    >
+                                      {email}
+                                    </a>
+                                  ))}
+                                </div>
                               </div>
                             )}
                             {customer.agentTelephone && (
                               <div>
                                 <p className="text-xs text-muted-foreground mb-1">Telephone</p>
                                 <p className="text-base">{customer.agentTelephone}</p>
-                              </div>
-                            )}
-                            {customer.agentEmail && customer.agentEmail.length > 0 && (
-                              <div>
-                                <p className="text-xs text-muted-foreground mb-1">Agent Email</p>
-                                <div className="flex flex-col gap-1">
-                                  {customer.agentEmail.map((email, idx) => {
-                                    const yourRefPart = viewingShipment.customerReferenceNumber ? `/ Your Ref : ${viewingShipment.customerReferenceNumber} ` : '';
-                                    const formattedDate = viewingShipment.bookingDate ? format(new Date(viewingShipment.bookingDate), 'dd/MM/yy') : '';
-                                    const subject = `Our Ref : ${viewingShipment.jobRef} ${yourRefPart}/ Booking Date : ${formattedDate} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
-                                    return (
-                                      <a 
-                                        key={idx} 
-                                        href={`mailto:${email}?subject=${encodeURIComponent(subject)}`} 
-                                        className="text-base text-blue-600 dark:text-blue-400 hover:underline"
-                                      >
-                                        {email}
-                                      </a>
-                                    );
-                                  })}
-                                </div>
                               </div>
                             )}
                           </div>
