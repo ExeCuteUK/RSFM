@@ -24,6 +24,10 @@ interface EmailDraft {
   subject: string
   body: string
   attachments: string[]
+  metadata?: {
+    source?: 'book-delivery-customer' | 'advise-clearance-agent' | 'advise-clearance-agent-export'
+    shipmentId?: string
+  }
 }
 
 interface EmailContextType {
