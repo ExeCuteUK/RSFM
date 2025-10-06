@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send, Shield } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send, Shield, ChevronLeft, ChevronRight } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -44,8 +44,11 @@ export default function ExportShipments() {
   const [viewingShipment, setViewingShipment] = useState<ExportShipment | null>(null)
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
   const { toast} = useToast()
   const [, setLocation] = useLocation()
+  
+  const ITEMS_PER_PAGE = 30
 
   // Read search parameter from URL or localStorage on mount
   useEffect(() => {
@@ -99,7 +102,7 @@ export default function ExportShipments() {
     ? allShipments 
     : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
 
-  const shipments = searchText.trim() === ""
+  const filteredShipments = searchText.trim() === ""
     ? filteredByStatus
     : filteredByStatus.filter(s => {
         const searchLower = searchText.toLowerCase()
@@ -113,6 +116,17 @@ export default function ExportShipments() {
                trailer.includes(searchLower) ||
                vessel.includes(searchLower)
       })
+  
+  // Reset to first page when filters or search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, selectedStatuses])
+  
+  // Pagination
+  const totalPages = Math.ceil(filteredShipments.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const shipments = filteredShipments.slice(startIndex, endIndex)
 
   const createShipment = useMutation({
     mutationFn: async (data: InsertExportShipment) => {

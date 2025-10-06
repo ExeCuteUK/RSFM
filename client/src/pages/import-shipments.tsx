@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
@@ -57,8 +57,11 @@ export default function ImportShipments() {
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
+  
+  const ITEMS_PER_PAGE = 30
 
   // Read search parameter from URL or localStorage on mount
   useEffect(() => {
@@ -130,7 +133,7 @@ export default function ImportShipments() {
     ? allShipments 
     : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
 
-  const shipments = searchText.trim() === ""
+  const filteredShipments = searchText.trim() === ""
     ? filteredByStatus
     : filteredByStatus.filter(s => {
         const searchLower = searchText.toLowerCase()
@@ -144,6 +147,17 @@ export default function ImportShipments() {
                trailer.includes(searchLower) ||
                vessel.includes(searchLower)
       })
+  
+  // Reset to first page when filters or search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, selectedStatuses])
+  
+  // Pagination
+  const totalPages = Math.ceil(filteredShipments.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const shipments = filteredShipments.slice(startIndex, endIndex)
 
   const createShipment = useMutation({
     mutationFn: async (data: InsertImportShipment) => {
@@ -1722,6 +1736,39 @@ Hope all is OK.`
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+      
+      {!isLoading && filteredShipments.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(endIndex, filteredShipments.length)} of {filteredShipments.length} shipments
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              data-testid="button-prev-page"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <div className="text-sm font-medium">
+              Page {currentPage} of {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              data-testid="button-next-page"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
       )}
 

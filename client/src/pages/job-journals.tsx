@@ -363,23 +363,23 @@ export default function JobJournals() {
             <table className="w-full border-collapse">
               <thead className="text-xs sticky top-0 bg-background z-10">
                 <tr className="border-b-4">
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">#</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Job Ref</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Client Name</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Destination</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r-4 border-border bg-background">Identifier</th>
-                  <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border bg-background">Invoice From</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Invoice No</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Amount</th>
-                  <th className="text-center p-2 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
-                  <th className="text-center p-2 font-semibold underline border-l-2 border-r border-border bg-background">Invoice To</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Invoice No</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Date</th>
-                  <th className="text-center p-2 font-semibold underline border-r border-border bg-background">Amount</th>
-                  <th className="text-center p-2 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
-                  <th className="text-center p-2 font-semibold underline border-l-2 bg-background">P/L</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">#</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Job Ref</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Client Name</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Destination</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
+                  <th className="text-center p-1 font-semibold underline border-r-4 border-border bg-background">Identifier</th>
+                  <th className="text-center p-1 font-semibold underline border-l-2 border-r border-border bg-background">Invoice From</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Invoice No</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Amount</th>
+                  <th className="text-center p-1 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
+                  <th className="text-center p-1 font-semibold underline border-l-2 border-r border-border bg-background">Invoice To</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Invoice No</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Amount</th>
+                  <th className="text-center p-1 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
+                  <th className="text-center p-1 font-semibold underline border-l-2 bg-background">P/L</th>
                 </tr>
               </thead>
               <tbody className="text-xs">
@@ -389,10 +389,10 @@ export default function JobJournals() {
                     className="border-b hover-elevate"
                     data-testid={`row-job-${entry.jobRef}`}
                   >
-                    <td className="p-2 text-center border-r border-border" data-testid={`text-type-${entry.jobRef}`}>
+                    <td className="p-1 text-center border-r border-border" data-testid={`text-type-${entry.jobRef}`}>
                       {getJobTypeAbbreviation(entry.jobType)}
                     </td>
-                    <td className="p-2 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
+                    <td className="p-1 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
                       <button
                         onClick={() => handleJobRefClick(entry.jobRef, entry.jobType)}
                         className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
@@ -401,49 +401,49 @@ export default function JobJournals() {
                         {entry.jobRef}
                       </button>
                     </td>
-                    <td className="p-2 text-center border-r border-border" data-testid={`text-customer-${entry.jobRef}`}>
+                    <td className="p-1 text-center border-r border-border" data-testid={`text-customer-${entry.jobRef}`}>
                       {entry.customerName}
                     </td>
-                    <td className="p-2 text-center border-r border-border" data-testid={`text-destination-${entry.jobRef}`}>
+                    <td className="p-1 text-center border-r border-border" data-testid={`text-destination-${entry.jobRef}`}>
                       {entry.destination}
                     </td>
-                    <td className="p-2 text-center border-r border-border" data-testid={`text-date-${entry.jobRef}`}>
+                    <td className="p-1 text-center border-r border-border" data-testid={`text-date-${entry.jobRef}`}>
                       {formatDateToDDMMYY(entry.date)}
                     </td>
-                    <td className="p-2 text-center border-r-4 border-border" data-testid={`text-reg-${entry.jobRef}`}>
+                    <td className="p-1 text-center border-r-4 border-border" data-testid={`text-reg-${entry.jobRef}`}>
                       {entry.regContainerFlight}
                     </td>
-                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-l-2 border-r border-border" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-l-2 border-r border-border" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
                       
                     </td>
-                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
                       {entry.purchaseInvoiceNumber || ""}
                     </td>
-                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-date-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-date-${entry.jobRef}`}>
                       {entry.purchaseInvoiceDate || ""}
                     </td>
-                    <td className="p-2 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border" data-testid={`text-purchase-amount-${entry.jobRef}`}>
                       {entry.purchaseInvoiceAmount || ""}
                     </td>
-                    <td className="p-2 text-center bg-red-50 dark:bg-red-950 border-l-4 border-r-4 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-red-50 dark:bg-red-950 border-l-4 border-r-4 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
                       {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
                     </td>
-                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
                       
                     </td>
-                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-invoice-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-invoice-${entry.jobRef}`}>
                       {entry.salesInvoiceNumber || ""}
                     </td>
-                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
                       {entry.salesInvoiceDate || ""}
                     </td>
-                    <td className="p-2 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
                       {entry.salesInvoiceAmount || ""}
                     </td>
-                    <td className="p-2 text-center bg-green-50 dark:bg-green-950 border-l-4 border-r-4 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-green-50 dark:bg-green-950 border-l-4 border-r-4 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
                       {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
                     </td>
-                    <td className="p-2 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
+                    <td className="p-1 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {(() => {
                         const salesAmount = parseFloat(entry.salesInvoiceAmount || "0") || 0
                         const purchaseAmount = parseFloat(entry.purchaseInvoiceAmount || "0") || 0
