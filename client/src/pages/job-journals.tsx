@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search } from "lucide-react"
+import { Search, Calendar } from "lucide-react"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from "@shared/schema"
 
 interface JobJournalEntry {
@@ -70,8 +70,11 @@ const getJobTypeAbbreviation = (jobType: string): string => {
 export default function JobJournals() {
   const currentDate = new Date()
   const [, setLocation] = useLocation()
+  const [filterMode, setFilterMode] = useState<"month" | "range">("month")
   const [selectedMonth, setSelectedMonth] = useState((currentDate.getMonth() + 1).toString())
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString())
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(["Import", "Export", "Customs"])
   const [searchText, setSearchText] = useState("")
   
@@ -119,16 +122,48 @@ export default function JobJournals() {
     }
   }
 
-  const matchesMonthYear = (date: string): boolean => {
+  const matchesFilter = (date: string): boolean => {
     if (!date) return false
     
     const dateObj = new Date(date)
+    
+    if (filterMode === "month") {
+      return matchesMonthYear(dateObj)
+    } else {
+      return matchesDateRange(dateObj)
+    }
+  }
+
+  const matchesMonthYear = (dateObj: Date): boolean => {
     if (isNaN(dateObj.getTime())) return false
     
     const dateMonth = (dateObj.getMonth() + 1).toString()
     const dateYear = dateObj.getFullYear().toString()
     
     return dateMonth === selectedMonth && dateYear === selectedYear
+  }
+
+  const matchesDateRange = (dateObj: Date): boolean => {
+    if (isNaN(dateObj.getTime())) return false
+    
+    // If no date range specified, show all
+    if (!startDate && !endDate) return true
+    
+    const dateTime = dateObj.getTime()
+    
+    if (startDate && endDate) {
+      const start = new Date(startDate).getTime()
+      const end = new Date(endDate).getTime()
+      return dateTime >= start && dateTime <= end
+    } else if (startDate) {
+      const start = new Date(startDate).getTime()
+      return dateTime >= start
+    } else if (endDate) {
+      const end = new Date(endDate).getTime()
+      return dateTime <= end
+    }
+    
+    return true
   }
 
   const calculateJobExpensesReserve = (shipment: ImportShipment): number => {
@@ -230,9 +265,9 @@ export default function JobJournals() {
       })),
   ].sort((a, b) => b.jobRef - a.jobRef)
 
-  const filteredByMonth = allJournalEntries.filter(entry => matchesMonthYear(entry.date))
+  const filteredByDate = allJournalEntries.filter(entry => matchesFilter(entry.date))
   
-  const journalEntries = filteredByMonth.filter(entry => {
+  const journalEntries = filteredByDate.filter(entry => {
     const matchesJobType = selectedJobTypes.length === 0 || selectedJobTypes.includes(entry.jobType)
     
     if (!searchText.trim()) return matchesJobType
@@ -264,6 +299,22 @@ export default function JobJournals() {
     return month ? month.label : ""
   }
 
+  const getFilterLabel = () => {
+    if (filterMode === "month") {
+      return `${getMonthLabel()}, ${selectedYear}`
+    } else {
+      if (startDate && endDate) {
+        return `${format(new Date(startDate), "dd/MM/yyyy")} - ${format(new Date(endDate), "dd/MM/yyyy")}`
+      } else if (startDate) {
+        return `From ${format(new Date(startDate), "dd/MM/yyyy")}`
+      } else if (endDate) {
+        return `Until ${format(new Date(endDate), "dd/MM/yyyy")}`
+      } else {
+        return "All Dates"
+      }
+    }
+  }
+
   return (
     <div className="h-full flex flex-col p-6 gap-4 overflow-hidden">
       <div>
@@ -272,37 +323,86 @@ export default function JobJournals() {
       </div>
 
       <div className="flex gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">Month:</label>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[150px]" data-testid="select-month">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MONTHS.map(month => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex gap-2">
+          <Button
+            variant={filterMode === "month" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilterMode("month")}
+            data-testid="filter-mode-month"
+          >
+            <Calendar className="h-4 w-4 mr-1" />
+            Month/Year
+          </Button>
+          <Button
+            variant={filterMode === "range" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilterMode("range")}
+            data-testid="filter-mode-range"
+          >
+            <Calendar className="h-4 w-4 mr-1" />
+            Date Range
+          </Button>
         </div>
+        
+        {filterMode === "month" ? (
+          <>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Month:</label>
+              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger className="w-[150px]" data-testid="select-month">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTHS.map(month => (
+                    <SelectItem key={month.value} value={month.value}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">Year:</label>
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[120px]" data-testid="select-year">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {generateYears().map(year => (
-                <SelectItem key={year.value} value={year.value}>
-                  {year.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Year:</label>
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-[120px]" data-testid="select-year">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {generateYears().map(year => (
+                    <SelectItem key={year.value} value={year.value}>
+                      {year.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">From:</label>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-[160px]"
+                data-testid="input-start-date"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">To:</label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-[160px]"
+                data-testid="input-end-date"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex gap-4 items-center">
@@ -355,7 +455,7 @@ export default function JobJournals() {
       <Card className="flex-1 flex flex-col min-h-0">
         <CardHeader className="flex-shrink-0">
           <CardTitle>
-            {getMonthLabel()}, {selectedYear} - {journalEntries.length} {journalEntries.length === 1 ? 'Record' : 'Records'}
+            {getFilterLabel()} - {journalEntries.length} {journalEntries.length === 1 ? 'Record' : 'Records'}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 overflow-auto p-0">
