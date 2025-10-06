@@ -5,6 +5,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { format } from "date-fns"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
@@ -24,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -37,6 +38,7 @@ export default function ExportShipments() {
   const [searchText, setSearchText] = useState("")
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
+  const [viewingShipment, setViewingShipment] = useState<ExportShipment | null>(null)
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
   const { toast} = useToast()
@@ -473,6 +475,22 @@ export default function ExportShipments() {
     return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })
   }
 
+  const getCustomer = (customerId: string | null) => {
+    if (!customerId) return null
+    return exportCustomers.find(c => c.id === customerId) || null
+  }
+
+  const getReceiver = (receiverId: string | null) => {
+    if (!receiverId) return null
+    return exportReceivers.find(r => r.id === receiverId) || null
+  }
+
+  const formatCurrency = (currency: string | null) => {
+    if (currency === "EUR") return "€"
+    if (currency === "USD") return "$"
+    return "£"
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -594,7 +612,11 @@ export default function ExportShipments() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Truck className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      <h3 className="font-semibold text-lg" data-testid={`text-job-ref-${shipment.id}`}>
+                      <h3 
+                        className="font-semibold text-lg text-green-600 dark:text-green-400 hover:underline cursor-pointer" 
+                        onClick={() => setViewingShipment(shipment)}
+                        data-testid={`text-job-ref-${shipment.id}`}
+                      >
                         {shipment.jobRef}
                       </h3>
                       <div className="flex -space-x-1">
@@ -1192,6 +1214,300 @@ export default function ExportShipments() {
               {updateNotes.isPending ? "Saving..." : "Save/Update"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!viewingShipment} onOpenChange={(open) => !open && setViewingShipment(null)}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" aria-describedby="shipment-details-description">
+          <p id="shipment-details-description" className="sr-only">View complete shipment details and information</p>
+          <DialogHeader className="border-b pb-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                {viewingShipment?.containerShipment === "Road Shipment" ? (
+                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <Truck className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                ) : viewingShipment?.containerShipment === "Container Shipment" ? (
+                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <Container className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                ) : viewingShipment?.containerShipment === "Air Freight" ? (
+                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <Plane className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                ) : (
+                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <Package className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                )}
+                <div>
+                  <DialogTitle className="text-2xl leading-none">
+                    R.S Export Shipment {viewingShipment?.jobRef}
+                  </DialogTitle>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm text-muted-foreground">
+                      Created {viewingShipment?.createdAt && (() => {
+                        const date = new Date(viewingShipment.createdAt);
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = String(date.getFullYear()).slice(-2);
+                        let hours = date.getHours();
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        hours = hours % 12 || 12;
+                        return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+                      })()}
+                    </p>
+                    {viewingShipment && (
+                      <Badge className={getStatusColor(viewingShipment.status)} data-testid="badge-detail-status">
+                        {viewingShipment.status}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    if (viewingShipment) {
+                      openWindow({
+                        id: `export-shipment-${viewingShipment.id}`,
+                        type: 'export-shipment',
+                        title: `Edit Export Shipment #${viewingShipment.jobRef}`,
+                        payload: { 
+                          mode: 'edit' as const,
+                          defaultValues: viewingShipment 
+                        }
+                      })
+                      setViewingShipment(null)
+                    }
+                  }}
+                  data-testid="button-edit-shipment"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {viewingShipment && (
+            <div className="space-y-4 pt-4">
+              <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <User className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Customer & Receiver Information</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Customer (Exporter)</p>
+                        <p className="font-semibold text-base">{getCustomerName(viewingShipment.destinationCustomerId)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Receiver</p>
+                        <p className="font-semibold text-base">{getReceiverName(viewingShipment.receiverId)}</p>
+                      </div>
+                    </div>
+                    {viewingShipment.exportersReference && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Exporter's Reference</p>
+                        <p className="text-base">{viewingShipment.exportersReference}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Ship className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Shipment Details</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {viewingShipment.trailerNo && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          {viewingShipment.containerShipment === "Container Shipment" ? "Container Number" :
+                           viewingShipment.containerShipment === "Air Freight" ? "Flight Number" : "Trailer Number"}
+                        </p>
+                        <p className="font-semibold text-base">{viewingShipment.trailerNo}</p>
+                      </div>
+                    )}
+                    {viewingShipment.vesselName && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          {viewingShipment.containerShipment === "Container Shipment" ? "Vessel Name" :
+                           viewingShipment.containerShipment === "Air Freight" ? "Flight Details" : "Carrier"}
+                        </p>
+                        <p className="text-base">{viewingShipment.vesselName}</p>
+                      </div>
+                    )}
+                    {viewingShipment.haulierName && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Haulier</p>
+                        <p className="text-base">{viewingShipment.haulierName}</p>
+                      </div>
+                    )}
+                    {viewingShipment.portOfArrival && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          {viewingShipment.containerShipment === "Container Shipment" ? "Port Of Arrival" :
+                           viewingShipment.containerShipment === "Air Freight" ? "Arrival Airport" : "Destination"}
+                        </p>
+                        <p className="text-base">{viewingShipment.portOfArrival}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Key Dates</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {viewingShipment.collectionDate && (
+                      <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                        <p className="text-xs text-muted-foreground mb-1">Collection Date</p>
+                        <p className="font-semibold text-sm">{formatDate(viewingShipment.collectionDate)}</p>
+                      </div>
+                    )}
+                    {viewingShipment.deliveryDate && (
+                      <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                        <p className="text-xs text-muted-foreground mb-1">Delivery Date</p>
+                        <p className="font-semibold text-sm">{formatDate(viewingShipment.deliveryDate)}</p>
+                      </div>
+                    )}
+                    {viewingShipment.etaPortDate && (
+                      <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                        <p className="text-xs text-muted-foreground mb-1">ETA Customs</p>
+                        <p className="font-semibold text-sm">{formatDate(viewingShipment.etaPortDate)}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Box className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <h3 className="font-semibold text-lg text-green-900 dark:text-green-100">Cargo Details</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {viewingShipment.goodsDescription && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Goods Description</p>
+                        <p className="text-base">{viewingShipment.goodsDescription}</p>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {viewingShipment.numberOfPieces && (
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                          <p className="text-xs text-muted-foreground mb-1">Number of Pieces</p>
+                          <p className="font-semibold text-sm">{viewingShipment.numberOfPieces}</p>
+                        </div>
+                      )}
+                      {viewingShipment.packaging && (
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                          <p className="text-xs text-muted-foreground mb-1">Packaging</p>
+                          <p className="font-semibold text-sm">{viewingShipment.packaging}</p>
+                        </div>
+                      )}
+                      {viewingShipment.weight && (
+                        <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                          <p className="text-xs text-muted-foreground mb-1">Weight</p>
+                          <p className="font-semibold text-sm">{viewingShipment.weight} kgs</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <PoundSterling className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Charges Out</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {viewingShipment.freightChargeOut && (
+                        <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-xs text-muted-foreground mb-1">Freight Charge</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currencyOut || "GBP")}{viewingShipment.freightChargeOut}</p>
+                        </div>
+                      )}
+                      {viewingShipment.expensesToChargeOut && viewingShipment.expensesToChargeOut.length > 0 && (
+                        <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-xs text-muted-foreground mb-2">Additional Charges Out</p>
+                          <div className="space-y-1">
+                            {viewingShipment.expensesToChargeOut.map((expense: { description: string; amount: string }, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center">
+                                <span className="text-sm text-blue-900 dark:text-blue-100">{expense.description}</span>
+                                <span className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currencyOut || "GBP")}{expense.amount}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-orange-50/50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <PoundSterling className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Expenses In</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {viewingShipment.freightChargeIn && (
+                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <p className="text-xs text-muted-foreground mb-1">Freight Charge</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.freightChargeIn}</p>
+                        </div>
+                      )}
+                      {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
+                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <p className="text-xs text-muted-foreground mb-2">Additional Expenses In</p>
+                          <div className="space-y-1">
+                            {viewingShipment.additionalExpensesIn.map((expense: { description: string; amount: string }, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center">
+                                <span className="text-sm text-orange-900 dark:text-orange-100">{expense.description}</span>
+                                <span className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{expense.amount}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {viewingShipment.additionalNotes && (
+                <Card className="bg-yellow-50/50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ClipboardList className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      <h3 className="font-semibold text-lg text-yellow-900 dark:text-yellow-100">Additional Notes</h3>
+                    </div>
+                    <div className="bg-white dark:bg-yellow-950/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-900">
+                      <p className="whitespace-pre-wrap text-sm">{viewingShipment.additionalNotes}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
