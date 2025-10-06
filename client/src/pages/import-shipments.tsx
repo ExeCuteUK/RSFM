@@ -1151,12 +1151,12 @@ export default function ImportShipments() {
                           )}
                         </p>
                       </div>
-                      {shipment.containerShipment === "Container Shipment" && shipment.shippingLine && (
+                      {shipment.containerShipment !== "Air Freight" && shipment.containerShipment === "Container Shipment" && shipment.shippingLine && (
                         <p className="font-semibold text-lg" data-testid={`text-shipping-line-${shipment.id}`}>
                           {shipment.shippingLine}
                         </p>
                       )}
-                      {shipment.containerShipment === "Road Shipment" && shipment.haulierName && (
+                      {shipment.containerShipment !== "Air Freight" && shipment.containerShipment === "Road Shipment" && shipment.haulierName && (
                         <p className="font-semibold text-lg" data-testid={`text-haulier-name-${shipment.id}`}>
                           {shipment.haulierName}
                         </p>
