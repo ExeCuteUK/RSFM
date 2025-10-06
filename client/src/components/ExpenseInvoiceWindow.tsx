@@ -378,7 +378,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
               return (
                 <div key={invoice.id} className="space-y-1">
                   <div
-                    className="grid grid-cols-[110px_1fr_0.67fr_130px_80px_auto_auto] gap-2 items-end p-2 border rounded-md bg-card"
+                    className="grid grid-cols-[110px_1fr_0.67fr_130px_96px_auto_auto] gap-2 items-end p-2 border rounded-md bg-card"
                     data-testid={`invoice-row-${index}`}
                   >
                     <div>
@@ -448,7 +448,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         step="0.01"
                         value={invoice.invoiceAmount}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceAmount', e.target.value)}
-                        onKeyPress={(e) => handleAmountKeyPress(e, invoice.id)}
+                        onKeyDown={(e) => handleAmountKeyPress(e, invoice.id)}
                         placeholder="0.00"
                         data-testid={`input-invoice-amount-${index}`}
                       />
