@@ -147,6 +147,33 @@ export default function JobJournals() {
     return total
   }
 
+  const calculateExportJobExpensesReserve = (shipment: ExportShipment): number => {
+    const total = [
+      shipment.haulierFreightRateIn,
+      shipment.exportClearanceChargeIn,
+      shipment.destinationClearanceCostIn,
+      ...(shipment.additionalExpensesIn || []).map((e: { amount: string }) => e.amount)
+    ]
+      .filter(Boolean)
+      .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0)
+    
+    return total
+  }
+
+  const calculateExportRSChargesReserve = (shipment: ExportShipment): number => {
+    const total = [
+      shipment.freightRateOut,
+      shipment.clearanceCharge,
+      shipment.arrivalClearanceCost,
+      shipment.additionalCommodityCodeCharge,
+      ...(shipment.expensesToChargeOut || []).map((e: { amount: string }) => e.amount)
+    ]
+      .filter(Boolean)
+      .reduce((sum, val) => sum + (parseFloat(val as string) || 0), 0)
+    
+    return total
+  }
+
   const allJournalEntries: JobJournalEntry[] = [
     ...importShipments.map(shipment => ({
       jobRef: shipment.jobRef,
@@ -169,6 +196,8 @@ export default function JobJournals() {
       regContainerFlight: shipment.trailerNo || "",
       supplier: shipment.supplier || "",
       customer: getCustomerName(shipment.destinationCustomerId, "export"),
+      jobExpensesReserve: calculateExportJobExpensesReserve(shipment),
+      rsChargesReserve: calculateExportRSChargesReserve(shipment),
     })),
     ...customClearances
       .filter(clearance => !clearance.createdFromType && !clearance.createdFromId)
