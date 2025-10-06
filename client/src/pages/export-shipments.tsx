@@ -460,9 +460,22 @@ export default function ExportShipments() {
       const subject = `Export Delivery Update / ${yourRefPart}Our Ref: ${jobRef} / ${truckContainerFlight} / Delivery Date: ${deliveryDate}`
       
       // Build message body - conditionally include "your ref" only if customerRef exists
-      const jobContactName = shipment.jobContactName || "there"
+      // Handle multiple contact names separated by commas
+      let greeting = "Hi there"
+      if (shipment.jobContactName && shipment.jobContactName.trim()) {
+        const names = shipment.jobContactName.split(',').map(name => name.trim()).filter(name => name.length > 0)
+        if (names.length === 1) {
+          greeting = `Hi ${names[0]}`
+        } else if (names.length === 2) {
+          greeting = `Hi ${names[0]} and ${names[1]}`
+        } else if (names.length > 2) {
+          const allButLast = names.slice(0, -1).join(', ')
+          greeting = `Hi ${allButLast}, and ${names[names.length - 1]}`
+        }
+      }
+      
       const yourRefText = customerRef ? `, your ref ${customerRef}` : ""
-      const body = `Hi ${jobContactName},
+      const body = `${greeting},
 
 Please find enclosed Proof Of Delivery attached for this shipment${yourRefText}.
 
