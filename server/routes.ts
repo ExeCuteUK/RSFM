@@ -1381,60 +1381,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update booking confirmed status indicator
-  app.patch("/api/export-shipments/:id/booking-confirmed-status", async (req, res) => {
+  // Update book job with haulier status indicator
+  app.patch("/api/export-shipments/:id/book-job-with-haulier-status", async (req, res) => {
     try {
       const { status } = req.body;
-      if (![1, 2, 3, 4].includes(status)) {
-        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      if (![1, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        bookingConfirmedStatusIndicator: status 
+        bookJobWithHaulierStatusIndicator: status 
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
       }
       res.json(shipment);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update booking confirmed status" });
+      res.status(500).json({ error: "Failed to update book job with haulier status" });
     }
   });
 
-  // Update transport arranged status indicator
-  app.patch("/api/export-shipments/:id/transport-arranged-status", async (req, res) => {
+  // Update advise clearance to agent status indicator
+  app.patch("/api/export-shipments/:id/advise-clearance-to-agent-status", async (req, res) => {
     try {
       const { status } = req.body;
-      if (![1, 2, 3, 4].includes(status)) {
-        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      if (![1, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        transportArrangedStatusIndicator: status 
+        adviseClearanceToAgentStatusIndicator: status 
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
       }
+      
+      // If linked to custom clearance, update the custom clearance status as well
+      if (shipment.linkedClearanceId) {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+          adviseAgentStatusIndicator: status
+        });
+      }
+      
       res.json(shipment);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update transport arranged status" });
+      res.status(500).json({ error: "Failed to update advise clearance to agent status" });
     }
   });
 
-  // Update customs submitted status indicator
-  app.patch("/api/export-shipments/:id/customs-submitted-status", async (req, res) => {
+  // Update send haulier EAD status indicator
+  app.patch("/api/export-shipments/:id/send-haulier-ead-status", async (req, res) => {
     try {
       const { status } = req.body;
-      if (![1, 2, 3, 4].includes(status)) {
-        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      if (![1, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        customsSubmittedStatusIndicator: status 
+        sendHaulierEadStatusIndicator: status 
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
       }
       res.json(shipment);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update customs submitted status" });
+      res.status(500).json({ error: "Failed to update send haulier EAD status" });
     }
   });
 
@@ -1442,8 +1450,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/export-shipments/:id/invoice-customer-status", async (req, res) => {
     try {
       const { status } = req.body;
-      if (![1, 2, 3, 4].includes(status)) {
-        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      if (![1, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
         invoiceCustomerStatusIndicator: status 
@@ -1457,22 +1465,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update send docs to customer status indicator
-  app.patch("/api/export-shipments/:id/send-docs-status", async (req, res) => {
+  // Update send POD to customer status indicator
+  app.patch("/api/export-shipments/:id/send-pod-to-customer-status", async (req, res) => {
     try {
       const { status } = req.body;
-      if (![1, 2, 3, 4].includes(status)) {
-        return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
+      if (![1, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        sendDocsToCustomerStatusIndicator: status 
+        sendPodToCustomerStatusIndicator: status 
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
       }
       res.json(shipment);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update send docs to customer status" });
+      res.status(500).json({ error: "Failed to update send POD to customer status" });
     }
   });
 
