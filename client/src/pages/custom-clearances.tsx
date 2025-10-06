@@ -309,29 +309,32 @@ export default function CustomClearances() {
         ? haulierContactField.split('/').map(c => c.trim()).filter(Boolean)
         : []
 
-    // Build "Dear" line with proper grammar
-    let dearLine = "Dear Sir/Madam"
+    // Build "Hi" greeting line with proper grammar
+    let greeting = "Hi there"
     if (haulierContacts.length === 1) {
-      dearLine = `Dear ${haulierContacts[0]}`
+      greeting = `Hi ${haulierContacts[0]}`
     } else if (haulierContacts.length === 2) {
-      dearLine = `Dear ${haulierContacts[0]} & ${haulierContacts[1]}`
+      greeting = `Hi ${haulierContacts[0]} and ${haulierContacts[1]}`
     } else if (haulierContacts.length > 2) {
       const lastContact = haulierContacts[haulierContacts.length - 1]
       const otherContacts = haulierContacts.slice(0, -1).join(', ')
-      dearLine = `Dear ${otherContacts} & ${lastContact}`
+      greeting = `Hi ${otherContacts}, and ${lastContact}`
     }
 
-    // Build subject with conditional Trailer Number and Haulier Reference
-    let subjectParts = [`Job Ref: ${clearance.jobRef}`]
+    // Build subject: "Export Job Update - EAD File / Our Ref: {jobRef} / Trailer Number: {trailerNumber} / Your Ref: {haulierRef}"
+    let subject = `Export Job Update - EAD File / Our Ref: ${clearance.jobRef}`
+    
+    // Add trailer number if available
     if (linkedExportShipment?.trailerNumber) {
-      subjectParts.push(`Trailer Number: ${linkedExportShipment.trailerNumber}`)
+      subject += ` / Trailer Number: ${linkedExportShipment.trailerNumber}`
     }
+    
+    // Add haulier reference if available
     if (linkedExportShipment?.haulierReference) {
-      subjectParts.push(`Haulier Reference: ${linkedExportShipment.haulierReference}`)
+      subject += ` / Your Ref: ${linkedExportShipment.haulierReference}`
     }
-    const subject = subjectParts.join(' - ')
 
-    const body = `${dearLine},\n\nPlease find attached Export Entry for the above.\n\nKind Regards`
+    const body = `${greeting},\n\nPlease find attached Export Entry for this shipment.\n\nHope all is OK.`
 
     // Open email composer with Export Entry documents
     openEmailComposer({
