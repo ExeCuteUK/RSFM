@@ -38,6 +38,7 @@ export default function ExportShipments() {
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
+  const [selectedShipmentTypes, setSelectedShipmentTypes] = useState<string[]>(["Container Shipment", "Road Shipment", "Air Freight"])
   const [searchText, setSearchText] = useState("")
   const [notesShipmentId, setNotesShipmentId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState("")
@@ -102,9 +103,13 @@ export default function ExportShipments() {
     ? allShipments 
     : allShipments.filter(s => s.status && selectedStatuses.includes(s.status))
 
-  const filteredShipments = searchText.trim() === ""
+  const filteredByType = selectedShipmentTypes.length === 0
     ? filteredByStatus
-    : filteredByStatus.filter(s => {
+    : filteredByStatus.filter(s => s.containerShipment && selectedShipmentTypes.includes(s.containerShipment))
+
+  const filteredShipments = searchText.trim() === ""
+    ? filteredByType
+    : filteredByType.filter(s => {
         const searchLower = searchText.toLowerCase()
         const customerName = getCustomerName(s.destinationCustomerId).toLowerCase()
         const jobRef = s.jobRef.toString()
@@ -120,7 +125,7 @@ export default function ExportShipments() {
   // Reset to first page when filters or search changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchText, selectedStatuses])
+  }, [searchText, selectedStatuses, selectedShipmentTypes])
   
   // Pagination
   const totalPages = Math.ceil(filteredShipments.length / ITEMS_PER_PAGE)
@@ -715,6 +720,56 @@ Hope all is OK.`
             data-testid="filter-completed"
           >
             Completed
+          </Button>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={selectedShipmentTypes.includes("Container Shipment") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedShipmentTypes(prev => 
+                prev.includes("Container Shipment") 
+                  ? prev.filter(t => t !== "Container Shipment")
+                  : [...prev, "Container Shipment"]
+              )
+            }}
+            className={selectedShipmentTypes.includes("Container Shipment") ? "bg-orange-600 hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700" : "hover:bg-orange-50 dark:hover:bg-orange-950"}
+            data-testid="filter-containers"
+          >
+            <Container className="h-4 w-4 mr-1" />
+            Containers
+          </Button>
+          <Button
+            variant={selectedShipmentTypes.includes("Road Shipment") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedShipmentTypes(prev => 
+                prev.includes("Road Shipment") 
+                  ? prev.filter(t => t !== "Road Shipment")
+                  : [...prev, "Road Shipment"]
+              )
+            }}
+            className={selectedShipmentTypes.includes("Road Shipment") ? "bg-orange-600 hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700" : "hover:bg-orange-50 dark:hover:bg-orange-950"}
+            data-testid="filter-road"
+          >
+            <Truck className="h-4 w-4 mr-1" />
+            Road Transport
+          </Button>
+          <Button
+            variant={selectedShipmentTypes.includes("Air Freight") ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedShipmentTypes(prev => 
+                prev.includes("Air Freight") 
+                  ? prev.filter(t => t !== "Air Freight")
+                  : [...prev, "Air Freight"]
+              )
+            }}
+            className={selectedShipmentTypes.includes("Air Freight") ? "bg-orange-600 hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700" : "hover:bg-orange-50 dark:hover:bg-orange-950"}
+            data-testid="filter-air"
+          >
+            <Plane className="h-4 w-4 mr-1" />
+            Air Freight
           </Button>
         </div>
       </div>
