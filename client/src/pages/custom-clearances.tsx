@@ -26,13 +26,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
-import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup } from "@shared/schema"
+import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup, ClearanceAgent } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
+import { useEmail } from "@/contexts/EmailContext"
 
 export default function CustomClearances() {
   const { openWindow } = useWindowManager()
+  const { openEmailComposer } = useEmail()
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
+  const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; clearanceId: string } | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue"])
   const [searchText, setSearchText] = useState("")
   const [notesClearanceId, setNotesClearanceId] = useState<string | null>(null)
@@ -67,6 +70,10 @@ export default function CustomClearances() {
 
   const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
     queryKey: ["/api/export-receivers"],
+  })
+
+  const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
+    queryKey: ["/api/clearance-agents"],
   })
 
   // Fetch shared documents for all clearances
@@ -449,6 +456,86 @@ export default function CustomClearances() {
     }
   }
 
+  const handleClearanceAgentSelected = (agent: ClearanceAgent) => {
+    try {
+      if (!clearanceAgentDialog) return
+      
+      const clearance = clearances.find(c => c.id === clearanceAgentDialog.clearanceId)
+      if (!clearance) return
+      
+      // Get customer based on job type
+      let customerName = "N/A"
+      let vatPaymentMethod = "N/A"
+      
+      if (clearance.jobType === "import") {
+        const customer = importCustomers.find(c => c.id === clearance.importCustomerId)
+        customerName = customer?.companyName || "N/A"
+        vatPaymentMethod = customer?.vatPaymentMethod || "N/A"
+      } else {
+        const customer = exportCustomers.find(c => c.id === clearance.exportCustomerId)
+        customerName = customer?.companyName || "N/A"
+      }
+      
+      // Build email subject
+      const truckContainerFlight = clearance.trailerOrContainerNumber || "TBA"
+      const eta = formatDate(clearance.etaPort) || "TBA"
+      const subject = `${clearance.jobType === "import" ? "Import" : "Export"} Clearance / ${customerName} / Our Ref : ${clearance.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      
+      // Build email body
+      let body = `Hi Team,\n\nPlease could you arrange clearance on the below shipment. Our Ref : ${clearance.jobRef}\n\n`
+      body += `Consignment will arrive on ${clearance.containerShipment === "Road Shipment" ? "Trailer" : clearance.containerShipment === "Air Freight" ? "Flight" : "Container"} : ${clearance.trailerOrContainerNumber || "TBA"} Into ${clearance.portOfArrival || "TBA"} on ${formatDate(clearance.etaPort) || "TBA"}.\n\n`
+      body += `${customerName}\n`
+      body += `${clearance.numberOfPieces || ""} ${clearance.packaging || ""}.\n`
+      body += `${clearance.goodsDescription || ""}\n`
+      body += `${clearance.weight || ""}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
+      
+      if (clearance.transportCosts) {
+        body += `Transport Costs : ${clearance.transportCosts}\n`
+      }
+      
+      // Add VAT info for import clearances
+      if (clearance.jobType === "import") {
+        const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
+        body += `\nVAT Payment Method : ${displayVatMethod}\n`
+        
+        if (clearance.vatZeroRated) {
+          body += `VAT Zero Rated\n`
+        }
+      }
+      
+      body += `Clearance Type : ${clearance.clearanceType || "N/A"}\n`
+      
+      // Get agent's email based on job type
+      const agentEmail = clearance.jobType === "import" 
+        ? (agent.agentImportEmail && agent.agentImportEmail.length > 0 ? agent.agentImportEmail[0] : "")
+        : (agent.agentExportEmail && agent.agentExportEmail.length > 0 ? agent.agentExportEmail[0] : "")
+      
+      // Get transport documents
+      const transportDocs = parseAttachments(clearance.transportDocuments || null).map(normalizeFilePath).filter(Boolean)
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: agentEmail || "",
+        cc: "",
+        bcc: "",
+        subject: subject || `${clearance.jobType === "import" ? "Import" : "Export"} Clearance`,
+        body: body || "",
+        attachments: transportDocs || [],
+      })
+      
+      setClearanceAgentDialog(null)
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+      setClearanceAgentDialog(null)
+    }
+  }
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return ""
     try {
@@ -795,7 +882,13 @@ export default function CustomClearances() {
                       <div className="space-y-1">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
-                            <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                            <button
+                              onClick={() => setClearanceAgentDialog({ show: true, clearanceId: clearance.id })}
+                              className="hover-elevate rounded p-0.5"
+                              data-testid={`button-advise-clearance-icon-${clearance.id}`}
+                            >
+                              <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                            </button>
                             <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium`} data-testid={`todo-advise-agent-${clearance.id}`}>
                               Advise Clearance To Agent
                             </p>
@@ -1129,6 +1222,45 @@ export default function CustomClearances() {
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
             {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Clearance Agent Selection Dialog */}
+      <Dialog open={clearanceAgentDialog?.show || false} onOpenChange={(open) => !open && setClearanceAgentDialog(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Select Clearance Agent</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {clearanceAgents.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No clearance agents available</p>
+            ) : (
+              clearanceAgents.map((agent) => (
+                <Card 
+                  key={agent.id} 
+                  className="cursor-pointer hover-elevate transition-all"
+                  onClick={() => handleClearanceAgentSelected(agent)}
+                  data-testid={`clearance-agent-${agent.id}`}
+                >
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg">{agent.agentName}</h3>
+                    {clearanceAgentDialog && (() => {
+                      const clearance = clearances.find(c => c.id === clearanceAgentDialog.clearanceId)
+                      const emailField = clearance?.jobType === "import" ? agent.agentImportEmail : agent.agentExportEmail
+                      return emailField && emailField.length > 0 && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {emailField[0]}
+                        </p>
+                      )
+                    })()}
+                    {agent.agentTelephone && (
+                      <p className="text-sm text-muted-foreground">{agent.agentTelephone}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </DialogContent>
       </Dialog>
