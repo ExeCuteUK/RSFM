@@ -480,6 +480,7 @@ export const exportShipments = pgTable("export_shipments", {
   
   // Additional Details
   deliveryAddress: text("delivery_address"),
+  clearanceType: text("clearance_type"),
   
   // Collection Information
   collectionAddress: text("collection_address"),
@@ -538,6 +539,24 @@ export const insertExportShipmentSchema = createInsertSchema(exportShipments).om
   exportClearanceAgent: z.string().min(1, "Export Clearance Agent is required"),
   arrivalClearanceAgent: z.string().min(1, "Arrival Clearance Agent is required"),
   haulierReference: z.string().nullable().optional(),
+}).superRefine((data, ctx) => {
+  // Check conditional requirements when Export Clearance Agent is R.S
+  if (data.exportClearanceAgent === "R.S") {
+    if (!data.clearanceType || data.clearanceType.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Clearance Type is required when Export Clearance Agent is R.S",
+        path: ["clearanceType"],
+      });
+    }
+    if (data.additionalCommodityCodes === undefined || data.additionalCommodityCodes === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Total Commodity Codes is required when Export Clearance Agent is R.S",
+        path: ["additionalCommodityCodes"],
+      });
+    }
+  }
 });
 
 export type InsertExportShipment = z.infer<typeof insertExportShipmentSchema>;
