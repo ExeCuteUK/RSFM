@@ -1963,6 +1963,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Purchase Invoices (Expense Invoices) ==========
+
+  // Get all purchase invoices
+  app.get("/api/purchase-invoices", async (_req, res) => {
+    try {
+      const invoices = await storage.getAllPurchaseInvoices();
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch purchase invoices" });
+    }
+  });
+
+  // Get purchase invoices by job reference
+  app.get("/api/purchase-invoices/job/:jobRef", async (req, res) => {
+    try {
+      const jobRef = parseInt(req.params.jobRef);
+      if (isNaN(jobRef)) {
+        return res.status(400).json({ error: "Invalid job reference" });
+      }
+      
+      const invoices = await storage.getPurchaseInvoicesByJobRef(jobRef);
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch purchase invoices" });
+    }
+  });
+
+  // Get single purchase invoice
+  app.get("/api/purchase-invoices/:id", async (req, res) => {
+    try {
+      const invoice = await storage.getPurchaseInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ error: "Purchase invoice not found" });
+      }
+      res.json(invoice);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch purchase invoice" });
+    }
+  });
+
+  // Create single purchase invoice
+  app.post("/api/purchase-invoices", async (req, res) => {
+    try {
+      const invoice = await storage.createPurchaseInvoice(req.body);
+      res.status(201).json(invoice);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create purchase invoice" });
+    }
+  });
+
+  // Create multiple purchase invoices
+  app.post("/api/purchase-invoices/batch", async (req, res) => {
+    try {
+      const { invoices } = req.body;
+      if (!Array.isArray(invoices) || invoices.length === 0) {
+        return res.status(400).json({ error: "Invoices must be a non-empty array" });
+      }
+      
+      const createdInvoices = await storage.createManyPurchaseInvoices(invoices);
+      res.status(201).json(createdInvoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create purchase invoices" });
+    }
+  });
+
+  // Update purchase invoice
+  app.patch("/api/purchase-invoices/:id", async (req, res) => {
+    try {
+      const invoice = await storage.updatePurchaseInvoice(req.params.id, req.body);
+      if (!invoice) {
+        return res.status(404).json({ error: "Purchase invoice not found" });
+      }
+      res.json(invoice);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update purchase invoice" });
+    }
+  });
+
+  // Delete purchase invoice
+  app.delete("/api/purchase-invoices/:id", async (req, res) => {
+    try {
+      const success = await storage.deletePurchaseInvoice(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Purchase invoice not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete purchase invoice" });
+    }
+  });
+
   // ========== Static Assets ==========
   
   // Serve company logo for email signatures
