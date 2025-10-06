@@ -33,7 +33,7 @@ export function DraggableEmailComposer() {
     recentEmails,
     addToRecentEmails 
   } = useEmail();
-  const { minimizeWindow } = useWindowManager();
+  const { minimizeWindow, activeWindow } = useWindowManager();
   
   const { data: contactEmails = [] } = useQuery<{ email: string; name: string; type: string }[]>({
     queryKey: ['/api/contacts/emails'],
@@ -62,7 +62,6 @@ export function DraggableEmailComposer() {
   // Send email mutation - MUST be called before conditional return
   const sendEmailMutation = useMutation({
     mutationFn: async (emailData: any) => {
-      console.log('[SEND] emailData:', JSON.stringify(emailData, null, 2));
       const { isMinimized: _, attachments, metadata, ...restData } = emailData;
       const sendData = {
         ...restData,
@@ -72,16 +71,8 @@ export function DraggableEmailComposer() {
     },
     onSuccess: async () => {
       if (!emailComposerData) return;
-      console.log('[SUCCESS] emailComposerData:', JSON.stringify(emailComposerData, null, 2));
       
-      // Debug toast to show metadata state
-      if (!emailComposerData.metadata) {
-        toast({ title: "Email sent (no metadata found)", variant: "destructive" });
-      } else if (!emailComposerData.metadata.source || !emailComposerData.metadata.shipmentId) {
-        toast({ title: `Email sent (partial metadata: ${JSON.stringify(emailComposerData.metadata)})`, variant: "destructive" });
-      } else {
-        toast({ title: `Email sent with metadata: ${emailComposerData.metadata.source}` });
-      }
+      toast({ title: "Email sent successfully" });
       
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
@@ -125,12 +116,17 @@ export function DraggableEmailComposer() {
   
   const data = emailComposerData;
 
-  // Helper function to update email data
+  // Helper function to update email data - PRESERVES metadata from window payload
   const handleDataChange = (updatedData: typeof data) => {
-    console.log('[handleDataChange] updatedData:', JSON.stringify(updatedData, null, 2));
     const { isMinimized: _, ...draftData } = updatedData;
-    console.log('[handleDataChange] draftData (after removing isMinimized):', JSON.stringify(draftData, null, 2));
-    updateEmailDraft(data.id, draftData);
+    
+    // CRITICAL: Preserve metadata from the active window's payload if it exists
+    const existingMetadata = activeWindow?.payload?.metadata;
+    const finalDraftData = existingMetadata 
+      ? { ...draftData, metadata: existingMetadata }
+      : draftData;
+    
+    updateEmailDraft(data.id, finalDraftData);
   };
 
   useEffect(() => {
@@ -257,7 +253,12 @@ export function DraggableEmailComposer() {
 
   const handleMinimize = () => {
     const { isMinimized: _, ...draftData } = data;
-    updateEmailDraft(data.id, draftData);
+    // CRITICAL: Preserve metadata from the active window's payload if it exists
+    const existingMetadata = activeWindow?.payload?.metadata;
+    const finalDraftData = existingMetadata 
+      ? { ...draftData, metadata: existingMetadata }
+      : draftData;
+    updateEmailDraft(data.id, finalDraftData);
     minimizeWindow(data.id);
   };
 

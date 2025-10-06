@@ -223,27 +223,12 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
   }
 
   const updateWindowPayload = (id: string, payload: any) => {
-    console.log('[updateWindowPayload] id:', id, 'incoming payload:', JSON.stringify(payload, null, 2));
-    setWindows(prev => {
-      const updated = prev.map(w => {
-        if (w.id === id) {
-          const merged = { ...w, payload: { ...w.payload, ...payload } };
-          console.log('[updateWindowPayload] Merged payload for window:', JSON.stringify(merged.payload, null, 2));
-          return merged;
-        }
-        return w;
-      });
-      return updated;
-    });
+    setWindows(prev =>
+      prev.map(w => w.id === id ? { ...w, payload: { ...w.payload, ...payload } } : w)
+    )
 
     if (activeWindow?.id === id) {
-      console.log('[updateWindowPayload] Updating activeWindow, old payload:', JSON.stringify(activeWindow.payload, null, 2));
-      setActiveWindowState(prev => {
-        if (!prev) return null;
-        const merged = { ...prev, payload: { ...prev.payload, ...payload } };
-        console.log('[updateWindowPayload] activeWindow new payload:', JSON.stringify(merged.payload, null, 2));
-        return merged;
-      });
+      setActiveWindowState(prev => prev ? { ...prev, payload: { ...prev.payload, ...payload } } : null)
     }
   }
 
