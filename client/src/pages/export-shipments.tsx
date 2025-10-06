@@ -1422,10 +1422,16 @@ Hope all is OK.`
                       <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">Charges Out</h3>
                     </div>
                     <div className="space-y-3">
-                      {viewingShipment.freightChargeOut && (
+                      {viewingShipment.freightRateOut && (
                         <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-xs text-muted-foreground mb-1">Freight Charge</p>
-                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currencyOut || "GBP")}{viewingShipment.freightChargeOut}</p>
+                          <p className="text-xs text-muted-foreground mb-1">Freight Rate Out</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.freightRateOut}</p>
+                        </div>
+                      )}
+                      {viewingShipment.clearanceCharge && (
+                        <div className="bg-white dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge</p>
+                          <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{viewingShipment.clearanceCharge}</p>
                         </div>
                       )}
                       {viewingShipment.expensesToChargeOut && viewingShipment.expensesToChargeOut.length > 0 && (
@@ -1435,7 +1441,7 @@ Hope all is OK.`
                             {viewingShipment.expensesToChargeOut.map((expense: { description: string; amount: string }, idx: number) => (
                               <div key={idx} className="flex justify-between items-center">
                                 <span className="text-sm text-blue-900 dark:text-blue-100">{expense.description}</span>
-                                <span className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currencyOut || "GBP")}{expense.amount}</span>
+                                <span className="font-semibold text-sm text-blue-900 dark:text-blue-100 text-right">{formatCurrency(viewingShipment.currency || "GBP")}{expense.amount}</span>
                               </div>
                             ))}
                           </div>
@@ -1452,10 +1458,16 @@ Hope all is OK.`
                       <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100">Expenses In</h3>
                     </div>
                     <div className="space-y-3">
-                      {viewingShipment.freightChargeIn && (
+                      {viewingShipment.haulierFreightRateIn && (
                         <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                          <p className="text-xs text-muted-foreground mb-1">Freight Charge</p>
-                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.freightChargeIn}</p>
+                          <p className="text-xs text-muted-foreground mb-1">Haulier Freight Rate In</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.haulierFreightRateIn}</p>
+                        </div>
+                      )}
+                      {viewingShipment.exportClearanceChargeIn && (
+                        <div className="bg-white dark:bg-orange-950/30 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <p className="text-xs text-muted-foreground mb-1">Export Clearance Charge In</p>
+                          <p className="font-semibold text-sm text-orange-900 dark:text-orange-100 text-right">{formatCurrency(viewingShipment.currencyIn || "GBP")}{viewingShipment.exportClearanceChargeIn}</p>
                         </div>
                       )}
                       {viewingShipment.additionalExpensesIn && viewingShipment.additionalExpensesIn.length > 0 && (
