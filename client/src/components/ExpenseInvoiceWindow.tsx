@@ -101,15 +101,12 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
     const importShipment = importShipments.find(s => s.jobRef === jobRefNum)
     if (importShipment) {
       const customer = importCustomers.find(c => c.id === importShipment.importCustomerId)
-      const customerName = customer?.contactName 
-        ? (Array.isArray(customer.contactName) ? customer.contactName[0] : customer.contactName)
-        : 'Unknown Customer'
       return {
         exists: true,
         type: 'Import',
         identifier: importShipment.trailerOrContainerNumber || 'N/A',
         bookingDate: importShipment.bookingDate || 'N/A',
-        customerName
+        customerName: customer?.companyName || 'Unknown Customer'
       }
     }
 
@@ -132,9 +129,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
       let customerName = 'Unknown Customer'
       if (clearance.importCustomerId) {
         const customer = importCustomers.find(c => c.id === clearance.importCustomerId)
-        customerName = customer?.contactName 
-          ? (Array.isArray(customer.contactName) ? customer.contactName[0] : customer.contactName)
-          : 'Unknown Customer'
+        customerName = customer?.companyName || 'Unknown Customer'
       } else if (clearance.exportCustomerId) {
         const customer = exportCustomers.find(c => c.id === clearance.exportCustomerId)
         customerName = customer?.companyName || 'Unknown Customer'
@@ -286,6 +281,49 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
 
   const handleCancel = () => {
     closeWindow(windowId)
+  }
+
+  // Check if form is valid (all fields filled and all job refs valid)
+  const isFormValid = () => {
+    // Check if at least one invoice has all fields filled
+    const hasCompleteInvoice = invoices.some(inv => 
+      inv.jobRef.trim() &&
+      inv.companyName.trim() && 
+      inv.invoiceNumber.trim() && 
+      inv.invoiceDate && 
+      inv.invoiceAmount.trim()
+    )
+    
+    if (!hasCompleteInvoice) {
+      return false
+    }
+
+    // Check if any filled invoice has invalid job reference
+    for (const invoice of invoices) {
+      // Only validate if at least job ref is filled
+      if (invoice.jobRef.trim()) {
+        const jobInfo = jobInfoMap[invoice.id]
+        // If job info exists and shows invalid, or if job ref is long enough but no info yet
+        if (invoice.jobRef.length >= 5) {
+          if (!jobInfo || !jobInfo.exists) {
+            return false
+          }
+        }
+        
+        // If any field is partially filled, check if all required fields are filled
+        if (invoice.companyName.trim() || invoice.invoiceNumber.trim() || 
+            invoice.invoiceDate || invoice.invoiceAmount.trim()) {
+          // If any required field is empty, form is invalid
+          if (!invoice.jobRef.trim() || !invoice.companyName.trim() || 
+              !invoice.invoiceNumber.trim() || !invoice.invoiceDate || 
+              !invoice.invoiceAmount.trim()) {
+            return false
+          }
+        }
+      }
+    }
+    
+    return true
   }
 
   return (
@@ -457,7 +495,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || !isFormValid()}
             data-testid="button-submit"
           >
             {createMutation.isPending ? 'Saving...' : 'Save Invoices'}
