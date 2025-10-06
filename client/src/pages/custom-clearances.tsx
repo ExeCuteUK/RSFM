@@ -523,6 +523,9 @@ export default function CustomClearances() {
         body += `Clearance Type : ${clearance.clearanceType || "N/A"}\n`
       }
       
+      // Add closing signature
+      body += `\nKind Regards,`
+      
       // Get agent's email based on job type
       const agentEmail = clearance.jobType === "import" 
         ? (agent.agentImportEmail && agent.agentImportEmail.length > 0 ? agent.agentImportEmail[0] : "")
