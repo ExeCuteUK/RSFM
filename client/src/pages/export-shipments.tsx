@@ -691,7 +691,7 @@ export default function ExportShipments() {
                       {shipment.vesselName}
                     </p>
                   )}
-                  {shipment.haulierName && (
+                  {shipment.containerShipment !== "Air Freight" && shipment.haulierName && (
                     <p className="font-semibold text-lg" data-testid={`text-haulier-name-${shipment.id}`}>
                       {shipment.haulierName}
                     </p>
