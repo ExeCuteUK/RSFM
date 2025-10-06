@@ -73,7 +73,16 @@ export function DraggableEmailComposer() {
     onSuccess: async () => {
       if (!emailComposerData) return;
       console.log('[SUCCESS] emailComposerData:', JSON.stringify(emailComposerData, null, 2));
-      toast({ title: "Email sent successfully" });
+      
+      // Debug toast to show metadata state
+      if (!emailComposerData.metadata) {
+        toast({ title: "Email sent (no metadata found)", variant: "destructive" });
+      } else if (!emailComposerData.metadata.source || !emailComposerData.metadata.shipmentId) {
+        toast({ title: `Email sent (partial metadata: ${JSON.stringify(emailComposerData.metadata)})`, variant: "destructive" });
+      } else {
+        toast({ title: `Email sent with metadata: ${emailComposerData.metadata.source}` });
+      }
+      
       if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
       
       // Auto-update status based on metadata
