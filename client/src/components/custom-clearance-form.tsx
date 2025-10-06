@@ -88,7 +88,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     resolver: zodResolver(customClearanceFormSchema),
     defaultValues: {
       jobType: "import",
-      status: "Awaiting Entry",
+      status: "Request CC",
       importCustomerId: "",
       exportCustomerId: "",
       receiverId: "",
