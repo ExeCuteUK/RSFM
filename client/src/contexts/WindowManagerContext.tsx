@@ -85,6 +85,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
     const storedWindows = localStorage.getItem(`windows_${user.id}`)
     if (storedWindows) {
       const parsed = JSON.parse(storedWindows)
+      console.log('[WindowManager] Loading windows from localStorage:', parsed);
       setWindows(parsed)
       const active = parsed.find((w: WindowData) => !w.isMinimized)
       setActiveWindowState(active || null)
