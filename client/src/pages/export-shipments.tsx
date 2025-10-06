@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
@@ -155,30 +155,33 @@ export default function ExportShipments() {
     },
   })
 
-  const updateBookingConfirmedStatus = useMutation({
+  const updateBookJobWithHaulierStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/export-shipments/${id}/booking-confirmed-status`, { status })
+      return apiRequest("PATCH", `/api/export-shipments/${id}/book-job-with-haulier-status`, { status })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
-  const updateTransportArrangedStatus = useMutation({
+  const updateAdviseClearanceToAgentStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/export-shipments/${id}/transport-arranged-status`, { status })
+      return apiRequest("PATCH", `/api/export-shipments/${id}/advise-clearance-to-agent-status`, { status })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
-  const updateCustomsSubmittedStatus = useMutation({
+  const updateSendHaulierEadStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/export-shipments/${id}/customs-submitted-status`, { status })
+      return apiRequest("PATCH", `/api/export-shipments/${id}/send-haulier-ead-status`, { status })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
@@ -188,15 +191,17 @@ export default function ExportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
-  const updateSendDocsStatus = useMutation({
+  const updateSendPodToCustomerStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/export-shipments/${id}/send-docs-status`, { status })
+      return apiRequest("PATCH", `/api/export-shipments/${id}/send-pod-to-customer-status`, { status })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
@@ -409,64 +414,31 @@ export default function ExportShipments() {
     }
   }
 
-  const getBookingConfirmedStatusColor = (status: number | null) => {
+  const getStatusIndicatorColor = (status: number | null) => {
     if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
-    if (status === 2) return "text-orange-600 dark:text-orange-400"
     if (status === 3) return "text-green-600 dark:text-green-400"
     if (status === 4) return "text-red-600 dark:text-red-400"
     return "text-muted-foreground"
   }
 
-  const getTransportArrangedStatusColor = (status: number | null) => {
-    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
-    if (status === 2) return "text-orange-600 dark:text-orange-400"
-    if (status === 3) return "text-green-600 dark:text-green-400"
-    if (status === 4) return "text-red-600 dark:text-red-400"
-    return "text-muted-foreground"
+  const handleBookJobWithHaulierStatusUpdate = (id: string, status: number) => {
+    updateBookJobWithHaulierStatus.mutate({ id, status })
   }
 
-  const getCustomsSubmittedStatusColor = (status: number | null) => {
-    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
-    if (status === 2) return "text-orange-600 dark:text-orange-400"
-    if (status === 3) return "text-green-600 dark:text-green-400"
-    if (status === 4) return "text-red-600 dark:text-red-400"
-    return "text-muted-foreground"
+  const handleAdviseClearanceToAgentStatusUpdate = (id: string, status: number) => {
+    updateAdviseClearanceToAgentStatus.mutate({ id, status })
   }
 
-  const getInvoiceCustomerStatusColor = (status: number | null) => {
-    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
-    if (status === 2) return "text-orange-600 dark:text-orange-400"
-    if (status === 3) return "text-green-600 dark:text-green-400"
-    if (status === 4) return "text-red-600 dark:text-red-400"
-    return "text-muted-foreground"
-  }
-
-  const getSendDocsStatusColor = (status: number | null) => {
-    if (status === 1 || status === null) return "text-yellow-700 dark:text-yellow-400"
-    if (status === 2) return "text-orange-600 dark:text-orange-400"
-    if (status === 3) return "text-green-600 dark:text-green-400"
-    if (status === 4) return "text-red-600 dark:text-red-400"
-    return "text-muted-foreground"
-  }
-
-  const handleBookingConfirmedStatusUpdate = (id: string, status: number) => {
-    updateBookingConfirmedStatus.mutate({ id, status })
-  }
-
-  const handleTransportArrangedStatusUpdate = (id: string, status: number) => {
-    updateTransportArrangedStatus.mutate({ id, status })
-  }
-
-  const handleCustomsSubmittedStatusUpdate = (id: string, status: number) => {
-    updateCustomsSubmittedStatus.mutate({ id, status })
+  const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
+    updateSendHaulierEadStatus.mutate({ id, status })
   }
 
   const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
     updateInvoiceCustomerStatus.mutate({ id, status })
   }
 
-  const handleSendDocsStatusUpdate = (id: string, status: number) => {
-    updateSendDocsStatus.mutate({ id, status })
+  const handleSendPodToCustomerStatusUpdate = (id: string, status: number) => {
+    updateSendPodToCustomerStatus.mutate({ id, status })
   }
 
   const formatDate = (dateStr: string | null) => {
@@ -767,134 +739,108 @@ export default function ExportShipments() {
                     </h3>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                        <p className={`text-xs font-medium ${getBookingConfirmedStatusColor(shipment.bookingConfirmedStatusIndicator)}`} data-testid={`text-booking-confirmed-${shipment.id}`}>
-                          Confirm Booking
+                        <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.bookJobWithHaulierStatusIndicator)}`} data-testid={`text-book-haulier-${shipment.id}`}>
+                          Book Job with Haulier
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 1)}
+                          onClick={() => handleBookJobWithHaulierStatusUpdate(shipment.id, 1)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.bookingConfirmedStatusIndicator === 1 || shipment.bookingConfirmedStatusIndicator === null
+                            shipment.bookJobWithHaulierStatusIndicator === 1 || shipment.bookJobWithHaulierStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
-                          data-testid={`button-booking-status-yellow-${shipment.id}`}
+                          data-testid={`button-book-haulier-status-yellow-${shipment.id}`}
                           title="To Do"
                         />
                         <button
-                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 2)}
+                          onClick={() => handleBookJobWithHaulierStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.bookingConfirmedStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-booking-status-orange-${shipment.id}`}
-                          title="Waiting for Reply"
-                        />
-                        <button
-                          onClick={() => handleBookingConfirmedStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.bookingConfirmedStatusIndicator === 3
+                            shipment.bookJobWithHaulierStatusIndicator === 3
                               ? 'bg-green-400 border-green-500 scale-110'
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
-                          data-testid={`button-booking-status-green-${shipment.id}`}
+                          data-testid={`button-book-haulier-status-green-${shipment.id}`}
                           title="Completed"
                         />
                       </div>
                     </div>
                   </div>
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <PackageCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                        <p className={`text-xs font-medium ${getTransportArrangedStatusColor(shipment.transportArrangedStatusIndicator)}`} data-testid={`text-transport-arranged-${shipment.id}`}>
-                          Arrange Transport
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.transportArrangedStatusIndicator === 1 || shipment.transportArrangedStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                          }`}
-                          data-testid={`button-transport-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.transportArrangedStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-transport-status-orange-${shipment.id}`}
-                          title="Waiting for Reply"
-                        />
-                        <button
-                          onClick={() => handleTransportArrangedStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.transportArrangedStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
-                          }`}
-                          data-testid={`button-transport-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
+                  {shipment.exportClearanceAgent === "R.S" && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                          <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.adviseClearanceToAgentStatusIndicator)}`} data-testid={`text-advise-clearance-${shipment.id}`}>
+                            Advise Clearance to Agent
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleAdviseClearanceToAgentStatusUpdate(shipment.id, 1)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.adviseClearanceToAgentStatusIndicator === 1 || shipment.adviseClearanceToAgentStatusIndicator === null
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-advise-clearance-status-yellow-${shipment.id}`}
+                            title="To Do"
+                          />
+                          <button
+                            onClick={() => handleAdviseClearanceToAgentStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.adviseClearanceToAgentStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-advise-clearance-status-green-${shipment.id}`}
+                            title="Completed"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <FileCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                        <p className={`text-xs font-medium ${getCustomsSubmittedStatusColor(shipment.customsSubmittedStatusIndicator)}`} data-testid={`text-customs-submitted-${shipment.id}`}>
-                          Submit Customs
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.customsSubmittedStatusIndicator === 1 || shipment.customsSubmittedStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                          }`}
-                          data-testid={`button-customs-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.customsSubmittedStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-customs-status-orange-${shipment.id}`}
-                          title="Waiting for Reply"
-                        />
-                        <button
-                          onClick={() => handleCustomsSubmittedStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.customsSubmittedStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
-                          }`}
-                          data-testid={`button-customs-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
+                  )}
+                  {shipment.exportClearanceAgent === "R.S" && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <FileOutput className="h-3.5 w-3.5 text-muted-foreground" />
+                          <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendHaulierEadStatusIndicator)}`} data-testid={`text-send-ead-${shipment.id}`}>
+                            Send Haulier EAD
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 1)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendHaulierEadStatusIndicator === 1 || shipment.sendHaulierEadStatusIndicator === null
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-send-ead-status-yellow-${shipment.id}`}
+                            title="To Do"
+                          />
+                          <button
+                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendHaulierEadStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-send-ead-status-green-${shipment.id}`}
+                            title="Completed"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-                        <p className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
+                        <PoundSterling className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
                           Invoice Customer
                         </p>
                       </div>
@@ -908,16 +854,6 @@ export default function ExportShipments() {
                           }`}
                           data-testid={`button-invoice-status-yellow-${shipment.id}`}
                           title="To Do"
-                        />
-                        <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-invoice-status-orange-${shipment.id}`}
-                          title="Waiting for Reply"
                         />
                         <button
                           onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
@@ -935,40 +871,30 @@ export default function ExportShipments() {
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                        <p className={`text-xs font-medium ${getSendDocsStatusColor(shipment.sendDocsToCustomerStatusIndicator)}`} data-testid={`text-send-docs-${shipment.id}`}>
-                          Send Docs to Customer
+                        <FileArchive className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-${shipment.id}`}>
+                          Send POD To Customer
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 1)}
+                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 1)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendDocsToCustomerStatusIndicator === 1 || shipment.sendDocsToCustomerStatusIndicator === null
+                            shipment.sendPodToCustomerStatusIndicator === 1 || shipment.sendPodToCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover-elevate'
                           }`}
-                          data-testid={`button-send-docs-status-yellow-${shipment.id}`}
+                          data-testid={`button-send-pod-status-yellow-${shipment.id}`}
                           title="To Do"
                         />
                         <button
-                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 2)}
+                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendDocsToCustomerStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
-                          }`}
-                          data-testid={`button-send-docs-status-orange-${shipment.id}`}
-                          title="Waiting for Reply"
-                        />
-                        <button
-                          onClick={() => handleSendDocsStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendDocsToCustomerStatusIndicator === 3
+                            shipment.sendPodToCustomerStatusIndicator === 3
                               ? 'bg-green-400 border-green-500 scale-110'
                               : 'bg-green-200 border-green-300 hover-elevate'
                           }`}
-                          data-testid={`button-send-docs-status-green-${shipment.id}`}
+                          data-testid={`button-send-pod-status-green-${shipment.id}`}
                           title="Completed"
                         />
                       </div>
