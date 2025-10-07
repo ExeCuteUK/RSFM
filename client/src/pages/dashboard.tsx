@@ -934,7 +934,7 @@ export default function Dashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table ref={tableRef} className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
+                <table ref={tableRef} className={`w-full border-collapse text-sm ${editingCell ? 'table-fixed' : ''}`}>
                   <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b-2">
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Ref</th>
@@ -943,22 +943,22 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Supplier</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Country</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Destination</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>Date of Collection</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>Collection Date</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>Departure Date</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[8] ? { width: `${columnWidths[8]}px` } : undefined}>Truck Number</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>Port</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>Eta Uk Port</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>ETA Port</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Total Package</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Weight</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Details Sent to Ligentia</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Entry to Haulier</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[15] ? { width: `${columnWidths[15]}px` } : undefined}>Delivery Booked Date</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[16] ? { width: `${columnWidths[16]}px` } : undefined}>Price Out</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[17] ? { width: `${columnWidths[17]}px` } : undefined}>Pod Sent</th>
-                      <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[18] ? { width: `${columnWidths[18]}px` } : undefined}>Net Cost</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[16] ? { width: `${columnWidths[16]}px` } : undefined}>Net Cost</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[17] ? { width: `${columnWidths[17]}px` } : undefined}>Price Out</th>
+                      <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[18] ? { width: `${columnWidths[18]}px` } : undefined}>POD Sent</th>
                     </tr>
                   </thead>
-                  <tbody className="text-xs">
+                  <tbody className="text-sm">
                     {(() => {
                       // Find Nisbets PLC customer ID
                       const nisbetsCustomer = importCustomers.find(c => c.companyName === "Nisbets PLC")
@@ -1181,6 +1181,11 @@ export default function Dashboard() {
                               customCellColor={getNisbetsDeliveryBookedDateColor(shipment)}
                             />
                             
+                            {/* Net Cost - READ ONLY */}
+                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
+                              {netCost}
+                            </td>
+                            
                             {/* Price Out - READ ONLY */}
                             <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
                               {priceOut}
@@ -1194,11 +1199,6 @@ export default function Dashboard() {
                               statusIndicator={shipment.sendPodToCustomerStatusIndicator}
                               timestamp={shipment.sendPodToCustomerStatusIndicatorTimestamp}
                             />
-                            
-                            {/* Net Cost - READ ONLY */}
-                            <td className={`px-1 text-center align-top whitespace-pre-wrap w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
-                              {netCost}
-                            </td>
                           </tr>
                         )
                       })
