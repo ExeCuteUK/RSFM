@@ -285,7 +285,7 @@ export default function Dashboard() {
                               {shipment.customerReferenceNumber || ""}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
-                              {formatDate(shipment.deliveryDate)}
+                              {shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${shipment.deliveryTime}` : ''}` : ''}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
                               {shipment.deliveryRelease || ""}
@@ -294,10 +294,10 @@ export default function Dashboard() {
                               {shipment.deliveryAddress || ""}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
-                              {/* Rate In - blank for now */}
+                              {shipment.haulierFreightRateIn || ""}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
-                              {/* Rate Out - blank for now */}
+                              {shipment.freightRateOut || ""}
                             </td>
                             <td className="p-1 text-center bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
                               {shipment.additionalNotes || ""}
