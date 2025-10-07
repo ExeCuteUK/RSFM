@@ -37,7 +37,6 @@ export default function ExportShipments() {
   const { openEmailComposer } = useEmail()
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
-  const [clearanceHaulierDialog, setClearanceHaulierDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
   const [selectedShipmentTypes, setSelectedShipmentTypes] = useState<string[]>(["Container Shipment", "Road Shipment", "Air Freight"])
   const [searchText, setSearchText] = useState("")
@@ -642,68 +641,6 @@ Hope all is OK.`
     }
   }
 
-  const handleClearanceHaulierSelected = (haulier: Haulier) => {
-    try {
-      if (!clearanceHaulierDialog) return
-      
-      const shipment = allShipments.find(s => s.id === clearanceHaulierDialog.shipmentId)
-      if (!shipment) return
-      
-      // Get customer name
-      const customer = exportCustomers.find(c => c.id === shipment.destinationCustomerId)
-      const customerName = customer?.companyName || "N/A"
-      
-      // Build email subject (Export - no ETA field)
-      const truckContainerFlight = shipment.trailerNo || "TBA"
-      const subject = `Export Clearance / ${customerName} / Our Ref : ${shipment.jobRef} / ${truckContainerFlight}`
-      
-      // Get haulier contact name for personalized greeting
-      const haulierContactName = haulier.contacts?.[0]?.contactName || "Team"
-      
-      // Build email body with haulier contact name
-      let body = `Hi ${haulierContactName},\n\nPlease could you arrange an Export Clearance on the below shipment. Our Ref : ${shipment.jobRef}\n\n`
-      
-      body += `Consignment will depart on ${shipment.containerShipment === "Road Shipment" ? "Trailer" : shipment.containerShipment === "Air Freight" ? "Flight" : "Container"} : ${shipment.trailerNo || "TBA"} Into ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.bookingDate) || "TBA"}.\n\n`
-      
-      body += `Exporter : ${customerName}\n`
-      body += `${shipment.numberOfPieces || ""} ${shipment.packaging || ""}.\n`
-      body += `${shipment.goodsDescription || ""}\n`
-      
-      // Add weight with "kgs" suffix if weight exists
-      const weightText = shipment.weight ? `${shipment.weight} kgs` : ""
-      body += `${weightText}\n\n`
-      
-      body += `Kind Regards`
-      
-      // Get attachments (transport documents)
-      const attachments = shipment.attachments || []
-      
-      openEmailComposer({
-        id: `email-${Date.now()}`,
-        to: haulier.contacts?.[0]?.contactEmail || "",
-        cc: "",
-        bcc: "",
-        subject,
-        body,
-        attachments,
-        metadata: {
-          source: 'advise-clearance-agent-export',
-          shipmentId: shipment.id
-        }
-      })
-      
-      setClearanceHaulierDialog(null)
-    } catch (error) {
-      console.error('Error composing email:', error)
-      toast({
-        title: "Error composing email",
-        description: "Failed to prepare email. Please try again.",
-        variant: "destructive"
-      })
-      setClearanceHaulierDialog(null)
-    }
-  }
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -1074,44 +1011,6 @@ Hope all is OK.`
                         </div>
                       </div>
                     </div>
-                    <div className="mt-1">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => setClearanceHaulierDialog({ show: true, shipmentId: shipment.id })}
-                            className="hover-elevate rounded p-0 shrink-0"
-                            data-testid={`button-advise-clearance-haulier-icon-${shipment.id}`}
-                          >
-                            <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
-                          </button>
-                          <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.adviseClearanceToHaulierStatusIndicator)}`} data-testid={`text-advise-clearance-haulier-${shipment.id}`}>
-                            Advise Clearance to Haulier
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleAdviseClearanceToHaulierStatusUpdate(shipment.id, 1)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.adviseClearanceToHaulierStatusIndicator === 1 || shipment.adviseClearanceToHaulierStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                            }`}
-                            data-testid={`button-advise-clearance-haulier-status-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <button
-                            onClick={() => handleAdviseClearanceToHaulierStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.adviseClearanceToHaulierStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
-                            }`}
-                            data-testid={`button-advise-clearance-haulier-status-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
-                      </div>
-                    </div>
                   </div>
                   )}
                   <div className="mt-1">
@@ -1427,28 +1326,6 @@ Hope all is OK.`
                 data-testid={`button-agent-${agent.id}`}
               >
                 {agent.agentName}
-              </Button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!clearanceHaulierDialog} onOpenChange={(open) => !open && setClearanceHaulierDialog(null)}>
-        <DialogContent className="max-w-md" aria-describedby="clearance-haulier-description">
-          <DialogHeader>
-            <DialogTitle>Select Haulier</DialogTitle>
-            <p id="clearance-haulier-description" className="sr-only">Choose a haulier to send the clearance request</p>
-          </DialogHeader>
-          <div className="space-y-2">
-            {hauliers.map((haulier) => (
-              <Button
-                key={haulier.id}
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => handleClearanceHaulierSelected(haulier)}
-                data-testid={`button-haulier-${haulier.id}`}
-              >
-                {haulier.haulierName}
               </Button>
             ))}
           </div>
