@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Search, Calendar, Plus, Eye, EyeOff } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { InvoiceEditDialog } from "@/components/InvoiceEditDialog"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice } from "@shared/schema"
 
 interface JobJournalEntry {
@@ -634,28 +633,23 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-amount-${entry.jobRef}`}>
-                            {(() => {
-                              const invoices = getInvoicesForJob(entry.jobRef)
-                              if (invoices.length === 0) return null
-                              return (
-                                <div className="text-xs space-y-0.5">
-                                  {invoices.map((inv) => (
-                                    <div key={inv.id}>£{Number(inv.invoiceAmount).toFixed(2)}</div>
-                                  ))}
-                                </div>
-                              )
-                            })()}
-                          </td>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Total: £{getInvoicesForJob(entry.jobRef).reduce((sum, inv) => sum + Number(inv.invoiceAmount), 0).toFixed(2)}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <td 
+                      className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" 
+                      data-testid={`text-purchase-amount-${entry.jobRef}`}
+                      title={`Total: £${getInvoicesForJob(entry.jobRef).reduce((sum, inv) => sum + Number(inv.invoiceAmount), 0).toFixed(2)}`}
+                    >
+                      {(() => {
+                        const invoices = getInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>£{Number(inv.invoiceAmount).toFixed(2)}</div>
+                            ))}
+                          </div>
+                        )
+                      })()}
+                    </td>
                     {showReserveColumns && (
                       <td className="p-1 text-center bg-red-50 dark:bg-red-950 border-l-4 border-r-4 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
                         {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
@@ -670,18 +664,13 @@ export default function JobJournals() {
                     <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
                       {entry.salesInvoiceDate || ""}
                     </td>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
-                            {entry.salesInvoiceAmount || ""}
-                          </td>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Total: {entry.salesInvoiceAmount || "£0.00"}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <td 
+                      className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" 
+                      data-testid={`text-sales-amount-${entry.jobRef}`}
+                      title={`Total: ${entry.salesInvoiceAmount || "£0.00"}`}
+                    >
+                      {entry.salesInvoiceAmount || ""}
+                    </td>
                     {showReserveColumns && (
                       <td className="p-1 text-center bg-green-50 dark:bg-green-950 border-l-4 border-r-4 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
                         {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
