@@ -1679,8 +1679,8 @@ export class DatabaseStorage implements IStorage {
       .where(eq(exportShipments.id, id))
       .returning();
     
-    // If exportClearanceAgent is being changed TO "R.S" and there's no linked clearance, create one
-    if (updated.exportClearanceAgent === "R.S" && !updated.linkedClearanceId) {
+    // If exportClearanceAgent is being changed TO "R.S" (from something else) and there's no linked clearance, create one
+    if (updates.exportClearanceAgent === "R.S" && existing.exportClearanceAgent !== "R.S" && !updated.linkedClearanceId) {
       const [clearance] = await db.insert(customClearances).values({
         jobRef: updated.jobRef,
         jobType: "export",
