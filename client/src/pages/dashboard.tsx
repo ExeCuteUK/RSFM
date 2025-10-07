@@ -265,7 +265,7 @@ export default function Dashboard() {
 
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
                                 className="text-primary hover:underline font-semibold"
@@ -274,43 +274,43 @@ export default function Dashboard() {
                                 {shipment.jobRef}
                               </button>
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
                               {getCustomerName(shipment.importCustomerId)}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-container-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-container-${shipment.jobRef}`}>
                               {shipment.trailerOrContainerNumber || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-shipline-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-shipline-${shipment.jobRef}`}>
                               {shipment.shippingLine || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-poa-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-poa-${shipment.jobRef}`}>
                               {shipment.portOfArrival || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-vessel-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-vessel-${shipment.jobRef}`}>
                               {shipment.vesselName || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-eta-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-eta-${shipment.jobRef}`}>
                               {formatDate(shipment.importDateEtaPort)}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               {shipment.customerReferenceNumber || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border whitespace-nowrap ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border whitespace-nowrap ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
                               {shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : ''}
                             </td>
-                            <td className={`p-1 text-center border-r border-border font-bold ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border font-bold ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
                               {shipment.deliveryRelease || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${addressColor}`} data-testid={`cell-address-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${addressColor}`} data-testid={`cell-address-${shipment.jobRef}`}>
                               {shipment.deliveryAddress || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
                               {shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
+                            <td className={`py-2 px-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
                               {shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}
                             </td>
-                            <td className="p-1 text-center bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
+                            <td className="py-2 px-1 text-center bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
                               {shipment.additionalNotes || ""}
                             </td>
                           </tr>
