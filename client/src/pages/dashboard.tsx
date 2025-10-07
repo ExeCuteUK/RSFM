@@ -544,11 +544,17 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.weight)}`} data-testid={`cell-weight-${shipment.jobRef}`}>
                               {shipment.weight || ""}
                             </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${shipment.clearanceStatusIndicatorTimestamp ? 'bg-green-100 dark:bg-green-900' : ''}`} data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
-                              {formatTimestampDDMMYY(shipment.clearanceStatusIndicatorTimestamp)}
+                            <td className={`px-1 text-center border-r border-border align-middle ${
+                              shipment.clearanceStatusIndicator === 2 ? 'bg-yellow-100 dark:bg-yellow-900' :
+                              shipment.clearanceStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : ''
+                            }`} data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
+                              {shipment.clearanceStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.clearanceStatusIndicatorTimestamp) : ''}
                             </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${shipment.sendHaulierEadStatusIndicatorTimestamp ? 'bg-green-100 dark:bg-green-900' : ''}`} data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
-                              {formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp)}
+                            <td className={`px-1 text-center border-r border-border align-middle ${
+                              shipment.sendHaulierEadStatusIndicator === 2 ? 'bg-yellow-100 dark:bg-yellow-900' :
+                              shipment.sendHaulierEadStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : ''
+                            }`} data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
+                              {shipment.sendHaulierEadStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ''}
                             </td>
                             <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsDeliveryBookedDateColor(shipment)}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
                               {formatDate(shipment.deliveryDate)}
@@ -556,8 +562,11 @@ export default function Dashboard() {
                             <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
                               {priceOut}
                             </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${shipment.sendPodToCustomerStatusIndicatorTimestamp ? 'bg-green-100 dark:bg-green-900' : ''}`} data-testid={`cell-pod-sent-${shipment.jobRef}`}>
-                              {formatTimestampDDMMYY(shipment.sendPodToCustomerStatusIndicatorTimestamp)}
+                            <td className={`px-1 text-center border-r border-border align-middle ${
+                              shipment.sendPodToCustomerStatusIndicator === 2 ? 'bg-yellow-100 dark:bg-yellow-900' :
+                              shipment.sendPodToCustomerStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : ''
+                            }`} data-testid={`cell-pod-sent-${shipment.jobRef}`}>
+                              {shipment.sendPodToCustomerStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendPodToCustomerStatusIndicatorTimestamp) : ''}
                             </td>
                             <td className={`px-1 text-center align-top whitespace-pre-wrap w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
                               {netCost}
