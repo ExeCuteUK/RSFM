@@ -334,6 +334,13 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
     }
   }, [handoverContainerAtPort, form])
 
+  useEffect(() => {
+    if (!rsToClear) {
+      form.setValue("exportCustomsClearanceCharge", "")
+      form.setValue("destinationClearanceCostIn", "")
+    }
+  }, [rsToClear, form])
+
   const hasUnsavedFields = () => {
     return newHaulierContactName.trim() !== "" || newHaulierEmail.trim() !== ""
   }

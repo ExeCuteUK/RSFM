@@ -451,9 +451,9 @@ export default function Dashboard() {
                         return lines.join('\n')
                       }
 
-                      // Helper to get cell color (green if populated)
+                      // Helper to get cell color (green if populated, yellow if empty)
                       const getCellColor = (value: string | null | undefined): string => {
-                        return value ? "bg-green-100 dark:bg-green-900" : ""
+                        return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-100 dark:bg-yellow-900"
                       }
 
                       if (nisbetsShipments.length === 0) {
