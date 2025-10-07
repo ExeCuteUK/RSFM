@@ -417,15 +417,18 @@ export default function Dashboard() {
 
     useEffect(() => {
       if (isEditing && !hasSelectedRef.current) {
-        if (type === "textarea" && textareaRef.current) {
-          textareaRef.current.focus()
-          textareaRef.current.select()
+        // Use setTimeout to ensure selection happens after render
+        const timer = setTimeout(() => {
+          if (type === "textarea" && textareaRef.current) {
+            textareaRef.current.focus()
+            textareaRef.current.select()
+          } else if (inputRef.current) {
+            inputRef.current.focus()
+            inputRef.current.select()
+          }
           hasSelectedRef.current = true
-        } else if (inputRef.current) {
-          inputRef.current.focus()
-          inputRef.current.select()
-          hasSelectedRef.current = true
-        }
+        }, 0)
+        return () => clearTimeout(timer)
       } else if (!isEditing) {
         hasSelectedRef.current = false
       }
@@ -564,10 +567,16 @@ export default function Dashboard() {
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
-      if (isEditing && !hasSelectedRef.current && inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.select()
-        hasSelectedRef.current = true
+      if (isEditing && !hasSelectedRef.current) {
+        // Use setTimeout to ensure selection happens after render
+        const timer = setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+            inputRef.current.select()
+          }
+          hasSelectedRef.current = true
+        }, 0)
+        return () => clearTimeout(timer)
       } else if (!isEditing) {
         hasSelectedRef.current = false
       }
