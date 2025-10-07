@@ -411,26 +411,17 @@ export default function Dashboard() {
   }) => {
     const inputRef = useRef<HTMLInputElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
-    const hasSelectedRef = useRef(false)
     const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
-      if (isEditing && !hasSelectedRef.current) {
-        // Use setTimeout to ensure selection happens after render
-        const timer = setTimeout(() => {
-          if (type === "textarea" && textareaRef.current) {
-            textareaRef.current.focus()
-            textareaRef.current.select()
-          } else if (inputRef.current) {
-            inputRef.current.focus()
-            inputRef.current.select()
-          }
-          hasSelectedRef.current = true
-        }, 0)
-        return () => clearTimeout(timer)
-      } else if (!isEditing) {
-        hasSelectedRef.current = false
+      if (isEditing) {
+        // Just focus, don't select - selection happens on click
+        if (type === "textarea" && textareaRef.current) {
+          textareaRef.current.focus()
+        } else if (inputRef.current) {
+          inputRef.current.focus()
+        }
       }
     }, [isEditing, type])
 
@@ -443,6 +434,15 @@ export default function Dashboard() {
       }
       setEditingCell({ shipmentId: shipment.id, fieldName })
       setTempValue(value)
+      
+      // Select all text after entering edit mode (on next render)
+      setTimeout(() => {
+        if (type === "textarea" && textareaRef.current) {
+          textareaRef.current.select()
+        } else if (inputRef.current) {
+          inputRef.current.select()
+        }
+      }, 0)
     }
 
     const handleBlur = () => {
@@ -562,23 +562,15 @@ export default function Dashboard() {
     timestamp: string | null | undefined
   }) => {
     const inputRef = useRef<HTMLInputElement>(null)
-    const hasSelectedRef = useRef(false)
     const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
-      if (isEditing && !hasSelectedRef.current) {
-        // Use setTimeout to ensure selection happens after render
-        const timer = setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.focus()
-            inputRef.current.select()
-          }
-          hasSelectedRef.current = true
-        }, 0)
-        return () => clearTimeout(timer)
-      } else if (!isEditing) {
-        hasSelectedRef.current = false
+      if (isEditing) {
+        // Just focus, don't select - selection happens on click
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
       }
     }, [isEditing])
 
@@ -592,6 +584,13 @@ export default function Dashboard() {
       setEditingCell({ shipmentId: shipment.id, fieldName: timestampField })
       // If there's a timestamp, show it in DD/MM/YY format for editing
       setTempValue(timestamp ? formatTimestampDDMMYY(timestamp) : "")
+      
+      // Select all text after entering edit mode (on next render)
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.select()
+        }
+      }, 0)
     }
 
     const handleBlur = () => {
