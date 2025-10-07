@@ -1078,10 +1078,10 @@ Hope all is OK.`
 
   const getSendPodToCustomerStatusColor = (status: number | null) => {
     switch (status) {
-      case 1:
+      case 1: return "text-yellow-600 dark:text-yellow-400"
+      case 2:
       case null:
       default: return "text-yellow-600 dark:text-yellow-400"
-      case 2: return "text-orange-600 dark:text-orange-400"
       case 3: return "text-green-600 dark:text-green-400"
       case 4: return "text-red-600 dark:text-red-400"
     }
@@ -1608,9 +1608,9 @@ Hope all is OK.`
                         </div>
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 1)}
+                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 2)}
                             className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendHaulierEadStatusIndicator === 1 || shipment.sendHaulierEadStatusIndicator === null
+                              shipment.sendHaulierEadStatusIndicator === 2 || shipment.sendHaulierEadStatusIndicator === null
                                 ? 'bg-yellow-400 border-yellow-500 scale-110'
                                 : 'bg-yellow-200 border-yellow-300 hover-elevate'
                             }`}
