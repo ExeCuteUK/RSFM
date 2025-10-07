@@ -369,6 +369,11 @@ export default function Dashboard() {
 
   // Helper to determine cell background color based on clearance status
   const getClearanceStatusColor = (shipment: ImportShipment): string => {
+    // If R.S To Clear is unticked (false), set first 8 columns to green
+    if (shipment.rsToClear === false) {
+      return "bg-green-100 dark:bg-green-900"
+    }
+    
     const adviseStatus = (shipment as any).adviseClearanceToAgentStatusIndicator
     
     // Check if Advise Clearance to Agent status is completed (green)
@@ -815,7 +820,7 @@ export default function Dashboard() {
                               fieldName="shippingLine"
                               value={shipment.shippingLine || ""}
                               type="dropdown"
-                              options={shippingLines.map(s => ({ value: s.companyName || '', label: s.companyName || '' }))}
+                              options={shippingLines.map(s => ({ value: s.shippingLineName || '', label: s.shippingLineName || '' }))}
                               customCellColor={clearanceColor}
                             />
                             {/* Poa */}
