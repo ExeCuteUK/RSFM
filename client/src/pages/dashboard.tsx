@@ -136,6 +136,20 @@ export default function Dashboard() {
     return `${day}/${month}/${year}`
   }
 
+  // Helper to get delivery booked date color for Nisbets card
+  const getNisbetsDeliveryBookedDateColor = (shipment: ImportShipment): string => {
+    const hasDeliveryDate = shipment.deliveryDate && shipment.deliveryDate.trim().length > 0
+    const isBookingStatusGreen = shipment.deliveryBookedStatusIndicator === 3
+    
+    // Green only if both conditions are met
+    if (hasDeliveryDate && isBookingStatusGreen) {
+      return "bg-green-100 dark:bg-green-900"
+    }
+    
+    // Yellow otherwise (empty date OR yellow status OR both)
+    return "bg-yellow-200 dark:bg-yellow-800"
+  }
+
   // Helper to determine cell background color based on clearance status
   const getClearanceStatusColor = (shipment: ImportShipment): string => {
     const adviseStatus = (shipment as any).adviseClearanceToAgentStatusIndicator
@@ -536,7 +550,7 @@ export default function Dashboard() {
                             <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
                               
                             </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.deliveryDate)}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsDeliveryBookedDateColor(shipment)}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
                               {formatDate(shipment.deliveryDate)}
                             </td>
                             <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
