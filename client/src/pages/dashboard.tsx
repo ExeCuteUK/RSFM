@@ -101,7 +101,7 @@ export default function Dashboard() {
     if (!clearance) return "bg-yellow-200 dark:bg-yellow-800"
     
     const status = clearance.status
-    if (["Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(status)) {
+    if (["Awaiting Entry", "Waiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(status)) {
       return "bg-green-100 dark:bg-green-900"
     }
     if (status === "Request CC") {
