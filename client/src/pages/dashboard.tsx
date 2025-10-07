@@ -1,12 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useQuery } from "@tanstack/react-query"
 import { type ImportShipment, type ExportShipment, type CustomClearance, type ImportCustomer } from "@shared/schema"
-import { Container, Package, Clipboard, FileText } from "lucide-react"
+import { Container, Package, Clipboard, FileText, Search } from "lucide-react"
 import { useState } from "react"
+import { useLocation } from "wouter"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("container-management")
+  const [searchText, setSearchText] = useState("")
+  const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active", "completed"])
+  const [, setLocation] = useLocation()
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -31,10 +37,44 @@ export default function Dashboard() {
     refetchOnWindowFocus: true,
   })
 
+  // Toggle job status filter
+  const toggleJobStatusFilter = (status: "active" | "completed") => {
+    if (jobStatusFilter.includes(status)) {
+      // Don't allow deselecting if it's the only one selected
+      if (jobStatusFilter.length > 1) {
+        setJobStatusFilter(jobStatusFilter.filter(s => s !== status))
+      }
+    } else {
+      setJobStatusFilter([...jobStatusFilter, status])
+    }
+  }
+
   // Filter container shipments
-  const containerShipments = importShipments.filter(
-    (s) => s.containerShipment === "Container Shipment"
-  )
+  const containerShipments = importShipments
+    .filter((s) => s.containerShipment === "Container Shipment")
+    // Apply job status filter
+    .filter((s) => {
+      const isCompleted = s.status === "Delivered"
+      const isActive = s.status !== "Delivered"
+      
+      if (jobStatusFilter.includes("active") && jobStatusFilter.includes("completed")) return true
+      if (jobStatusFilter.includes("active") && isActive) return true
+      if (jobStatusFilter.includes("completed") && isCompleted) return true
+      return false
+    })
+    // Apply search filter
+    .filter((s) => {
+      if (!searchText.trim()) return true
+      const search = searchText.toLowerCase()
+      const customerName = getCustomerName(s.importCustomerId).toLowerCase()
+      return (
+        s.jobRef?.toString().includes(search) ||
+        customerName.includes(search) ||
+        s.vesselName?.toLowerCase().includes(search) ||
+        s.trailerOrContainerNumber?.toLowerCase().includes(search) ||
+        s.customerReferenceNumber?.toLowerCase().includes(search)
+      )
+    })
 
   // Helper to get customer name
   const getCustomerName = (customerId: string | null): string => {
@@ -144,7 +184,37 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Container Management</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="space-y-4">
+              {/* Search and Filter Bar */}
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by job ref, customer, vessel, container, or BL number..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="pl-9"
+                    data-testid="input-search-container"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={jobStatusFilter.includes("active") ? "default" : "outline"}
+                    onClick={() => toggleJobStatusFilter("active")}
+                    data-testid="button-filter-active"
+                  >
+                    Active Jobs
+                  </Button>
+                  <Button
+                    variant={jobStatusFilter.includes("completed") ? "default" : "outline"}
+                    onClick={() => toggleJobStatusFilter("completed")}
+                    data-testid="button-filter-completed"
+                  >
+                    Completed Jobs
+                  </Button>
+                </div>
+              </div>
+
               <div className="overflow-auto">
                 <table className="w-full border-collapse text-xs">
                   <thead className="sticky top-0 bg-background z-10">
@@ -183,7 +253,13 @@ export default function Dashboard() {
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
                             <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
-                              {shipment.jobRef}
+                              <button
+                                onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
+                                className="text-primary hover:underline font-semibold"
+                                data-testid={`link-job-${shipment.jobRef}`}
+                              >
+                                {shipment.jobRef}
+                              </button>
                             </td>
                             <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
                               {getCustomerName(shipment.importCustomerId)}
