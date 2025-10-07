@@ -58,15 +58,15 @@ export default function Dashboard() {
 
   // Helper to get delivery booked color
   const getDeliveryBookedColor = (indicator: number | null): string => {
-    if (indicator === 2) return "bg-green-100 dark:bg-green-900"
-    if (indicator === 3) return "bg-orange-100 dark:bg-orange-900"
+    if (indicator === 3) return "bg-green-100 dark:bg-green-900"
+    if (indicator === 2) return "bg-orange-100 dark:bg-orange-900"
     return "bg-yellow-100 dark:bg-yellow-900"
   }
 
   // Helper to get container release color
   const getContainerReleaseColor = (indicator: number | null): string => {
-    if (indicator === 2) return "bg-green-100 dark:bg-green-900"
-    if (indicator === 3) return "bg-orange-100 dark:bg-orange-900"
+    if (indicator === 3) return "bg-green-100 dark:bg-green-900"
+    if (indicator === 2) return "bg-orange-100 dark:bg-orange-900"
     return "bg-yellow-100 dark:bg-yellow-900"
   }
 
@@ -80,7 +80,7 @@ export default function Dashboard() {
 
   // Helper to get invoice status color
   const getInvoiceStatusColor = (indicator: number | null): string => {
-    if (indicator === 2) return "bg-green-100 dark:bg-green-900"
+    if (indicator === 3) return "bg-green-100 dark:bg-green-900"
     return "bg-yellow-100 dark:bg-yellow-900"
   }
 
