@@ -932,22 +932,21 @@ export default function Dashboard() {
                               type="text"
                             />
                             
-                            {/* Country - EDITABLE DROPDOWN */}
+                            {/* Country - EDITABLE TEXT */}
                             <EditableCell
                               shipment={shipment}
                               fieldName="departureCountry"
                               value={shipment.departureCountry || ""}
-                              type="dropdown"
-                              options={countryOptions}
+                              type="text"
                             />
                             
-                            {/* Destination - EDITABLE TEXTAREA (full deliveryAddress) */}
+                            {/* Destination - EDITABLE TEXT (full deliveryAddress) */}
                             <EditableCell
                               shipment={shipment}
                               fieldName="deliveryAddress"
                               value={shipment.deliveryAddress || ""}
                               displayValue={destination}
-                              type="textarea"
+                              type="text"
                             />
                             
                             {/* Collection Date - EDITABLE DATE */}
