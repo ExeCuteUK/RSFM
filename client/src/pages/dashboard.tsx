@@ -49,32 +49,37 @@ export default function Dashboard() {
   }
 
   // Helper to determine cell background color based on clearance status
-  const getClearanceStatusColor = (jobRef: number): string => {
-    const clearance = getLinkedClearance(jobRef)
-    if (!clearance) return "bg-yellow-100 dark:bg-yellow-900"
+  const getClearanceStatusColor = (shipment: ImportShipment): string => {
+    // Check if Advise Clearance to Agent status is completed (green)
+    if ((shipment as any).adviseClearanceToAgentStatusIndicator === 3) {
+      return "bg-green-100 dark:bg-green-900"
+    }
+    
+    const clearance = getLinkedClearance(shipment.jobRef)
+    if (!clearance) return "bg-yellow-200 dark:bg-yellow-800"
     
     const status = clearance.status
     if (["Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(status)) {
       return "bg-green-100 dark:bg-green-900"
     }
     if (status === "Request CC") {
-      return "bg-yellow-100 dark:bg-yellow-900"
+      return "bg-yellow-200 dark:bg-yellow-800"
     }
-    return "bg-yellow-100 dark:bg-yellow-900"
+    return "bg-yellow-200 dark:bg-yellow-800"
   }
 
   // Helper to get delivery booked color
   const getDeliveryBookedColor = (indicator: number | null): string => {
     if (indicator === 3) return "bg-green-100 dark:bg-green-900"
-    if (indicator === 2) return "bg-orange-100 dark:bg-orange-900"
-    return "bg-yellow-100 dark:bg-yellow-900"
+    if (indicator === 2) return "bg-orange-300 dark:bg-orange-700"
+    return "bg-yellow-200 dark:bg-yellow-800"
   }
 
   // Helper to get container release color
   const getContainerReleaseColor = (indicator: number | null): string => {
     if (indicator === 3) return "bg-green-100 dark:bg-green-900"
-    if (indicator === 2) return "bg-orange-100 dark:bg-orange-900"
-    return "bg-yellow-100 dark:bg-yellow-900"
+    if (indicator === 2) return "bg-orange-300 dark:bg-orange-700"
+    return "bg-yellow-200 dark:bg-yellow-800"
   }
 
   // Helper to get delivery address color
@@ -82,13 +87,13 @@ export default function Dashboard() {
     if (address && address.trim().length > 0) {
       return "bg-green-100 dark:bg-green-900"
     }
-    return "bg-yellow-100 dark:bg-yellow-900"
+    return "bg-yellow-200 dark:bg-yellow-800"
   }
 
   // Helper to get invoice status color
   const getInvoiceStatusColor = (indicator: number | null): string => {
     if (indicator === 3) return "bg-green-100 dark:bg-green-900"
-    return "bg-yellow-100 dark:bg-yellow-900"
+    return "bg-yellow-200 dark:bg-yellow-800"
   }
 
   // Helper to format date
@@ -169,7 +174,7 @@ export default function Dashboard() {
                       </tr>
                     ) : (
                       containerShipments.map((shipment) => {
-                        const clearanceColor = getClearanceStatusColor(shipment.jobRef)
+                        const clearanceColor = getClearanceStatusColor(shipment)
                         const deliveryBookedColor = getDeliveryBookedColor(shipment.deliveryBookedStatusIndicator)
                         const releaseColor = getContainerReleaseColor(shipment.containerReleaseStatusIndicator)
                         const addressColor = getDeliveryAddressColor(shipment.deliveryAddress)
@@ -216,7 +221,7 @@ export default function Dashboard() {
                             <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
                               {/* Rate Out - blank for now */}
                             </td>
-                            <td className={`p-1 text-center ${clearanceColor}`} data-testid={`cell-notes-${shipment.jobRef}`}>
+                            <td className="p-1 text-center bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
                               {shipment.additionalNotes || ""}
                             </td>
                           </tr>
