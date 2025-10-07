@@ -61,14 +61,24 @@ export default function Dashboard() {
 
   // Mutation for updating shipment
   const updateShipmentMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ImportShipment> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ImportShipment>; context?: any }) => {
       return await apiRequest("PATCH", `/api/import-shipments/${id}`, data)
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      const { context } = variables
+      const jobRef = context?.jobRef || 'Unknown'
+      const fieldName = context?.fieldName || 'field'
+      
+      // Format field name to be more readable
+      const formattedField = fieldName
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str: string) => str.toUpperCase())
+        .trim()
+      
       toast({
-        title: "Updated",
-        description: "Job updated",
+        title: "Job Updated Successfully",
+        description: `Job #${jobRef}: ${formattedField} has been updated`,
       })
     },
     onError: (error: Error) => {
@@ -115,6 +125,7 @@ export default function Dashboard() {
   const handleSave = async (shipmentId: string, fieldName: string, value: string) => {
     try {
       const updateData: Partial<ImportShipment> = {}
+      const shipment = importShipments.find(s => s.id === shipmentId)
       
       // Handle different field types with validation
       if (fieldName === "collectionDate" || fieldName === "dispatchDate" || fieldName === "importDateEtaPort" || fieldName === "deliveryDate") {
@@ -137,7 +148,11 @@ export default function Dashboard() {
         ;(updateData as any)[fieldName] = value.trim() || null
       }
       
-      await updateShipmentMutation.mutateAsync({ id: shipmentId, data: updateData })
+      await updateShipmentMutation.mutateAsync({ 
+        id: shipmentId, 
+        data: updateData,
+        context: { jobRef: shipment?.jobRef, fieldName }
+      })
       setEditingCell(null)
       setTempValue("")
     } catch (error) {
@@ -158,6 +173,7 @@ export default function Dashboard() {
   ) => {
     try {
       const updateData: Partial<ImportShipment> = {}
+      const shipment = importShipments.find(s => s.id === shipmentId)
       
       if (!value.trim()) {
         // Clearing the timestamp - set status to yellow (to do)
@@ -182,7 +198,11 @@ export default function Dashboard() {
         ;(updateData as any)[timestampField] = dateObj.toISOString()
       }
       
-      await updateShipmentMutation.mutateAsync({ id: shipmentId, data: updateData })
+      await updateShipmentMutation.mutateAsync({ 
+        id: shipmentId, 
+        data: updateData,
+        context: { jobRef: shipment?.jobRef, fieldName: timestampField }
+      })
       setEditingCell(null)
       setTempValue("")
     } catch (error) {
