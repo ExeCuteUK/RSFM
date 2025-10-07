@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useQuery } from "@tanstack/react-query"
-import { type ImportShipment, type ExportShipment, type CustomClearance, type ImportCustomer, type ExportCustomer } from "@shared/schema"
-import { Package, Clipboard, AlertCircle, TrendingUp, TrendingDown } from "lucide-react"
-import { format, parseISO, startOfMonth, endOfMonth, subMonths, isToday } from "date-fns"
+import { type ImportShipment, type ExportShipment, type CustomClearance, type ImportCustomer } from "@shared/schema"
+import { Container, Package, Clipboard, FileText } from "lucide-react"
+import { useState } from "react"
 
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState("container-management")
+
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
   })
@@ -22,105 +24,77 @@ export default function Dashboard() {
     queryKey: ["/api/import-customers"],
   })
 
-  const { data: exportCustomers = [] } = useQuery<ExportCustomer[]>({
-    queryKey: ["/api/export-customers"],
-  })
-
-  // Date calculations
-  const now = new Date()
-  const currentMonthStart = startOfMonth(now)
-  const currentMonthEnd = endOfMonth(now)
-  const previousMonthStart = startOfMonth(subMonths(now, 1))
-  const previousMonthEnd = endOfMonth(subMonths(now, 1))
-
-  // Helper function to check if date is in range
-  const isInMonth = (dateStr: string, start: Date, end: Date) => {
-    if (!dateStr) return false
-    try {
-      const date = parseISO(dateStr)
-      return date >= start && date <= end
-    } catch {
-      return false
-    }
-  }
-
-  // Calculate metrics for top 3 cards
-  const freightShipmentsThisMonth = [...importShipments, ...exportShipments].filter(
-    (s) => isInMonth(s.createdAt, currentMonthStart, currentMonthEnd)
-  ).length
-
-  const freightShipmentsPreviousMonth = [...importShipments, ...exportShipments].filter(
-    (s) => isInMonth(s.createdAt, previousMonthStart, previousMonthEnd)
-  ).length
-
-  const freightShipmentsChange = freightShipmentsPreviousMonth > 0
-    ? Math.round(((freightShipmentsThisMonth - freightShipmentsPreviousMonth) / freightShipmentsPreviousMonth) * 100)
-    : 0
-
-  const clearanceJobsThisMonth = customClearances.filter(
-    (c) => isInMonth(c.createdAt, currentMonthStart, currentMonthEnd)
-  ).length
-
-  const clearanceJobsPreviousMonth = customClearances.filter(
-    (c) => isInMonth(c.createdAt, previousMonthStart, previousMonthEnd)
-  ).length
-
-  const clearanceJobsChange = clearanceJobsPreviousMonth > 0
-    ? Math.round(((clearanceJobsThisMonth - clearanceJobsPreviousMonth) / clearanceJobsPreviousMonth) * 100)
-    : 0
-
-  const awaitingEntries = customClearances.filter((c) => c.status === "Awaiting Entry").length
-
-  // Calculate Quick Stats metrics
-  const importsAwaitingDeparture = importShipments.filter((s) => s.status === "Awaiting Collection").length
-  const importsDispatched = importShipments.filter((s) => s.status === "Dispatched").length
-  const exportsAwaitingDeparture = exportShipments.filter((s) => s.status === "Awaiting Collection").length
-  const exportsDispatched = exportShipments.filter((s) => s.status === "Dispatched").length
-  
-  const shipmentsBookedToday = [...importShipments, ...exportShipments].filter((s) => {
-    try {
-      return isToday(parseISO(s.createdAt))
-    } catch {
-      return false
-    }
-  }).length
-
-  // Get latest 5 Import or Export jobs (combined and sorted by createdAt descending, fallback to jobRef)
-  const allFreightJobs = [...importShipments, ...exportShipments]
-    .sort((a, b) => {
-      try {
-        const dateA = parseISO(a.createdAt)
-        const dateB = parseISO(b.createdAt)
-        if (dateA.getTime() !== dateB.getTime()) {
-          return dateB.getTime() - dateA.getTime()
-        }
-      } catch {
-        // Fall back to jobRef if dates are invalid
-      }
-      return b.jobRef - a.jobRef
-    })
-    .slice(0, 5)
+  // Filter container shipments
+  const containerShipments = importShipments.filter(
+    (s) => s.containerShipment === "Container Shipment"
+  )
 
   // Helper to get customer name
-  const getCustomerName = (job: ImportShipment | ExportShipment): string => {
-    if ('importCustomerId' in job) {
-      const customer = importCustomers.find((c) => c.id === job.importCustomerId)
-      return customer?.companyName || "Unknown Customer"
-    } else {
-      const customer = exportCustomers.find((c) => c.id === job.destinationCustomerId)
-      return customer?.companyName || "Unknown Customer"
-    }
+  const getCustomerName = (customerId: string | null): string => {
+    if (!customerId) return ""
+    const customer = importCustomers.find((c) => c.id === customerId)
+    return customer?.companyName || ""
   }
 
-  // Helper to get status badge variant
-  const getStatusVariant = (status: string): "default" | "secondary" => {
-    switch (status) {
-      case "Awaiting Collection":
-        return "secondary"
-      case "Dispatched":
-      case "Completed":
-      default:
-        return "default"
+  // Helper to get linked clearance for a job
+  const getLinkedClearance = (jobRef: number): CustomClearance | undefined => {
+    return customClearances.find((c) => c.jobRef === jobRef)
+  }
+
+  // Helper to determine cell background color based on clearance status
+  const getClearanceStatusColor = (jobRef: number): string => {
+    const clearance = getLinkedClearance(jobRef)
+    if (!clearance) return "bg-yellow-100 dark:bg-yellow-900"
+    
+    const status = clearance.status
+    if (["Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(status)) {
+      return "bg-green-100 dark:bg-green-900"
+    }
+    if (status === "Request CC") {
+      return "bg-yellow-100 dark:bg-yellow-900"
+    }
+    return "bg-yellow-100 dark:bg-yellow-900"
+  }
+
+  // Helper to get delivery booked color
+  const getDeliveryBookedColor = (indicator: number | null): string => {
+    if (indicator === 2) return "bg-green-100 dark:bg-green-900"
+    if (indicator === 3) return "bg-orange-100 dark:bg-orange-900"
+    return "bg-yellow-100 dark:bg-yellow-900"
+  }
+
+  // Helper to get container release color
+  const getContainerReleaseColor = (indicator: number | null): string => {
+    if (indicator === 2) return "bg-green-100 dark:bg-green-900"
+    if (indicator === 3) return "bg-orange-100 dark:bg-orange-900"
+    return "bg-yellow-100 dark:bg-yellow-900"
+  }
+
+  // Helper to get delivery address color
+  const getDeliveryAddressColor = (address: string | null): string => {
+    if (address && address.trim().length > 0) {
+      return "bg-green-100 dark:bg-green-900"
+    }
+    return "bg-yellow-100 dark:bg-yellow-900"
+  }
+
+  // Helper to get invoice status color
+  const getInvoiceStatusColor = (indicator: number | null): string => {
+    if (indicator === 2) return "bg-green-100 dark:bg-green-900"
+    return "bg-yellow-100 dark:bg-yellow-900"
+  }
+
+  // Helper to format date
+  const formatDate = (dateStr: string | null): string => {
+    if (!dateStr) return ""
+    try {
+      const date = new Date(dateStr)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = String(date.getFullYear()).slice(-2)
+      return `${day}/${month}/${year}`
+    } catch {
+      return ""
     }
   }
 
@@ -133,173 +107,155 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Top 3 KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Freight Shipments</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-freight-shipments">{freightShipmentsThisMonth}</div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-              {freightShipmentsChange >= 0 ? (
-                <>
-                  <TrendingUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">+{freightShipmentsChange}%</span>
-                </>
-              ) : (
-                <>
-                  <TrendingDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{freightShipmentsChange}%</span>
-                </>
-              )}
-              <span className="ml-1">from last month</span>
-            </p>
-          </CardContent>
-        </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="container-management" data-testid="tab-container-management">
+            <Container className="h-4 w-4 mr-2" />
+            Container Management
+          </TabsTrigger>
+          <TabsTrigger value="nisbets" data-testid="tab-nisbets">
+            <Package className="h-4 w-4 mr-2" />
+            Nisbets
+          </TabsTrigger>
+          <TabsTrigger value="import-export-work" data-testid="tab-import-export">
+            <FileText className="h-4 w-4 mr-2" />
+            Import/Export Work
+          </TabsTrigger>
+          <TabsTrigger value="clearance-work" data-testid="tab-clearance">
+            <Clipboard className="h-4 w-4 mr-2" />
+            Clearance Work
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clearance Jobs</CardTitle>
-            <Clipboard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-clearance-jobs">{clearanceJobsThisMonth}</div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-              {clearanceJobsChange >= 0 ? (
-                <>
-                  <TrendingUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">+{clearanceJobsChange}%</span>
-                </>
-              ) : (
-                <>
-                  <TrendingDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{clearanceJobsChange}%</span>
-                </>
-              )}
-              <span className="ml-1">from last month</span>
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Awaiting Entries</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-awaiting-entries">{awaitingEntries}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              All time clearances waiting entry
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Shipments */}
-        <div className="lg:col-span-2">
+        <TabsContent value="container-management" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Shipments</CardTitle>
+              <CardTitle>Container Management</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {allFreightJobs.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4">No shipments yet</p>
-              ) : (
-                allFreightJobs.map((job) => {
-                  const isImport = 'importCustomerId' in job
-                  const dateLabel = isImport ? "Import Date" : "Load Date"
-                  const dateValue = isImport 
-                    ? (job as ImportShipment).importDateEtaPort 
-                    : (job as ExportShipment).loadDate
-                  const formattedDate = dateValue 
-                    ? format(parseISO(dateValue), "dd/MM/yy")
-                    : "N/A"
-                  const deliveryInfo = isImport
-                    ? (job as ImportShipment).deliveryAddress
-                    : (job as ExportShipment).portOfArrival
-                  const deliveryLabel = isImport ? "Delivery Address" : "Port of Arrival"
+            <CardContent className="p-0">
+              <div className="overflow-auto">
+                <table className="w-full border-collapse text-xs">
+                  <thead className="sticky top-0 bg-background z-10">
+                    <tr className="border-b-2">
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">RS REF</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">CONSIGNEE</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Container no.</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Ship Line</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">POA</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">VESSEL</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">ETA PORT</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">REFERENCES</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Date</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">RLS</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Address</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Rate In</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Rate Out</th>
+                      <th className="p-1 text-center font-semibold bg-background">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-xs">
+                    {containerShipments.length === 0 ? (
+                      <tr>
+                        <td colSpan={14} className="p-4 text-center text-muted-foreground">
+                          No container shipments found
+                        </td>
+                      </tr>
+                    ) : (
+                      containerShipments.map((shipment) => {
+                        const clearanceColor = getClearanceStatusColor(shipment.jobRef)
+                        const deliveryBookedColor = getDeliveryBookedColor(shipment.deliveryBookedStatusIndicator)
+                        const releaseColor = getContainerReleaseColor(shipment.containerReleaseStatusIndicator)
+                        const addressColor = getDeliveryAddressColor(shipment.deliveryAddress)
+                        const invoiceColor = getInvoiceStatusColor(shipment.invoiceCustomerStatusIndicator)
 
-                  return (
-                    <Card key={job.id} className="hover-elevate">
-                      <CardHeader className="flex flex-row items-start justify-between gap-1 space-y-0 pb-3">
-                        <div>
-                          <CardTitle className="text-base" data-testid={`text-job-ref-${job.jobRef}`}>
-                            Job #{job.jobRef}
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {getCustomerName(job)}
-                          </p>
-                        </div>
-                        <Badge variant={getStatusVariant(job.status)} data-testid={`badge-status-${job.jobRef}`}>
-                          {job.status}
-                        </Badge>
-                      </CardHeader>
-                      <CardContent className="space-y-2 pt-0">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">{deliveryLabel}:</span>
-                          <span className="font-medium" data-testid={`text-address-${job.jobRef}`}>
-                            {deliveryInfo || "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">{dateLabel}:</span>
-                          <span className="font-medium" data-testid={`text-date-${job.jobRef}`}>
-                            {formattedDate}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Weight:</span>
-                          <span className="font-medium" data-testid={`text-weight-${job.jobRef}`}>
-                            {job.weight || "N/A"} kg
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Stats */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Imports Awaiting Departure</span>
-                <span className="text-xl font-bold" data-testid="text-imports-pending">{importsAwaitingDeparture}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Imports Dispatched</span>
-                <span className="text-xl font-bold" data-testid="text-imports-dispatched">{importsDispatched}</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Exports Awaiting Departure</span>
-                <span className="text-xl font-bold" data-testid="text-exports-pending">{exportsAwaitingDeparture}</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Exports Dispatched</span>
-                <span className="text-xl font-bold" data-testid="text-exports-dispatched">{exportsDispatched}</span>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t">
-                <span className="text-sm text-muted-foreground">Shipments Booked Today</span>
-                <span className="text-xl font-bold" data-testid="text-shipments-today">{shipmentsBookedToday}</span>
+                        return (
+                          <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                              {shipment.jobRef}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
+                              {getCustomerName(shipment.importCustomerId)}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-container-${shipment.jobRef}`}>
+                              {shipment.trailerOrContainerNumber || ""}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-shipline-${shipment.jobRef}`}>
+                              {shipment.shippingLine || ""}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-poa-${shipment.jobRef}`}>
+                              {shipment.portOfArrival || ""}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-vessel-${shipment.jobRef}`}>
+                              {shipment.vesselName || ""}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-eta-${shipment.jobRef}`}>
+                              {formatDate(shipment.importDateEtaPort)}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                              {shipment.customerReferenceNumber || ""}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
+                              {formatDate(shipment.deliveryDate)}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
+                              {shipment.deliveryRelease || ""}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${addressColor}`} data-testid={`cell-address-${shipment.jobRef}`}>
+                              {shipment.deliveryAddress || ""}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
+                              {/* Rate In - blank for now */}
+                            </td>
+                            <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
+                              {/* Rate Out - blank for now */}
+                            </td>
+                            <td className={`p-1 text-center ${clearanceColor}`} data-testid={`cell-notes-${shipment.jobRef}`}>
+                              {shipment.additionalNotes || ""}
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="nisbets" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Nisbets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Nisbets work view - coming soon</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="import-export-work" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Import/Export Work</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Import/Export work view - coming soon</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="clearance-work" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Clearance Work</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Clearance work view - coming soon</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
