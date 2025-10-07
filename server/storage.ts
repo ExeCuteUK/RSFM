@@ -1679,6 +1679,60 @@ export class DatabaseStorage implements IStorage {
       .where(eq(exportShipments.id, id))
       .returning();
     
+    // If exportClearanceAgent is being changed TO "R.S" and there's no linked clearance, create one
+    if (updated.exportClearanceAgent === "R.S" && !updated.linkedClearanceId) {
+      const [clearance] = await db.insert(customClearances).values({
+        jobRef: updated.jobRef,
+        jobType: "export",
+        createdAt: new Date().toISOString(),
+        status: "Awaiting Entry",
+        importCustomerId: null,
+        exportCustomerId: updated.destinationCustomerId,
+        receiverId: updated.receiverId,
+        etaPort: updated.bookingDate,
+        portOfArrival: updated.portOfArrival,
+        trailerOrContainerNumber: updated.trailerNo,
+        departureFrom: updated.departureFrom,
+        containerShipment: updated.containerShipment,
+        vesselName: updated.vesselName,
+        numberOfPieces: updated.numberOfPieces,
+        packaging: updated.packaging,
+        weight: updated.weight,
+        cube: updated.cube,
+        goodsDescription: updated.goodsDescription,
+        invoiceValue: updated.value,
+        transportCosts: updated.freightRateOut,
+        clearanceCharge: updated.clearanceCharge,
+        currency: updated.currency,
+        additionalCommodityCodes: updated.additionalCommodityCodes,
+        vatZeroRated: false,
+        clearanceType: updated.clearanceType,
+        incoterms: updated.incoterms,
+        customerReferenceNumber: updated.customerReferenceNumber,
+        supplierName: updated.supplier,
+        deliveryAddress: null,
+        additionalNotes: null,
+        transportDocuments: updated.attachments,
+        clearanceDocuments: null,
+        adviseAgentStatusIndicator: 2,
+        sendHaulierEadStatusIndicator: 2,
+        sendHaulierClearanceDocStatusIndicator: 2,
+        sendEntryToCustomerStatusIndicator: 2,
+        invoiceCustomerStatusIndicator: 2,
+        sendClearedEntryStatusIndicator: null,
+        createdFromType: "export",
+        createdFromId: updated.id,
+      }).returning();
+
+      // Update shipment with linked clearance ID
+      const [finalUpdated] = await db.update(exportShipments)
+        .set({ linkedClearanceId: clearance.id })
+        .where(eq(exportShipments.id, updated.id))
+        .returning();
+      
+      return finalUpdated;
+    }
+    
     return updated;
   }
 
