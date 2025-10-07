@@ -791,7 +791,7 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
-                                className="text-primary hover:underline font-semibold"
+                                className="text-blue-600 dark:text-blue-300 hover:underline font-semibold"
                                 data-testid={`link-job-${shipment.jobRef}`}
                               >
                                 {shipment.jobRef}
@@ -1049,7 +1049,7 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
-                                className="text-primary hover:underline font-semibold"
+                                className="text-blue-600 dark:text-blue-300 hover:underline font-semibold"
                                 data-testid={`link-job-${shipment.jobRef}`}
                               >
                                 {shipment.jobRef}
