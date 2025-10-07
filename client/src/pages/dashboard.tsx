@@ -389,9 +389,9 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold border-r border-border bg-background">Details Sent to Ligentia</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background">Entry to Haulier</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Booked Date</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Price Out</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background w-32">Price Out</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background">Pod Sent</th>
-                      <th className="p-1 text-center font-semibold bg-background">Net Cost</th>
+                      <th className="p-1 text-center font-semibold bg-background w-32">Net Cost</th>
                     </tr>
                   </thead>
                   <tbody className="text-xs">
@@ -527,13 +527,13 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.deliveryDate)}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
                               {formatDate(shipment.deliveryDate)}
                             </td>
-                            <td className={`px-1 text-left align-top whitespace-pre-wrap border-r border-border ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
+                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
                               {priceOut}
                             </td>
                             <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-pod-sent-${shipment.jobRef}`}>
                               
                             </td>
-                            <td className={`px-1 text-left align-top whitespace-pre-wrap ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
+                            <td className={`px-1 text-center align-top whitespace-pre-wrap w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
                               {netCost}
                             </td>
                           </tr>
