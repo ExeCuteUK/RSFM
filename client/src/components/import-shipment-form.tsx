@@ -230,6 +230,13 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const jobContactEmails = form.watch("jobContactEmail") || []
   const additionalCommodityCodes = form.watch("additionalCommodityCodes")
 
+  // Clear Import Customs Clearance Charge Out when R.S to Clear is unticked
+  useEffect(() => {
+    if (!rsToClear) {
+      form.setValue("clearanceCharge", "")
+    }
+  }, [rsToClear, form])
+
   // Auto-populate Job Contact Name and Email when customer is selected (only for new shipments)
   useEffect(() => {
     if (selectedCustomer && (!defaultValues?.jobContactName || defaultValues.jobContactName.length === 0) && (!defaultValues?.jobContactEmail || defaultValues.jobContactEmail.length === 0)) {
