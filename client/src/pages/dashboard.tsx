@@ -162,8 +162,13 @@ export default function Dashboard() {
       } else {
         // Setting a timestamp - validate DD/MM/YY format and set status to 3 (green/completed)
         const convertedDate = validateAndConvertDate(value)
+        if (!convertedDate) {
+          throw new Error("Invalid date format. Use DD/MM/YY")
+        }
+        // Store the entered date at midnight UTC
+        const dateObj = new Date(convertedDate)
         ;(updateData as any)[statusIndicatorField] = 3
-        ;(updateData as any)[timestampField] = new Date().toISOString()
+        ;(updateData as any)[timestampField] = dateObj.toISOString()
       }
       
       await updateShipmentMutation.mutateAsync({ id: shipmentId, data: updateData })
