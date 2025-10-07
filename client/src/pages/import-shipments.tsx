@@ -28,7 +28,8 @@ import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, Fil
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
-import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent } from "@shared/schema"
+import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
+import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useEmail } from "@/contexts/EmailContext"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
@@ -59,6 +60,7 @@ export default function ImportShipments() {
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [invoiceShipment, setInvoiceShipment] = useState<ImportShipment | null>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
   
@@ -94,6 +96,11 @@ export default function ImportShipments() {
 
   const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
     queryKey: ["/api/clearance-agents"],
+  })
+
+  // Fetch all invoices
+  const { data: allInvoices = [] } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices"],
   })
 
   // Fetch shared documents for all import shipments
@@ -1938,8 +1945,41 @@ Hope all is OK.`
                         </div>
                         <div className="mt-2 pt-2 border-t">
                           <div className="space-y-1">
-                            <p className="text-xs font-medium text-muted-foreground">R.S Invoices</p>
-                            <p className="text-xs text-muted-foreground italic">None</p>
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-medium text-muted-foreground">R.S Invoices</p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2"
+                                onClick={() => setInvoiceShipment(shipment)}
+                                data-testid={`button-create-invoice-${shipment.id}`}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                <span className="text-xs">Invoice</span>
+                              </Button>
+                            </div>
+                            {(() => {
+                              const shipmentInvoices = allInvoices.filter(inv => 
+                                inv.jobRef === shipment.jobRef && inv.jobType === 'import' && inv.jobId === shipment.id
+                              )
+                              return shipmentInvoices.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {shipmentInvoices.map((invoice) => (
+                                    <div key={invoice.id} className="flex items-center gap-1 group">
+                                      <Receipt className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <span
+                                        className="text-xs text-primary hover:underline cursor-pointer truncate flex-1"
+                                        title={`Invoice #${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
+                                      >
+                                        #{invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground italic">None</p>
+                              )
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -3102,6 +3142,14 @@ Hope all is OK.`
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Customer Invoice Form Dialog */}
+      <CustomerInvoiceForm
+        job={invoiceShipment}
+        jobType="import"
+        open={!!invoiceShipment}
+        onOpenChange={(open) => !open && setInvoiceShipment(null)}
+      />
 
     </div>
   )
