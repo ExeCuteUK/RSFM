@@ -120,10 +120,10 @@ export default function Dashboard() {
         // Special logic for deliveryDate
         if (fieldName === "deliveryDate") {
           if (!convertedDate) {
-            updateData.deliveryBookedStatusIndicator = 2
+            updateData.deliveryBookedStatusIndicator = 1  // Yellow = 1 (To Do)
             updateData.deliveryBookedStatusIndicatorTimestamp = null as any
           } else {
-            updateData.deliveryBookedStatusIndicator = 3
+            updateData.deliveryBookedStatusIndicator = 3  // Green = 3 (Completed)
             updateData.deliveryBookedStatusIndicatorTimestamp = new Date().toISOString() as any
           }
         }
@@ -156,8 +156,15 @@ export default function Dashboard() {
       const updateData: Partial<ImportShipment> = {}
       
       if (!value.trim()) {
-        // Clearing the timestamp - set status to 2 (yellow/to do)
-        ;(updateData as any)[statusIndicatorField] = 2
+        // Clearing the timestamp - set status to yellow (to do)
+        // Different indicators use different values for yellow:
+        // - clearanceStatusIndicator: 1
+        // - sendHaulierEadStatusIndicator: 2
+        // - sendPodToCustomerStatusIndicator: null
+        const yellowValue = statusIndicatorField === 'sendHaulierEadStatusIndicator' ? 2 
+          : statusIndicatorField === 'sendPodToCustomerStatusIndicator' ? null 
+          : 1
+        ;(updateData as any)[statusIndicatorField] = yellowValue
         ;(updateData as any)[timestampField] = null
       } else {
         // Setting a timestamp - validate DD/MM/YY format and set status to 3 (green/completed)
