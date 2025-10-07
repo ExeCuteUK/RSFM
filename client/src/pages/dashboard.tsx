@@ -422,7 +422,7 @@ export default function Dashboard() {
                 handleSave(shipment.id, fieldName, val)
               }}
             >
-              <SelectTrigger className="h-auto min-h-6 text-xs border-none focus:ring-0">
+              <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent>
@@ -446,7 +446,7 @@ export default function Dashboard() {
               onChange={(e) => setTempValue(e.target.value)}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
-              className="w-full min-h-[60px] text-xs bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+              className="w-full min-h-[60px] text-xs text-center bg-transparent border-none focus:outline-none focus:ring-0 resize-none p-0"
               rows={3}
             />
           </td>
@@ -462,7 +462,7 @@ export default function Dashboard() {
             onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="h-auto min-h-6 text-xs border-none focus:ring-1 focus:ring-primary"
+            className="h-auto text-xs text-center bg-transparent border-none focus:ring-0 focus-visible:ring-0 shadow-none p-0"
             placeholder={type === "date" ? "DD/MM/YY" : ""}
           />
         </td>
