@@ -185,14 +185,15 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
   // Reset form when defaultValues change (for edit mode)
   useEffect(() => {
-    if (defaultValues) {
+    if (defaultValues?.id) {
+      // Edit mode - reset form with all values from defaultValues
       form.reset({
         jobType: "import",
         status: "Awaiting Collection",
         importCustomerId: "",
         jobContactName: [],
         jobContactEmail: [],
-        bookingDate: defaultValues?.bookingDate || format(new Date(), "yyyy-MM-dd"),
+        bookingDate: format(new Date(), "yyyy-MM-dd"),
         collectionDate: "",
         dispatchDate: "",
         deliveryDate: "",
@@ -252,7 +253,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
         ...defaultValues
       })
     }
-  }, [defaultValues, form])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValues?.id])
 
   const selectedCustomerId = form.watch("importCustomerId")
 
