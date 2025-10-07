@@ -364,7 +364,7 @@ export default function Dashboard() {
     }
     
     // Yellow otherwise (empty date OR yellow status OR both)
-    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to determine cell background color based on clearance status
@@ -382,30 +382,30 @@ export default function Dashboard() {
     }
     
     const clearance = getLinkedClearance(shipment.jobRef)
-    if (!clearance) return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    if (!clearance) return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
     
     const status = clearance.status
     if (["Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(status)) {
       return "bg-green-100 dark:bg-green-900"
     }
     if (status === "Request CC") {
-      return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+      return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
     }
-    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get delivery booked color
   const getDeliveryBookedColor = (indicator: number | null): string => {
     if (indicator === 3) return "bg-green-100 dark:bg-green-900"
     if (indicator === 2) return "bg-orange-300 dark:bg-orange-700"
-    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get container release color
   const getContainerReleaseColor = (indicator: number | null): string => {
     if (indicator === 3) return "bg-green-100 dark:bg-green-900"
     if (indicator === 2) return "bg-orange-300 dark:bg-orange-700"
-    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get delivery address color
@@ -413,13 +413,13 @@ export default function Dashboard() {
     if (address && address.trim().length > 0) {
       return "bg-green-100 dark:bg-green-900"
     }
-    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get invoice status color
   const getInvoiceStatusColor = (indicator: number | null): string => {
     if (indicator === 3) return "bg-green-100 dark:bg-green-900"
-    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to format date
@@ -506,7 +506,7 @@ export default function Dashboard() {
     }
 
     // Get cell color - use custom if provided, otherwise use standard logic
-    const cellColor = customCellColor || (value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold")
+    const cellColor = customCellColor || (value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900")
 
     if (isEditing) {
       if (type === "dropdown") {
@@ -651,7 +651,7 @@ export default function Dashboard() {
     }
 
     // Color based on status indicator (3 = green, 2 or 1 = yellow)
-    const cellColor = statusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+    const cellColor = statusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
 
     if (isEditing) {
       return (
@@ -791,7 +791,7 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
-                                className="text-blue-600 dark:text-blue-300 hover:underline font-semibold"
+                                className="text-blue-600 dark:text-blue-300 hover:underline"
                                 data-testid={`link-job-${shipment.jobRef}`}
                               >
                                 {shipment.jobRef}
@@ -1019,7 +1019,7 @@ export default function Dashboard() {
 
                       // Helper to get cell color (green if populated, yellow if empty)
                       const getCellColor = (value: string | null | undefined): string => {
-                        return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900 font-bold"
+                        return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
                       }
 
                       if (nisbetsShipments.length === 0) {
@@ -1049,7 +1049,7 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
-                                className="text-blue-600 dark:text-blue-300 hover:underline font-semibold"
+                                className="text-blue-600 dark:text-blue-300 hover:underline"
                                 data-testid={`link-job-${shipment.jobRef}`}
                               >
                                 {shipment.jobRef}
