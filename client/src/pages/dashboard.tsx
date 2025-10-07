@@ -458,7 +458,9 @@ export default function Dashboard() {
                         if (shipment.exportCustomsClearanceCharge && parseFloat(shipment.exportCustomsClearanceCharge) > 0) {
                           lines.push(`£${shipment.exportCustomsClearanceCharge} Exp CC`)
                         }
-                        // Note: Import CC Charge Out field doesn't exist in schema, so we skip it
+                        if (shipment.clearanceCharge && parseFloat(shipment.clearanceCharge) > 0) {
+                          lines.push(`£${shipment.clearanceCharge} Imp CC`)
+                        }
                         return lines.join('\n')
                       }
 
