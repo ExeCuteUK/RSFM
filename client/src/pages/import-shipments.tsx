@@ -1580,6 +1580,11 @@ Hope all is OK.`
                           data-testid={`button-status-yellow-${shipment.id}`}
                           title="To Do"
                         />
+                        <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
+                          </div>
+                        </div>
                         <button
                           onClick={() => handleClearanceStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
@@ -1617,6 +1622,11 @@ Hope all is OK.`
                             data-testid={`button-send-haulier-gvms-yellow-${shipment.id}`}
                             title="To Do"
                           />
+                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
+                            </div>
+                          </div>
                           <button
                             onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
                             className={`h-5 w-5 rounded border-2 transition-all ${
@@ -1745,6 +1755,11 @@ Hope all is OK.`
                           data-testid={`button-invoice-status-yellow-${shipment.id}`}
                           title="To Do"
                         />
+                        <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
+                          </div>
+                        </div>
                         <button
                           onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
@@ -1784,6 +1799,11 @@ Hope all is OK.`
                           data-testid={`button-send-pod-status-yellow-${shipment.id}`}
                           title="To Do"
                         />
+                        <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
+                          </div>
+                        </div>
                         <button
                           onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
                           className={`h-5 w-5 rounded border-2 transition-all ${
