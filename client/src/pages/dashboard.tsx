@@ -66,20 +66,55 @@ export default function Dashboard() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
-      const { context } = variables
+      const { data, context } = variables
       const jobRef = context?.jobRef || 'Unknown'
       const fieldName = context?.fieldName || 'field'
       
-      // Format field name to be more readable
-      const formattedField = fieldName
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, (str: string) => str.toUpperCase())
-        .trim()
+      // Check if this is a status indicator update
+      const statusIndicatorFields = [
+        'clearanceStatusIndicator',
+        'sendHaulierEadStatusIndicator', 
+        'sendPodToCustomerStatusIndicator',
+        'deliveryBookedStatusIndicator'
+      ]
       
-      toast({
-        title: "Job Updated Successfully",
-        description: `Job #${jobRef}: ${formattedField} has been updated`,
-      })
+      const isStatusUpdate = Object.keys(data).some(key => statusIndicatorFields.includes(key))
+      
+      if (isStatusUpdate) {
+        // Determine which status was updated and what the new status is
+        let statusName = ''
+        let statusValue = ''
+        
+        if ('clearanceStatusIndicator' in data) {
+          statusName = 'Clearance Status'
+          statusValue = data.clearanceStatusIndicator === 3 ? 'Completed ✓' : 'To Do'
+        } else if ('sendHaulierEadStatusIndicator' in data) {
+          statusName = 'Send Haulier EAD Status'
+          statusValue = data.sendHaulierEadStatusIndicator === 3 ? 'Completed ✓' : 'To Do'
+        } else if ('sendPodToCustomerStatusIndicator' in data) {
+          statusName = 'Send POD to Customer Status'
+          statusValue = data.sendPodToCustomerStatusIndicator === 3 ? 'Completed ✓' : 'To Do'
+        } else if ('deliveryBookedStatusIndicator' in data) {
+          statusName = 'Delivery Booked Status'
+          statusValue = data.deliveryBookedStatusIndicator === 3 ? 'Completed ✓' : 'To Do'
+        }
+        
+        toast({
+          title: "Status Updated",
+          description: `Job #${jobRef}: ${statusName} → ${statusValue}`,
+        })
+      } else {
+        // Regular field update
+        const formattedField = fieldName
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, (str: string) => str.toUpperCase())
+          .trim()
+        
+        toast({
+          title: "Job Updated Successfully",
+          description: `Job #${jobRef}: ${formattedField} has been updated`,
+        })
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -706,23 +741,23 @@ export default function Dashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table className="w-full border-collapse text-xs">
+                <table ref={tableRef} className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
                   <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b-2">
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Ref</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Consignee</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Container no.</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Ship Line</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Poa</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Vessel</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Eta Port</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">References</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Date</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Rls</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Address</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Rate In</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Rate Out</th>
-                      <th className="p-1 text-center font-semibold bg-background">Notes</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Ref</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[1] ? { width: `${columnWidths[1]}px` } : undefined}>Consignee</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Container no.</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Ship Line</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Poa</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Vessel</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>Eta Port</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>References</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[8] ? { width: `${columnWidths[8]}px` } : undefined}>Delivery Date</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>Rls</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>Delivery Address</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Rate In</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Rate Out</th>
+                      <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Notes</th>
                     </tr>
                   </thead>
                   <tbody className="text-xs">
@@ -742,6 +777,7 @@ export default function Dashboard() {
 
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-container-${shipment.jobRef}`}>
+                            {/* Ref - not editable, just a link */}
                             <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
@@ -751,45 +787,109 @@ export default function Dashboard() {
                                 {shipment.jobRef}
                               </button>
                             </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
-                              {getCustomerName(shipment.importCustomerId)}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-container-${shipment.jobRef}`}>
-                              {shipment.trailerOrContainerNumber || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-shipline-${shipment.jobRef}`}>
-                              {shipment.shippingLine || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-poa-${shipment.jobRef}`}>
-                              {shipment.portOfArrival || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-vessel-${shipment.jobRef}`}>
-                              {shipment.vesselName || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-eta-${shipment.jobRef}`}>
-                              {formatDate(shipment.importDateEtaPort)}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
-                              {shipment.customerReferenceNumber || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle whitespace-nowrap ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
-                              {shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : ''}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle font-bold ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
-                              {shipment.deliveryRelease || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${addressColor}`} data-testid={`cell-address-${shipment.jobRef}`}>
-                              {shipment.deliveryAddress || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
-                              {shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
-                              {shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}
-                            </td>
-                            <td className="px-1 text-left align-top whitespace-pre-wrap bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
-                              {shipment.additionalNotes || ""}
-                            </td>
+                            {/* Consignee - editable dropdown */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="importCustomerId"
+                              value={shipment.importCustomerId || ""}
+                              displayValue={getCustomerName(shipment.importCustomerId)}
+                              type="dropdown"
+                              options={importCustomers.map(c => ({ value: c.id, label: c.companyName || '' }))}
+                              customCellColor={clearanceColor}
+                            />
+                            {/* Container no. */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="trailerOrContainerNumber"
+                              value={shipment.trailerOrContainerNumber || ""}
+                              customCellColor={clearanceColor}
+                            />
+                            {/* Ship Line */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="shippingLine"
+                              value={shipment.shippingLine || ""}
+                              customCellColor={clearanceColor}
+                            />
+                            {/* Poa */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="portOfArrival"
+                              value={shipment.portOfArrival || ""}
+                              customCellColor={clearanceColor}
+                            />
+                            {/* Vessel */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="vesselName"
+                              value={shipment.vesselName || ""}
+                              customCellColor={clearanceColor}
+                            />
+                            {/* Eta Port */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="importDateEtaPort"
+                              value={shipment.importDateEtaPort || ""}
+                              displayValue={formatDate(shipment.importDateEtaPort)}
+                              type="date"
+                              customCellColor={clearanceColor}
+                            />
+                            {/* References */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="customerReferenceNumber"
+                              value={shipment.customerReferenceNumber || ""}
+                              customCellColor={clearanceColor}
+                            />
+                            {/* Delivery Date */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="deliveryDate"
+                              value={shipment.deliveryDate || ""}
+                              displayValue={shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : ''}
+                              type="date"
+                              customCellColor={deliveryBookedColor}
+                            />
+                            {/* Rls */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="deliveryRelease"
+                              value={shipment.deliveryRelease || ""}
+                              customCellColor={releaseColor}
+                            />
+                            {/* Delivery Address */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="deliveryAddress"
+                              value={shipment.deliveryAddress || ""}
+                              customCellColor={addressColor}
+                            />
+                            {/* Rate In */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="haulierFreightRateIn"
+                              value={shipment.haulierFreightRateIn || ""}
+                              displayValue={shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}
+                              type="number"
+                              customCellColor={invoiceColor}
+                            />
+                            {/* Rate Out */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="freightRateOut"
+                              value={shipment.freightRateOut || ""}
+                              displayValue={shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}
+                              type="number"
+                              customCellColor={invoiceColor}
+                            />
+                            {/* Notes */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="additionalNotes"
+                              value={shipment.additionalNotes || ""}
+                              type="textarea"
+                              customCellColor="bg-green-100 dark:bg-green-900"
+                            />
                           </tr>
                         )
                       })
