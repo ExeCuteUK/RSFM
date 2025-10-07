@@ -342,8 +342,11 @@ export default function CustomClearances() {
       greeting = `Hi ${otherContacts}, and ${lastContact}`
     }
 
-    // Build subject: "Export Job Update - Export Entry / Our Ref: {jobRef} / Trailer Number: {trailerNo} / Your Ref: {haulierRef}"
-    let subject = `Export Job Update - Export Entry / Our Ref: ${clearance.jobRef}`
+    // Build subject based on clearance type
+    const isImport = clearance.jobType === 'import'
+    let subject = isImport 
+      ? `Import Job Update - Import GVMS Entry / Our Ref: ${clearance.jobRef}`
+      : `Export Job Update - Export Entry / Our Ref: ${clearance.jobRef}`
     
     // Add trailer/container/flight number if available with correct label based on shipment type
     if (linkedExportShipment?.trailerNo) {
@@ -361,10 +364,13 @@ export default function CustomClearances() {
       subject += ` / Your Ref: ${linkedExportShipment.haulierReference}`
     }
 
-    // Build email body with conditional attachment text based on shipment type
-    const attachmentText = linkedExportShipment?.containerShipment === "Air Freight" 
-      ? "Airway Bill" 
-      : "Export Entry"
+    // Build email body with conditional attachment text based on clearance type and shipment type
+    let attachmentText = "Export Entry"
+    if (isImport) {
+      attachmentText = "Import Entry"
+    } else if (linkedExportShipment?.containerShipment === "Air Freight") {
+      attachmentText = "Airway Bill"
+    }
     const body = `${greeting},\n\nPlease find attached ${attachmentText} for this shipment.\n\nHope all is OK.`
 
     // Open email composer with Export Entry documents
