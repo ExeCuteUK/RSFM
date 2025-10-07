@@ -114,9 +114,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [newJobContactEmail, setNewJobContactEmail] = useState("")
   const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
 
-  console.log('[DEBUG] ImportShipmentForm defaultValues:', defaultValues)
-  console.log('[DEBUG] exportCustomsClearanceCharge from defaultValues:', defaultValues?.exportCustomsClearanceCharge)
-
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(importShipmentFormSchema),
     defaultValues: {
@@ -185,6 +182,77 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       ...defaultValues
     },
   })
+
+  // Reset form when defaultValues change (for edit mode)
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        jobType: "import",
+        status: "Awaiting Collection",
+        importCustomerId: "",
+        jobContactName: [],
+        jobContactEmail: [],
+        bookingDate: defaultValues?.bookingDate || format(new Date(), "yyyy-MM-dd"),
+        collectionDate: "",
+        dispatchDate: "",
+        deliveryDate: "",
+        deliveryTime: "",
+        deliveryReference: "",
+        deliveryTimeNotes: "",
+        proofOfDelivery: [],
+        importDateEtaPort: "",
+        portOfArrival: "",
+        trailerOrContainerNumber: "",
+        departureCountry: "",
+        containerShipment: "",
+        handoverContainerAtPort: false,
+        vesselName: "",
+        shippingLine: "",
+        deliveryRelease: "",
+        incoterms: "",
+        numberOfPieces: "",
+        packaging: "",
+        weight: "",
+        cube: "",
+        goodsDescription: "",
+        invoiceValue: "",
+        freightCharge: "",
+        exportCustomsClearanceCharge: "",
+        currency: "",
+        freightRateOut: "",
+        additionalCommodityCodes: 1,
+        additionalCommodityCodeCharge: "",
+        expensesToChargeOut: [],
+        additionalExpensesIn: [],
+        currencyIn: "GBP",
+        haulierFreightRateIn: "",
+        exportClearanceChargeIn: "",
+        destinationClearanceCostIn: "",
+        haulierName: "",
+        haulierContactName: [],
+        haulierEmail: [],
+        haulierTelephone: "",
+        haulierReference: "",
+        vatZeroRated: false,
+        clearanceType: "",
+        customsClearanceAgent: "",
+        rsToClear: false,
+        customerReferenceNumber: "",
+        deliveryAddress: "",
+        supplierName: "",
+        collectionAddress: "",
+        collectionContactName: "",
+        collectionContactTelephone: "",
+        collectionContactEmail: "",
+        collectionReference: "",
+        collectionNotes: "",
+        additionalNotes: "",
+        jobTags: [],
+        attachments: [],
+        ...defaultValues
+      })
+    }
+  }, [defaultValues, form])
 
   const selectedCustomerId = form.watch("importCustomerId")
 
