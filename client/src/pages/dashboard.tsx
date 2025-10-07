@@ -557,7 +557,7 @@ export default function Dashboard() {
             onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="h-auto min-h-6 text-xs border-none focus:ring-1 focus:ring-primary"
+            className="h-auto text-xs text-center bg-transparent border-none focus:ring-0 focus-visible:ring-0 shadow-none p-0"
             placeholder="DD/MM/YY"
           />
         </td>
