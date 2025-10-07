@@ -114,6 +114,9 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [newJobContactEmail, setNewJobContactEmail] = useState("")
   const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
 
+  console.log('[DEBUG] ImportShipmentForm defaultValues:', defaultValues)
+  console.log('[DEBUG] exportCustomsClearanceCharge from defaultValues:', defaultValues?.exportCustomsClearanceCharge)
+
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(importShipmentFormSchema),
     defaultValues: {
