@@ -508,7 +508,6 @@ export const exportShipments = pgTable("export_shipments", {
   // Status Indicators (1=yellow/To Do, 3=green/Done, 4=red/Issue, null=not set)
   bookJobWithHaulierStatusIndicator: integer("book_job_with_haulier_status_indicator").default(1),
   adviseClearanceToAgentStatusIndicator: integer("advise_clearance_to_agent_status_indicator").default(1),
-  adviseClearanceToHaulierStatusIndicator: integer("advise_clearance_to_haulier_status_indicator").default(1),
   sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
   sendPodToCustomerStatusIndicator: integer("send_pod_to_customer_status_indicator").default(1),
@@ -622,6 +621,7 @@ export const customClearances = pgTable("custom_clearances", {
   
   // Status Indicators (1=yellow, 2=orange, 3=green, 4=red)
   adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(1),
+  adviseClearanceToHaulierStatusIndicator: integer("advise_clearance_to_haulier_status_indicator").default(1),
   sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
   sendEntryToCustomerStatusIndicator: integer("send_entry_to_customer_status_indicator").default(1),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
