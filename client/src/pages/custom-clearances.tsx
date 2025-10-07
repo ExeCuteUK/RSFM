@@ -1058,11 +1058,6 @@ export default function CustomClearances() {
                         {clearance.trailerOrContainerNumber}
                       </p>
                     )}
-                    {clearance.clearanceType && (
-                      <p data-testid={`text-clearance-type-${clearance.id}`}>
-                        {clearance.clearanceType}
-                      </p>
-                    )}
                     {clearance.portOfArrival && (
                       <p data-testid={`text-port-${clearance.id}`}>
                         <span className="font-medium">
@@ -1072,6 +1067,12 @@ export default function CustomClearances() {
                             ? "Airport:"
                             : "Port:"}
                         </span> {clearance.portOfArrival}
+                        {clearance.clearanceType && (
+                          <span data-testid={`text-clearance-type-${clearance.id}`}>
+                            {" | "}
+                            <span className="font-medium">Clearance Type:</span> {clearance.clearanceType}
+                          </span>
+                        )}
                       </p>
                     )}
                     {clearance.etaPort && (
