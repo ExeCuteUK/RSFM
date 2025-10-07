@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Calendar, Plus } from "lucide-react"
+import { Search, Calendar, Plus, Eye, EyeOff } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { InvoiceEditDialog } from "@/components/InvoiceEditDialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice } from "@shared/schema"
 
 interface JobJournalEntry {
@@ -82,6 +83,7 @@ export default function JobJournals() {
   const [searchText, setSearchText] = useState("")
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
+  const [showReserveColumns, setShowReserveColumns] = useState(false)
   
   const handleJobRefClick = (jobRef: number, jobType: string) => {
     localStorage.setItem('shipmentSearchJobRef', jobRef.toString())
@@ -300,11 +302,22 @@ export default function JobJournals() {
     if (!searchText.trim()) return matchesJobType
     
     const searchLower = searchText.toLowerCase()
+    
+    // Get purchase invoices for this job
+    const jobInvoices = getInvoicesForJob(entry.jobRef)
+    
     const matchesSearch = 
       entry.jobRef.toString().includes(searchLower) ||
       entry.customerName.toLowerCase().includes(searchLower) ||
       entry.destination.toLowerCase().includes(searchLower) ||
-      entry.regContainerFlight.toLowerCase().includes(searchLower)
+      entry.regContainerFlight.toLowerCase().includes(searchLower) ||
+      (entry.supplier && entry.supplier.toLowerCase().includes(searchLower)) ||
+      (entry.customer && entry.customer.toLowerCase().includes(searchLower)) ||
+      (entry.salesInvoiceNumber && entry.salesInvoiceNumber.toLowerCase().includes(searchLower)) ||
+      jobInvoices.some(inv => 
+        inv.companyName.toLowerCase().includes(searchLower) ||
+        inv.invoiceNumber.toLowerCase().includes(searchLower)
+      )
     
     return matchesJobType && matchesSearch
   })
@@ -341,6 +354,17 @@ export default function JobJournals() {
       }
     }
   }
+
+  // Calculate totals for Amount columns
+  const totalPurchaseAmount = journalEntries.reduce((sum, entry) => {
+    const invoices = getInvoicesForJob(entry.jobRef)
+    const jobTotal = invoices.reduce((jobSum, inv) => jobSum + Number(inv.invoiceAmount), 0)
+    return sum + jobTotal
+  }, 0)
+
+  const totalSalesAmount = journalEntries.reduce((sum, entry) => {
+    return sum + (parseFloat(entry.salesInvoiceAmount || "0") || 0)
+  }, 0)
 
   return (
     <div className="h-full flex flex-col p-6 gap-4 overflow-hidden">
@@ -446,7 +470,7 @@ export default function JobJournals() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by job ref, customer, destination, or identifier..."
+            placeholder="Search by job ref, customer, destination, identifier, supplier, or invoice number..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="pl-9"
@@ -487,6 +511,15 @@ export default function JobJournals() {
             Clearance Only Jobs
           </Button>
         </div>
+        <Button
+          variant={showReserveColumns ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowReserveColumns(!showReserveColumns)}
+          data-testid="toggle-reserve-columns"
+        >
+          {showReserveColumns ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+          Reserve Columns
+        </Button>
       </div>
 
       <Card className="flex-1 flex flex-col min-h-0">
@@ -510,12 +543,16 @@ export default function JobJournals() {
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Invoice No</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Amount</th>
-                  <th className="text-center p-1 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
+                  {showReserveColumns && (
+                    <th className="text-center p-1 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
+                  )}
                   <th className="text-center p-1 font-semibold underline border-l-2 border-r border-border bg-background">Invoice To</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Invoice No</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Amount</th>
-                  <th className="text-center p-1 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
+                  {showReserveColumns && (
+                    <th className="text-center p-1 font-semibold underline border-l-4 border-r-4 border-border bg-background">Reserve</th>
+                  )}
                   <th className="text-center p-1 font-semibold underline border-l-2 bg-background">P/L</th>
                 </tr>
               </thead>
@@ -597,22 +634,33 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-amount-${entry.jobRef}`}>
-                      {(() => {
-                        const invoices = getInvoicesForJob(entry.jobRef)
-                        if (invoices.length === 0) return null
-                        return (
-                          <div className="text-xs space-y-0.5">
-                            {invoices.map((inv) => (
-                              <div key={inv.id}>£{Number(inv.invoiceAmount).toFixed(2)}</div>
-                            ))}
-                          </div>
-                        )
-                      })()}
-                    </td>
-                    <td className="p-1 text-center bg-red-50 dark:bg-red-950 border-l-4 border-r-4 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
-                      {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
-                    </td>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-amount-${entry.jobRef}`}>
+                            {(() => {
+                              const invoices = getInvoicesForJob(entry.jobRef)
+                              if (invoices.length === 0) return null
+                              return (
+                                <div className="text-xs space-y-0.5">
+                                  {invoices.map((inv) => (
+                                    <div key={inv.id}>£{Number(inv.invoiceAmount).toFixed(2)}</div>
+                                  ))}
+                                </div>
+                              )
+                            })()}
+                          </td>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Total: £{getInvoicesForJob(entry.jobRef).reduce((sum, inv) => sum + Number(inv.invoiceAmount), 0).toFixed(2)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    {showReserveColumns && (
+                      <td className="p-1 text-center bg-red-50 dark:bg-red-950 border-l-4 border-r-4 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
+                        {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
+                      </td>
+                    )}
                     <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
                       
                     </td>
@@ -622,12 +670,23 @@ export default function JobJournals() {
                     <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
                       {entry.salesInvoiceDate || ""}
                     </td>
-                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
-                      {entry.salesInvoiceAmount || ""}
-                    </td>
-                    <td className="p-1 text-center bg-green-50 dark:bg-green-950 border-l-4 border-r-4 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
-                      {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
-                    </td>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-amount-${entry.jobRef}`}>
+                            {entry.salesInvoiceAmount || ""}
+                          </td>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Total: {entry.salesInvoiceAmount || "£0.00"}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    {showReserveColumns && (
+                      <td className="p-1 text-center bg-green-50 dark:bg-green-950 border-l-4 border-r-4 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
+                        {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
+                      </td>
+                    )}
                     <td className="p-1 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {(() => {
                         const salesAmount = parseFloat(entry.salesInvoiceAmount || "0") || 0
