@@ -26,7 +26,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
-import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup, ClearanceAgent, ExportShipment } from "@shared/schema"
+import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
+import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup, ClearanceAgent, ExportShipment, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { useEmail } from "@/contexts/EmailContext"
@@ -46,6 +47,7 @@ export default function CustomClearances() {
   const [redButtonPrompt, setRedButtonPrompt] = useState<{ clearanceId: string; statusType: string; statusValue: number } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "transport" | "clearance"; fileName: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [invoiceClearance, setInvoiceClearance] = useState<CustomClearance | null>(null)
   const { toast } = useToast()
   const [location, setLocation] = useLocation()
   
@@ -78,6 +80,11 @@ export default function CustomClearances() {
 
   const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
     queryKey: ["/api/clearance-agents"],
+  })
+
+  // Fetch all invoices
+  const { data: allInvoices = [] } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices"],
   })
 
   const { data: hauliers = [] } = useQuery<any[]>({
@@ -1319,6 +1326,45 @@ export default function CustomClearances() {
                           </div>
                         </div>
                       </div>
+                      <div className="mt-2 pt-2 border-t">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-medium text-muted-foreground">R.S Invoices</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2"
+                              onClick={() => setInvoiceClearance(clearance)}
+                              data-testid={`button-create-invoice-${clearance.id}`}
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              <span className="text-xs">Invoice</span>
+                            </Button>
+                          </div>
+                          {(() => {
+                            const clearanceInvoices = allInvoices.filter(inv => 
+                              inv.jobRef === clearance.jobRef && inv.jobType === 'clearance' && inv.jobId === clearance.id
+                            )
+                            return clearanceInvoices.length > 0 ? (
+                              <div className="space-y-0.5">
+                                {clearanceInvoices.map((invoice) => (
+                                  <div key={invoice.id} className="flex items-center gap-1 group">
+                                    <Receipt className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    <span
+                                      className="text-xs text-primary hover:underline cursor-pointer truncate flex-1"
+                                      title={`Invoice #${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
+                                    >
+                                      #{invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground italic">None</p>
+                            )
+                          })()}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -1502,6 +1548,15 @@ export default function CustomClearances() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Customer Invoice Form Dialog */}
+      <CustomerInvoiceForm
+        job={invoiceClearance}
+        jobType="clearance"
+        open={!!invoiceClearance}
+        onOpenChange={(open) => !open && setInvoiceClearance(null)}
+      />
+
     </div>
   )
 }
