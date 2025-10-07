@@ -1145,7 +1145,7 @@ export default function CustomClearances() {
                               <Mail className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                             </button>
                             <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`todo-send-haulier-ead-${clearance.id}`}>
-                              {clearance.jobType === 'export' ? 'Send Haulier GVMS' : 'Send Haulier EAD'}
+                              {clearance.jobType === 'export' ? 'Send Haulier EAD' : 'Send Haulier GVMS'}
                             </p>
                           </div>
                           <div className="flex items-center gap-1">
