@@ -68,7 +68,7 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       toast({
         title: "Updated",
-        description: "Cell updated successfully",
+        description: "Job updated",
       })
     },
     onError: (error: Error) => {
