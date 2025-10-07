@@ -107,6 +107,7 @@ export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: Imp
     >
       <div className="p-6">
         <ImportShipmentForm
+          key={(payload.defaultValues as any)?.id || 'new'}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           defaultValues={payload.defaultValues}
