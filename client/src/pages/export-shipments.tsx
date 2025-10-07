@@ -25,9 +25,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send, Shield, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send, Shield, ChevronLeft, ChevronRight, Receipt } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
-import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent, Haulier } from "@shared/schema"
+import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
+import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent, Haulier, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { useEmail } from "@/contexts/EmailContext"
@@ -46,6 +47,7 @@ export default function ExportShipments() {
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [invoiceShipment, setInvoiceShipment] = useState<ExportShipment | null>(null)
   const { toast} = useToast()
   const [, setLocation] = useLocation()
   
@@ -85,6 +87,11 @@ export default function ExportShipments() {
 
   const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
     queryKey: ["/api/clearance-agents"],
+  })
+
+  // Fetch all invoices
+  const { data: allInvoices = [] } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices"],
   })
 
   const { data: hauliers = [] } = useQuery<Haulier[]>({
@@ -1182,6 +1189,45 @@ Hope all is OK.`
                             </div>
                           </div>
                         </div>
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-medium text-muted-foreground">R.S Invoices</p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2"
+                                onClick={() => setInvoiceShipment(shipment)}
+                                data-testid={`button-create-invoice-${shipment.id}`}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                <span className="text-xs">Invoice</span>
+                              </Button>
+                            </div>
+                            {(() => {
+                              const shipmentInvoices = allInvoices.filter(inv => 
+                                inv.jobRef === shipment.jobRef && inv.jobType === 'export' && inv.jobId === shipment.id
+                              )
+                              return shipmentInvoices.length > 0 ? (
+                                <div className="space-y-0.5">
+                                  {shipmentInvoices.map((invoice) => (
+                                    <div key={invoice.id} className="flex items-center gap-1 group">
+                                      <Receipt className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <span
+                                        className="text-xs text-primary hover:underline cursor-pointer truncate flex-1"
+                                        title={`Invoice #${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
+                                      >
+                                        #{invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground italic">None</p>
+                              )
+                            })()}
+                          </div>
+                        </div>
                       </div>
                     )
                   })()}
@@ -1851,6 +1897,15 @@ Hope all is OK.`
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Customer Invoice Form Dialog */}
+      <CustomerInvoiceForm
+        job={invoiceShipment}
+        jobType="export"
+        open={!!invoiceShipment}
+        onOpenChange={(open) => !open && setInvoiceShipment(null)}
+      />
+
     </div>
   )
 }
