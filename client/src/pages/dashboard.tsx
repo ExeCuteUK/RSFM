@@ -435,14 +435,16 @@ export default function Dashboard() {
       setEditingCell({ shipmentId: shipment.id, fieldName })
       setTempValue(value)
       
-      // Select all text after entering edit mode (on next render)
-      setTimeout(() => {
-        if (type === "textarea" && textareaRef.current) {
-          textareaRef.current.select()
-        } else if (inputRef.current) {
-          inputRef.current.select()
-        }
-      }, 0)
+      // Select all text after entering edit mode (wait for next paint)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (type === "textarea" && textareaRef.current) {
+            textareaRef.current.select()
+          } else if (inputRef.current) {
+            inputRef.current.select()
+          }
+        })
+      })
     }
 
     const handleBlur = () => {
@@ -585,12 +587,14 @@ export default function Dashboard() {
       // If there's a timestamp, show it in DD/MM/YY format for editing
       setTempValue(timestamp ? formatTimestampDDMMYY(timestamp) : "")
       
-      // Select all text after entering edit mode (on next render)
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.select()
-        }
-      }, 0)
+      // Select all text after entering edit mode (wait for next paint)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (inputRef.current) {
+            inputRef.current.select()
+          }
+        })
+      })
     }
 
     const handleBlur = () => {
