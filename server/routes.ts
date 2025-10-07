@@ -1821,25 +1821,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update advise clearance to haulier status indicator
-  app.patch("/api/custom-clearances/:id/advise-clearance-to-haulier-status", async (req, res) => {
-    try {
-      const { status } = req.body;
-      if (![1, 3, 4].includes(status)) {
-        return res.status(400).json({ error: "Status must be 1, 3, or 4" });
-      }
-      const clearance = await storage.updateCustomClearance(req.params.id, { 
-        adviseClearanceToHaulierStatusIndicator: status 
-      });
-      if (!clearance) {
-        return res.status(404).json({ error: "Custom clearance not found" });
-      }
-      res.json(clearance);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update advise clearance to haulier status" });
-    }
-  });
-
   // Update send haulier EAD status indicator
   app.patch("/api/custom-clearances/:id/send-haulier-ead-status", async (req, res) => {
     try {
