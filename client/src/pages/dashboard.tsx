@@ -764,7 +764,7 @@ export default function Dashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table className="w-full border-collapse text-xs table-fixed">
+                <table className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
                   <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b-2">
                       <th className="p-1 text-center font-semibold border-r border-border bg-background w-16">Ref</th>
