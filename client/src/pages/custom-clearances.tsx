@@ -1195,7 +1195,7 @@ export default function CustomClearances() {
                           </div>
                         </div>
 
-                        {clearance.jobType === "export" && (
+                        {clearance.jobType === "import" && (
                           <>
                             <div className="flex items-center justify-between gap-2 flex-wrap">
                               <div className="flex items-center gap-1.5">
