@@ -498,7 +498,9 @@ export default function Dashboard() {
               onChange={(e) => setTempValue(e.target.value)}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
-              onClick={(e) => e.currentTarget.select()}
+              onMouseDown={(e) => {
+                setTimeout(() => e.currentTarget.select(), 0)
+              }}
               className="w-full min-h-[60px] max-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
               rows={3}
             />
@@ -515,7 +517,9 @@ export default function Dashboard() {
             onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            onClick={(e) => e.currentTarget.select()}
+            onMouseDown={(e) => {
+              setTimeout(() => e.currentTarget.select(), 0)
+            }}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
             placeholder={type === "date" ? "DD/MM/YY" : ""}
           />
@@ -620,7 +624,9 @@ export default function Dashboard() {
             onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            onClick={(e) => e.currentTarget.select()}
+            onMouseDown={(e) => {
+              setTimeout(() => e.currentTarget.select(), 0)
+            }}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
             placeholder="DD/MM/YY"
           />
