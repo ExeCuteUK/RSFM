@@ -1070,7 +1070,7 @@ export default function CustomClearances() {
                         {clearance.clearanceType && (
                           <span data-testid={`text-clearance-type-${clearance.id}`}>
                             {" | "}
-                            <span className="font-medium">Clearance Type:</span> {clearance.clearanceType}
+                            <span className="font-medium">Clearance Type:</span> {clearance.jobType === "export" ? "EAD" : clearance.clearanceType}
                           </span>
                         )}
                       </p>
