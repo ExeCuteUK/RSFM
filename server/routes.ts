@@ -1002,7 +1002,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (req.body.goodsDescription !== undefined) clearanceUpdate.goodsDescription = shipment.goodsDescription;
         if (req.body.invoiceValue !== undefined) clearanceUpdate.invoiceValue = shipment.invoiceValue;
         if (req.body.freightCharge !== undefined) clearanceUpdate.transportCosts = shipment.freightCharge;
-        if (req.body.clearanceCharge !== undefined) clearanceUpdate.clearanceCharge = shipment.clearanceCharge;
+        if (req.body.exportCustomsClearanceCharge !== undefined) clearanceUpdate.clearanceCharge = shipment.exportCustomsClearanceCharge;
         if (req.body.currency !== undefined) clearanceUpdate.currency = shipment.currency;
         if (req.body.additionalCommodityCodes !== undefined) clearanceUpdate.additionalCommodityCodes = shipment.additionalCommodityCodes;
         if (req.body.vatZeroRated !== undefined) clearanceUpdate.vatZeroRated = shipment.vatZeroRated;
@@ -1693,7 +1693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.goodsDescription !== undefined) shipmentUpdate.goodsDescription = clearance.goodsDescription;
           if (req.body.invoiceValue !== undefined) shipmentUpdate.invoiceValue = clearance.invoiceValue;
           if (req.body.transportCosts !== undefined) shipmentUpdate.freightCharge = clearance.transportCosts;
-          if (req.body.clearanceCharge !== undefined) shipmentUpdate.clearanceCharge = clearance.clearanceCharge;
+          if (req.body.clearanceCharge !== undefined) shipmentUpdate.exportCustomsClearanceCharge = clearance.clearanceCharge;
           if (req.body.currency !== undefined) shipmentUpdate.currency = clearance.currency;
           if (req.body.additionalCommodityCodes !== undefined) shipmentUpdate.additionalCommodityCodes = clearance.additionalCommodityCodes;
           if (req.body.vatZeroRated !== undefined) shipmentUpdate.vatZeroRated = clearance.vatZeroRated;
