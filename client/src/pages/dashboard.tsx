@@ -10,18 +10,25 @@ export default function Dashboard() {
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
   })
 
   const { data: exportShipments = [] } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
   })
 
   const { data: customClearances = [] } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
   })
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
+    refetchOnWindowFocus: true,
   })
 
   // Filter container shipments
