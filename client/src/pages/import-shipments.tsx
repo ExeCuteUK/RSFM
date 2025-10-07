@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check, ChevronLeft, ChevronRight, Mail } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
@@ -256,6 +256,15 @@ export default function ImportShipments() {
   const updateSendPodToCustomerStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number | null }) => {
       return apiRequest("PATCH", `/api/import-shipments/${id}/send-pod-to-customer-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
+  const updateSendHaulierEadStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number | null }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/send-haulier-ead-status`, { status })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
@@ -662,6 +671,10 @@ export default function ImportShipments() {
 
   const handleSendPodToCustomerStatusUpdate = (id: string, status: number) => {
     updateSendPodToCustomerStatus.mutate({ id, status })
+  }
+
+  const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
+    updateSendHaulierEadStatus.mutate({ id, status })
   }
 
   const handleBookDeliveryCustomerEmail = (shipment: ImportShipment) => {
@@ -1500,6 +1513,40 @@ Hope all is OK.`
                       </div>
                     </div>
                   </div>
+                  {shipment.containerShipment === "Road Shipment" && !shipment.rsToClear && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <p className={`text-xs ${getSendPodToCustomerStatusColor(shipment.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`text-send-haulier-gvms-${shipment.id}`}>
+                            Send Haulier GVMS
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 1)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendHaulierEadStatusIndicator === 1 || shipment.sendHaulierEadStatusIndicator === null
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                            }`}
+                            data-testid={`button-send-haulier-gvms-yellow-${shipment.id}`}
+                            title="To Do"
+                          />
+                          <button
+                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendHaulierEadStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover-elevate'
+                            }`}
+                            data-testid={`button-send-haulier-gvms-green-${shipment.id}`}
+                            title="Completed"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
