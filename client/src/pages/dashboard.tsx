@@ -481,7 +481,7 @@ export default function Dashboard() {
 
                       // Helper to get cell color (green if populated, yellow if empty)
                       const getCellColor = (value: string | null | undefined): string => {
-                        return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-100 dark:bg-yellow-900"
+                        return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-800"
                       }
 
                       if (nisbetsShipments.length === 0) {
@@ -563,7 +563,7 @@ export default function Dashboard() {
                               {priceOut}
                             </td>
                             <td className={`px-1 text-center border-r border-border align-middle ${
-                              shipment.sendPodToCustomerStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-100 dark:bg-yellow-900'
+                              shipment.sendPodToCustomerStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-200 dark:bg-yellow-800'
                             }`} data-testid={`cell-pod-sent-${shipment.jobRef}`}>
                               {shipment.sendPodToCustomerStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendPodToCustomerStatusIndicatorTimestamp) : ''}
                             </td>
