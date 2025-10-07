@@ -352,10 +352,197 @@ export default function Dashboard() {
         <TabsContent value="nisbets" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Nisbets</CardTitle>
+              <CardTitle>Nisbets Shipment Card</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Nisbets work view - coming soon</p>
+            <CardContent className="space-y-4">
+              {/* Search Bar */}
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by job ref, Ligentia ref, haulier, supplier, truck number..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="pl-9"
+                    data-testid="input-search-nisbets"
+                  />
+                </div>
+              </div>
+
+              <div className="overflow-auto">
+                <table className="w-full border-collapse text-xs">
+                  <thead className="sticky top-0 bg-background z-10">
+                    <tr className="border-b-2">
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Ref</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Ligentia Ref</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Haulier</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Supplier</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Country</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Destination</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Date of Collection</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Departure Date</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Truck Number</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Port</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Eta Uk Port</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Total Package</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Weight</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Details Sent to Ligentia</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Entry to Haulier</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Booked Date</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Price Out</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background">Pod Sent</th>
+                      <th className="p-1 text-center font-semibold bg-background">Net Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-xs">
+                    {(() => {
+                      // Find Nisbets PLC customer ID
+                      const nisbetsCustomer = importCustomers.find(c => c.companyName === "Nisbets PLC")
+                      
+                      // Filter for Road Shipment jobs with Nisbets PLC customer
+                      const nisbetsShipments = importShipments
+                        .filter(s => s.containerShipment === "Road Shipment" && s.importCustomerId === nisbetsCustomer?.id)
+                        .filter(s => {
+                          if (!searchText.trim()) return true
+                          const search = searchText.toLowerCase()
+                          return (
+                            s.jobRef?.toString().includes(search) ||
+                            s.customerReferenceNumber?.toLowerCase().includes(search) ||
+                            s.haulierName?.toLowerCase().includes(search) ||
+                            s.supplierName?.toLowerCase().includes(search) ||
+                            s.trailerOrContainerNumber?.toLowerCase().includes(search)
+                          )
+                        })
+                        .sort((a, b) => (b.jobRef || 0) - (a.jobRef || 0))
+
+                      // Helper to extract city/town from delivery address
+                      const getDestination = (address: string | null): string => {
+                        if (!address) return ""
+                        const lines = address.split('\n').map(l => l.trim()).filter(l => l)
+                        // Return second-to-last line (usually city/town) or last line if only one line exists
+                        return lines.length > 1 ? lines[lines.length - 2] : lines[0] || ""
+                      }
+
+                      // Helper to format Price Out (3 lines max)
+                      const formatPriceOut = (shipment: ImportShipment): string => {
+                        const lines: string[] = []
+                        if (shipment.freightRateOut && parseFloat(shipment.freightRateOut) > 0) {
+                          lines.push(`£${shipment.freightRateOut} Freight`)
+                        }
+                        if (shipment.exportCustomsClearanceCharge && parseFloat(shipment.exportCustomsClearanceCharge) > 0) {
+                          lines.push(`£${shipment.exportCustomsClearanceCharge} Exp CC`)
+                        }
+                        // Note: Import CC Charge Out field doesn't exist in schema, so we skip it
+                        return lines.join('\n')
+                      }
+
+                      // Helper to format Net Cost (3 lines max)
+                      const formatNetCost = (shipment: ImportShipment): string => {
+                        const lines: string[] = []
+                        if (shipment.haulierFreightRateIn && parseFloat(shipment.haulierFreightRateIn) > 0) {
+                          lines.push(`£${shipment.haulierFreightRateIn} Freight`)
+                        }
+                        if (shipment.exportClearanceChargeIn && parseFloat(shipment.exportClearanceChargeIn) > 0) {
+                          lines.push(`£${shipment.exportClearanceChargeIn} Exp CC`)
+                        }
+                        if (shipment.destinationClearanceCostIn && parseFloat(shipment.destinationClearanceCostIn) > 0) {
+                          lines.push(`£${shipment.destinationClearanceCostIn} Imp CC`)
+                        }
+                        return lines.join('\n')
+                      }
+
+                      // Helper to get cell color (green if populated)
+                      const getCellColor = (value: string | null | undefined): string => {
+                        return value ? "bg-green-100 dark:bg-green-900" : ""
+                      }
+
+                      if (nisbetsShipments.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan={19} className="p-4 text-center text-muted-foreground">
+                              No Nisbets Road Shipment jobs found
+                            </td>
+                          </tr>
+                        )
+                      }
+
+                      return nisbetsShipments.map((shipment) => {
+                        const destination = getDestination(shipment.deliveryAddress)
+                        const priceOut = formatPriceOut(shipment)
+                        const netCost = formatNetCost(shipment)
+
+                        return (
+                          <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-nisbets-${shipment.jobRef}`}>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                              <button
+                                onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
+                                className="text-primary hover:underline font-semibold"
+                                data-testid={`link-job-${shipment.jobRef}`}
+                              >
+                                {shipment.jobRef}
+                              </button>
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.customerReferenceNumber)}`} data-testid={`cell-ligentia-ref-${shipment.jobRef}`}>
+                              {shipment.customerReferenceNumber || ""}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.haulierName)}`} data-testid={`cell-haulier-${shipment.jobRef}`}>
+                              {shipment.haulierName || ""}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.supplierName)}`} data-testid={`cell-supplier-${shipment.jobRef}`}>
+                              {shipment.supplierName || ""}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.departureCountry)}`} data-testid={`cell-country-${shipment.jobRef}`}>
+                              {shipment.departureCountry || ""}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(destination)}`} data-testid={`cell-destination-${shipment.jobRef}`}>
+                              {destination}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.collectionDate)}`} data-testid={`cell-collection-date-${shipment.jobRef}`}>
+                              {formatDate(shipment.collectionDate)}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.dispatchDate)}`} data-testid={`cell-departure-date-${shipment.jobRef}`}>
+                              {formatDate(shipment.dispatchDate)}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.trailerOrContainerNumber)}`} data-testid={`cell-truck-${shipment.jobRef}`}>
+                              {shipment.trailerOrContainerNumber || ""}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.portOfArrival)}`} data-testid={`cell-port-${shipment.jobRef}`}>
+                              {shipment.portOfArrival || ""}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.importDateEtaPort)}`} data-testid={`cell-eta-${shipment.jobRef}`}>
+                              {formatDate(shipment.importDateEtaPort)}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.numberOfPieces)}`} data-testid={`cell-packages-${shipment.jobRef}`}>
+                              {shipment.numberOfPieces || ""}
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.weight)}`} data-testid={`cell-weight-${shipment.jobRef}`}>
+                              {shipment.weight || ""}
+                            </td>
+                            <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
+                              
+                            </td>
+                            <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
+                              
+                            </td>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.deliveryDate)}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
+                              {formatDate(shipment.deliveryDate)}
+                            </td>
+                            <td className={`px-1 text-left align-top whitespace-pre-wrap border-r border-border ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
+                              {priceOut}
+                            </td>
+                            <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-pod-sent-${shipment.jobRef}`}>
+                              
+                            </td>
+                            <td className={`px-1 text-left align-top whitespace-pre-wrap ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
+                              {netCost}
+                            </td>
+                          </tr>
+                        )
+                      })
+                    })()}
+                  </tbody>
+                </table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
