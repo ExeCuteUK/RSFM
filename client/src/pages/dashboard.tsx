@@ -66,6 +66,10 @@ export default function Dashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      toast({
+        title: "Updated",
+        description: "Cell updated successfully",
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -394,10 +398,10 @@ export default function Dashboard() {
       if (isEditing) {
         if (type === "textarea" && textareaRef.current && document.activeElement !== textareaRef.current) {
           textareaRef.current.focus()
-          textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length)
+          textareaRef.current.select()
         } else if (inputRef.current && document.activeElement !== inputRef.current) {
           inputRef.current.focus()
-          inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length)
+          inputRef.current.select()
         }
       }
     }, [isEditing, type])
@@ -536,7 +540,7 @@ export default function Dashboard() {
     useEffect(() => {
       if (isEditing && inputRef.current && document.activeElement !== inputRef.current) {
         inputRef.current.focus()
-        inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length)
+        inputRef.current.select()
       }
     }, [isEditing])
 
