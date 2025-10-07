@@ -83,6 +83,17 @@ export default function Dashboard() {
     return customer?.companyName || ""
   }
 
+  // Format time to 12-hour clock with AM/PM
+  const formatTime12Hour = (time: string | null): string => {
+    if (!time) return ""
+    
+    const [hours, minutes] = time.split(':').map(Number)
+    const period = hours >= 12 ? 'PM' : 'AM'
+    const hour12 = hours % 12 || 12
+    
+    return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`
+  }
+
   // Helper to get linked clearance for a job
   const getLinkedClearance = (jobRef: number): CustomClearance | undefined => {
     return customClearances.find((c) => c.jobRef === jobRef)
@@ -285,7 +296,7 @@ export default function Dashboard() {
                               {shipment.customerReferenceNumber || ""}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
-                              {shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${shipment.deliveryTime}` : ''}` : ''}
+                              {shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : ''}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
                               {shipment.deliveryRelease || ""}
@@ -294,10 +305,10 @@ export default function Dashboard() {
                               {shipment.deliveryAddress || ""}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
-                              {shipment.haulierFreightRateIn || ""}
+                              {shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
-                              {shipment.freightRateOut || ""}
+                              {shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}
                             </td>
                             <td className="p-1 text-center bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
                               {shipment.additionalNotes || ""}
