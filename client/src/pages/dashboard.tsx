@@ -547,14 +547,12 @@ export default function Dashboard() {
                               {shipment.weight || ""}
                             </td>
                             <td className={`px-1 text-center border-r border-border align-middle ${
-                              shipment.clearanceStatusIndicator === 2 ? 'bg-yellow-100 dark:bg-yellow-900' :
-                              shipment.clearanceStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : ''
+                              shipment.clearanceStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-100 dark:bg-yellow-900'
                             }`} data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
                               {shipment.clearanceStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.clearanceStatusIndicatorTimestamp) : ''}
                             </td>
                             <td className={`px-1 text-center border-r border-border align-middle ${
-                              shipment.sendHaulierEadStatusIndicator === 2 ? 'bg-yellow-100 dark:bg-yellow-900' :
-                              shipment.sendHaulierEadStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : ''
+                              shipment.sendHaulierEadStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-100 dark:bg-yellow-900'
                             }`} data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
                               {shipment.sendHaulierEadStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ''}
                             </td>
@@ -565,8 +563,7 @@ export default function Dashboard() {
                               {priceOut}
                             </td>
                             <td className={`px-1 text-center border-r border-border align-middle ${
-                              shipment.sendPodToCustomerStatusIndicator === 2 ? 'bg-yellow-100 dark:bg-yellow-900' :
-                              shipment.sendPodToCustomerStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : ''
+                              shipment.sendPodToCustomerStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-100 dark:bg-yellow-900'
                             }`} data-testid={`cell-pod-sent-${shipment.jobRef}`}>
                               {shipment.sendPodToCustomerStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendPodToCustomerStatusIndicatorTimestamp) : ''}
                             </td>
