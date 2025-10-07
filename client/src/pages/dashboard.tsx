@@ -124,6 +124,18 @@ export default function Dashboard() {
     return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`
   }
 
+  // Format timestamp to DD/MM/YY
+  const formatTimestampDDMMYY = (timestamp: string | null | undefined): string => {
+    if (!timestamp) return ""
+    
+    const date = new Date(timestamp)
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear().toString().slice(-2)
+    
+    return `${day}/${month}/${year}`
+  }
+
   // Helper to determine cell background color based on clearance status
   const getClearanceStatusColor = (shipment: ImportShipment): string => {
     const adviseStatus = (shipment as any).adviseClearanceToAgentStatusIndicator
@@ -518,8 +530,8 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.weight)}`} data-testid={`cell-weight-${shipment.jobRef}`}>
                               {shipment.weight || ""}
                             </td>
-                            <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
-                              
+                            <td className={`px-1 text-center border-r border-border align-middle ${shipment.clearanceStatusIndicatorTimestamp ? 'bg-green-100 dark:bg-green-900' : ''}`} data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
+                              {formatTimestampDDMMYY(shipment.clearanceStatusIndicatorTimestamp)}
                             </td>
                             <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
                               
