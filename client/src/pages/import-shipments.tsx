@@ -1973,6 +1973,14 @@ Hope all is OK.`
                                       >
                                         #{invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
                                       </span>
+                                      <a
+                                        href={`/api/invoices/${invoice.id}/pdf`}
+                                        download={`RS Invoice - ${invoice.jobRef}.pdf`}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-download-invoice-${invoice.id}`}
+                                      >
+                                        <FileOutput className="h-3 w-3 text-primary hover:text-primary/80" />
+                                      </a>
                                     </div>
                                   ))}
                                 </div>
