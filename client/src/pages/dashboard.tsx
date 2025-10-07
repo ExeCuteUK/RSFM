@@ -49,13 +49,43 @@ export default function Dashboard() {
     }
   }
 
+  // Helper to get linked clearance for a job
+  const getLinkedClearance = (jobRef: number): CustomClearance | undefined => {
+    return customClearances.find((c) => c.jobRef === jobRef)
+  }
+
+  // Helper to check if entire row is green (completed)
+  const isRowFullyGreen = (shipment: ImportShipment): boolean => {
+    const adviseStatus = (shipment as any).adviseClearanceToAgentStatusIndicator
+    
+    // Check clearance status (columns A-H)
+    let clearanceIsGreen = false
+    if (adviseStatus === 3) {
+      clearanceIsGreen = true
+    } else {
+      const clearance = getLinkedClearance(shipment.jobRef)
+      if (clearance && ["Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
+        clearanceIsGreen = true
+      }
+    }
+    
+    // Check all other status indicators
+    const deliveryBookedIsGreen = shipment.deliveryBookedStatusIndicator === 3
+    const containerReleaseIsGreen = shipment.containerReleaseStatusIndicator === 3
+    const addressIsGreen = !!(shipment.deliveryAddress && shipment.deliveryAddress.trim().length > 0)
+    const invoiceIsGreen = shipment.invoiceCustomerStatusIndicator === 3
+    
+    // All must be green for row to be completed
+    return clearanceIsGreen && deliveryBookedIsGreen && containerReleaseIsGreen && addressIsGreen && invoiceIsGreen
+  }
+
   // Filter container shipments
   const containerShipments = importShipments
     .filter((s) => s.containerShipment === "Container Shipment")
     // Apply job status filter
     .filter((s) => {
-      const isCompleted = s.status === "Delivered"
-      const isActive = s.status !== "Delivered"
+      const isCompleted = isRowFullyGreen(s)
+      const isActive = !isRowFullyGreen(s)
       
       if (jobStatusFilter.includes("active") && jobStatusFilter.includes("completed")) return true
       if (jobStatusFilter.includes("active") && isActive) return true
@@ -92,11 +122,6 @@ export default function Dashboard() {
     const hour12 = hours % 12 || 12
     
     return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`
-  }
-
-  // Helper to get linked clearance for a job
-  const getLinkedClearance = (jobRef: number): CustomClearance | undefined => {
-    return customClearances.find((c) => c.jobRef === jobRef)
   }
 
   // Helper to determine cell background color based on clearance status
@@ -264,8 +289,8 @@ export default function Dashboard() {
                         const invoiceColor = getInvoiceStatusColor(shipment.invoiceCustomerStatusIndicator)
 
                         return (
-                          <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                          <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-container-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
                                 className="text-primary hover:underline font-semibold"
@@ -274,43 +299,43 @@ export default function Dashboard() {
                                 {shipment.jobRef}
                               </button>
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
                               {getCustomerName(shipment.importCustomerId)}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-container-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-container-${shipment.jobRef}`}>
                               {shipment.trailerOrContainerNumber || ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-shipline-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-shipline-${shipment.jobRef}`}>
                               {shipment.shippingLine || ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-poa-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-poa-${shipment.jobRef}`}>
                               {shipment.portOfArrival || ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-vessel-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-vessel-${shipment.jobRef}`}>
                               {shipment.vesselName || ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-eta-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-eta-${shipment.jobRef}`}>
                               {formatDate(shipment.importDateEtaPort)}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               {shipment.customerReferenceNumber || ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border whitespace-nowrap ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle whitespace-nowrap ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
                               {shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : ''}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border font-bold ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle font-bold ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
                               {shipment.deliveryRelease || ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${addressColor}`} data-testid={`cell-address-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${addressColor}`} data-testid={`cell-address-${shipment.jobRef}`}>
                               {shipment.deliveryAddress || ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${invoiceColor}`} data-testid={`cell-rate-in-${shipment.jobRef}`}>
                               {shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}
                             </td>
-                            <td className={`py-2 px-1 text-center border-r border-border ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
+                            <td className={`py-3 px-1 text-center border-r border-border align-middle ${invoiceColor}`} data-testid={`cell-rate-out-${shipment.jobRef}`}>
                               {shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}
                             </td>
-                            <td className="py-2 px-1 text-center bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
+                            <td className="py-3 px-1 text-center align-middle bg-green-100 dark:bg-green-900" data-testid={`cell-notes-${shipment.jobRef}`}>
                               {shipment.additionalNotes || ""}
                             </td>
                           </tr>
