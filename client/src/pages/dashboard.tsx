@@ -295,10 +295,10 @@ export default function Dashboard() {
                             <td className={`p-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               {shipment.customerReferenceNumber || ""}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
+                            <td className={`p-1 text-center border-r border-border whitespace-nowrap ${deliveryBookedColor}`} data-testid={`cell-delivery-${shipment.jobRef}`}>
                               {shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : ''}
                             </td>
-                            <td className={`p-1 text-center border-r border-border ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
+                            <td className={`p-1 text-center border-r border-border font-bold ${releaseColor}`} data-testid={`cell-rls-${shipment.jobRef}`}>
                               {shipment.deliveryRelease || ""}
                             </td>
                             <td className={`p-1 text-center border-r border-border ${addressColor}`} data-testid={`cell-address-${shipment.jobRef}`}>
