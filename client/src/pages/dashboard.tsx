@@ -371,10 +371,12 @@ export default function Dashboard() {
 
     useEffect(() => {
       if (isEditing) {
-        if (type === "textarea" && textareaRef.current) {
+        if (type === "textarea" && textareaRef.current && document.activeElement !== textareaRef.current) {
           textareaRef.current.focus()
-        } else if (inputRef.current) {
+          textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length)
+        } else if (inputRef.current && document.activeElement !== inputRef.current) {
           inputRef.current.focus()
+          inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length)
         }
       }
     }, [isEditing, type])
@@ -505,8 +507,9 @@ export default function Dashboard() {
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
-      if (isEditing && inputRef.current) {
+      if (isEditing && inputRef.current && document.activeElement !== inputRef.current) {
         inputRef.current.focus()
+        inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length)
       }
     }, [isEditing])
 
