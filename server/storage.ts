@@ -28,6 +28,8 @@ import {
   type InsertJobFileGroup,
   type PurchaseInvoice,
   type InsertPurchaseInvoice,
+  type Invoice,
+  type InsertInvoice,
   importCustomers,
   exportCustomers,
   exportReceivers,
@@ -40,6 +42,7 @@ import {
   customClearances,
   jobFileGroups,
   purchaseInvoices,
+  invoices,
   users,
   messages
 } from "@shared/schema";
@@ -166,6 +169,15 @@ export interface IStorage {
   createManyPurchaseInvoices(invoices: InsertPurchaseInvoice[]): Promise<PurchaseInvoice[]>;
   updatePurchaseInvoice(id: string, invoice: Partial<InsertPurchaseInvoice>): Promise<PurchaseInvoice | undefined>;
   deletePurchaseInvoice(id: string): Promise<boolean>;
+
+  // Invoice methods (Customer/Sales Invoices)
+  getAllInvoices(): Promise<Invoice[]>;
+  getInvoicesByJobRef(jobRef: number): Promise<Invoice[]>;
+  getInvoice(id: string): Promise<Invoice | undefined>;
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  updateInvoice(id: string, invoice: Partial<InsertInvoice>): Promise<Invoice | undefined>;
+  deleteInvoice(id: string): Promise<boolean>;
+  getNextInvoiceNumber(): Promise<number>;
 }
 
 export class MemStorage implements IStorage {
@@ -1928,6 +1940,69 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(purchaseInvoices)
       .where(eq(purchaseInvoices.id, id));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Invoice methods (Customer/Sales Invoices)
+  async getAllInvoices(): Promise<Invoice[]> {
+    const allInvoices = await db.select()
+      .from(invoices)
+      .orderBy(desc(invoices.invoiceDate), desc(invoices.invoiceNumber));
+    return allInvoices;
+  }
+
+  async getInvoicesByJobRef(jobRef: number): Promise<Invoice[]> {
+    const jobInvoices = await db.select()
+      .from(invoices)
+      .where(eq(invoices.jobRef, jobRef))
+      .orderBy(desc(invoices.invoiceDate));
+    return jobInvoices;
+  }
+
+  async getInvoice(id: string): Promise<Invoice | undefined> {
+    const [invoice] = await db.select()
+      .from(invoices)
+      .where(eq(invoices.id, id));
+    return invoice;
+  }
+
+  async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
+    const nextInvoiceNumber = await this.getNextInvoiceNumber();
+    
+    const [invoice] = await db.insert(invoices)
+      .values({
+        ...insertInvoice,
+        invoiceNumber: nextInvoiceNumber,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .returning();
+    return invoice;
+  }
+
+  async updateInvoice(id: string, updates: Partial<InsertInvoice>): Promise<Invoice | undefined> {
+    const [updated] = await db.update(invoices)
+      .set({
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(invoices.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteInvoice(id: string): Promise<boolean> {
+    const result = await db.delete(invoices)
+      .where(eq(invoices.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async getNextInvoiceNumber(): Promise<number> {
+    const [result] = await db.select({
+      maxInvoiceNumber: sql<number>`COALESCE(MAX(${invoices.invoiceNumber}), 106011)`
+    })
+      .from(invoices);
+    
+    return (result?.maxInvoiceNumber || 106011) + 1;
   }
 }
 

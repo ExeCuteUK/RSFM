@@ -2111,6 +2111,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Invoices (Customer/Sales Invoices) ==========
+
+  // Get all invoices
+  app.get("/api/invoices", async (_req, res) => {
+    try {
+      const invoices = await storage.getAllInvoices();
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch invoices" });
+    }
+  });
+
+  // Get invoices by job reference
+  app.get("/api/invoices/job/:jobRef", async (req, res) => {
+    try {
+      const jobRef = parseInt(req.params.jobRef);
+      if (isNaN(jobRef)) {
+        return res.status(400).json({ error: "Invalid job reference" });
+      }
+      
+      const invoices = await storage.getInvoicesByJobRef(jobRef);
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch invoices" });
+    }
+  });
+
+  // Get single invoice
+  app.get("/api/invoices/:id", async (req, res) => {
+    try {
+      const invoice = await storage.getInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      res.json(invoice);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch invoice" });
+    }
+  });
+
+  // Create invoice
+  app.post("/api/invoices", async (req, res) => {
+    try {
+      const invoice = await storage.createInvoice(req.body);
+      
+      // Update the invoice customer status indicator for the job
+      const { jobType, jobId } = req.body;
+      if (jobType === "import") {
+        await storage.updateImportShipment(jobId, {
+          invoiceCustomerStatusIndicator: 3,
+          invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
+        });
+      } else if (jobType === "export") {
+        await storage.updateExportShipment(jobId, {
+          invoiceCustomerStatusIndicator: 3,
+          invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
+        });
+      } else if (jobType === "clearance") {
+        await storage.updateCustomClearance(jobId, {
+          invoiceCustomerStatusIndicator: 3,
+          invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
+        });
+      }
+      
+      res.status(201).json(invoice);
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      res.status(500).json({ error: "Failed to create invoice" });
+    }
+  });
+
+  // Update invoice
+  app.patch("/api/invoices/:id", async (req, res) => {
+    try {
+      const invoice = await storage.updateInvoice(req.params.id, req.body);
+      if (!invoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      res.json(invoice);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update invoice" });
+    }
+  });
+
+  // Delete invoice
+  app.delete("/api/invoices/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteInvoice(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete invoice" });
+    }
+  });
+
   // ========== Static Assets ==========
   
   // Serve company logo for email signatures
