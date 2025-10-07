@@ -416,7 +416,7 @@ export default function Dashboard() {
     if (isEditing) {
       if (type === "dropdown") {
         return (
-          <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
+          <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
             <Select
               value={tempValue}
               onValueChange={(val) => {
@@ -424,7 +424,7 @@ export default function Dashboard() {
                 handleSave(shipment.id, fieldName, val)
               }}
             >
-              <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none">
+              <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent>
@@ -448,7 +448,7 @@ export default function Dashboard() {
               onChange={(e) => setTempValue(e.target.value)}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
-              className="w-full min-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0"
+              className="w-full min-h-[60px] max-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
               rows={3}
             />
           </td>
@@ -480,7 +480,7 @@ export default function Dashboard() {
         {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName ? (
           <Loader2 className="h-3 w-3 animate-spin mx-auto" />
         ) : (
-          <span className={type === "textarea" ? "whitespace-pre-wrap text-left block text-xs" : "text-xs"}>
+          <span className={type === "textarea" ? "whitespace-pre-wrap block text-xs leading-tight" : "text-xs"}>
             {displayValue !== undefined ? displayValue : value || ""}
           </span>
         )}
