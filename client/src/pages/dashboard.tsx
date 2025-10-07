@@ -547,8 +547,8 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${shipment.clearanceStatusIndicatorTimestamp ? 'bg-green-100 dark:bg-green-900' : ''}`} data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
                               {formatTimestampDDMMYY(shipment.clearanceStatusIndicatorTimestamp)}
                             </td>
-                            <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
-                              
+                            <td className={`px-1 text-center border-r border-border align-middle ${shipment.sendHaulierEadStatusIndicatorTimestamp ? 'bg-green-100 dark:bg-green-900' : ''}`} data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
+                              {formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp)}
                             </td>
                             <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsDeliveryBookedDateColor(shipment)}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
                               {formatDate(shipment.deliveryDate)}
