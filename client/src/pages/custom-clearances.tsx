@@ -1131,6 +1131,49 @@ export default function CustomClearances() {
 
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                if (clearance.jobType === 'export') {
+                                  handleSendHaulierEadEmail(clearance)
+                                } else {
+                                  handleSendHaulierEadEmail(clearance)
+                                }
+                              }}
+                              className="hover-elevate rounded p-0 shrink-0"
+                              data-testid={`button-send-haulier-ead-icon-${clearance.id}`}
+                            >
+                              <Mail className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                            </button>
+                            <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`todo-send-haulier-ead-${clearance.id}`}>
+                              {clearance.jobType === 'export' ? 'Send Haulier GVMS' : 'Send Haulier EAD'}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 1)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendHaulierEadStatusIndicator === 1 || clearance.sendHaulierEadStatusIndicator === null
+                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              }`}
+                              data-testid={`button-send-haulier-ead-yellow-${clearance.id}`}
+                              title="To Do"
+                            />
+                            <button
+                              onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 3)}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                clearance.sendHaulierEadStatusIndicator === 3
+                                  ? 'bg-green-400 border-green-500 scale-110'
+                                  : 'bg-green-200 border-green-300 hover-elevate'
+                              }`}
+                              data-testid={`button-send-haulier-ead-green-${clearance.id}`}
+                              title="Completed"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
                             <Send className="h-4 w-4 text-muted-foreground shrink-0" />
                             <p className={`text-xs ${getStatusColor(clearance.sendHaulierClearanceDocStatusIndicator)} font-medium`} data-testid={`todo-send-clearance-doc-${clearance.id}`}>
                               Send Haulier Clearance Document
