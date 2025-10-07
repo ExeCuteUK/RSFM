@@ -201,15 +201,6 @@ export default function ExportShipments() {
     },
   })
 
-  const updateAdviseClearanceToHaulierStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: number }) => {
-      return apiRequest("PATCH", `/api/export-shipments/${id}/advise-clearance-to-haulier-status`, { status })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
-    },
-  })
-
   const updateInvoiceCustomerStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
       return apiRequest("PATCH", `/api/export-shipments/${id}/invoice-customer-status`, { status })
@@ -448,10 +439,6 @@ export default function ExportShipments() {
 
   const handleAdviseClearanceToAgentStatusUpdate = (id: string, status: number) => {
     updateAdviseClearanceToAgentStatus.mutate({ id, status })
-  }
-
-  const handleAdviseClearanceToHaulierStatusUpdate = (id: string, status: number) => {
-    updateAdviseClearanceToHaulierStatus.mutate({ id, status })
   }
 
   const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
