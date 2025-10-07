@@ -1186,37 +1186,6 @@ export default function CustomClearances() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <Send className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <p className={`text-xs ${getStatusColor(clearance.sendHaulierClearanceDocStatusIndicator)} font-medium`} data-testid={`todo-send-clearance-doc-${clearance.id}`}>
-                              Send Haulier Clearance Document
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleSendHaulierClearanceDocStatusUpdate(clearance.id, 1)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendHaulierClearanceDocStatusIndicator === 1 || clearance.sendHaulierClearanceDocStatusIndicator === null
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
-                              }`}
-                              data-testid={`button-send-clearance-doc-yellow-${clearance.id}`}
-                              title="To Do"
-                            />
-                            <button
-                              onClick={() => handleSendHaulierClearanceDocStatusUpdate(clearance.id, 3)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendHaulierClearanceDocStatusIndicator === 3
-                                  ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover-elevate'
-                              }`}
-                              data-testid={`button-send-clearance-doc-green-${clearance.id}`}
-                              title="Completed"
-                            />
-                          </div>
-                        </div>
-
                         {!clearance.createdFromId && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
