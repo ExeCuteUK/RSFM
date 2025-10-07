@@ -1473,7 +1473,7 @@ Hope all is OK.`
                           <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                         </button>
                         <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
-                          {shipment.rsToClear ? 'Advise Clearance to Agent' : 'Advise Customer Clearance Details'}
+                          {shipment.rsToClear ? 'Advise Clearance to Agent' : 'Send Customs Arrival Info to Customer'}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">

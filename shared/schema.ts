@@ -317,12 +317,19 @@ export const importShipments = pgTable("import_shipments", {
   customsClearanceAgent: text("customs_clearance_agent"),
   rsToClear: boolean("rs_to_clear").default(false),
   clearanceStatusIndicator: integer("clearance_status_indicator").default(1),
+  clearanceStatusIndicatorTimestamp: text("clearance_status_indicator_timestamp"),
   deliveryBookedStatusIndicator: integer("delivery_booked_status_indicator").default(1),
+  deliveryBookedStatusIndicatorTimestamp: text("delivery_booked_status_indicator_timestamp"),
   haulierBookingStatusIndicator: integer("haulier_booking_status_indicator").default(1),
+  haulierBookingStatusIndicatorTimestamp: text("haulier_booking_status_indicator_timestamp"),
   containerReleaseStatusIndicator: integer("container_release_status_indicator").default(1),
+  containerReleaseStatusIndicatorTimestamp: text("container_release_status_indicator_timestamp"),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
+  invoiceCustomerStatusIndicatorTimestamp: text("invoice_customer_status_indicator_timestamp"),
   sendPodToCustomerStatusIndicator: integer("send_pod_to_customer_status_indicator").default(1),
+  sendPodToCustomerStatusIndicatorTimestamp: text("send_pod_to_customer_status_indicator_timestamp"),
   sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
+  sendHaulierEadStatusIndicatorTimestamp: text("send_haulier_ead_status_indicator_timestamp"),
   
   // Additional Details
   customerReferenceNumber: text("customer_reference_number"),
@@ -507,10 +514,15 @@ export const exportShipments = pgTable("export_shipments", {
   
   // Status Indicators (1=yellow/To Do, 3=green/Done, 4=red/Issue, null=not set)
   bookJobWithHaulierStatusIndicator: integer("book_job_with_haulier_status_indicator").default(1),
+  bookJobWithHaulierStatusIndicatorTimestamp: text("book_job_with_haulier_status_indicator_timestamp"),
   adviseClearanceToAgentStatusIndicator: integer("advise_clearance_to_agent_status_indicator").default(1),
+  adviseClearanceToAgentStatusIndicatorTimestamp: text("advise_clearance_to_agent_status_indicator_timestamp"),
   sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
+  sendHaulierEadStatusIndicatorTimestamp: text("send_haulier_ead_status_indicator_timestamp"),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
+  invoiceCustomerStatusIndicatorTimestamp: text("invoice_customer_status_indicator_timestamp"),
   sendPodToCustomerStatusIndicator: integer("send_pod_to_customer_status_indicator").default(1),
+  sendPodToCustomerStatusIndicatorTimestamp: text("send_pod_to_customer_status_indicator_timestamp"),
 });
 
 export const insertExportShipmentSchema = createInsertSchema(exportShipments).omit({
@@ -621,11 +633,17 @@ export const customClearances = pgTable("custom_clearances", {
   
   // Status Indicators (1=yellow, 2=orange, 3=green, 4=red)
   adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(1),
+  adviseAgentStatusIndicatorTimestamp: text("advise_agent_status_indicator_timestamp"),
   sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
+  sendHaulierEadStatusIndicatorTimestamp: text("send_haulier_ead_status_indicator_timestamp"),
   sendHaulierClearanceDocStatusIndicator: integer("send_haulier_clearance_doc_status_indicator").default(1),
+  sendHaulierClearanceDocStatusIndicatorTimestamp: text("send_haulier_clearance_doc_status_indicator_timestamp"),
   sendEntryToCustomerStatusIndicator: integer("send_entry_to_customer_status_indicator").default(1),
+  sendEntryToCustomerStatusIndicatorTimestamp: text("send_entry_to_customer_status_indicator_timestamp"),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
+  invoiceCustomerStatusIndicatorTimestamp: text("invoice_customer_status_indicator_timestamp"),
   sendClearedEntryStatusIndicator: integer("send_cleared_entry_status_indicator").default(1),
+  sendClearedEntryStatusIndicatorTimestamp: text("send_cleared_entry_status_indicator_timestamp"),
   
   // Link to source shipment
   createdFromType: text("created_from_type"),
