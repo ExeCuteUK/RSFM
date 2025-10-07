@@ -1040,7 +1040,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
       }
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        clearanceStatusIndicator: status 
+        clearanceStatusIndicator: status,
+        clearanceStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1076,7 +1077,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
       }
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        deliveryBookedStatusIndicator: status 
+        deliveryBookedStatusIndicator: status,
+        deliveryBookedStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1095,7 +1097,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
       }
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        deliveryBookedStatusIndicator: status 
+        deliveryBookedStatusIndicator: status,
+        deliveryBookedStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1114,7 +1117,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
       }
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        haulierBookingStatusIndicator: status 
+        haulierBookingStatusIndicator: status,
+        haulierBookingStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1133,7 +1137,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 2, 3, or 4" });
       }
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        containerReleaseStatusIndicator: status 
+        containerReleaseStatusIndicator: status,
+        containerReleaseStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1152,7 +1157,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       const { status } = invoiceStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        invoiceCustomerStatusIndicator: status ?? null 
+        invoiceCustomerStatusIndicator: status ?? null,
+        invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1177,7 +1183,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       const { status } = sendPodStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        sendPodToCustomerStatusIndicator: status ?? null 
+        sendPodToCustomerStatusIndicator: status ?? null,
+        sendPodToCustomerStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1202,7 +1209,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       const { status } = sendHaulierEadStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
-        sendHaulierEadStatusIndicator: status ?? null 
+        sendHaulierEadStatusIndicator: status ?? null,
+        sendHaulierEadStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
@@ -1461,7 +1469,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        bookJobWithHaulierStatusIndicator: status 
+        bookJobWithHaulierStatusIndicator: status,
+        bookJobWithHaulierStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
@@ -1480,7 +1489,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        adviseClearanceToAgentStatusIndicator: status 
+        adviseClearanceToAgentStatusIndicator: status,
+        adviseClearanceToAgentStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
@@ -1516,7 +1526,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        sendHaulierEadStatusIndicator: status 
+        sendHaulierEadStatusIndicator: status,
+        sendHaulierEadStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
@@ -1535,7 +1546,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        invoiceCustomerStatusIndicator: status 
+        invoiceCustomerStatusIndicator: status,
+        invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
@@ -1554,7 +1566,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Status must be 1, 3, or 4" });
       }
       const shipment = await storage.updateExportShipment(req.params.id, { 
-        sendPodToCustomerStatusIndicator: status 
+        sendPodToCustomerStatusIndicator: status,
+        sendPodToCustomerStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
@@ -1793,7 +1806,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const updateData: any = { 
-        adviseAgentStatusIndicator: status 
+        adviseAgentStatusIndicator: status,
+        adviseAgentStatusIndicatorTimestamp: new Date().toISOString()
       };
       
       // Update clearance status based on indicator
@@ -1826,7 +1840,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const clearance = await storage.updateCustomClearance(req.params.id, { 
-        sendHaulierEadStatusIndicator: status 
+        sendHaulierEadStatusIndicator: status,
+        sendHaulierEadStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
@@ -1842,7 +1857,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const clearance = await storage.updateCustomClearance(req.params.id, { 
-        sendHaulierClearanceDocStatusIndicator: status 
+        sendHaulierClearanceDocStatusIndicator: status,
+        sendHaulierClearanceDocStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
@@ -1858,7 +1874,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const clearance = await storage.updateCustomClearance(req.params.id, { 
-        sendEntryToCustomerStatusIndicator: status 
+        sendEntryToCustomerStatusIndicator: status,
+        sendEntryToCustomerStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
@@ -1874,7 +1891,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const clearance = await storage.updateCustomClearance(req.params.id, { 
-        invoiceCustomerStatusIndicator: status 
+        invoiceCustomerStatusIndicator: status,
+        invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
       });
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
@@ -1897,7 +1915,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "This status is only for import clearances" });
       }
       const updated = await storage.updateCustomClearance(req.params.id, { 
-        sendClearedEntryStatusIndicator: status 
+        sendClearedEntryStatusIndicator: status,
+        sendClearedEntryStatusIndicatorTimestamp: new Date().toISOString()
       });
       res.json(updated);
     } catch (error) {
