@@ -391,18 +391,23 @@ export default function Dashboard() {
   }) => {
     const inputRef = useRef<HTMLInputElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const hasSelectedRef = useRef(false)
     const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
-      if (isEditing) {
-        if (type === "textarea" && textareaRef.current && document.activeElement !== textareaRef.current) {
+      if (isEditing && !hasSelectedRef.current) {
+        if (type === "textarea" && textareaRef.current) {
           textareaRef.current.focus()
           textareaRef.current.select()
-        } else if (inputRef.current && document.activeElement !== inputRef.current) {
+          hasSelectedRef.current = true
+        } else if (inputRef.current) {
           inputRef.current.focus()
           inputRef.current.select()
+          hasSelectedRef.current = true
         }
+      } else if (!isEditing) {
+        hasSelectedRef.current = false
       }
     }, [isEditing, type])
 
@@ -534,13 +539,17 @@ export default function Dashboard() {
     timestamp: string | null | undefined
   }) => {
     const inputRef = useRef<HTMLInputElement>(null)
+    const hasSelectedRef = useRef(false)
     const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
-      if (isEditing && inputRef.current && document.activeElement !== inputRef.current) {
+      if (isEditing && !hasSelectedRef.current && inputRef.current) {
         inputRef.current.focus()
         inputRef.current.select()
+        hasSelectedRef.current = true
+      } else if (!isEditing) {
+        hasSelectedRef.current = false
       }
     }, [isEditing])
 
