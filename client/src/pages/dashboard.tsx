@@ -934,7 +934,7 @@ export default function Dashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table ref={tableRef} className={`w-full border-collapse text-sm ${editingCell ? 'table-fixed' : ''}`}>
+                <table ref={tableRef} className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
                   <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b-2">
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Ref</th>
@@ -958,7 +958,7 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[18] ? { width: `${columnWidths[18]}px` } : undefined}>POD Sent</th>
                     </tr>
                   </thead>
-                  <tbody className="text-sm">
+                  <tbody className="text-xs">
                     {(() => {
                       // Find Nisbets PLC customer ID
                       const nisbetsCustomer = importCustomers.find(c => c.companyName === "Nisbets PLC")
