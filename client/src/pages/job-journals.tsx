@@ -559,7 +559,7 @@ export default function JobJournals() {
                 {journalEntries.map((entry, index) => (
                   <tr 
                     key={`${entry.jobType}-${entry.jobRef}-${index}`}
-                    className="border-b hover-elevate"
+                    className="border-b-2 hover-elevate"
                     data-testid={`row-job-${entry.jobRef}`}
                   >
                     <td className="p-1 text-center border-r border-border" data-testid={`text-type-${entry.jobRef}`}>
