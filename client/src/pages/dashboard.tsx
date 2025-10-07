@@ -556,8 +556,8 @@ export default function Dashboard() {
                             <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
                               {priceOut}
                             </td>
-                            <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-pod-sent-${shipment.jobRef}`}>
-                              
+                            <td className={`px-1 text-center border-r border-border align-middle ${shipment.sendPodToCustomerStatusIndicatorTimestamp ? 'bg-green-100 dark:bg-green-900' : ''}`} data-testid={`cell-pod-sent-${shipment.jobRef}`}>
+                              {formatTimestampDDMMYY(shipment.sendPodToCustomerStatusIndicatorTimestamp)}
                             </td>
                             <td className={`px-1 text-center align-top whitespace-pre-wrap w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
                               {netCost}
