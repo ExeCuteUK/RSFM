@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { type ImportShipment, type ExportShipment, type CustomClearance, type ImportCustomer, type Haulier } from "@shared/schema"
+import { type ImportShipment, type ExportShipment, type CustomClearance, type ImportCustomer, type Haulier, type ShippingLine } from "@shared/schema"
 import { Container, Package, Clipboard, FileText, Search, Loader2 } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useLocation } from "wouter"
@@ -56,6 +56,11 @@ export default function Dashboard() {
 
   const { data: hauliers = [] } = useQuery<Haulier[]>({
     queryKey: ["/api/hauliers"],
+    refetchOnWindowFocus: true,
+  })
+
+  const { data: shippingLines = [] } = useQuery<ShippingLine[]>({
+    queryKey: ["/api/shipping-lines"],
     refetchOnWindowFocus: true,
   })
 
@@ -809,6 +814,8 @@ export default function Dashboard() {
                               shipment={shipment}
                               fieldName="shippingLine"
                               value={shipment.shippingLine || ""}
+                              type="dropdown"
+                              options={shippingLines.map(s => ({ value: s.companyName || '', label: s.companyName || '' }))}
                               customCellColor={clearanceColor}
                             />
                             {/* Poa */}
