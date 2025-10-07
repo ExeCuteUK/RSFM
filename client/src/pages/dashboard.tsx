@@ -90,8 +90,10 @@ export default function Dashboard() {
 
   // Helper to determine cell background color based on clearance status
   const getClearanceStatusColor = (shipment: ImportShipment): string => {
+    const adviseStatus = (shipment as any).adviseClearanceToAgentStatusIndicator
+    
     // Check if Advise Clearance to Agent status is completed (green)
-    if ((shipment as any).adviseClearanceToAgentStatusIndicator === 3) {
+    if (adviseStatus === 3) {
       return "bg-green-100 dark:bg-green-900"
     }
     

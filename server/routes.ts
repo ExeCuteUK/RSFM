@@ -1219,6 +1219,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update advise clearance to agent status indicator
+  app.patch("/api/import-shipments/:id/advise-clearance-to-agent-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (![1, 3, 4].includes(status)) {
+        return res.status(400).json({ error: "Status must be 1, 3, or 4" });
+      }
+      const shipment = await storage.updateImportShipment(req.params.id, { 
+        adviseClearanceToAgentStatusIndicator: status 
+      } as any);
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update advise clearance to agent status" });
+    }
+  });
+
   // Delete file from attachments or proofOfDelivery
   app.delete("/api/import-shipments/:id/files", async (req, res) => {
     try {
@@ -1672,10 +1691,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // If status changed to "Request CC", set clearance status indicator to yellow (1)
           if (req.body.status !== undefined && clearance.status === "Request CC") {
             shipmentUpdate.clearanceStatusIndicator = 1;
+            shipmentUpdate.adviseClearanceToAgentStatusIndicator = 1;
           }
           // If status changed to workflow statuses, set clearance status indicator to green (3)
           if (req.body.status !== undefined && ["Awaiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
             shipmentUpdate.clearanceStatusIndicator = 3;
+            shipmentUpdate.adviseClearanceToAgentStatusIndicator = 3;
           }
           
           console.log('[SYNC-DEBUG] Import shipment update fields:', Object.keys(shipmentUpdate));
