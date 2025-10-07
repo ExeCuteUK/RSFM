@@ -231,7 +231,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                       <SelectContent>
                         <SelectItem value="Request CC">Request CC</SelectItem>
                         <SelectItem value="Awaiting Entry">Awaiting Entry</SelectItem>
-                        <SelectItem value="Waiting Arrival">Waiting Arrival</SelectItem>
+                        <SelectItem value="Awaiting Arrival">Awaiting Arrival</SelectItem>
                         <SelectItem value="P.H Hold">P.H Hold</SelectItem>
                         <SelectItem value="Customs Issue">Customs Issue</SelectItem>
                         <SelectItem value="Fully Cleared">Fully Cleared</SelectItem>

@@ -54,6 +54,7 @@ The backend uses Express.js and TypeScript on Node.js (ESM), providing a RESTful
 - **Export Shipments Enhancements:** Renamed "File Attachments" to "Transport Documents", added `expensesToChargeOut` and `additionalExpensesIn`, and implemented automatic bidirectional syncing of transport documents to linked custom clearances.
 - **UI Improvements:** All customer/receiver dropdowns are alphabetically sorted.
 - **Custom Clearance Status Indicators:** Simplified status indicator system with "To Do" (Yellow), "Completed" (Green), and an optional Red for "Issue, Check Notes?".
+- **Status Naming Convention:** All custom clearance statuses use the "Awaiting" prefix for consistency (e.g., "Awaiting Entry", "Awaiting Arrival"). The system recognizes the following statuses: "Request CC", "Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared".
 
 ### API Endpoints
 

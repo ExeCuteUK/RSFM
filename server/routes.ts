@@ -1694,7 +1694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             shipmentUpdate.adviseClearanceToAgentStatusIndicator = 1;
           }
           // If status changed to workflow statuses, set clearance status indicator to green (3)
-          if (req.body.status !== undefined && ["Awaiting Entry", "Waiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
+          if (req.body.status !== undefined && ["Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
             shipmentUpdate.clearanceStatusIndicator = 3;
             shipmentUpdate.adviseClearanceToAgentStatusIndicator = 3;
           }
@@ -1739,7 +1739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             shipmentUpdate.adviseClearanceToAgentStatusIndicator = 1;
           }
           // If status changed to workflow statuses, set advise clearance to agent status indicator to green (3)
-          if (req.body.status !== undefined && ["Awaiting Entry", "Waiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
+          if (req.body.status !== undefined && ["Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
             shipmentUpdate.adviseClearanceToAgentStatusIndicator = 3;
           }
           
@@ -1758,7 +1758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.updateCustomClearance(req.params.id, {
             adviseAgentStatusIndicator: 1
           });
-        } else if (["Awaiting Entry", "Waiting Entry", "Waiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
+        } else if (["Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(clearance.status)) {
           await storage.updateCustomClearance(req.params.id, {
             adviseAgentStatusIndicator: 3
           });
