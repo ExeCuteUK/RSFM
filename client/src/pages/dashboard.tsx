@@ -2,17 +2,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useQuery } from "@tanstack/react-query"
-import { type ImportShipment, type ExportShipment, type CustomClearance, type ImportCustomer } from "@shared/schema"
-import { Container, Package, Clipboard, FileText, Search } from "lucide-react"
-import { useState } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useQuery, useMutation } from "@tanstack/react-query"
+import { type ImportShipment, type ExportShipment, type CustomClearance, type ImportCustomer, type Haulier } from "@shared/schema"
+import { Container, Package, Clipboard, FileText, Search, Loader2 } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
 import { useLocation } from "wouter"
+import { useToast } from "@/hooks/use-toast"
+import { queryClient, apiRequest } from "@/lib/queryClient"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("container-management")
   const [searchText, setSearchText] = useState("")
   const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active", "completed"])
   const [, setLocation] = useLocation()
+  const { toast } = useToast()
+
+  // Inline editing state
+  const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string } | null>(null)
+  const [tempValue, setTempValue] = useState("")
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -36,6 +44,97 @@ export default function Dashboard() {
     queryKey: ["/api/import-customers"],
     refetchOnWindowFocus: true,
   })
+
+  const { data: hauliers = [] } = useQuery<Haulier[]>({
+    queryKey: ["/api/hauliers"],
+    refetchOnWindowFocus: true,
+  })
+
+  // Mutation for updating shipment
+  const updateShipmentMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ImportShipment> }) => {
+      return await apiRequest("PATCH", `/api/import-shipments/${id}`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update shipment",
+        variant: "destructive",
+      })
+    },
+  })
+
+  // Helper to validate and convert DD/MM/YY to YYYY-MM-DD
+  const validateAndConvertDate = (dateStr: string): string | null => {
+    if (!dateStr.trim()) return null
+    
+    const ddmmyyPattern = /^(\d{2})\/(\d{2})\/(\d{2})$/
+    const match = dateStr.match(ddmmyyPattern)
+    
+    if (!match) {
+      throw new Error("Date must be in DD/MM/YY format")
+    }
+    
+    const [, day, month, year] = match
+    const fullYear = `20${year}`
+    return `${fullYear}-${month}-${day}`
+  }
+
+  // Helper to validate numbers only
+  const validateNumber = (value: string): string => {
+    if (!value.trim()) return ""
+    if (!/^\d+$/.test(value.trim())) {
+      throw new Error("Must be a number")
+    }
+    return value.trim()
+  }
+
+  // Common countries for dropdown
+  const commonCountries = [
+    "France", "Germany", "Italy", "Spain", "Netherlands", 
+    "Belgium", "Poland", "Czech Republic", "Austria", "Portugal"
+  ]
+
+  // Save handler for inline editing
+  const handleSave = async (shipmentId: string, fieldName: string, value: string) => {
+    try {
+      const updateData: Partial<ImportShipment> = {}
+      
+      // Handle different field types with validation
+      if (fieldName === "collectionDate" || fieldName === "dispatchDate" || fieldName === "importDateEtaPort" || fieldName === "deliveryDate") {
+        const convertedDate = validateAndConvertDate(value)
+        ;(updateData as any)[fieldName] = convertedDate
+        
+        // Special logic for deliveryDate
+        if (fieldName === "deliveryDate") {
+          if (!convertedDate) {
+            updateData.deliveryBookedStatusIndicator = 2
+            updateData.deliveryBookedStatusIndicatorTimestamp = null as any
+          } else {
+            updateData.deliveryBookedStatusIndicator = 3
+            updateData.deliveryBookedStatusIndicatorTimestamp = new Date().toISOString() as any
+          }
+        }
+      } else if (fieldName === "numberOfPieces" || fieldName === "weight") {
+        ;(updateData as any)[fieldName] = validateNumber(value)
+      } else {
+        ;(updateData as any)[fieldName] = value.trim() || null
+      }
+      
+      await updateShipmentMutation.mutateAsync({ id: shipmentId, data: updateData })
+      setEditingCell(null)
+      setTempValue("")
+    } catch (error) {
+      toast({
+        title: "Validation Error",
+        description: error instanceof Error ? error.message : "Invalid input",
+        variant: "destructive",
+      })
+    }
+  }
 
   // Toggle job status filter
   const toggleJobStatusFilter = (status: "active" | "completed") => {
@@ -212,6 +311,146 @@ export default function Dashboard() {
     } catch {
       return ""
     }
+  }
+
+  // Editable Cell Component
+  const EditableCell = ({
+    shipment,
+    fieldName,
+    value,
+    displayValue,
+    type = "text",
+    options = [],
+    customCellColor,
+  }: {
+    shipment: ImportShipment
+    fieldName: string
+    value: string
+    displayValue?: string
+    type?: "text" | "number" | "date" | "dropdown" | "textarea"
+    options?: { value: string; label: string }[]
+    customCellColor?: string
+  }) => {
+    const inputRef = useRef<HTMLInputElement>(null)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName
+    const isSaving = updateShipmentMutation.isPending
+
+    useEffect(() => {
+      if (isEditing) {
+        if (type === "textarea" && textareaRef.current) {
+          textareaRef.current.focus()
+        } else if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }
+    }, [isEditing, type])
+
+    const handleClick = () => {
+      setEditingCell({ shipmentId: shipment.id, fieldName })
+      setTempValue(value)
+    }
+
+    const handleBlur = () => {
+      if (tempValue !== value && !isSaving) {
+        handleSave(shipment.id, fieldName, tempValue)
+      } else {
+        setEditingCell(null)
+        setTempValue("")
+      }
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && type !== "textarea") {
+        e.preventDefault()
+        if (tempValue !== value) {
+          handleSave(shipment.id, fieldName, tempValue)
+        } else {
+          setEditingCell(null)
+          setTempValue("")
+        }
+      } else if (e.key === "Escape") {
+        setEditingCell(null)
+        setTempValue("")
+      }
+    }
+
+    // Get cell color - use custom if provided, otherwise use standard logic
+    const cellColor = customCellColor || (value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-800")
+
+    if (isEditing) {
+      if (type === "dropdown") {
+        return (
+          <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
+            <Select
+              value={tempValue}
+              onValueChange={(val) => {
+                setTempValue(val)
+                handleSave(shipment.id, fieldName, val)
+              }}
+            >
+              <SelectTrigger className="h-auto min-h-6 text-xs border-none focus:ring-0">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </td>
+        )
+      }
+
+      if (type === "textarea") {
+        return (
+          <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
+            <textarea
+              ref={textareaRef}
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              className="w-full min-h-[60px] text-xs bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+              rows={3}
+            />
+          </td>
+        )
+      }
+
+      return (
+        <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
+          <Input
+            ref={inputRef}
+            type="text"
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="h-auto min-h-6 text-xs border-none focus:ring-1 focus:ring-primary"
+            placeholder={type === "date" ? "DD/MM/YY" : ""}
+          />
+        </td>
+      )
+    }
+
+    return (
+      <td
+        className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${cellColor}`}
+        onClick={handleClick}
+        data-testid={`cell-${fieldName}-${shipment.jobRef}`}
+      >
+        {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName ? (
+          <Loader2 className="h-3 w-3 animate-spin mx-auto" />
+        ) : (
+          <span className={type === "textarea" ? "whitespace-pre-wrap text-left block" : ""}>
+            {displayValue !== undefined ? displayValue : value || ""}
+          </span>
+        )}
+      </td>
+    )
   }
 
   return (
@@ -499,8 +738,15 @@ export default function Dashboard() {
                         const priceOut = formatPriceOut(shipment)
                         const netCost = formatNetCost(shipment)
 
+                        // Prepare haulier options for dropdown
+                        const haulierOptions = hauliers.map(h => ({ value: h.haulierName, label: h.haulierName }))
+                        
+                        // Prepare country options for dropdown
+                        const countryOptions = commonCountries.map(c => ({ value: c, label: c }))
+
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-nisbets-${shipment.jobRef}`}>
+                            {/* Job Ref - READ ONLY */}
                             <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
@@ -510,63 +756,142 @@ export default function Dashboard() {
                                 {shipment.jobRef}
                               </button>
                             </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.customerReferenceNumber)}`} data-testid={`cell-ligentia-ref-${shipment.jobRef}`}>
-                              {shipment.customerReferenceNumber || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.haulierName)}`} data-testid={`cell-haulier-${shipment.jobRef}`}>
-                              {shipment.haulierName || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.supplierName)}`} data-testid={`cell-supplier-${shipment.jobRef}`}>
-                              {shipment.supplierName || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.departureCountry)}`} data-testid={`cell-country-${shipment.jobRef}`}>
-                              {shipment.departureCountry || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(destination)}`} data-testid={`cell-destination-${shipment.jobRef}`}>
-                              {destination}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.collectionDate)}`} data-testid={`cell-collection-date-${shipment.jobRef}`}>
-                              {formatDate(shipment.collectionDate)}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.dispatchDate)}`} data-testid={`cell-departure-date-${shipment.jobRef}`}>
-                              {formatDate(shipment.dispatchDate)}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.trailerOrContainerNumber)}`} data-testid={`cell-truck-${shipment.jobRef}`}>
-                              {shipment.trailerOrContainerNumber || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.portOfArrival)}`} data-testid={`cell-port-${shipment.jobRef}`}>
-                              {shipment.portOfArrival || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.importDateEtaPort)}`} data-testid={`cell-eta-${shipment.jobRef}`}>
-                              {formatDate(shipment.importDateEtaPort)}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.numberOfPieces)}`} data-testid={`cell-packages-${shipment.jobRef}`}>
-                              {shipment.numberOfPieces || ""}
-                            </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.weight)}`} data-testid={`cell-weight-${shipment.jobRef}`}>
-                              {shipment.weight || ""}
-                            </td>
+                            
+                            {/* Ligentia Ref - EDITABLE TEXT */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="customerReferenceNumber"
+                              value={shipment.customerReferenceNumber || ""}
+                              type="text"
+                            />
+                            
+                            {/* Haulier - EDITABLE DROPDOWN */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="haulierName"
+                              value={shipment.haulierName || ""}
+                              type="dropdown"
+                              options={haulierOptions}
+                            />
+                            
+                            {/* Supplier - EDITABLE TEXT */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="supplierName"
+                              value={shipment.supplierName || ""}
+                              type="text"
+                            />
+                            
+                            {/* Country - EDITABLE DROPDOWN */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="departureCountry"
+                              value={shipment.departureCountry || ""}
+                              type="dropdown"
+                              options={countryOptions}
+                            />
+                            
+                            {/* Destination - EDITABLE TEXTAREA (full deliveryAddress) */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="deliveryAddress"
+                              value={shipment.deliveryAddress || ""}
+                              displayValue={destination}
+                              type="textarea"
+                            />
+                            
+                            {/* Collection Date - EDITABLE DATE */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="collectionDate"
+                              value={formatDate(shipment.collectionDate)}
+                              type="date"
+                            />
+                            
+                            {/* Departure Date - EDITABLE DATE */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="dispatchDate"
+                              value={formatDate(shipment.dispatchDate)}
+                              type="date"
+                            />
+                            
+                            {/* Truck Number - EDITABLE TEXT */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="trailerOrContainerNumber"
+                              value={shipment.trailerOrContainerNumber || ""}
+                              type="text"
+                            />
+                            
+                            {/* Port - EDITABLE TEXT */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="portOfArrival"
+                              value={shipment.portOfArrival || ""}
+                              type="text"
+                            />
+                            
+                            {/* Eta UK Port - EDITABLE DATE */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="importDateEtaPort"
+                              value={formatDate(shipment.importDateEtaPort)}
+                              type="date"
+                            />
+                            
+                            {/* Total Package - EDITABLE NUMBER */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="numberOfPieces"
+                              value={shipment.numberOfPieces || ""}
+                              type="number"
+                            />
+                            
+                            {/* Weight - EDITABLE NUMBER */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="weight"
+                              value={shipment.weight || ""}
+                              type="number"
+                            />
+                            
+                            {/* Details Sent to Ligentia - READ ONLY STATUS INDICATOR */}
                             <td className={`px-1 text-center border-r border-border align-middle ${
                               shipment.clearanceStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-200 dark:bg-yellow-800'
                             }`} data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
                               {shipment.clearanceStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.clearanceStatusIndicatorTimestamp) : ''}
                             </td>
+                            
+                            {/* Entry to Haulier - READ ONLY STATUS INDICATOR */}
                             <td className={`px-1 text-center border-r border-border align-middle ${
                               shipment.sendHaulierEadStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-200 dark:bg-yellow-800'
                             }`} data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
                               {shipment.sendHaulierEadStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ''}
                             </td>
-                            <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsDeliveryBookedDateColor(shipment)}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
-                              {formatDate(shipment.deliveryDate)}
-                            </td>
+                            
+                            {/* Delivery Booked Date - EDITABLE DATE */}
+                            <EditableCell
+                              shipment={shipment}
+                              fieldName="deliveryDate"
+                              value={formatDate(shipment.deliveryDate)}
+                              type="date"
+                              customCellColor={getNisbetsDeliveryBookedDateColor(shipment)}
+                            />
+                            
+                            {/* Price Out - READ ONLY */}
                             <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
                               {priceOut}
                             </td>
+                            
+                            {/* POD Sent - READ ONLY STATUS INDICATOR */}
                             <td className={`px-1 text-center border-r border-border align-middle ${
                               shipment.sendPodToCustomerStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-200 dark:bg-yellow-800'
                             }`} data-testid={`cell-pod-sent-${shipment.jobRef}`}>
                               {shipment.sendPodToCustomerStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendPodToCustomerStatusIndicatorTimestamp) : ''}
                             </td>
+                            
+                            {/* Net Cost - READ ONLY */}
                             <td className={`px-1 text-center align-top whitespace-pre-wrap w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
                               {netCost}
                             </td>
