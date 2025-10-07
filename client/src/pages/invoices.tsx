@@ -1,123 +1,37 @@
 import { useState } from "react"
-import { InvoiceCard, type Invoice } from "@/components/invoice-card"
-import { SearchFilter } from "@/components/search-filter"
+import { useQuery } from "@tanstack/react-query"
+import type { Invoice } from "@shared/schema"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-
-// todo: remove mock data  
-const mockInvoices: Invoice[] = [
-  {
-    id: "I001",
-    invoiceNumber: "INV-2024-001",
-    customerName: "ABC Manufacturing",
-    shipmentId: "SH001",
-    amount: 2450,
-    status: "sent",
-    issueDate: "2024-01-15",
-    dueDate: "2024-02-14"
-  },
-  {
-    id: "I002",
-    invoiceNumber: "INV-2024-002", 
-    customerName: "Tech Solutions Inc",
-    shipmentId: "SH003",
-    amount: 1890,
-    status: "paid",
-    issueDate: "2024-01-10",
-    dueDate: "2024-02-09",
-    paidDate: "2024-01-28"
-  },
-  {
-    id: "I003",
-    invoiceNumber: "INV-2024-003",
-    customerName: "Global Logistics Ltd",
-    shipmentId: "SH005", 
-    amount: 3200,
-    status: "overdue",
-    issueDate: "2023-12-20",
-    dueDate: "2024-01-19"
-  },
-  {
-    id: "I004",
-    invoiceNumber: "INV-2024-004",
-    customerName: "Retail Chain Corp",
-    shipmentId: "SH007",
-    amount: 1650,
-    status: "draft",
-    issueDate: "2024-01-18", 
-    dueDate: "2024-02-17"
-  },
-  {
-    id: "I005",
-    invoiceNumber: "INV-2024-005",
-    customerName: "Manufacturing Plus",
-    shipmentId: "SH009",
-    amount: 2850,
-    status: "sent",
-    issueDate: "2024-01-16",
-    dueDate: "2024-02-15"
-  }
-]
-
-const invoiceFilters = [
-  {
-    key: "status",
-    label: "Status",
-    options: [
-      { value: "draft", label: "Draft" },
-      { value: "sent", label: "Sent" },
-      { value: "paid", label: "Paid" },
-      { value: "overdue", label: "Overdue" }
-    ]
-  },
-  {
-    key: "amount",
-    label: "Amount Range",
-    options: [
-      { value: "low", label: "Under £2,000" },
-      { value: "medium", label: "£2,000 - £5,000" },
-      { value: "high", label: "Over £5,000" }
-    ]
-  }
-]
+import { Input } from "@/components/ui/input"
+import { FileOutput, Search } from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 export default function Invoices() {
-  const [filteredInvoices, setFilteredInvoices] = useState(mockInvoices)
+  const [searchText, setSearchText] = useState("")
 
-  const handleSearch = (query: string) => {
-    const filtered = mockInvoices.filter(invoice => 
-      invoice.invoiceNumber.toLowerCase().includes(query.toLowerCase()) ||
-      invoice.customerName.toLowerCase().includes(query.toLowerCase()) ||
-      invoice.shipmentId.toLowerCase().includes(query.toLowerCase())
+  const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices"],
+  })
+
+  const filteredInvoices = allInvoices.filter(invoice => {
+    const searchLower = searchText.toLowerCase()
+    return (
+      invoice.invoiceNumber.toString().includes(searchLower) ||
+      invoice.customerName?.toLowerCase().includes(searchLower) ||
+      invoice.jobRef.toString().includes(searchLower)
     )
-    setFilteredInvoices(filtered)
-    console.log('Search invoices:', query, 'Results:', filtered.length)
-  }
+  })
 
-  const handleFilterChange = (filters: Record<string, string>) => {
-    let filtered = mockInvoices
-
-    if (filters.status) {
-      filtered = filtered.filter(invoice => invoice.status === filters.status)
-    }
-
-    if (filters.amount) {
-      switch (filters.amount) {
-        case 'low':
-          filtered = filtered.filter(invoice => invoice.amount < 2000)
-          break
-        case 'medium':
-          filtered = filtered.filter(invoice => invoice.amount >= 2000 && invoice.amount <= 5000)
-          break
-        case 'high':
-          filtered = filtered.filter(invoice => invoice.amount > 5000)
-          break
-      }
-    }
-
-    setFilteredInvoices(filtered)
-    console.log('Filter invoices:', filters, 'Results:', filtered.length)
-  }
+  const sortedInvoices = [...filteredInvoices].sort((a, b) => {
+    return b.invoiceNumber - a.invoiceNumber
+  })
 
   return (
     <div className="p-6 space-y-6">
@@ -125,40 +39,85 @@ export default function Invoices() {
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Invoices</h1>
           <p className="text-muted-foreground">
-            Manage billing and track payment status
+            View and download customer invoices
           </p>
         </div>
-        <Button data-testid="button-new-invoice" onClick={() => console.log('Create new invoice')}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Invoice
-        </Button>
       </div>
 
-      <SearchFilter
-        searchPlaceholder="Search invoices by number, customer, or shipment..."
-        filters={invoiceFilters}
-        onSearch={handleSearch}
-        onFilterChange={handleFilterChange}
-      />
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filteredInvoices.map((invoice) => (
-          <InvoiceCard
-            key={invoice.id}
-            invoice={invoice}
-            onView={(id) => console.log('View invoice:', id)}
-            onDownload={(id) => console.log('Download invoice:', id)}
-            onSend={(id) => console.log('Send invoice:', id)}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by invoice number, customer, or job reference..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="pl-9"
+            data-testid="input-search-invoices"
           />
-        ))}
+        </div>
       </div>
 
-      {filteredInvoices.length === 0 && (
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <p className="text-muted-foreground">Loading invoices...</p>
+        </div>
+      ) : sortedInvoices.length === 0 ? (
         <div className="text-center py-12" data-testid="empty-state">
-          <p className="text-lg text-muted-foreground">No invoices found matching your criteria</p>
-          <Button variant="outline" className="mt-4" onClick={() => setFilteredInvoices(mockInvoices)}>
-            Clear filters
-          </Button>
+          <p className="text-lg text-muted-foreground">
+            {searchText ? "No invoices found matching your search" : "No invoices created yet"}
+          </p>
+          {searchText && (
+            <Button variant="outline" className="mt-4" onClick={() => setSearchText("")}>
+              Clear search
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[150px]">Invoice Number</TableHead>
+                <TableHead className="w-[120px]">Date</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead className="w-[120px]">Job Reference</TableHead>
+                <TableHead className="w-[150px] text-right">Amount</TableHead>
+                <TableHead className="w-[100px] text-center">Download</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedInvoices.map((invoice) => (
+                <TableRow key={invoice.id} data-testid={`row-invoice-${invoice.id}`}>
+                  <TableCell className="font-medium">
+                    #{invoice.invoiceNumber}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(invoice.invoiceDate).toLocaleDateString('en-GB')}
+                  </TableCell>
+                  <TableCell>
+                    {invoice.customerName || 'N/A'}
+                  </TableCell>
+                  <TableCell>
+                    #{invoice.jobRef}
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    £{invoice.total.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <a
+                      href={`/api/invoices/${invoice.id}/pdf`}
+                      download={`RS Invoice - ${invoice.jobRef}.pdf`}
+                      data-testid={`button-download-invoice-${invoice.id}`}
+                    >
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <FileOutput className="h-4 w-4" />
+                      </Button>
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
