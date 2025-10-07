@@ -677,6 +677,86 @@ export default function ImportShipments() {
     updateSendHaulierEadStatus.mutate({ id, status })
   }
 
+  const handleSendHaulierGvmsEmail = (shipment: ImportShipment) => {
+    try {
+      // Get haulier email(s) - support both array and legacy string format
+      const haulierEmailField = shipment.haulierEmail
+      const haulierEmails = Array.isArray(haulierEmailField)
+        ? haulierEmailField.filter(Boolean)
+        : typeof haulierEmailField === 'string' && haulierEmailField
+          ? haulierEmailField.split(',').map(e => e.trim()).filter(Boolean)
+          : []
+
+      // Get haulier contact name(s) - support both array and legacy string format
+      const haulierContactField = shipment.haulierContactName
+      const haulierContacts = Array.isArray(haulierContactField)
+        ? haulierContactField.filter(Boolean)
+        : typeof haulierContactField === 'string' && haulierContactField
+          ? haulierContactField.split('/').map(c => c.trim()).filter(Boolean)
+          : []
+
+      // Build "Hi" greeting line with proper grammar
+      let greeting = "Hi there"
+      if (haulierContacts.length === 1) {
+        greeting = `Hi ${haulierContacts[0]}`
+      } else if (haulierContacts.length === 2) {
+        greeting = `Hi ${haulierContacts[0]} and ${haulierContacts[1]}`
+      } else if (haulierContacts.length > 2) {
+        const lastContact = haulierContacts[haulierContacts.length - 1]
+        const otherContacts = haulierContacts.slice(0, -1).join(', ')
+        greeting = `Hi ${otherContacts}, and ${lastContact}`
+      }
+
+      // Build subject
+      let subject = `Import Job Update - Import GVMS Document / Our Ref: ${shipment.jobRef}`
+      
+      // Add trailer/container/flight number if available with correct label based on shipment type
+      if (shipment.trailerOrContainerNumber) {
+        let numberLabel = "Trailer Number"
+        if (shipment.containerShipment === "Air Freight") {
+          numberLabel = "Flight Number"
+        } else if (shipment.containerShipment === "Container Shipment") {
+          numberLabel = "Container Number"
+        }
+        subject += ` / ${numberLabel}: ${shipment.trailerOrContainerNumber}`
+      }
+      
+      // Add haulier reference if available
+      if (shipment.haulierReference) {
+        subject += ` / Your Ref: ${shipment.haulierReference}`
+      }
+
+      // Build email body
+      const body = `${greeting},\n\nPlease find attached Import Entry for this shipment.\n\nHope all is OK.`
+
+      // Get attachments from linked clearance if available
+      const linkedClearance = customClearances.find((c: any) => c.jobRef === shipment.jobRef)
+      const attachments = linkedClearance?.clearanceDocuments || []
+
+      // Open email composer with clearance documents
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: haulierEmails.join(', '),
+        cc: '',
+        bcc: '',
+        subject,
+        body,
+        attachments,
+        metadata: {
+          source: 'send-haulier-ead',
+          shipmentId: shipment.id,
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleBookDeliveryCustomerEmail = (shipment: ImportShipment) => {
     try {
       // Get customer and agent email
@@ -1517,7 +1597,11 @@ Hope all is OK.`
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
-                          <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <Mail 
+                            className="h-4 w-4 text-muted-foreground shrink-0 cursor-pointer hover-elevate active-elevate-2" 
+                            onClick={() => handleSendHaulierGvmsEmail(shipment)}
+                            data-testid={`button-send-haulier-gvms-email-${shipment.id}`}
+                          />
                           <p className={`text-xs ${getSendPodToCustomerStatusColor(shipment.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`text-send-haulier-gvms-${shipment.id}`}>
                             Send Haulier GVMS
                           </p>
