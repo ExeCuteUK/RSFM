@@ -299,12 +299,15 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
 
   useEffect(() => {
     if (selectedCustomer) {
-      form.setValue("rsToClear", selectedCustomer.rsProcessCustomsClearance ?? false)
+      // Only set rsToClear from customer preference when creating a new shipment, not when editing
+      if (defaultValues?.rsToClear === undefined) {
+        form.setValue("rsToClear", selectedCustomer.rsProcessCustomsClearance ?? false)
+      }
       form.setValue("customsClearanceAgent", selectedCustomer.agentInDover || "")
       form.setValue("deliveryAddress", selectedCustomer.defaultDeliveryAddress || "")
       form.setValue("supplierName", selectedCustomer.defaultSuppliersName || "")
     }
-  }, [selectedCustomer, form])
+  }, [selectedCustomer, form, defaultValues?.rsToClear])
 
   useEffect(() => {
     if (additionalCommodityCodes && additionalCommodityCodes > 1) {
