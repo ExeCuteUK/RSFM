@@ -725,3 +725,80 @@ export const insertPurchaseInvoiceSchema = createInsertSchema(purchaseInvoices).
 
 export type InsertPurchaseInvoice = z.infer<typeof insertPurchaseInvoiceSchema>;
 export type PurchaseInvoice = typeof purchaseInvoices.$inferSelect;
+
+// Invoices (Customer/Sales Invoices)
+export const invoiceLineItemSchema = z.object({
+  description: z.string(),
+  chargeAmount: z.string(), // Store as string for precision
+  vatAmount: z.string(),
+  vatCode: z.string(), // "1" = 0%, "2" = 20% standard, "3" = exempt
+});
+
+export type InvoiceLineItem = z.infer<typeof invoiceLineItemSchema>;
+
+export const invoices = pgTable("invoices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Invoice identification
+  invoiceNumber: integer("invoice_number").notNull().unique(),
+  invoiceDate: text("invoice_date").notNull(),
+  taxPointDate: text("tax_point_date").notNull(),
+  
+  // Job reference
+  jobRef: integer("job_ref").notNull(),
+  jobType: text("job_type").notNull(), // "import", "export", "clearance"
+  jobId: varchar("job_id").notNull(), // Link to specific job record
+  
+  // Customer information (INVOICE TO section)
+  customerCompanyName: text("customer_company_name").notNull(),
+  customerAddress: text("customer_address").notNull(),
+  customerVatNumber: text("customer_vat_number"),
+  
+  // References
+  ourRef: text("our_ref"), // Job reference as string
+  exportersRef: text("exporters_ref"), // Customer reference number
+  
+  // Shipment details (middle section of invoice)
+  numberOfPackages: text("number_of_packages"),
+  commodity: text("commodity"),
+  kgs: text("kgs"),
+  cbm: text("cbm"),
+  
+  // Consignor/Consignee details
+  consignorName: text("consignor_name"),
+  consigneeName: text("consignee_name"),
+  consigneeAddress: text("consignee_address"),
+  trailerContainerNo: text("trailer_container_no"),
+  vesselFlightNo: text("vessel_flight_no"),
+  dateOfShipment: text("date_of_shipment"),
+  portDischarge: text("port_discharge"),
+  deliveryTerms: text("delivery_terms"),
+  destination: text("destination"),
+  
+  // Line items (charges)
+  lineItems: jsonb("line_items").$type<InvoiceLineItem[]>().notNull().default(sql`'[]'::jsonb`),
+  
+  // Totals (all in GBP)
+  invoiceTotal: text("invoice_total").notNull(), // Sum of all charge amounts
+  vatTotal: text("vat_total").notNull(), // Sum of all VAT amounts
+  grandTotal: text("grand_total").notNull(), // Invoice total + VAT total
+  
+  // Additional info
+  pdsStarling: text("pds_starling"), // Payment reference
+  
+  // Timestamps
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  invoiceNumber: true, // Auto-generated
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  lineItems: z.array(invoiceLineItemSchema).min(1, "At least one line item is required"),
+});
+
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type Invoice = typeof invoices.$inferSelect;
