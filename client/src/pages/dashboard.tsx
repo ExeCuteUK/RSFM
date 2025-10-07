@@ -441,14 +441,14 @@ export default function Dashboard() {
 
       if (type === "textarea") {
         return (
-          <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
+          <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
             <textarea
               ref={textareaRef}
               value={tempValue}
               onChange={(e) => setTempValue(e.target.value)}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
-              className="w-full min-h-[60px] text-xs text-center bg-transparent border-none focus:outline-none focus:ring-0 resize-none p-0"
+              className="w-full min-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0"
               rows={3}
             />
           </td>
@@ -456,15 +456,15 @@ export default function Dashboard() {
       }
 
       return (
-        <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
-          <Input
+        <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
+          <input
             ref={inputRef}
             type="text"
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="h-auto text-xs text-center bg-transparent border-none focus:ring-0 focus-visible:ring-0 shadow-none p-0"
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
             placeholder={type === "date" ? "DD/MM/YY" : ""}
           />
         </td>
@@ -480,7 +480,7 @@ export default function Dashboard() {
         {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName ? (
           <Loader2 className="h-3 w-3 animate-spin mx-auto" />
         ) : (
-          <span className={type === "textarea" ? "whitespace-pre-wrap text-left block" : ""}>
+          <span className={type === "textarea" ? "whitespace-pre-wrap text-left block text-xs" : "text-xs"}>
             {displayValue !== undefined ? displayValue : value || ""}
           </span>
         )}
@@ -552,15 +552,15 @@ export default function Dashboard() {
 
     if (isEditing) {
       return (
-        <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
-          <Input
+        <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
+          <input
             ref={inputRef}
             type="text"
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="h-auto text-xs text-center bg-transparent border-none focus:ring-0 focus-visible:ring-0 shadow-none p-0"
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
             placeholder="DD/MM/YY"
           />
         </td>
@@ -576,7 +576,7 @@ export default function Dashboard() {
         {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField ? (
           <Loader2 className="h-3 w-3 animate-spin mx-auto" />
         ) : (
-          timestamp ? formatTimestampDDMMYY(timestamp) : ""
+          <span className="text-xs">{timestamp ? formatTimestampDDMMYY(timestamp) : ""}</span>
         )}
       </td>
     )
