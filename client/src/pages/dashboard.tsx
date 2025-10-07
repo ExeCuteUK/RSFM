@@ -136,6 +136,39 @@ export default function Dashboard() {
     }
   }
 
+  // Save handler for status timestamp fields
+  const handleStatusTimestampSave = async (
+    shipmentId: string,
+    statusIndicatorField: string,
+    timestampField: string,
+    value: string
+  ) => {
+    try {
+      const updateData: Partial<ImportShipment> = {}
+      
+      if (!value.trim()) {
+        // Clearing the timestamp - set status to 2 (yellow/to do)
+        ;(updateData as any)[statusIndicatorField] = 2
+        ;(updateData as any)[timestampField] = null
+      } else {
+        // Setting a timestamp - validate DD/MM/YY format and set status to 3 (green/completed)
+        const convertedDate = validateAndConvertDate(value)
+        ;(updateData as any)[statusIndicatorField] = 3
+        ;(updateData as any)[timestampField] = new Date().toISOString()
+      }
+      
+      await updateShipmentMutation.mutateAsync({ id: shipmentId, data: updateData })
+      setEditingCell(null)
+      setTempValue("")
+    } catch (error) {
+      toast({
+        title: "Validation Error",
+        description: error instanceof Error ? error.message : "Invalid input",
+        variant: "destructive",
+      })
+    }
+  }
+
   // Toggle job status filter
   const toggleJobStatusFilter = (status: "active" | "completed") => {
     if (jobStatusFilter.includes(status)) {
@@ -448,6 +481,99 @@ export default function Dashboard() {
           <span className={type === "textarea" ? "whitespace-pre-wrap text-left block" : ""}>
             {displayValue !== undefined ? displayValue : value || ""}
           </span>
+        )}
+      </td>
+    )
+  }
+
+  // Editable Status Timestamp Cell Component
+  const EditableStatusTimestampCell = ({
+    shipment,
+    statusIndicatorField,
+    timestampField,
+    statusIndicator,
+    timestamp,
+  }: {
+    shipment: ImportShipment
+    statusIndicatorField: string
+    timestampField: string
+    statusIndicator: number | null
+    timestamp: string | null | undefined
+  }) => {
+    const inputRef = useRef<HTMLInputElement>(null)
+    const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField
+    const isSaving = updateShipmentMutation.isPending
+
+    useEffect(() => {
+      if (isEditing && inputRef.current) {
+        inputRef.current.focus()
+      }
+    }, [isEditing])
+
+    const handleClick = () => {
+      setEditingCell({ shipmentId: shipment.id, fieldName: timestampField })
+      // If there's a timestamp, show it in DD/MM/YY format for editing
+      setTempValue(timestamp ? formatTimestampDDMMYY(timestamp) : "")
+    }
+
+    const handleBlur = () => {
+      if (!isSaving) {
+        const currentDisplayValue = timestamp ? formatTimestampDDMMYY(timestamp) : ""
+        if (tempValue !== currentDisplayValue) {
+          handleStatusTimestampSave(shipment.id, statusIndicatorField, timestampField, tempValue)
+        } else {
+          setEditingCell(null)
+          setTempValue("")
+        }
+      }
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault()
+        const currentDisplayValue = timestamp ? formatTimestampDDMMYY(timestamp) : ""
+        if (tempValue !== currentDisplayValue) {
+          handleStatusTimestampSave(shipment.id, statusIndicatorField, timestampField, tempValue)
+        } else {
+          setEditingCell(null)
+          setTempValue("")
+        }
+      } else if (e.key === "Escape") {
+        setEditingCell(null)
+        setTempValue("")
+      }
+    }
+
+    // Color based on status indicator (3 = green, 2 or 1 = yellow)
+    const cellColor = statusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-800"
+
+    if (isEditing) {
+      return (
+        <td className={`px-1 border-r border-border align-middle ${cellColor}`}>
+          <Input
+            ref={inputRef}
+            type="text"
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="h-auto min-h-6 text-xs border-none focus:ring-1 focus:ring-primary"
+            placeholder="DD/MM/YY"
+          />
+        </td>
+      )
+    }
+
+    return (
+      <td
+        className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${cellColor}`}
+        onClick={handleClick}
+        data-testid={`cell-${timestampField}-${shipment.jobRef}`}
+      >
+        {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField ? (
+          <Loader2 className="h-3 w-3 animate-spin mx-auto" />
+        ) : (
+          timestamp ? formatTimestampDDMMYY(timestamp) : ""
         )}
       </td>
     )
@@ -856,19 +982,23 @@ export default function Dashboard() {
                               type="number"
                             />
                             
-                            {/* Details Sent to Ligentia - READ ONLY STATUS INDICATOR */}
-                            <td className={`px-1 text-center border-r border-border align-middle ${
-                              shipment.clearanceStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-200 dark:bg-yellow-800'
-                            }`} data-testid={`cell-details-ligentia-${shipment.jobRef}`}>
-                              {shipment.clearanceStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.clearanceStatusIndicatorTimestamp) : ''}
-                            </td>
+                            {/* Details Sent to Ligentia - EDITABLE STATUS TIMESTAMP */}
+                            <EditableStatusTimestampCell
+                              shipment={shipment}
+                              statusIndicatorField="clearanceStatusIndicator"
+                              timestampField="clearanceStatusIndicatorTimestamp"
+                              statusIndicator={shipment.clearanceStatusIndicator}
+                              timestamp={shipment.clearanceStatusIndicatorTimestamp}
+                            />
                             
-                            {/* Entry to Haulier - READ ONLY STATUS INDICATOR */}
-                            <td className={`px-1 text-center border-r border-border align-middle ${
-                              shipment.sendHaulierEadStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-200 dark:bg-yellow-800'
-                            }`} data-testid={`cell-entry-haulier-${shipment.jobRef}`}>
-                              {shipment.sendHaulierEadStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ''}
-                            </td>
+                            {/* Entry to Haulier - EDITABLE STATUS TIMESTAMP */}
+                            <EditableStatusTimestampCell
+                              shipment={shipment}
+                              statusIndicatorField="sendHaulierEadStatusIndicator"
+                              timestampField="sendHaulierEadStatusIndicatorTimestamp"
+                              statusIndicator={shipment.sendHaulierEadStatusIndicator}
+                              timestamp={shipment.sendHaulierEadStatusIndicatorTimestamp}
+                            />
                             
                             {/* Delivery Booked Date - EDITABLE DATE */}
                             <EditableCell
@@ -884,12 +1014,14 @@ export default function Dashboard() {
                               {priceOut}
                             </td>
                             
-                            {/* POD Sent - READ ONLY STATUS INDICATOR */}
-                            <td className={`px-1 text-center border-r border-border align-middle ${
-                              shipment.sendPodToCustomerStatusIndicator === 3 ? 'bg-green-100 dark:bg-green-900' : 'bg-yellow-200 dark:bg-yellow-800'
-                            }`} data-testid={`cell-pod-sent-${shipment.jobRef}`}>
-                              {shipment.sendPodToCustomerStatusIndicator === 3 ? formatTimestampDDMMYY(shipment.sendPodToCustomerStatusIndicatorTimestamp) : ''}
-                            </td>
+                            {/* POD Sent - EDITABLE STATUS TIMESTAMP */}
+                            <EditableStatusTimestampCell
+                              shipment={shipment}
+                              statusIndicatorField="sendPodToCustomerStatusIndicator"
+                              timestampField="sendPodToCustomerStatusIndicatorTimestamp"
+                              statusIndicator={shipment.sendPodToCustomerStatusIndicator}
+                              timestamp={shipment.sendPodToCustomerStatusIndicatorTimestamp}
+                            />
                             
                             {/* Net Cost - READ ONLY */}
                             <td className={`px-1 text-center align-top whitespace-pre-wrap w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
