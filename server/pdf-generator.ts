@@ -23,17 +23,17 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       });
       doc.on('error', reject);
 
-      // Header - INVOICE Title (centered above RS logo) - positioned higher
+      // Header - INVOICE Title (centered above RS logo) - moved to top
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .text('INVOICE', 50, 65, { width: 140, align: 'center' });
+         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
 
-      // Header - RS Logo - bottom edge aligns with Exporters Ref at Y=168
+      // Header - RS Logo - positioned below INVOICE title
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          // Logo height is approximately 70pt at width 140, position at Y=98 so bottom aligns at Y=168
-          doc.image(logoPath, 50, 98, { width: 140 });
+          // Logo positioned at Y=60, below INVOICE header
+          doc.image(logoPath, 50, 60, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
@@ -268,8 +268,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Horizontal line below the section
       doc.moveTo(50, consignorY + 100).lineTo(545, consignorY + 100).stroke();
 
-      // Description of Charges Table - dynamically positioned, gap removed
-      const chargesTableY = consignorY + 105; // Position below consignor section with minimal spacing
+      // Description of Charges Table - dynamically positioned with gap above
+      const chargesTableY = consignorY + 115; // Position below consignor section with line gap
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
