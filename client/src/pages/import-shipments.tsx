@@ -2097,8 +2097,7 @@ Hope all is OK.`
                                         <FileOutput className="h-3 w-3 text-primary hover:text-primary/80" />
                                       </a>
                                     </div>
-                                    )
-                                  })}
+                                  )})}
                                 </div>
                               ) : (
                                 <p className="text-xs text-muted-foreground italic">None</p>
