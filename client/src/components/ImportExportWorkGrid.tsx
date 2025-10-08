@@ -19,6 +19,7 @@ export function ImportExportWorkGrid() {
     return saved ? JSON.parse(saved) : []
   })
   const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active", "completed"])
+  const [jobTypeFilter, setJobTypeFilter] = useState<("import" | "export")[]>(["import", "export"])
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string; jobType: 'import' | 'export' } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
@@ -148,12 +149,18 @@ export function ImportExportWorkGrid() {
     }
   })
 
-  // Apply status filter
+  // Apply status filter and job type filter
   const displayedJobs = searchedJobs.filter(job => {
     if (jobStatusFilter.length === 0) return false
-    if (jobStatusFilter.includes("active") && job.status !== "Completed") return true
-    if (jobStatusFilter.includes("completed") && job.status === "Completed") return true
-    return false
+    
+    // Filter by status
+    const statusMatch = (jobStatusFilter.includes("active") && job.status !== "Completed") ||
+                       (jobStatusFilter.includes("completed") && job.status === "Completed")
+    
+    // Filter by job type
+    const typeMatch = jobTypeFilter.includes(job._jobType)
+    
+    return statusMatch && typeMatch
   }).sort((a, b) => b.jobRef - a.jobRef)
 
   const toggleJobStatusFilter = (status: "active" | "completed") => {
@@ -161,6 +168,14 @@ export function ImportExportWorkGrid() {
       prev.includes(status)
         ? prev.filter(s => s !== status)
         : [...prev, status]
+    )
+  }
+
+  const toggleJobTypeFilter = (type: "import" | "export") => {
+    setJobTypeFilter(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
     )
   }
 
@@ -420,7 +435,7 @@ export function ImportExportWorkGrid() {
               </div>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Button
               variant={jobStatusFilter.includes("active") ? "default" : "outline"}
               onClick={() => toggleJobStatusFilter("active")}
@@ -434,6 +449,21 @@ export function ImportExportWorkGrid() {
               data-testid="button-filter-completed"
             >
               Completed Jobs
+            </Button>
+            <div className="h-8 w-px bg-border mx-1" />
+            <Button
+              variant={jobTypeFilter.includes("import") ? "default" : "outline"}
+              onClick={() => toggleJobTypeFilter("import")}
+              data-testid="button-filter-imports"
+            >
+              Imports
+            </Button>
+            <Button
+              variant={jobTypeFilter.includes("export") ? "default" : "outline"}
+              onClick={() => toggleJobTypeFilter("export")}
+              data-testid="button-filter-exports"
+            >
+              Exports
             </Button>
           </div>
         </div>
