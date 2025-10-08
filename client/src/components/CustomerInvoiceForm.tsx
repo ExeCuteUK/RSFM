@@ -172,7 +172,6 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
     } else if (job) {
       // Create mode - auto-populate from job
       const today = format(new Date(), 'yyyy-MM-dd')
-      setInvoiceDate(today)
       setTaxPointDate(today)
       setOurRef(`${job.jobRef}`)
       

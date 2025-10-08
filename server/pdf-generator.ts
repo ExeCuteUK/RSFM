@@ -57,7 +57,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.fontSize(10)
          .font('Helvetica-Bold')
          .text('Invoice No.', 400, 129);
-      doc.text(invoice.invoiceNumber.toString(), valueX, 129);
+      doc.text(String(invoice.invoiceNumber), valueX, 129);
 
       doc.fontSize(9)
          .font('Helvetica')
@@ -65,7 +65,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.text(new Date(invoice.taxPointDate || invoice.invoiceDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }), valueX, 144);
       
       doc.text('Our Ref :', 400, 156);
-      doc.text(invoice.ourRef || invoice.jobRef || '', valueX, 156);
+      doc.text(invoice.ourRef || String(invoice.jobRef || ''), valueX, 156);
       
       doc.text('Exporters Ref :', 400, 168);
       doc.text(invoice.exportersRef || '', valueX, 168);
