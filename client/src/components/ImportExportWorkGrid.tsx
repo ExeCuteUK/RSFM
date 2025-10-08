@@ -365,22 +365,21 @@ export function ImportExportWorkGrid() {
         <CardTitle>Import / Export Work</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search Bar and Filters */}
-        <div className="flex gap-4">
-          {/* Search Filter - Left Side */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by job ref, customer, supplier, or container number..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="pl-9"
-              data-testid="input-search-import-export"
-            />
-          </div>
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by job ref, customer, supplier, or container number..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="pl-9"
+            data-testid="input-search-import-export"
+          />
+        </div>
 
-          {/* Exclude Filter and Job Status Buttons - Right Side */}
-          <div className="space-y-2">
+        {/* Exclude Filter and Job Status Buttons */}
+        <div className="flex items-start gap-4">
+          <div className="flex-1 space-y-2">
             <div className="flex gap-2">
               <Input
                 placeholder="Add customer name to exclude..."
@@ -392,7 +391,6 @@ export function ImportExportWorkGrid() {
                     addExcludedCustomer()
                   }
                 }}
-                className="w-[200px]"
                 data-testid="input-exclude-customer"
               />
               <Button
@@ -404,43 +402,41 @@ export function ImportExportWorkGrid() {
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant={jobStatusFilter.includes("active") ? "default" : "outline"}
-                onClick={() => toggleJobStatusFilter("active")}
-                data-testid="button-filter-active"
-              >
-                Active Jobs
-              </Button>
-              <Button
-                variant={jobStatusFilter.includes("completed") ? "default" : "outline"}
-                onClick={() => toggleJobStatusFilter("completed")}
-                data-testid="button-filter-completed"
-              >
-                Completed Jobs
-              </Button>
-            </div>
+            {excludedCustomers.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {excludedCustomers.map((name) => (
+                  <Badge key={name} variant="secondary" className="gap-1">
+                    {name}
+                    <button
+                      type="button"
+                      onClick={() => removeExcludedCustomer(name)}
+                      className="hover-elevate active-elevate-2 rounded-full"
+                      data-testid={`button-remove-${name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={jobStatusFilter.includes("active") ? "default" : "outline"}
+              onClick={() => toggleJobStatusFilter("active")}
+              data-testid="button-filter-active"
+            >
+              Active Jobs
+            </Button>
+            <Button
+              variant={jobStatusFilter.includes("completed") ? "default" : "outline"}
+              onClick={() => toggleJobStatusFilter("completed")}
+              data-testid="button-filter-completed"
+            >
+              Completed Jobs
+            </Button>
           </div>
         </div>
-
-        {/* Excluded Customer Tags */}
-        {excludedCustomers.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {excludedCustomers.map((name) => (
-              <Badge key={name} variant="secondary" className="gap-1">
-                {name}
-                <button
-                  type="button"
-                  onClick={() => removeExcludedCustomer(name)}
-                  className="hover-elevate active-elevate-2 rounded-full"
-                  data-testid={`button-remove-${name}`}
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
 
         <div className="overflow-auto">
           <table ref={tableRef} className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
