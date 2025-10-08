@@ -166,9 +166,9 @@ export default function JobJournals() {
     
     invoices.forEach(inv => {
       const chargesTotal = (inv.lineItems || []).reduce((sum: number, charge: any) => {
-        const netAmount = parseFloat(charge.netAmount) || 0
+        const chargeAmount = parseFloat(charge.chargeAmount) || 0
         const vatAmount = parseFloat(charge.vatAmount) || 0
-        return sum + netAmount + vatAmount
+        return sum + chargeAmount + vatAmount
       }, 0)
       
       if (inv.type === "credit_note") {
@@ -756,9 +756,9 @@ export default function JobJournals() {
                           <div className="text-xs space-y-0.5">
                             {invoices.map((inv) => {
                               const chargesTotal = (inv.lineItems || []).reduce((sum: number, charge: any) => {
-                                const netAmount = parseFloat(charge.netAmount) || 0
+                                const chargeAmount = parseFloat(charge.chargeAmount) || 0
                                 const vatAmount = parseFloat(charge.vatAmount) || 0
-                                return sum + netAmount + vatAmount
+                                return sum + chargeAmount + vatAmount
                               }, 0)
                               
                               const displayAmount = inv.type === "credit_note" ? -chargesTotal : chargesTotal
