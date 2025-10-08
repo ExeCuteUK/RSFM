@@ -432,8 +432,8 @@ export function ImportExportWorkGrid() {
                     {/* Quote In/out */}
                     <td className="p-1 text-center border-r border-border text-xs">
                       <div className="space-y-0.5">
-                        <div>Quote: {getQuoteDisplay(job)}</div>
-                        <div>Net: {getNetDisplay(job)}</div>
+                        <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
+                        <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
                       </div>
                     </td>
                     
