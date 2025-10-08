@@ -521,10 +521,11 @@ export default function ExportShipments() {
       
       const body = "Please find attached our Invoice."
       
-      // Get invoice PDF paths - use the API endpoint for downloading invoices
-      const invoiceFiles = shipmentInvoices.map(invoice => 
-        `/api/invoices/${invoice.id}/pdf`
-      )
+      // Get invoice PDF paths with proper filenames
+      const invoiceFiles = shipmentInvoices.map(invoice => ({
+        url: `/api/invoices/${invoice.id}/pdf`,
+        name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
+      }))
       
       // Open email composer
       openEmailComposer({
@@ -582,10 +583,11 @@ export default function ExportShipments() {
     
     const body = "Please find attached our Invoice."
     
-    // Get invoice PDF paths - use the API endpoint for downloading invoices
-    const invoiceFiles = selectedInvoiceObjects.map(invoice => 
-      `/api/invoices/${invoice.id}/pdf`
-    )
+    // Get invoice PDF paths with proper filenames
+    const invoiceFiles = selectedInvoiceObjects.map(invoice => ({
+      url: `/api/invoices/${invoice.id}/pdf`,
+      name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
+    }))
     
     // Open email composer
     openEmailComposer({
