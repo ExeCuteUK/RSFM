@@ -295,10 +295,10 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.fillColor('#000000')
          .fontSize(8)
          .font('Helvetica-Bold')
-         .text('Description', 55, chargesY + 5)
-         .text('CHARGE AMOUNT', 360, chargesY + 5)
-         .text('VAT AMOUNT', 450, chargesY + 5)
-         .text('CODE', 510, chargesY + 5, { underline: true });
+         .text('Description', 55, chargesY + 6)
+         .text('CHARGE AMOUNT', 360, chargesY + 6)
+         .text('VAT AMOUNT', 450, chargesY + 6)
+         .text('CODE', 510, chargesY + 6);
 
       // Line items - 15pt gap below header
       let yPosition = chargesY + 33;
