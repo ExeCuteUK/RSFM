@@ -3335,35 +3335,63 @@ ${messageText}
 
       // Process each attachment
       for (const attachmentUrl of attachmentUrls) {
-        let fullAttachmentUrl = attachmentUrl;
-        if (attachmentUrl.startsWith('/')) {
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-            : process.env.REPL_SLUG 
-              ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-              : 'http://localhost:5000';
-          fullAttachmentUrl = `${baseUrl}${attachmentUrl}`;
-        }
-
-        const fileResponse = await fetch(fullAttachmentUrl);
-        if (!fileResponse.ok) {
-          console.error(`Failed to fetch file: ${fullAttachmentUrl}`);
-          continue;
-        }
-        
-        const fileBuffer = Buffer.from(await fileResponse.arrayBuffer());
-        const fileBase64 = fileBuffer.toString('base64');
-        const filename = attachmentUrl.split('/').pop() || 'attachment';
-        
+        let fileBuffer: Buffer;
+        let filename: string;
         let contentType = 'application/octet-stream';
-        if (filename.toLowerCase().endsWith('.pdf')) {
-          contentType = 'application/pdf';
-        } else if (filename.toLowerCase().match(/\.(jpg|jpeg)$/)) {
-          contentType = 'image/jpeg';
-        } else if (filename.toLowerCase().endsWith('.png')) {
-          contentType = 'image/png';
+
+        // Check if this is an invoice PDF endpoint
+        const invoicePdfMatch = attachmentUrl.match(/^\/api\/invoices\/([^/]+)\/pdf$/);
+        if (invoicePdfMatch) {
+          // Direct PDF generation for invoice endpoints
+          const invoiceId = invoicePdfMatch[1];
+          try {
+            const invoice = await storage.getInvoice(invoiceId);
+            if (!invoice) {
+              console.error(`Invoice not found: ${invoiceId}`);
+              continue;
+            }
+
+            const { generateInvoicePDF } = await import("./pdf-generator");
+            fileBuffer = await generateInvoicePDF({ invoice });
+            
+            const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
+            filename = `${prefix} - ${invoice.jobRef}.pdf`;
+            contentType = 'application/pdf';
+          } catch (error) {
+            console.error(`Failed to generate invoice PDF for ${invoiceId}:`, error);
+            continue;
+          }
+        } else {
+          // Regular file attachment - fetch via HTTP
+          let fullAttachmentUrl = attachmentUrl;
+          if (attachmentUrl.startsWith('/')) {
+            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+              ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+              : process.env.REPL_SLUG 
+                ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+                : 'http://localhost:5000';
+            fullAttachmentUrl = `${baseUrl}${attachmentUrl}`;
+          }
+
+          const fileResponse = await fetch(fullAttachmentUrl);
+          if (!fileResponse.ok) {
+            console.error(`Failed to fetch file: ${fullAttachmentUrl}`);
+            continue;
+          }
+          
+          fileBuffer = Buffer.from(await fileResponse.arrayBuffer());
+          filename = attachmentUrl.split('/').pop() || 'attachment';
+          
+          if (filename.toLowerCase().endsWith('.pdf')) {
+            contentType = 'application/pdf';
+          } else if (filename.toLowerCase().match(/\.(jpg|jpeg)$/)) {
+            contentType = 'image/jpeg';
+          } else if (filename.toLowerCase().endsWith('.png')) {
+            contentType = 'image/png';
+          }
         }
 
+        const fileBase64 = fileBuffer.toString('base64');
         messageParts.push(
           `--${boundary}`,
           `Content-Type: ${contentType}`,
