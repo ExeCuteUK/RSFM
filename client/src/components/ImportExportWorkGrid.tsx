@@ -12,6 +12,7 @@ import { useLocation } from "wouter"
 
 export function ImportExportWorkGrid() {
   const [searchText, setSearchText] = useState("")
+  const [excludeFilter, setExcludeFilter] = useState("")
   const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active", "completed"])
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string; jobType: 'import' | 'export' } | null>(null)
   const [tempValue, setTempValue] = useState("")
@@ -70,20 +71,42 @@ export function ImportExportWorkGrid() {
     queryKey: ["/api/hauliers"],
   })
 
-  // Filter jobs: Exclude Container Shipments and Nisbets customers
+  // Parse exclude filter (comma-separated names)
+  const excludedNames = excludeFilter
+    .split(',')
+    .map(name => name.trim().toLowerCase())
+    .filter(name => name.length > 0)
+
+  // Filter jobs: Exclude Container Shipments, Nisbets customers, and manually excluded customers
   const filteredJobs = [
     ...importShipments
       .filter(job => {
         const customer = importCustomers.find(c => c.id === job.importCustomerId)
+        const customerName = customer?.companyName?.toLowerCase().trim() || ''
+        
+        // Check if customer matches any excluded name
+        const isExcluded = excludedNames.some(excludedName => 
+          customerName.includes(excludedName) || excludedName.includes(customerName)
+        )
+        
         return job.containerShipment !== "Container Shipment" && 
-               customer?.companyName?.toLowerCase().trim() !== "nisbets plc"
+               customerName !== "nisbets plc" &&
+               !isExcluded
       })
       .map(job => ({ ...job, _jobType: 'import' as const })),
     ...exportShipments
       .filter(job => {
         const customer = exportCustomers.find(c => c.id === job.destinationCustomerId)
+        const customerName = customer?.companyName?.toLowerCase().trim() || ''
+        
+        // Check if customer matches any excluded name
+        const isExcluded = excludedNames.some(excludedName => 
+          customerName.includes(excludedName) || excludedName.includes(customerName)
+        )
+        
         return job.containerShipment !== "Container Shipment" && 
-               customer?.companyName?.toLowerCase().trim() !== "nisbets plc"
+               customerName !== "nisbets plc" &&
+               !isExcluded
       })
       .map(job => ({ ...job, _jobType: 'export' as const }))
   ]
@@ -340,6 +363,18 @@ export function ImportExportWorkGrid() {
               onChange={(e) => setSearchText(e.target.value)}
               className="pl-9"
               data-testid="input-search-import-export"
+            />
+          </div>
+        </div>
+
+        {/* Exclude Filter and Job Status Buttons */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <Input
+              placeholder="Exclude customers (comma-separated names)..."
+              value={excludeFilter}
+              onChange={(e) => setExcludeFilter(e.target.value)}
+              data-testid="input-exclude-filter"
             />
           </div>
           <div className="flex gap-2">
