@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { FileOutput, Search, Pencil, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { apiRequest, queryClient } from "@/lib/queryClient"
+import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +29,7 @@ import {
 export default function Invoices() {
   const [searchText, setSearchText] = useState("")
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null)
+  const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null)
   const { toast } = useToast()
 
   const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
@@ -56,7 +58,7 @@ export default function Invoices() {
     const searchLower = searchText.toLowerCase()
     return (
       invoice.invoiceNumber.toString().includes(searchLower) ||
-      invoice.customerName?.toLowerCase().includes(searchLower) ||
+      invoice.customerCompanyName?.toLowerCase().includes(searchLower) ||
       invoice.jobRef.toString().includes(searchLower)
     )
   })
@@ -127,7 +129,7 @@ export default function Invoices() {
                     {new Date(invoice.invoiceDate).toLocaleDateString('en-GB')}
                   </TableCell>
                   <TableCell>
-                    {invoice.customerName || 'N/A'}
+                    {invoice.customerCompanyName || 'N/A'}
                   </TableCell>
                   <TableCell>
                     #{invoice.jobRef}
@@ -137,6 +139,15 @@ export default function Invoices() {
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setInvoiceToEdit(invoice)}
+                        data-testid={`button-edit-invoice-${invoice.id}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <a
                         href={`/api/invoices/${invoice.id}/pdf`}
                         download={`RS Invoice - ${invoice.jobRef}.pdf`}
@@ -183,6 +194,14 @@ export default function Invoices() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <CustomerInvoiceForm
+        job={null}
+        jobType={invoiceToEdit?.jobType === 'import' ? 'import' : invoiceToEdit?.jobType === 'export' ? 'export' : 'clearance'}
+        open={!!invoiceToEdit}
+        onOpenChange={(open) => !open && setInvoiceToEdit(null)}
+        existingInvoice={invoiceToEdit}
+      />
     </div>
   )
 }

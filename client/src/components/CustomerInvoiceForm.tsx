@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { apiRequest, queryClient } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
-import type { ImportShipment, ExportShipment, CustomClearance } from '@shared/schema'
+import type { ImportShipment, ExportShipment, CustomClearance, Invoice } from '@shared/schema'
 import {
   Dialog,
   DialogContent,
@@ -37,9 +37,10 @@ interface CustomerInvoiceFormProps {
   jobType: 'import' | 'export' | 'clearance'
   open: boolean
   onOpenChange: (open: boolean) => void
+  existingInvoice?: Invoice | null // For edit mode
 }
 
-export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: CustomerInvoiceFormProps) {
+export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existingInvoice }: CustomerInvoiceFormProps) {
   const { toast } = useToast()
   
   // Invoice fields
@@ -52,47 +53,43 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
   ])
   const [paymentTerms, setPaymentTerms] = useState('Payment due within 30 days of invoice date')
 
-  // Reset form when job changes
+  // Reset or populate form when job/invoice changes
   useEffect(() => {
-    if (job) {
-      setInvoiceDate(format(new Date(), 'yyyy-MM-dd'))
+    if (existingInvoice) {
+      // Edit mode - populate with existing invoice data
+      setInvoiceDate(existingInvoice.invoiceDate)
+      setCustomerName(existingInvoice.customerCompanyName || '')
+      setCustomerAddress(existingInvoice.customerAddress || '')
+      setShipmentDetails(existingInvoice.shipmentDetails || '')
+      setPaymentTerms(existingInvoice.paymentTerms || 'Payment due within 30 days of invoice date')
       
-      // Set customer name based on job type
-      if (jobType === 'import') {
-        const importJob = job as ImportShipment
-        setCustomerName(importJob.importerName || '')
-      } else if (jobType === 'export') {
-        const exportJob = job as ExportShipment
-        setCustomerName(exportJob.destinationCustomerName || '')
+      // Convert existing line items to the form format
+      const items = existingInvoice.lineItems || []
+      if (items.length > 0) {
+        setLineItems(items as LineItem[])
       } else {
-        const clearanceJob = job as CustomClearance
-        setCustomerName(clearanceJob.importerName || '')
+        setLineItems([{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
       }
+    } else if (job) {
+      // Create mode - reset to defaults
+      setInvoiceDate(format(new Date(), 'yyyy-MM-dd'))
+      setCustomerName('')
+      setCustomerAddress('')
+      setPaymentTerms('Payment due within 30 days of invoice date')
       
-      // Set shipment details based on job type
       let details = ''
       if (jobType === 'import') {
-        const importJob = job as ImportShipment
-        details = `Import Shipment #${importJob.jobRef}\n`
-        details += importJob.portOfLoading ? `Port of Loading: ${importJob.portOfLoading}\n` : ''
-        details += importJob.portOfDestination ? `Port of Destination: ${importJob.portOfDestination}\n` : ''
-        details += importJob.containerNumbers ? `Container: ${importJob.containerNumbers}\n` : ''
+        details = `Import Shipment #${job.jobRef}`
       } else if (jobType === 'export') {
-        const exportJob = job as ExportShipment
-        details = `Export Shipment #${exportJob.jobRef}\n`
-        details += exportJob.portOfLoading ? `Port of Loading: ${exportJob.portOfLoading}\n` : ''
-        details += exportJob.portOfDestination ? `Port of Destination: ${exportJob.portOfDestination}\n` : ''
-        details += exportJob.containerNumbers ? `Container: ${exportJob.containerNumbers}\n` : ''
+        details = `Export Shipment #${job.jobRef}`
       } else {
-        const clearanceJob = job as CustomClearance
-        details = `Custom Clearance #${clearanceJob.jobRef}\n`
-        details += clearanceJob.entryNumber ? `Entry Number: ${clearanceJob.entryNumber}\n` : ''
+        details = `Custom Clearance #${job.jobRef}`
       }
-      setShipmentDetails(details.trim())
+      setShipmentDetails(details)
       
       setLineItems([{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
     }
-  }, [job, jobType])
+  }, [job, jobType, existingInvoice])
 
   const addLineItem = () => {
     setLineItems([...lineItems, { description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
@@ -144,23 +141,33 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
   
   const total = subtotal + vatAmount
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest('POST', '/api/invoices', data)
-      return response.json()
+      if (existingInvoice) {
+        // Update existing invoice
+        const response = await apiRequest('PATCH', `/api/invoices/${existingInvoice.id}`, data)
+        return response.json()
+      } else {
+        // Create new invoice
+        const response = await apiRequest('POST', '/api/invoices', data)
+        return response.json()
+      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/invoices'] })
       await queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] })
       await queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] })
       await queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] })
-      toast({ title: 'Success', description: 'Invoice created successfully' })
+      toast({ 
+        title: 'Success', 
+        description: existingInvoice ? 'Invoice updated successfully' : 'Invoice created successfully' 
+      })
       onOpenChange(false)
     },
     onError: (error: any) => {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create invoice',
+        description: error.message || `Failed to ${existingInvoice ? 'update' : 'create'} invoice`,
         variant: 'destructive'
       })
     }
@@ -200,11 +207,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
       return
     }
 
-    // Create invoice
-    createMutation.mutate({
-      jobRef: job?.jobRef,
-      jobType,
-      jobId: job?.id,
+    // Create or update invoice
+    const invoiceData: any = {
       invoiceDate,
       customerCompanyName: customerName || null,
       customerAddress: customerAddress.trim() || null,
@@ -214,18 +218,27 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
       vat: vatAmount,
       total,
       paymentTerms: paymentTerms.trim() || null
-    })
+    }
+    
+    // Only include job info when creating new invoice
+    if (!existingInvoice && job) {
+      invoiceData.jobRef = job.jobRef
+      invoiceData.jobType = jobType
+      invoiceData.jobId = job.id
+    }
+    
+    saveMutation.mutate(invoiceData)
   }
 
-  if (!job) return null
+  if (!job && !existingInvoice) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto" data-testid="dialog-customer-invoice">
         <DialogHeader>
-          <DialogTitle>Create Customer Invoice</DialogTitle>
+          <DialogTitle>{existingInvoice ? 'Edit Invoice' : 'Create Customer Invoice'}</DialogTitle>
           <DialogDescription>
-            Job Reference: #{job.jobRef}
+            {existingInvoice ? `Invoice #${existingInvoice.invoiceNumber}` : `Job Reference: #${job?.jobRef}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -386,10 +399,12 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={createMutation.isPending}
-            data-testid="button-create-invoice"
+            disabled={saveMutation.isPending}
+            data-testid="button-save-invoice"
           >
-            {createMutation.isPending ? 'Creating...' : 'Create Invoice'}
+            {saveMutation.isPending 
+              ? (existingInvoice ? 'Updating...' : 'Creating...') 
+              : (existingInvoice ? 'Update Invoice' : 'Create Invoice')}
           </Button>
         </DialogFooter>
       </DialogContent>
