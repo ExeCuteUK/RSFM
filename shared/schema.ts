@@ -736,6 +736,16 @@ export const invoiceLineItemSchema = z.object({
 
 export type InvoiceLineItem = z.infer<typeof invoiceLineItemSchema>;
 
+export const shipmentLineSchema = z.object({
+  numberOfPackages: z.string(),
+  packingType: z.string(),
+  commodity: z.string(),
+  kgs: z.string(),
+  cbm: z.string(),
+});
+
+export type ShipmentLine = z.infer<typeof shipmentLineSchema>;
+
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
@@ -780,6 +790,7 @@ export const invoices = pgTable("invoices", {
   
   // Line items and details
   lineItems: jsonb("line_items").$type<InvoiceLineItem[]>().default(sql`'[]'::jsonb`),
+  shipmentLines: jsonb("shipment_lines").$type<ShipmentLine[]>().default(sql`'[]'::jsonb`), // Multiple commodity lines
   shipmentDetails: text("shipment_details"),
   paymentTerms: text("payment_terms"),
   
@@ -800,6 +811,7 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   updatedAt: true,
 }).extend({
   lineItems: z.array(invoiceLineItemSchema).min(1, "At least one line item is required"),
+  shipmentLines: z.array(shipmentLineSchema).optional(),
 });
 
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
