@@ -37,6 +37,8 @@ export default function Invoices() {
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null)
   const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null)
   const [showNewInvoice, setShowNewInvoice] = useState(false)
+  const [showInvoices, setShowInvoices] = useState(true)
+  const [showCredits, setShowCredits] = useState(true)
   const { toast } = useToast()
 
   const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
@@ -63,11 +65,16 @@ export default function Invoices() {
 
   const filteredInvoices = allInvoices.filter(invoice => {
     const searchLower = searchText.toLowerCase()
-    return (
+    const matchesSearch = (
       invoice.invoiceNumber.toString().includes(searchLower) ||
       invoice.customerCompanyName?.toLowerCase().includes(searchLower) ||
       invoice.jobRef.toString().includes(searchLower)
     )
+    const matchesType = (
+      (showInvoices && invoice.type === 'invoice') ||
+      (showCredits && invoice.type === 'credit_note')
+    )
+    return matchesSearch && matchesType
   })
 
   const sortedInvoices = [...filteredInvoices].sort((a, b) => {
@@ -78,9 +85,9 @@ export default function Invoices() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Invoices</h1>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">R.S Invoice & Credit Management</h1>
           <p className="text-muted-foreground">
-            View and download customer invoices
+            View and download customer invoices and credit notes
           </p>
         </div>
         <Button onClick={() => setShowNewInvoice(true)} data-testid="button-new-invoice">
@@ -99,6 +106,31 @@ export default function Invoices() {
             className="pl-9"
             data-testid="input-search-invoices"
           />
+        </div>
+        <div className="h-8 w-px bg-border" />
+        <div className="flex items-center gap-1">
+          <Button
+            variant={showInvoices ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              if (!showCredits) return
+              setShowInvoices(!showInvoices)
+            }}
+            data-testid="button-filter-invoices"
+          >
+            Invoices
+          </Button>
+          <Button
+            variant={showCredits ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              if (!showInvoices) return
+              setShowCredits(!showCredits)
+            }}
+            data-testid="button-filter-credits"
+          >
+            Credits
+          </Button>
         </div>
       </div>
 
@@ -122,10 +154,11 @@ export default function Invoices() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[150px]">Invoice Number</TableHead>
+                <TableHead className="w-[120px]">Invoice #</TableHead>
+                <TableHead className="w-[120px]">Type</TableHead>
                 <TableHead className="w-[120px]">Date</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead className="w-[120px]">Job Reference</TableHead>
+                <TableHead className="w-[150px]">Job Reference</TableHead>
                 <TableHead className="w-[150px] text-right">Amount</TableHead>
                 <TableHead className="w-[150px] text-center">Actions</TableHead>
               </TableRow>
@@ -137,13 +170,18 @@ export default function Invoices() {
                     {invoice.invoiceNumber}
                   </TableCell>
                   <TableCell>
+                    <span className={invoice.type === 'credit_note' ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>
+                      {invoice.type === 'credit_note' ? 'Credit Note' : 'Invoice'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
                     {new Date(invoice.invoiceDate).toLocaleDateString('en-GB')}
                   </TableCell>
                   <TableCell>
                     {invoice.customerCompanyName || 'N/A'}
                   </TableCell>
                   <TableCell>
-                    #{invoice.jobRef}
+                    {invoice.jobRef}
                   </TableCell>
                   <TableCell className="text-right font-medium">
                     £{invoice.total.toFixed(2)}
