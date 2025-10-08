@@ -1,9 +1,21 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import type { Invoice } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { FileOutput, Search } from "lucide-react"
+import { FileOutput, Search, Pencil, Trash2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { apiRequest, queryClient } from "@/lib/queryClient"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   Table,
   TableBody,
@@ -15,9 +27,29 @@ import {
 
 export default function Invoices() {
   const [searchText, setSearchText] = useState("")
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null)
+  const { toast } = useToast()
 
   const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (invoiceId: string) => {
+      await apiRequest('DELETE', `/api/invoices/${invoiceId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/invoices'] })
+      toast({ title: 'Success', description: 'Invoice deleted successfully' })
+      setInvoiceToDelete(null)
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete invoice',
+        variant: 'destructive'
+      })
+    }
   })
 
   const filteredInvoices = allInvoices.filter(invoice => {
@@ -82,7 +114,7 @@ export default function Invoices() {
                 <TableHead>Customer</TableHead>
                 <TableHead className="w-[120px]">Job Reference</TableHead>
                 <TableHead className="w-[150px] text-right">Amount</TableHead>
-                <TableHead className="w-[100px] text-center">Download</TableHead>
+                <TableHead className="w-[150px] text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -104,15 +136,26 @@ export default function Invoices() {
                     £{invoice.total.toFixed(2)}
                   </TableCell>
                   <TableCell className="text-center">
-                    <a
-                      href={`/api/invoices/${invoice.id}/pdf`}
-                      download={`RS Invoice - ${invoice.jobRef}.pdf`}
-                      data-testid={`button-download-invoice-${invoice.id}`}
-                    >
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <FileOutput className="h-4 w-4" />
+                    <div className="flex items-center justify-center gap-1">
+                      <a
+                        href={`/api/invoices/${invoice.id}/pdf`}
+                        download={`RS Invoice - ${invoice.jobRef}.pdf`}
+                        data-testid={`button-download-invoice-${invoice.id}`}
+                      >
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <FileOutput className="h-4 w-4" />
+                        </Button>
+                      </a>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                        onClick={() => setInvoiceToDelete(invoice)}
+                        data-testid={`button-delete-invoice-${invoice.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    </a>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -120,6 +163,26 @@ export default function Invoices() {
           </Table>
         </div>
       )}
+
+      <AlertDialog open={!!invoiceToDelete} onOpenChange={() => setInvoiceToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete invoice #{invoiceToDelete?.invoiceNumber}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => invoiceToDelete && deleteMutation.mutate(invoiceToDelete.id)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
