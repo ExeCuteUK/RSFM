@@ -23,16 +23,17 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       });
       doc.on('error', reject);
 
-      // Header - INVOICE Title (centered above RS logo)
+      // Header - INVOICE Title (centered above RS logo) - moved up to align with Exporters Ref
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
+         .text('INVOICE', 50, 30, { width: 140, align: 'center' });
 
-      // Header - RS Logo
+      // Header - RS Logo - moved up, bottom aligns with Exporters Ref at Y=168
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          doc.image(logoPath, 50, 65, { width: 140 });
+          // Logo height is approximately 80pt at width 140, so position at Y=88 for bottom at ~168
+          doc.image(logoPath, 50, 88, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
@@ -80,17 +81,17 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         }
       }
 
-      // Invoice To Section (moved down to avoid logo overlap)
+      // Invoice To Section (moved up to reduce gap)
       doc.fontSize(10)
          .font('Helvetica-Bold')
-         .text('INVOICE TO', 50, 220);
+         .text('INVOICE TO', 50, 190);
 
       // No border around Invoice To box
 
       doc.fontSize(9)
          .font('Helvetica');
       
-      let invoiceToY = 240;
+      let invoiceToY = 210;
       if (invoice.customerCompanyName) {
         doc.text(invoice.customerCompanyName, 50, invoiceToY);
         invoiceToY += 12;
@@ -119,8 +120,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
            .text(invoice.customerVatNumber, 80, 303);
       }
 
-      // Shipment Details Table (No Packages, Commodity, KGS, CBM) - No border
-      const shipmentTableY = 320;
+      // Shipment Details Table (No Packages, Commodity, KGS, CBM) - No border - reduced gap
+      const shipmentTableY = 288;
 
       // Table headers (no border)
       doc.fontSize(8)
@@ -237,28 +238,28 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         });
       }
 
-      // Shipping details column (right) - inline label: value format
+      // Shipping details column (right) - inline label: value format, moved up
       const labelX = col3X + 5;
       const shippingValueX = col3X + 50;
       
       doc.fontSize(7)
          .font('Helvetica')
-         .text('Trailer/Cont:', labelX, consignorY + 18)
-         .text('Vessel/Flight:', labelX, consignorY + 30)
-         .text('Date:', labelX, consignorY + 42)
-         .text('Port Load:', labelX, consignorY + 54)
-         .text('Port Disch:', labelX, consignorY + 66)
-         .text('Del Terms:', labelX, consignorY + 78)
-         .text('Destination:', labelX, consignorY + 90);
+         .text('Trailer/Cont:', labelX, consignorY + 5)
+         .text('Vessel/Flight:', labelX, consignorY + 17)
+         .text('Date:', labelX, consignorY + 29)
+         .text('Port Load:', labelX, consignorY + 41)
+         .text('Port Disch:', labelX, consignorY + 53)
+         .text('Del Terms:', labelX, consignorY + 65)
+         .text('Destination:', labelX, consignorY + 77);
 
       doc.font('Helvetica-Bold')
-         .text(invoice.trailerContainerNo || 'TBA', shippingValueX, consignorY + 18, { width: 95 })
-         .text(invoice.vesselFlightNo || 'FAV', shippingValueX, consignorY + 30, { width: 95 })
-         .text(invoice.dateOfShipment ? new Date(invoice.dateOfShipment).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '', shippingValueX, consignorY + 42, { width: 95 })
-         .text(invoice.portLoading || '', shippingValueX, consignorY + 54, { width: 95 })
-         .text(invoice.portDischarge || '', shippingValueX, consignorY + 66, { width: 95 })
-         .text(invoice.deliveryTerms || '', shippingValueX, consignorY + 78, { width: 95 })
-         .text(invoice.destination || '', shippingValueX, consignorY + 90, { width: 95 });
+         .text(invoice.trailerContainerNo || 'TBA', shippingValueX, consignorY + 5, { width: 95 })
+         .text(invoice.vesselFlightNo || 'FAV', shippingValueX, consignorY + 17, { width: 95 })
+         .text(invoice.dateOfShipment ? new Date(invoice.dateOfShipment).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '', shippingValueX, consignorY + 29, { width: 95 })
+         .text(invoice.portLoading || '', shippingValueX, consignorY + 41, { width: 95 })
+         .text(invoice.portDischarge || '', shippingValueX, consignorY + 53, { width: 95 })
+         .text(invoice.deliveryTerms || '', shippingValueX, consignorY + 65, { width: 95 })
+         .text(invoice.destination || '', shippingValueX, consignorY + 77, { width: 95 });
 
       // Vertical dividers in consignor section (equal spacing)
       doc.moveTo(col2X, consignorY).lineTo(col2X, consignorY + 100).stroke();
@@ -298,14 +299,14 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
           yPosition = 50;
         }
 
-        const rowHeight = 18;
+        const rowHeight = 9; // Reduced from 18 to 9 (50% reduction)
 
         doc.fillColor('#000000')
            .fontSize(8)
-           .text(item.description, 55, yPosition + 5, { width: 290 })
-           .text(`${parseFloat(item.chargeAmount || '0').toFixed(2)}`, 380, yPosition + 5)
-           .text(`${parseFloat(item.vatAmount || '0').toFixed(2)}`, 465, yPosition + 5)
-           .text(item.vatCode, 520, yPosition + 5);
+           .text(item.description, 55, yPosition + 2, { width: 290 })
+           .text(`${parseFloat(item.chargeAmount || '0').toFixed(2)}`, 380, yPosition + 2)
+           .text(`${parseFloat(item.vatAmount || '0').toFixed(2)}`, 465, yPosition + 2)
+           .text(item.vatCode, 520, yPosition + 2);
 
         yPosition += rowHeight;
       });
