@@ -742,7 +742,7 @@ export const invoices = pgTable("invoices", {
   // Invoice identification
   invoiceNumber: integer("invoice_number").notNull().unique(),
   invoiceDate: text("invoice_date").notNull(),
-  taxPointDate: text("tax_point_date").notNull(),
+  taxPointDate: text("tax_point_date"),
   
   // Job reference
   jobRef: integer("job_ref").notNull(),
