@@ -76,14 +76,14 @@ export function ImportExportWorkGrid() {
       .filter(job => {
         const customer = importCustomers.find(c => c.id === job.importCustomerId)
         return job.containerShipment !== "Container Shipment" && 
-               customer?.companyName !== "Nisbets PLC"
+               customer?.companyName?.toLowerCase().trim() !== "nisbets plc"
       })
       .map(job => ({ ...job, _jobType: 'import' as const })),
     ...exportShipments
       .filter(job => {
         const customer = exportCustomers.find(c => c.id === job.destinationCustomerId)
         return job.containerShipment !== "Container Shipment" && 
-               customer?.companyName !== "Nisbets PLC"
+               customer?.companyName?.toLowerCase().trim() !== "nisbets plc"
       })
       .map(job => ({ ...job, _jobType: 'export' as const }))
   ]
