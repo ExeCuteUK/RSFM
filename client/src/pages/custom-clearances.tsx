@@ -1081,6 +1081,11 @@ export default function CustomClearances() {
                           data-testid={`text-job-ref-${clearance.id}`}
                         >
                           {clearance.jobRef}
+                          {clearance.etaPort && (
+                            <span className="ml-3 font-semibold text-lg" data-testid={`text-eta-${clearance.id}`}>
+                              ETA: {formatDate(clearance.etaPort)}
+                            </span>
+                          )}
                         </h3>
                         <div className="flex -space-x-1">
                           <Button
@@ -1188,11 +1193,6 @@ export default function CustomClearances() {
                             <span className="font-medium">Clearance Type:</span> {clearance.jobType === "export" ? "EAD" : clearance.clearanceType}
                           </span>
                         )}
-                      </p>
-                    )}
-                    {clearance.etaPort && (
-                      <p data-testid={`text-date-${clearance.id}`}>
-                        <span className="font-medium">ETA:</span> {formatDate(clearance.etaPort)}
                       </p>
                     )}
                     {clearance.goodsDescription && (
