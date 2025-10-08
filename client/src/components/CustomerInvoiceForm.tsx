@@ -320,7 +320,167 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
         setDestination(extractPostcode(exportJob.deliveryAddress || ''))
       }
       
-      setLineItems([{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
+      // Auto-populate line items from quotation/rate fields (only for new invoices, not when editing)
+      if (!existingInvoice && job) {
+        const autoLineItems: LineItem[] = []
+        
+        if (jobType === 'import') {
+          const importJob = job as ImportShipment
+          
+          // Freight Rate Out
+          if (importJob.freightRateOut && parseFloat(importJob.freightRateOut) > 0) {
+            const charge = parseFloat(importJob.freightRateOut)
+            autoLineItems.push({
+              description: 'Freight Rate Out',
+              chargeAmount: importJob.freightRateOut,
+              vatCode: '2',
+              vatAmount: (charge * 0.2).toFixed(2)
+            })
+          }
+          
+          // Export Customs Clearance
+          if (importJob.exportCustomsClearanceCharge && parseFloat(importJob.exportCustomsClearanceCharge) > 0) {
+            const charge = parseFloat(importJob.exportCustomsClearanceCharge)
+            autoLineItems.push({
+              description: 'Export Customs Clearance',
+              chargeAmount: importJob.exportCustomsClearanceCharge,
+              vatCode: '2',
+              vatAmount: (charge * 0.2).toFixed(2)
+            })
+          }
+          
+          // Import Customs Clearance
+          if (importJob.clearanceCharge && parseFloat(importJob.clearanceCharge) > 0) {
+            const charge = parseFloat(importJob.clearanceCharge)
+            autoLineItems.push({
+              description: 'Import Customs Clearance',
+              chargeAmount: importJob.clearanceCharge,
+              vatCode: '2',
+              vatAmount: (charge * 0.2).toFixed(2)
+            })
+          }
+          
+          // Additional Commodity Codes (subtract 1 since first code is included)
+          if (importJob.additionalCommodityCodes && importJob.additionalCommodityCodeCharge) {
+            const totalCodes = Number(importJob.additionalCommodityCodes) || 0
+            const perCodeCharge = parseFloat(importJob.additionalCommodityCodeCharge) || 0
+            const chargeableCount = Math.max(totalCodes - 1, 0)
+            
+            if (chargeableCount > 0 && perCodeCharge > 0) {
+              const total = chargeableCount * perCodeCharge
+              autoLineItems.push({
+                description: `Additional Commodity Codes x ${chargeableCount}`,
+                chargeAmount: total.toFixed(2),
+                vatCode: '2',
+                vatAmount: (total * 0.2).toFixed(2)
+              })
+            }
+          }
+          
+          // Expenses To Charge Out
+          if (importJob.expensesToChargeOut && Array.isArray(importJob.expensesToChargeOut)) {
+            importJob.expensesToChargeOut.forEach(expense => {
+              if (expense.description && expense.amount && parseFloat(expense.amount) > 0) {
+                const charge = parseFloat(expense.amount)
+                autoLineItems.push({
+                  description: expense.description,
+                  chargeAmount: expense.amount,
+                  vatCode: '2',
+                  vatAmount: (charge * 0.2).toFixed(2)
+                })
+              }
+            })
+          }
+        } else if (jobType === 'export') {
+          const exportJob = job as ExportShipment
+          
+          // Freight Rate Out
+          if (exportJob.freightRateOut && parseFloat(exportJob.freightRateOut) > 0) {
+            const charge = parseFloat(exportJob.freightRateOut)
+            autoLineItems.push({
+              description: 'Freight Rate Out',
+              chargeAmount: exportJob.freightRateOut,
+              vatCode: '2',
+              vatAmount: (charge * 0.2).toFixed(2)
+            })
+          }
+          
+          // Export Customs Clearance
+          if (exportJob.clearanceCharge && parseFloat(exportJob.clearanceCharge) > 0) {
+            const charge = parseFloat(exportJob.clearanceCharge)
+            autoLineItems.push({
+              description: 'Export Customs Clearance',
+              chargeAmount: exportJob.clearanceCharge,
+              vatCode: '2',
+              vatAmount: (charge * 0.2).toFixed(2)
+            })
+          }
+          
+          // Destination Clearance Charge Out (Import Customs Clearance for export jobs)
+          if (exportJob.arrivalClearanceCost && parseFloat(exportJob.arrivalClearanceCost) > 0) {
+            const charge = parseFloat(exportJob.arrivalClearanceCost)
+            autoLineItems.push({
+              description: 'Destination Clearance Charge Out',
+              chargeAmount: exportJob.arrivalClearanceCost,
+              vatCode: '2',
+              vatAmount: (charge * 0.2).toFixed(2)
+            })
+          }
+          
+          // Additional Commodity Codes (subtract 1 since first code is included)
+          if (exportJob.additionalCommodityCodes && exportJob.additionalCommodityCodeCharge) {
+            const totalCodes = Number(exportJob.additionalCommodityCodes) || 0
+            const perCodeCharge = parseFloat(exportJob.additionalCommodityCodeCharge) || 0
+            const chargeableCount = Math.max(totalCodes - 1, 0)
+            
+            if (chargeableCount > 0 && perCodeCharge > 0) {
+              const total = chargeableCount * perCodeCharge
+              autoLineItems.push({
+                description: `Additional Commodity Codes x ${chargeableCount}`,
+                chargeAmount: total.toFixed(2),
+                vatCode: '2',
+                vatAmount: (total * 0.2).toFixed(2)
+              })
+            }
+          }
+          
+          // Expenses To Charge Out
+          if (exportJob.expensesToChargeOut && Array.isArray(exportJob.expensesToChargeOut)) {
+            exportJob.expensesToChargeOut.forEach(expense => {
+              if (expense.description && expense.amount && parseFloat(expense.amount) > 0) {
+                const charge = parseFloat(expense.amount)
+                autoLineItems.push({
+                  description: expense.description,
+                  chargeAmount: expense.amount,
+                  vatCode: '2',
+                  vatAmount: (charge * 0.2).toFixed(2)
+                })
+              }
+            })
+          }
+          
+          // Additional Expenses In
+          if (exportJob.additionalExpensesIn && Array.isArray(exportJob.additionalExpensesIn)) {
+            exportJob.additionalExpensesIn.forEach(expense => {
+              if (expense.description && expense.amount && parseFloat(expense.amount) > 0) {
+                const charge = parseFloat(expense.amount)
+                autoLineItems.push({
+                  description: expense.description,
+                  chargeAmount: expense.amount,
+                  vatCode: '2',
+                  vatAmount: (charge * 0.2).toFixed(2)
+                })
+              }
+            })
+          }
+        }
+        
+        // Set line items - use auto-populated items if any exist, otherwise one empty item
+        setLineItems(autoLineItems.length > 0 ? autoLineItems : [{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
+      } else {
+        // For editing existing invoice or no job, keep one empty line item
+        setLineItems([{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
+      }
     }
   }, [job, jobType, existingInvoice, importCustomer, exportCustomer, exportReceiver])
 
