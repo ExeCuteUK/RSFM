@@ -26,7 +26,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       const logoPath = path.join(process.cwd(), 'attached_assets', 'rs-logo.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          doc.image(logoPath, 50, 40, { width: 80 });
+          doc.image(logoPath, 50, 35, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
@@ -34,14 +34,14 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
 
       doc.fontSize(20)
          .font('Helvetica-Bold')
-         .text('R.S INTERNATIONAL', 150, 50, { align: 'left' });
+         .text('R.S INTERNATIONAL', 205, 50, { align: 'left' });
       
       doc.fontSize(9)
          .font('Helvetica')
-         .text('Unit 7 Telford Way', 150, 75)
-         .text('Peterborough, PE2 7UH', 150, 87)
-         .text('Tel: 01733 394242', 150, 99)
-         .text('Email: info@rsinternational.co.uk', 150, 111);
+         .text('Unit 7 Telford Way', 205, 75)
+         .text('Peterborough, PE2 7UH', 205, 87)
+         .text('Tel: 01733 394242', 205, 99)
+         .text('Email: info@rsinternational.co.uk', 205, 111);
 
       doc.fontSize(24)
          .font('Helvetica-Bold')
