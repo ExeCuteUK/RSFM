@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Search, Calendar, Plus, Eye, EyeOff } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { InvoiceEditDialog } from "@/components/InvoiceEditDialog"
-import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice } from "@shared/schema"
+import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice, Invoice } from "@shared/schema"
 
 interface JobJournalEntry {
   jobRef: number
@@ -126,6 +126,10 @@ export default function JobJournals() {
     queryKey: ["/api/purchase-invoices"],
   })
 
+  const { data: customerInvoices = [] } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices"],
+  })
+
   const getCustomerName = (
     customerId: string | null | undefined,
     customerType: "import" | "export"
@@ -143,6 +147,50 @@ export default function JobJournals() {
 
   const getInvoicesForJob = (jobRef: number): PurchaseInvoice[] => {
     return purchaseInvoices.filter(inv => inv.jobRef === jobRef)
+  }
+
+  const getCustomerInvoicesForJob = (jobRef: number): Invoice[] => {
+    return customerInvoices.filter(inv => inv.jobRef === jobRef)
+  }
+
+  const calculateInvoiceTotals = (jobRef: number): { count: number; total: number; displayText: string } => {
+    const invoices = getCustomerInvoicesForJob(jobRef)
+    
+    if (invoices.length === 0) {
+      return { count: 0, total: 0, displayText: "" }
+    }
+    
+    let totalAmount = 0
+    let invoiceNumbers: string[] = []
+    let dates: string[] = []
+    
+    invoices.forEach(inv => {
+      const chargesTotal = (inv.lineItems || []).reduce((sum: number, charge: any) => {
+        const netAmount = parseFloat(charge.netAmount) || 0
+        const vatAmount = parseFloat(charge.vatAmount) || 0
+        return sum + netAmount + vatAmount
+      }, 0)
+      
+      if (inv.type === "credit_note") {
+        totalAmount -= chargesTotal
+        invoiceNumbers.push(`CR${inv.invoiceNumber}`)
+      } else {
+        totalAmount += chargesTotal
+        invoiceNumbers.push(inv.invoiceNumber.toString())
+      }
+      
+      dates.push(formatDateToDDMMYY(inv.invoiceDate))
+    })
+    
+    const displayText = invoices.length === 1
+      ? `£${totalAmount.toFixed(2)}`
+      : `£${totalAmount.toFixed(2)} (${invoices.length})`
+    
+    return {
+      count: invoices.length,
+      total: totalAmount,
+      displayText,
+    }
   }
 
   const handleInvoiceClick = (invoice: PurchaseInvoice) => {
@@ -362,7 +410,7 @@ export default function JobJournals() {
   }, 0)
 
   const totalSalesAmount = journalEntries.reduce((sum, entry) => {
-    return sum + (parseFloat(entry.salesInvoiceAmount || "0") || 0)
+    return sum + calculateInvoiceTotals(entry.jobRef).total
   }, 0)
 
   return (
@@ -655,21 +703,77 @@ export default function JobJournals() {
                         {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
                       </td>
                     )}
-                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border" data-testid={`text-sales-customer-${entry.jobRef}`}>
-                      
+                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border align-top" data-testid={`text-sales-customer-${entry.jobRef}`}>
+                      {(() => {
+                        const invoices = getCustomerInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>{inv.customerCompanyName || ""}</div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
-                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-invoice-${entry.jobRef}`}>
-                      {entry.salesInvoiceNumber || ""}
+                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border align-top" data-testid={`text-sales-invoice-${entry.jobRef}`}>
+                      {(() => {
+                        const invoices = getCustomerInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>
+                                {inv.type === "credit_note" ? `CR${inv.invoiceNumber}` : inv.invoiceNumber}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
-                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" data-testid={`text-sales-date-${entry.jobRef}`}>
-                      {entry.salesInvoiceDate || ""}
+                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border align-top" data-testid={`text-sales-date-${entry.jobRef}`}>
+                      {(() => {
+                        const invoices = getCustomerInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => (
+                              <div key={inv.id}>{formatDateToDDMMYY(inv.invoiceDate)}</div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </td>
                     <td 
-                      className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border" 
+                      className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border align-top" 
                       data-testid={`text-sales-amount-${entry.jobRef}`}
-                      title={`Total: ${entry.salesInvoiceAmount || "£0.00"}`}
+                      title={`Total: ${calculateInvoiceTotals(entry.jobRef).displayText}`}
                     >
-                      {entry.salesInvoiceAmount || ""}
+                      {(() => {
+                        const invoices = getCustomerInvoicesForJob(entry.jobRef)
+                        if (invoices.length === 0) return null
+                        return (
+                          <div className="text-xs space-y-0.5">
+                            {invoices.map((inv) => {
+                              const chargesTotal = (inv.lineItems || []).reduce((sum: number, charge: any) => {
+                                const netAmount = parseFloat(charge.netAmount) || 0
+                                const vatAmount = parseFloat(charge.vatAmount) || 0
+                                return sum + netAmount + vatAmount
+                              }, 0)
+                              
+                              const displayAmount = inv.type === "credit_note" ? -chargesTotal : chargesTotal
+                              return (
+                                <div 
+                                  key={inv.id}
+                                  className={inv.type === "credit_note" ? "text-red-600 dark:text-red-400" : ""}
+                                >
+                                  £{displayAmount.toFixed(2)}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )
+                      })()}
                     </td>
                     {showReserveColumns && (
                       <td className="p-1 text-center bg-green-50 dark:bg-green-950 border-l-4 border-r-4 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
@@ -678,7 +782,7 @@ export default function JobJournals() {
                     )}
                     <td className="p-1 text-center bg-muted border-l-2" data-testid={`text-profit-loss-${entry.jobRef}`}>
                       {(() => {
-                        const salesAmount = parseFloat(entry.salesInvoiceAmount || "0") || 0
+                        const salesAmount = calculateInvoiceTotals(entry.jobRef).total
                         
                         const invoices = getInvoicesForJob(entry.jobRef)
                         const totalPurchaseAmount = invoices.reduce((sum, inv) => sum + Number(inv.invoiceAmount), 0)
