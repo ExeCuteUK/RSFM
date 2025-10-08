@@ -130,7 +130,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   
   // Line items and payment
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }
+    { description: '', chargeAmount: '', vatCode: '1', vatAmount: '0' }
   ])
   const [paymentTerms, setPaymentTerms] = useState('Payment due within 30 days of invoice date')
 
@@ -199,7 +199,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
       if (items.length > 0) {
         setLineItems(items as LineItem[])
       } else {
-        setLineItems([{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
+        setLineItems([{ description: '', chargeAmount: '', vatCode: '1', vatAmount: '0' }])
       }
     } else if (job) {
       // Create mode - auto-populate from job
@@ -333,8 +333,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             autoLineItems.push({
               description: 'Freight Rate Out',
               chargeAmount: importJob.freightRateOut,
-              vatCode: '2',
-              vatAmount: (charge * 0.2).toFixed(2)
+              vatCode: '1',
+              vatAmount: '0.00'
             })
           }
           
@@ -344,8 +344,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             autoLineItems.push({
               description: 'Export Customs Clearance',
               chargeAmount: importJob.exportCustomsClearanceCharge,
-              vatCode: '2',
-              vatAmount: (charge * 0.2).toFixed(2)
+              vatCode: '1',
+              vatAmount: '0.00'
             })
           }
           
@@ -355,8 +355,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             autoLineItems.push({
               description: 'Import Customs Clearance',
               chargeAmount: importJob.clearanceCharge,
-              vatCode: '2',
-              vatAmount: (charge * 0.2).toFixed(2)
+              vatCode: '1',
+              vatAmount: '0.00'
             })
           }
           
@@ -371,8 +371,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
               autoLineItems.push({
                 description: `Additional Commodity Codes x ${chargeableCount}`,
                 chargeAmount: total.toFixed(2),
-                vatCode: '2',
-                vatAmount: (total * 0.2).toFixed(2)
+                vatCode: '1',
+                vatAmount: '0.00'
               })
             }
           }
@@ -385,8 +385,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                 autoLineItems.push({
                   description: expense.description,
                   chargeAmount: expense.amount,
-                  vatCode: '2',
-                  vatAmount: (charge * 0.2).toFixed(2)
+                  vatCode: '1',
+                  vatAmount: '0.00'
                 })
               }
             })
@@ -400,8 +400,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             autoLineItems.push({
               description: 'Freight Rate Out',
               chargeAmount: exportJob.freightRateOut,
-              vatCode: '2',
-              vatAmount: (charge * 0.2).toFixed(2)
+              vatCode: '1',
+              vatAmount: '0.00'
             })
           }
           
@@ -411,8 +411,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             autoLineItems.push({
               description: 'Export Customs Clearance',
               chargeAmount: exportJob.clearanceCharge,
-              vatCode: '2',
-              vatAmount: (charge * 0.2).toFixed(2)
+              vatCode: '1',
+              vatAmount: '0.00'
             })
           }
           
@@ -422,8 +422,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             autoLineItems.push({
               description: 'Destination Clearance Charge Out',
               chargeAmount: exportJob.arrivalClearanceCost,
-              vatCode: '2',
-              vatAmount: (charge * 0.2).toFixed(2)
+              vatCode: '1',
+              vatAmount: '0.00'
             })
           }
           
@@ -438,8 +438,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
               autoLineItems.push({
                 description: `Additional Commodity Codes x ${chargeableCount}`,
                 chargeAmount: total.toFixed(2),
-                vatCode: '2',
-                vatAmount: (total * 0.2).toFixed(2)
+                vatCode: '1',
+                vatAmount: '0.00'
               })
             }
           }
@@ -452,8 +452,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                 autoLineItems.push({
                   description: expense.description,
                   chargeAmount: expense.amount,
-                  vatCode: '2',
-                  vatAmount: (charge * 0.2).toFixed(2)
+                  vatCode: '1',
+                  vatAmount: '0.00'
                 })
               }
             })
@@ -467,8 +467,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                 autoLineItems.push({
                   description: expense.description,
                   chargeAmount: expense.amount,
-                  vatCode: '2',
-                  vatAmount: (charge * 0.2).toFixed(2)
+                  vatCode: '1',
+                  vatAmount: '0.00'
                 })
               }
             })
@@ -476,10 +476,10 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
         }
         
         // Set line items - use auto-populated items if any exist, otherwise one empty item
-        setLineItems(autoLineItems.length > 0 ? autoLineItems : [{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
+        setLineItems(autoLineItems.length > 0 ? autoLineItems : [{ description: '', chargeAmount: '', vatCode: '1', vatAmount: '0' }])
       } else {
         // For editing existing invoice or no job, keep one empty line item
-        setLineItems([{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
+        setLineItems([{ description: '', chargeAmount: '', vatCode: '1', vatAmount: '0' }])
       }
     }
   }, [job, jobType, existingInvoice, importCustomer, exportCustomer, exportReceiver])
@@ -494,7 +494,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   }, [type])
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
+    setLineItems([...lineItems, { description: '', chargeAmount: '', vatCode: '1', vatAmount: '0' }])
   }
 
   const removeLineItem = (index: number) => {
