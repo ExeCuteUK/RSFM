@@ -80,20 +80,19 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         }
       }
 
-      // Invoice To Section
+      // Invoice To Section (moved down to avoid logo overlap)
       doc.fontSize(10)
          .font('Helvetica-Bold')
-         .text('INVOICE TO', 50, 200);
+         .text('INVOICE TO', 50, 220);
 
-      doc.rect(50, 215, 280, 80)
-         .stroke();
+      // No border around Invoice To box
 
       doc.fontSize(9)
          .font('Helvetica');
       
-      let invoiceToY = 220;
+      let invoiceToY = 240;
       if (invoice.customerCompanyName) {
-        doc.text(invoice.customerCompanyName, 55, invoiceToY);
+        doc.text(invoice.customerCompanyName, 50, invoiceToY);
         invoiceToY += 12;
       }
       
@@ -105,8 +104,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         
         const addressLines = filteredAddress.split('\n').filter(line => line.trim());
         addressLines.forEach(line => {
-          if (invoiceToY < 285) { // Ensure we don't overflow the box
-            doc.text(line.trim(), 55, invoiceToY);
+          if (invoiceToY < 305) { // Ensure we don't overflow the box
+            doc.text(line.trim(), 50, invoiceToY);
             invoiceToY += 10;
           }
         });
@@ -116,41 +115,31 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       if (invoice.customerVatNumber) {
         doc.fontSize(8)
            .font('Helvetica')
-           .text(`VAT No.`, 55, 283)
-           .text(invoice.customerVatNumber, 85, 283);
+           .text(`VAT No.`, 50, 303)
+           .text(invoice.customerVatNumber, 80, 303);
       }
 
-      // Shipment Details Table (No Packages, Commodity, KGS, CBM)
-      const shipmentTableY = 290;
-      doc.rect(50, shipmentTableY, 495, 60)
-         .stroke();
+      // Shipment Details Table (No Packages, Commodity, KGS, CBM) - No border
+      const shipmentTableY = 320;
 
-      // Table headers
+      // Table headers (no border)
       doc.fontSize(8)
          .font('Helvetica-Bold')
-         .text('No. Packages', 55, shipmentTableY + 5)
-         .text('Commodity', 155, shipmentTableY + 5)
-         .text('KGS', 415, shipmentTableY + 5)
-         .text('CBM', 470, shipmentTableY + 5);
-
-      // Vertical lines
-      doc.moveTo(150, shipmentTableY).lineTo(150, shipmentTableY + 60).stroke();
-      doc.moveTo(410, shipmentTableY).lineTo(410, shipmentTableY + 60).stroke();
-      doc.moveTo(465, shipmentTableY).lineTo(465, shipmentTableY + 60).stroke();
-
-      // Horizontal line after headers
-      doc.moveTo(50, shipmentTableY + 18).lineTo(545, shipmentTableY + 18).stroke();
+         .text('No. Packages', 50, shipmentTableY)
+         .text('Commodity', 150, shipmentTableY)
+         .text('KGS', 410, shipmentTableY)
+         .text('CBM', 465, shipmentTableY);
 
       // Shipment data
       doc.fontSize(9)
          .font('Helvetica')
-         .text(invoice.numberOfPackages ? `${invoice.numberOfPackages} ${invoice.packingType || ''}`.trim() : '', 55, shipmentTableY + 25, { width: 90 })
-         .text(invoice.commodity || '', 155, shipmentTableY + 25, { width: 250 })
-         .text(invoice.kgs || '', 415, shipmentTableY + 25)
-         .text(invoice.cbm || '', 470, shipmentTableY + 25);
+         .text(invoice.numberOfPackages ? `${invoice.numberOfPackages} ${invoice.packingType || ''}`.trim() : '', 50, shipmentTableY + 15, { width: 90 })
+         .text(invoice.commodity || '', 150, shipmentTableY + 15, { width: 250 })
+         .text(invoice.kgs || '', 410, shipmentTableY + 15)
+         .text(invoice.cbm || '', 465, shipmentTableY + 15);
 
       // Consignor/Consignee Section
-      const consignorY = 365;
+      const consignorY = 355;
       doc.rect(50, consignorY, 495, 100)
          .stroke();
 
@@ -269,7 +258,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text('Description', 55, chargesY + 5)
          .text('CHARGE AMOUNT', 360, chargesY + 5)
          .text('VAT AMOUNT', 450, chargesY + 5)
-         .text('VAT CODE', 510, chargesY + 5);
+         .text('CODE', 510, chargesY + 5);
 
       // Line items
       let yPosition = chargesY + 18;
@@ -342,7 +331,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .font('Helvetica-Bold')
          .text('GRAND TOTAL', 360, yPosition + 3)
          .text(`${invoice.total.toFixed(2)}`, 460, yPosition + 3)
-         .text('(£)GBP', 515, yPosition + 3);
+         .text('GBP', 515, yPosition + 3);
 
       // Payment terms and bank details
       yPosition += 25;
