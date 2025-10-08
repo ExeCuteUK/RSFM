@@ -760,19 +760,22 @@ export const invoices = pgTable("invoices", {
   
   // Shipment details (middle section of invoice)
   numberOfPackages: text("number_of_packages"),
+  packingType: text("packing_type"), // e.g., "Pallet(s)", "Carton(s)"
   commodity: text("commodity"),
   kgs: text("kgs"),
   cbm: text("cbm"),
   
   // Consignor/Consignee details
   consignorName: text("consignor_name"),
+  consignorAddress: text("consignor_address"),
   consigneeName: text("consignee_name"),
   consigneeAddress: text("consignee_address"),
-  trailerContainerNo: text("trailer_container_no"),
-  vesselFlightNo: text("vessel_flight_no"),
+  trailerContainerNo: text("trailer_container_no"), // Identifier
+  vesselFlightNo: text("vessel_flight_no"), // Vessel name
   dateOfShipment: text("date_of_shipment"),
+  portLoading: text("port_loading"), // Departure from
   portDischarge: text("port_discharge"),
-  deliveryTerms: text("delivery_terms"),
+  deliveryTerms: text("delivery_terms"), // Incoterms
   destination: text("destination"),
   
   // Line items and details
