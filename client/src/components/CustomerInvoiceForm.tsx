@@ -47,9 +47,10 @@ interface CustomerInvoiceFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   existingInvoice?: Invoice | null
+  asWindow?: boolean
 }
 
-export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existingInvoice }: CustomerInvoiceFormProps) {
+export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existingInvoice, asWindow = false }: CustomerInvoiceFormProps) {
   const { toast } = useToast()
   
   // Fetch customer data based on job
@@ -642,18 +643,10 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
     saveMutation.mutate(invoiceData)
   }
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{existingInvoice ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
-          <DialogDescription>
-            {existingInvoice ? 'Update the invoice details below' : 'Complete the invoice details below'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          {/* Invoice Details Card */}
+  const formContent = (
+    <>
+      <div className="space-y-4">
+        {/* Invoice Details Card */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold">{type === 'credit_note' ? 'Credit Details' : 'Invoice Details'}</CardTitle>
@@ -1063,24 +1056,44 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             </div>
             </CardContent>
           </Card>
-        </div>
+      </div>
 
-        <DialogFooter>
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            data-testid="button-cancel"
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={saveMutation.isPending}
-            data-testid="button-save-invoice"
-          >
-            {saveMutation.isPending ? 'Saving...' : existingInvoice ? 'Update Invoice' : 'Create Invoice'}
-          </Button>
-        </DialogFooter>
+      <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+        <Button 
+          variant="outline" 
+          onClick={() => onOpenChange(false)}
+          data-testid="button-cancel"
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSubmit} 
+          disabled={saveMutation.isPending}
+          data-testid="button-save-invoice"
+        >
+          {saveMutation.isPending ? 'Saving...' : existingInvoice ? 'Update Invoice' : 'Create Invoice'}
+        </Button>
+      </div>
+    </>
+  )
+
+  if (asWindow) {
+    return formContent
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{existingInvoice ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
+          <DialogDescription>
+            {existingInvoice ? 'Update the invoice details below' : 'Complete the invoice details below'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4">
+          {formContent}
+        </div>
       </DialogContent>
     </Dialog>
   )

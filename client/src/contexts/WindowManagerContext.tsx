@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 
-export type WindowType = 'email' | 'import-shipment' | 'export-shipment' | 'custom-clearance' | 'import-customer' | 'export-customer' | 'export-receiver' | 'haulier' | 'shipping-line' | 'clearance-agent' | 'expense-invoice'
+export type WindowType = 'email' | 'import-shipment' | 'export-shipment' | 'custom-clearance' | 'import-customer' | 'export-customer' | 'export-receiver' | 'haulier' | 'shipping-line' | 'clearance-agent' | 'expense-invoice' | 'customer-invoice'
 
 export interface WindowData {
   id: string

@@ -25,6 +25,7 @@ import { HaulierWindow } from "@/components/HaulierWindow";
 import { ShippingLineWindow } from "@/components/ShippingLineWindow";
 import { ClearanceAgentWindow } from "@/components/ClearanceAgentWindow";
 import { ExpenseInvoiceWindow } from "@/components/ExpenseInvoiceWindow";
+import { DraggableInvoiceWindow } from "@/components/DraggableInvoiceWindow";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useRef, useEffect } from "react";
@@ -265,6 +266,7 @@ function AppContent() {
                   windowId={activeWindow.id}
                 />
               )}
+              {activeWindow.type === 'customer-invoice' && <DraggableInvoiceWindow />}
             </>
           )}
         </>
