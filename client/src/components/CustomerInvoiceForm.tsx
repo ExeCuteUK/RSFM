@@ -181,13 +181,13 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
       jobType,
       jobId: job?.id,
       invoiceDate,
-      customerName,
+      customerCompanyName: customerName || null,
       customerAddress: customerAddress.trim() || null,
       shipmentDetails: shipmentDetails.trim() || null,
       lineItems: validLineItems,
       vatRate,
       subtotal,
-      vatAmount,
+      vat: vatAmount,
       total,
       paymentTerms: paymentTerms.trim() || null
     })

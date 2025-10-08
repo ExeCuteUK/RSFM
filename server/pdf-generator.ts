@@ -1,5 +1,4 @@
 import PDFDocument from 'pdfkit';
-import { Readable } from 'stream';
 import type { Invoice } from '@shared/schema';
 import path from 'path';
 import fs from 'fs';
@@ -25,12 +24,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.on('error', reject);
 
       const logoPath = path.join(process.cwd(), 'attached_assets', 'rs-logo.jpg');
-      let hasLogo = false;
       if (fs.existsSync(logoPath)) {
-        hasLogo = true;
-      }
-
-      if (hasLogo) {
         try {
           doc.image(logoPath, 50, 40, { width: 80 });
         } catch (e) {
@@ -70,8 +64,11 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text('INVOICE TO:', 50, 160);
 
       doc.fontSize(10)
-         .font('Helvetica')
-         .text(invoice.customerName || '', 50, 180);
+         .font('Helvetica');
+      
+      if (invoice.customerCompanyName) {
+        doc.text(invoice.customerCompanyName, 50, 180);
+      }
       
       if (invoice.customerAddress) {
         const addressLines = invoice.customerAddress.split('\n');
@@ -82,25 +79,14 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         });
       }
 
-      doc.fontSize(10)
-         .font('Helvetica-Bold')
-         .text('SHIPMENT DETAILS:', 300, 160);
+      if (invoice.shipmentDetails) {
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .text('SHIPMENT DETAILS:', 300, 160);
 
-      doc.fontSize(10)
-         .font('Helvetica');
-      
-      let detailsY = 180;
-      if (invoice.shipmentReference) {
-        doc.text(`Reference: ${invoice.shipmentReference}`, 300, detailsY);
-        detailsY += 15;
-      }
-      if (invoice.containerNumber) {
-        doc.text(`Container: ${invoice.containerNumber}`, 300, detailsY);
-        detailsY += 15;
-      }
-      if (invoice.vesselName) {
-        doc.text(`Vessel: ${invoice.vesselName}`, 300, detailsY);
-        detailsY += 15;
+        doc.fontSize(9)
+           .font('Helvetica')
+           .text(invoice.shipmentDetails, 300, 180, { width: 240 });
       }
 
       const tableTop = 280;
@@ -111,10 +97,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.fontSize(10)
          .font('Helvetica-Bold')
          .text('Description', 55, tableTop + 8)
-         .text('Qty', 360, tableTop + 8)
-         .text('Unit Price', 410, tableTop + 8)
-         .text('VAT', 475, tableTop + 8)
-         .text('Total', 510, tableTop + 8);
+         .text('Amount', 460, tableTop + 8);
 
       doc.moveTo(50, tableTop + 25)
          .lineTo(545, tableTop + 25)
@@ -123,18 +106,16 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       let yPosition = tableTop + 35;
       doc.font('Helvetica');
 
-      invoice.lineItems.forEach((item, index) => {
+      const lineItems = invoice.lineItems || [];
+      lineItems.forEach((item: any) => {
         if (yPosition > 700) {
           doc.addPage();
           yPosition = 50;
         }
 
         doc.fontSize(9)
-           .text(item.description, 55, yPosition, { width: 300 })
-           .text(item.quantity.toString(), 360, yPosition)
-           .text(`£${item.unitPrice.toFixed(2)}`, 410, yPosition)
-           .text(`${item.vatRate}%`, 475, yPosition)
-           .text(`£${item.total.toFixed(2)}`, 510, yPosition);
+           .text(item.description, 55, yPosition, { width: 390 })
+           .text(`£${parseFloat(item.amount || '0').toFixed(2)}`, 460, yPosition);
 
         yPosition += 20;
       });
@@ -148,11 +129,13 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.fontSize(10)
          .font('Helvetica')
          .text('Subtotal:', 400, yPosition)
-         .text(`£${invoice.subtotal.toFixed(2)}`, 510, yPosition);
+         .text(`£${invoice.subtotal.toFixed(2)}`, 485, yPosition);
 
       yPosition += 18;
-      doc.text('VAT:', 400, yPosition)
-         .text(`£${invoice.vat.toFixed(2)}`, 510, yPosition);
+      const vatLabel = invoice.vatRate === '20' ? 'VAT (20%)' : 
+                       invoice.vatRate === '0' ? 'VAT (0%)' : 'VAT (Exempt)';
+      doc.text(`${vatLabel}:`, 400, yPosition)
+         .text(`£${invoice.vat.toFixed(2)}`, 485, yPosition);
 
       yPosition += 18;
       doc.moveTo(400, yPosition)
@@ -163,7 +146,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.fontSize(11)
          .font('Helvetica-Bold')
          .text('Total:', 400, yPosition)
-         .text(`£${invoice.total.toFixed(2)}`, 510, yPosition);
+         .text(`£${invoice.total.toFixed(2)}`, 485, yPosition);
 
       yPosition += 40;
       if (yPosition > 680) {
@@ -171,18 +154,19 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         yPosition = 50;
       }
 
-      doc.fontSize(9)
-         .font('Helvetica-Bold')
-         .text('PAYMENT TERMS:', 50, yPosition);
-      
-      yPosition += 15;
-      doc.fontSize(8)
-         .font('Helvetica')
-         .text('Payment is due within 30 days of invoice date.', 50, yPosition)
-         .text('Please quote invoice number with payment.', 50, yPosition + 12)
-         .text('Bank details available on request.', 50, yPosition + 24);
+      if (invoice.paymentTerms) {
+        doc.fontSize(9)
+           .font('Helvetica-Bold')
+           .text('PAYMENT TERMS:', 50, yPosition);
+        
+        yPosition += 15;
+        doc.fontSize(8)
+           .font('Helvetica')
+           .text(invoice.paymentTerms, 50, yPosition, { width: 495 });
+        
+        yPosition += 30;
+      }
 
-      yPosition += 50;
       if (yPosition > 700) {
         doc.addPage();
         yPosition = 50;

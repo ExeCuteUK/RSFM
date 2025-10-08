@@ -775,16 +775,16 @@ export const invoices = pgTable("invoices", {
   deliveryTerms: text("delivery_terms"),
   destination: text("destination"),
   
-  // Line items (charges)
-  lineItems: jsonb("line_items").$type<InvoiceLineItem[]>().notNull().default(sql`'[]'::jsonb`),
+  // Line items and details
+  lineItems: jsonb("line_items").$type<Array<{description: string; amount: string}>>().default(sql`'[]'::jsonb`),
+  vatRate: text("vat_rate"), // "0", "20", or "exempt"
+  shipmentDetails: text("shipment_details"),
+  paymentTerms: text("payment_terms"),
   
-  // Totals (all in GBP)
-  invoiceTotal: text("invoice_total").notNull(), // Sum of all charge amounts
-  vatTotal: text("vat_total").notNull(), // Sum of all VAT amounts
-  grandTotal: text("grand_total").notNull(), // Invoice total + VAT total
-  
-  // Additional info
-  pdsStarling: text("pds_starling"), // Payment reference
+  // Totals (all stored as numbers)
+  subtotal: doublePrecision("subtotal").notNull().default(0),
+  vat: doublePrecision("vat").notNull().default(0),
+  total: doublePrecision("total").notNull().default(0),
   
   // Timestamps
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
