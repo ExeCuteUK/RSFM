@@ -134,7 +134,7 @@ export default function Invoices() {
               {sortedInvoices.map((invoice) => (
                 <TableRow key={invoice.id} data-testid={`row-invoice-${invoice.id}`}>
                   <TableCell className="font-medium">
-                    #{invoice.invoiceNumber}
+                    {invoice.invoiceNumber}
                   </TableCell>
                   <TableCell>
                     {new Date(invoice.invoiceDate).toLocaleDateString('en-GB')}
@@ -191,7 +191,7 @@ export default function Invoices() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete invoice #{invoiceToDelete?.invoiceNumber}? This action cannot be undone.
+              Are you sure you want to delete invoice {invoiceToDelete?.invoiceNumber}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
