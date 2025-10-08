@@ -299,15 +299,6 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         }
 
         const rowHeight = 18;
-        
-        // Alternating row colors
-        if (index % 2 === 0) {
-          doc.rect(50, yPosition, 495, rowHeight)
-             .fillAndStroke('#fafafa', '#000000');
-        } else {
-          doc.rect(50, yPosition, 495, rowHeight)
-             .stroke();
-        }
 
         doc.fillColor('#000000')
            .fontSize(8)
