@@ -12,7 +12,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
     try {
       const doc = new PDFDocument({ 
         size: 'A4',
-        margins: { top: 40, bottom: 40, left: 50, right: 50 }
+        margins: { top: 27, bottom: 27, left: 50, right: 50 }
       });
       
       const buffers: Buffer[] = [];
@@ -37,7 +37,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Header - INVOICE Title (drawn second, so it appears on top of logo)
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
+         .text('INVOICE', 50, 20, { width: 140, align: 'center' });
 
       // Header - Company Details (right side with company name)
       doc.fontSize(9)
@@ -88,14 +88,16 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
 
       // No border around Invoice To box
 
-      doc.fontSize(9)
-         .font('Helvetica');
+      doc.fontSize(9);
       
       let invoiceToY = 210;
       if (invoice.customerCompanyName) {
-        doc.text(invoice.customerCompanyName, 50, invoiceToY);
+        doc.font('Helvetica-Bold')
+           .text(invoice.customerCompanyName, 50, invoiceToY);
         invoiceToY += 12;
       }
+      
+      doc.font('Helvetica');
       
       if (invoice.customerAddress) {
         // Filter out UK/United Kingdom from address
@@ -262,14 +264,14 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text(invoice.destination || '', shippingValueX, consignorY + 77, { width: 95 });
 
       // Vertical dividers in consignor section (equal spacing)
-      doc.moveTo(col2X, consignorY).lineTo(col2X, consignorY + 100).stroke();
-      doc.moveTo(col3X, consignorY).lineTo(col3X, consignorY + 100).stroke();
+      doc.moveTo(col2X, consignorY).lineTo(col2X, consignorY + 82).stroke();
+      doc.moveTo(col3X, consignorY).lineTo(col3X, consignorY + 82).stroke();
       
       // Horizontal line below the section
-      doc.moveTo(50, consignorY + 100).lineTo(545, consignorY + 100).stroke();
+      doc.moveTo(50, consignorY + 82).lineTo(545, consignorY + 82).stroke();
 
       // Description of Charges Table - positioned immediately below consignor table
-      const chargesTableY = consignorY + 110; // 5pt gap below consignor table
+      const chargesTableY = consignorY + 92; // 10pt gap below consignor table
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
