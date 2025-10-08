@@ -93,7 +93,7 @@ export function ImportExportWorkGrid() {
     queryKey: ["/api/hauliers"],
   })
 
-  // Filter jobs: Exclude Container Shipments, Nisbets customers, and manually excluded customers
+  // Filter jobs: Exclude Container Shipments and manually excluded customers
   const filteredJobs = [
     ...importShipments
       .filter(job => {
@@ -105,9 +105,7 @@ export function ImportExportWorkGrid() {
           customerName.includes(excludedName.toLowerCase().trim())
         )
         
-        return job.containerShipment !== "Container Shipment" && 
-               customerName !== "nisbets plc" &&
-               !isExcluded
+        return job.containerShipment !== "Container Shipment" && !isExcluded
       })
       .map(job => ({ ...job, _jobType: 'import' as const })),
     ...exportShipments
@@ -120,9 +118,7 @@ export function ImportExportWorkGrid() {
           customerName.includes(excludedName.toLowerCase().trim())
         )
         
-        return job.containerShipment !== "Container Shipment" && 
-               customerName !== "nisbets plc" &&
-               !isExcluded
+        return job.containerShipment !== "Container Shipment" && !isExcluded
       })
       .map(job => ({ ...job, _jobType: 'export' as const }))
   ]
