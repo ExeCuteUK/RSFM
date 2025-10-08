@@ -4,7 +4,7 @@ import { Link } from "wouter"
 import type { Invoice } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { FileOutput, Search, Pencil, Trash2, Plus } from "lucide-react"
+import { Download, Search, Pencil, Trash2, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { apiRequest, queryClient } from "@/lib/queryClient"
 import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
@@ -165,7 +165,7 @@ export default function Invoices() {
                         data-testid={`button-download-invoice-${invoice.id}`}
                       >
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <FileOutput className="h-4 w-4" />
+                          <Download className="h-4 w-4" />
                         </Button>
                       </a>
                       <Button

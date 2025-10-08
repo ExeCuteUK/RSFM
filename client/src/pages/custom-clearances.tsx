@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, FileOutput, ChevronLeft, ChevronRight, Container, Truck, Plane } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, Download, ChevronLeft, ChevronRight, Container, Truck, Plane } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
 import {
   DropdownMenu,
@@ -1664,7 +1664,7 @@ export default function CustomClearances() {
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-download-invoice-${invoice.id}`}
                                       >
-                                        <FileOutput className="h-3 w-3 text-primary hover:text-primary/80" />
+                                        <Download className="h-3 w-3 text-primary hover:text-primary/80" />
                                       </a>
                                     </div>
                                     )

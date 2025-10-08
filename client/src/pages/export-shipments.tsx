@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, FileOutput, FileArchive, Send, Shield, ChevronLeft, ChevronRight, Receipt } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, Download, FileArchive, Send, Shield, ChevronLeft, ChevronRight, Receipt } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent, Haulier, Invoice } from "@shared/schema"
@@ -1506,7 +1506,7 @@ Hope all is OK.`
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-download-invoice-${invoice.id}`}
                                       >
-                                        <FileOutput className="h-3 w-3 text-primary hover:text-primary/80" />
+                                        <Download className="h-3 w-3 text-primary hover:text-primary/80" />
                                       </a>
                                     </div>
                                     )
