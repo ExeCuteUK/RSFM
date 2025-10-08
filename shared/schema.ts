@@ -776,8 +776,7 @@ export const invoices = pgTable("invoices", {
   destination: text("destination"),
   
   // Line items and details
-  lineItems: jsonb("line_items").$type<Array<{description: string; amount: string}>>().default(sql`'[]'::jsonb`),
-  vatRate: text("vat_rate"), // "0", "20", or "exempt"
+  lineItems: jsonb("line_items").$type<InvoiceLineItem[]>().default(sql`'[]'::jsonb`),
   shipmentDetails: text("shipment_details"),
   paymentTerms: text("payment_terms"),
   

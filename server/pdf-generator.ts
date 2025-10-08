@@ -97,7 +97,9 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.fontSize(10)
          .font('Helvetica-Bold')
          .text('Description', 55, tableTop + 8)
-         .text('Amount', 460, tableTop + 8);
+         .text('Charge', 360, tableTop + 8)
+         .text('VAT', 420, tableTop + 8)
+         .text('VAT Amt', 470, tableTop + 8);
 
       doc.moveTo(50, tableTop + 25)
          .lineTo(545, tableTop + 25)
@@ -113,9 +115,13 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
           yPosition = 50;
         }
 
+        const vatLabel = item.vatCode === '1' ? '0%' : item.vatCode === '2' ? '20%' : 'Exempt';
+        
         doc.fontSize(9)
-           .text(item.description, 55, yPosition, { width: 390 })
-           .text(`£${parseFloat(item.amount || '0').toFixed(2)}`, 460, yPosition);
+           .text(item.description, 55, yPosition, { width: 290 })
+           .text(`£${parseFloat(item.chargeAmount || '0').toFixed(2)}`, 360, yPosition)
+           .text(vatLabel, 420, yPosition)
+           .text(`£${parseFloat(item.vatAmount || '0').toFixed(2)}`, 470, yPosition);
 
         yPosition += 20;
       });
@@ -132,9 +138,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text(`£${invoice.subtotal.toFixed(2)}`, 485, yPosition);
 
       yPosition += 18;
-      const vatLabel = invoice.vatRate === '20' ? 'VAT (20%)' : 
-                       invoice.vatRate === '0' ? 'VAT (0%)' : 'VAT (Exempt)';
-      doc.text(`${vatLabel}:`, 400, yPosition)
+      doc.text('Total VAT:', 400, yPosition)
          .text(`£${invoice.vat.toFixed(2)}`, 485, yPosition);
 
       yPosition += 18;

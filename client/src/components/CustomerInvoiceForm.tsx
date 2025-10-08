@@ -27,7 +27,9 @@ import { format } from 'date-fns'
 
 interface LineItem {
   description: string
-  amount: string
+  chargeAmount: string
+  vatCode: '1' | '2' | '3' // 1=0%, 2=20%, 3=exempt
+  vatAmount: string
 }
 
 interface CustomerInvoiceFormProps {
@@ -46,9 +48,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
   const [customerAddress, setCustomerAddress] = useState('')
   const [shipmentDetails, setShipmentDetails] = useState('')
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { description: '', amount: '' }
+    { description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }
   ])
-  const [vatRate, setVatRate] = useState<'0' | '20' | 'exempt'>('20')
   const [paymentTerms, setPaymentTerms] = useState('Payment due within 30 days of invoice date')
 
   // Reset form when job changes
@@ -89,13 +90,12 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
       }
       setShipmentDetails(details.trim())
       
-      setLineItems([{ description: '', amount: '' }])
-      setVatRate('20')
+      setLineItems([{ description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
     }
   }, [job, jobType])
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { description: '', amount: '' }])
+    setLineItems([...lineItems, { description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
   }
 
   const removeLineItem = (index: number) => {
@@ -104,19 +104,44 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
     }
   }
 
-  const updateLineItem = (index: number, field: 'description' | 'amount', value: string) => {
+  const updateLineItem = (index: number, field: 'description' | 'chargeAmount' | 'vatCode', value: string) => {
     const updated = [...lineItems]
-    updated[index][field] = value
+    if (field === 'chargeAmount') {
+      updated[index][field] = value
+      // Recalculate VAT for this line
+      const charge = parseFloat(value) || 0
+      const vatCode = updated[index].vatCode
+      let vat = 0
+      if (vatCode === '2') { // 20% standard
+        vat = charge * 0.2
+      }
+      updated[index].vatAmount = vat.toFixed(2)
+    } else if (field === 'vatCode') {
+      updated[index][field] = value as '1' | '2' | '3'
+      // Recalculate VAT for this line
+      const charge = parseFloat(updated[index].chargeAmount) || 0
+      let vat = 0
+      if (value === '2') { // 20% standard
+        vat = charge * 0.2
+      }
+      updated[index].vatAmount = vat.toFixed(2)
+    } else {
+      updated[index][field] = value
+    }
     setLineItems(updated)
   }
 
   // Calculate totals
   const subtotal = lineItems.reduce((sum, item) => {
-    const amount = parseFloat(item.amount) || 0
+    const amount = parseFloat(item.chargeAmount) || 0
     return sum + amount
   }, 0)
 
-  const vatAmount = vatRate === '20' ? subtotal * 0.2 : 0
+  const vatAmount = lineItems.reduce((sum, item) => {
+    const vat = parseFloat(item.vatAmount) || 0
+    return sum + vat
+  }, 0)
+  
   const total = subtotal + vatAmount
 
   const createMutation = useMutation({
@@ -163,13 +188,13 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
 
     // Check that at least one line item has data
     const validLineItems = lineItems.filter(item => 
-      item.description.trim() && item.amount.trim()
+      item.description.trim() && item.chargeAmount.trim()
     )
 
     if (validLineItems.length === 0) {
       toast({
         title: 'Validation Error',
-        description: 'At least one line item with description and amount is required',
+        description: 'At least one line item with description and charge amount is required',
         variant: 'destructive'
       })
       return
@@ -185,7 +210,6 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
       customerAddress: customerAddress.trim() || null,
       shipmentDetails: shipmentDetails.trim() || null,
       lineItems: validLineItems,
-      vatRate,
       subtotal,
       vat: vatAmount,
       total,
@@ -274,7 +298,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
             
             <div className="space-y-2">
               {lineItems.map((item, index) => (
-                <div key={index} className="flex gap-2">
+                <div key={index} className="flex gap-2 items-start">
                   <Input
                     placeholder="Description"
                     value={item.description}
@@ -284,13 +308,29 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
                   />
                   <Input
                     placeholder="0.00"
-                    value={item.amount}
-                    onChange={(e) => updateLineItem(index, 'amount', e.target.value)}
-                    className="w-32"
+                    value={item.chargeAmount}
+                    onChange={(e) => updateLineItem(index, 'chargeAmount', e.target.value)}
+                    className="w-28"
                     type="number"
                     step="0.01"
                     data-testid={`input-line-amount-${index}`}
                   />
+                  <Select 
+                    value={item.vatCode} 
+                    onValueChange={(value) => updateLineItem(index, 'vatCode', value)}
+                  >
+                    <SelectTrigger className="w-32" data-testid={`select-vat-${index}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">0%</SelectItem>
+                      <SelectItem value="2">20%</SelectItem>
+                      <SelectItem value="3">Exempt</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="w-24 flex items-center justify-end h-9">
+                    <span className="text-sm text-muted-foreground">£{item.vatAmount}</span>
+                  </div>
                   {lineItems.length > 1 && (
                     <Button
                       type="button"
@@ -307,29 +347,14 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange }: Custom
             </div>
           </div>
 
-          {/* VAT Rate */}
-          <div>
-            <Label htmlFor="vatRate">VAT Rate</Label>
-            <Select value={vatRate} onValueChange={(value: any) => setVatRate(value)}>
-              <SelectTrigger id="vatRate" data-testid="select-vat-rate">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">0% - Zero Rated</SelectItem>
-                <SelectItem value="20">20% - Standard Rate</SelectItem>
-                <SelectItem value="exempt">Exempt</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Totals Summary */}
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Subtotal:</span>
+              <span>Subtotal (Charges):</span>
               <span className="font-mono" data-testid="text-subtotal">£{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span>VAT ({vatRate === '20' ? '20%' : vatRate === '0' ? '0%' : 'Exempt'}):</span>
+              <span>Total VAT:</span>
               <span className="font-mono" data-testid="text-vat">£{vatAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg font-bold border-t pt-2">
