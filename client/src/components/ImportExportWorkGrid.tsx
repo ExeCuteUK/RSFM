@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { type ImportShipment, type ExportShipment, type ImportCustomer, type ExportCustomer, type ExportReceiver, type User } from "@shared/schema"
+import { type ImportShipment, type ExportShipment, type ImportCustomer, type ExportCustomer, type ExportReceiver, type User, type Haulier } from "@shared/schema"
 import { Search } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
@@ -16,6 +17,7 @@ export function ImportExportWorkGrid() {
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -25,8 +27,12 @@ export function ImportExportWorkGrid() {
   }, [editingCell])
 
   useEffect(() => {
-    if (editingCell && inputRef.current) {
-      inputRef.current.focus()
+    if (editingCell) {
+      if (inputRef.current) {
+        inputRef.current.focus()
+      } else if (textareaRef.current) {
+        textareaRef.current.focus()
+      }
     }
   }, [editingCell])
 
@@ -56,6 +62,10 @@ export function ImportExportWorkGrid() {
 
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
+  })
+
+  const { data: hauliers = [] } = useQuery<Haulier[]>({
+    queryKey: ["/api/hauliers"],
   })
 
   // Filter jobs: Exclude Container Shipments and Nisbets customers
@@ -143,7 +153,7 @@ export function ImportExportWorkGrid() {
       const updateData: any = {}
       
       // Handle date fields
-      if (['collectionDate', 'dispatchDate', 'importDateEtaPort', 'etaPortDate', 'deliveryDate'].includes(fieldName)) {
+      if (['collectionDate', 'dispatchDate', 'importDateEtaPort', 'etaPortDate', 'deliveryDate', 'sendPodToCustomerStatusIndicatorTimestamp'].includes(fieldName)) {
         const ddmmyyPattern = /^(\d{2})\/(\d{2})\/(\d{2})$/
         const match = value.match(ddmmyyPattern)
         if (match) {
@@ -186,7 +196,7 @@ export function ImportExportWorkGrid() {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent, shipmentId: string, fieldName: string, jobType: 'import' | 'export') => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSave(shipmentId, fieldName, tempValue, jobType)
     } else if (e.key === "Escape") {
@@ -251,21 +261,52 @@ export function ImportExportWorkGrid() {
     return parts.join(' / ')
   }
 
-  // Get row color based on haulier status
+  // Get row color based on adviseClearanceToAgentStatusIndicator
   const getRowColor = (job: ImportShipment | ExportShipment) => {
-    const ead = job.sendHaulierEadStatusIndicator
+    const status = job.adviseClearanceToAgentStatusIndicator
     
-    // Green if status is 3 (completed)
-    if (ead === 3) {
+    if (status === 3) {
       return 'bg-green-100 dark:bg-green-900'
     }
     
-    // Yellow if status is pending (2 or 1)
-    if (ead === 2 || ead === 1) {
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+  }
+
+  // Get cell color based on value (green if has data, yellow if empty)
+  const getDataColor = (value: any) => {
+    if (value) {
+      return 'bg-green-100 dark:bg-green-900'
+    }
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+  }
+
+  // Get delivery date color for imports
+  const getDeliveryDateColor = (job: ImportShipment | ExportShipment) => {
+    if (job._jobType === 'import') {
+      const importJob = job as ImportShipment
+      if (importJob.deliveryBookedStatusIndicator === 3) {
+        return 'bg-green-100 dark:bg-green-900'
+      }
       return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
     }
-    
-    return ''
+    // For exports, use data-based coloring
+    return getDataColor((job as ExportShipment).deliveryDate)
+  }
+
+  // Get quote color based on invoice status
+  const getQuoteColor = (job: ImportShipment | ExportShipment) => {
+    if (job.invoiceCustomerStatusIndicator === 3) {
+      return 'bg-green-100 dark:bg-green-900'
+    }
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+  }
+
+  // Get POD sent color based on status
+  const getPodSentColor = (job: ImportShipment | ExportShipment) => {
+    if (job.sendPodToCustomerStatusIndicator === 3) {
+      return 'bg-green-100 dark:bg-green-900'
+    }
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
   }
 
   return (
@@ -336,8 +377,6 @@ export function ImportExportWorkGrid() {
                   ? importCustomers.find(c => c.id === importJob?.importCustomerId)
                   : exportCustomers.find(c => c.id === exportJob?.destinationCustomerId)
                 
-                const receiver = exportJob ? exportReceivers.find(r => r.id === exportJob.receiverId) : null
-                
                 const customerName = customer?.companyName || ''
                 
                 const booker = users.find(u => u.id === job.createdBy)
@@ -350,12 +389,23 @@ export function ImportExportWorkGrid() {
                 const rowColor = getRowColor(job)
                 const isEditing = editingCell?.shipmentId === job.id
 
+                // Get field values for both import and export
+                const portOfArrival = isImport ? importJob?.portOfArrival : exportJob?.portOfArrival
+                const identifier = isImport ? importJob?.trailerOrContainerNumber : exportJob?.trailerNo
+                const qty = isImport ? importJob?.numberOfPieces : exportJob?.numberOfPieces
+                const weight = isImport ? importJob?.weight : exportJob?.weight
+                const cbm = isImport ? importJob?.cube : exportJob?.cube
+                const etaPort = isImport ? importJob?.importDateEtaPort : exportJob?.etaPortDate
+                const deliveryDate = isImport ? importJob?.deliveryDate : exportJob?.deliveryDate
+                const deliveryAddress = isImport ? importJob?.deliveryAddress : exportJob?.deliveryAddress
+                const haulierName = isImport ? importJob?.haulierName : exportJob?.haulierName
+
                 return (
                   <tr key={job.id} className="border-b hover:bg-muted/50">
-                    {/* Job Ref - first 9 columns get conditional coloring */}
+                    {/* Job Ref - Not editable */}
                     <td className={`p-1 text-center border-r border-border ${rowColor}`}>{job.jobRef}</td>
                     
-                    {/* Shipper Ref - editable */}
+                    {/* Shipper Ref - Editable */}
                     <td 
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'customerReferenceNumber', isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber, job._jobType)}
@@ -375,10 +425,10 @@ export function ImportExportWorkGrid() {
                       )}
                     </td>
                     
-                    {/* Customer Name */}
+                    {/* Customer Name - Not editable */}
                     <td className={`p-1 text-center border-r border-border ${rowColor}`}>{customerName}</td>
                     
-                    {/* Departure Date - editable */}
+                    {/* Departure Date - Editable */}
                     <td 
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'dispatchDate', isImport ? importJob?.dispatchDate : exportJob?.dispatchDate, job._jobType)}
@@ -399,52 +449,228 @@ export function ImportExportWorkGrid() {
                       )}
                     </td>
                     
-                    {/* Destination / Port of Arrival */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.portOfArrival : exportJob?.portOfArrival}</td>
-                    
-                    {/* Identifier */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.trailerOrContainerNumber : exportJob?.trailerNo}</td>
-                    
-                    {/* Qty */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.numberOfPieces : exportJob?.numberOfPieces}</td>
-                    
-                    {/* Weight */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.weight : exportJob?.weight}</td>
-                    
-                    {/* CBM */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.cube : exportJob?.cube}</td>
-                    
-                    {/* ETA Port - remaining columns don't get colored */}
-                    <td className="p-1 text-center border-r border-border">
-                      {formatDate(isImport ? importJob?.importDateEtaPort || null : exportJob?.etaPortDate || null)}
+                    {/* Destination / Port of Arrival - Editable */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      onClick={() => handleCellClick(job.id, 'portOfArrival', portOfArrival, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'portOfArrival' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'portOfArrival', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, 'portOfArrival', job._jobType)}
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        portOfArrival
+                      )}
                     </td>
                     
-                    {/* Delivery Date */}
-                    <td className="p-1 text-center border-r border-border">
-                      {formatDate(isImport ? importJob?.deliveryDate || null : exportJob?.deliveryDate || null)}
+                    {/* Identifier - Editable */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      onClick={() => handleCellClick(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', identifier, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === (isImport ? 'trailerOrContainerNumber' : 'trailerNo') ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        identifier
+                      )}
                     </td>
                     
-                    {/* Delivery Address - multiline */}
-                    <td className="p-1 text-center border-r border-border text-xs leading-tight">
-                      {formatAddress(isImport ? importJob?.deliveryAddress : exportJob?.deliveryAddress)}
+                    {/* Qty - Editable */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      onClick={() => handleCellClick(job.id, 'numberOfPieces', qty, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'numberOfPieces' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'numberOfPieces', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, 'numberOfPieces', job._jobType)}
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        qty
+                      )}
                     </td>
                     
-                    {/* Quote In/out */}
-                    <td className="p-1 text-center border-r border-border text-xs">
+                    {/* Weight - Editable */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      onClick={() => handleCellClick(job.id, 'weight', weight, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'weight' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'weight', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, 'weight', job._jobType)}
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        weight
+                      )}
+                    </td>
+                    
+                    {/* CBM - Editable */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      onClick={() => handleCellClick(job.id, 'cube', cbm, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'cube' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'cube', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, 'cube', job._jobType)}
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        cbm
+                      )}
+                    </td>
+                    
+                    {/* ETA Port - Editable with data color */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(etaPort)}`}
+                      onClick={() => handleCellClick(job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', etaPort, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === (isImport ? 'importDateEtaPort' : 'etaPortDate') ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', job._jobType)}
+                          placeholder="DD/MM/YY"
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        formatDate(etaPort || null)
+                      )}
+                    </td>
+                    
+                    {/* Delivery Date - Editable with status color for imports, data color for exports */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDeliveryDateColor(job)}`}
+                      onClick={() => handleCellClick(job.id, 'deliveryDate', deliveryDate, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'deliveryDate' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'deliveryDate', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryDate', job._jobType)}
+                          placeholder="DD/MM/YY"
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        formatDate(deliveryDate || null)
+                      )}
+                    </td>
+                    
+                    {/* Delivery Address - Editable textarea with data color */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(deliveryAddress)}`}
+                      onClick={() => handleCellClick(job.id, 'deliveryAddress', deliveryAddress, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'deliveryAddress' ? (
+                        <textarea
+                          ref={textareaRef}
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'deliveryAddress', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryAddress', job._jobType)}
+                          className="w-full min-h-[40px] bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-tight focus:outline-none resize-none"
+                          rows={2}
+                        />
+                      ) : (
+                        <div className="text-xs leading-tight">{formatAddress(deliveryAddress)}</div>
+                      )}
+                    </td>
+                    
+                    {/* Quote In/out - Not editable, status color */}
+                    <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
                       <div className="space-y-0.5">
                         <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
                         <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
                       </div>
                     </td>
                     
-                    {/* Haulier */}
-                    <td className="p-1 text-center border-r border-border">{isImport ? importJob?.haulierName : exportJob?.haulierName}</td>
+                    {/* Haulier - Editable dropdown with data color */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(haulierName)}`}
+                      onClick={() => handleCellClick(job.id, 'haulierName', haulierName, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'haulierName' ? (
+                        <Select
+                          value={tempValue}
+                          onValueChange={(val) => {
+                            setTempValue(val)
+                            handleSave(job.id, 'haulierName', val, job._jobType)
+                          }}
+                        >
+                          <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {hauliers.sort((a, b) => (a.haulierName || '').localeCompare(b.haulierName || '')).map((h) => (
+                              <SelectItem key={h.id} value={h.haulierName || ''}>
+                                {h.haulierName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        haulierName
+                      )}
+                    </td>
                     
-                    {/* POD Sent */}
-                    <td className="p-1 text-center border-r border-border">{podTimestamp ? formatDate(podTimestamp) : ''}</td>
+                    {/* POD Sent - Editable timestamp with status color */}
+                    <td 
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getPodSentColor(job)}`}
+                      onClick={() => handleCellClick(job.id, 'sendPodToCustomerStatusIndicatorTimestamp', podTimestamp, job._jobType)}
+                    >
+                      {isEditing && editingCell?.fieldName === 'sendPodToCustomerStatusIndicatorTimestamp' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'sendPodToCustomerStatusIndicatorTimestamp', job._jobType)}
+                          onKeyDown={(e) => handleKeyDown(e, job.id, 'sendPodToCustomerStatusIndicatorTimestamp', job._jobType)}
+                          placeholder="DD/MM/YY"
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                        />
+                      ) : (
+                        formatDate(podTimestamp || null)
+                      )}
+                    </td>
                     
-                    {/* Booker */}
-                    <td className="p-1 text-center">{bookerName}</td>
+                    {/* Booker - Not editable, data color */}
+                    <td className={`p-1 text-center ${getDataColor(bookerName)}`}>{bookerName}</td>
                   </tr>
                 )
               })}
