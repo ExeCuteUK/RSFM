@@ -751,6 +751,7 @@ export const invoices = pgTable("invoices", {
   
   // Invoice identification
   invoiceNumber: integer("invoice_number").notNull().unique(),
+  type: text("type").notNull().default("invoice"), // "invoice" or "credit_note"
   invoiceDate: text("invoice_date").notNull(),
   taxPointDate: text("tax_point_date"),
   

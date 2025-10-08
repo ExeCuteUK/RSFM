@@ -36,6 +36,7 @@ export default function Invoices() {
   const [searchText, setSearchText] = useState("")
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null)
   const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null)
+  const [showNewInvoice, setShowNewInvoice] = useState(false)
   const { toast } = useToast()
 
   const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
@@ -82,41 +83,10 @@ export default function Invoices() {
             View and download customer invoices
           </p>
         </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button data-testid="button-new-invoice">
-              <Plus className="h-4 w-4 mr-2" />
-              New Invoice
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80" align="end">
-            <div className="space-y-3">
-              <div>
-                <h4 className="font-medium mb-1">Create Invoice from Job</h4>
-                <p className="text-sm text-muted-foreground">
-                  Select a job type to create an invoice
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Link href="/import-shipments">
-                  <Button variant="outline" className="w-full justify-start" data-testid="link-import-shipments">
-                    Import Shipments
-                  </Button>
-                </Link>
-                <Link href="/export-shipments">
-                  <Button variant="outline" className="w-full justify-start" data-testid="link-export-shipments">
-                    Export Shipments
-                  </Button>
-                </Link>
-                <Link href="/custom-clearances">
-                  <Button variant="outline" className="w-full justify-start" data-testid="link-custom-clearances">
-                    Custom Clearances
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+        <Button onClick={() => setShowNewInvoice(true)} data-testid="button-new-invoice">
+          <Plus className="h-4 w-4 mr-2" />
+          New Invoice
+        </Button>
       </div>
 
       <div className="flex items-center gap-2">
@@ -239,8 +209,13 @@ export default function Invoices() {
       <CustomerInvoiceForm
         job={null}
         jobType={invoiceToEdit?.jobType === 'import' ? 'import' : invoiceToEdit?.jobType === 'export' ? 'export' : 'clearance'}
-        open={!!invoiceToEdit}
-        onOpenChange={(open) => !open && setInvoiceToEdit(null)}
+        open={!!invoiceToEdit || showNewInvoice}
+        onOpenChange={(open) => {
+          if (!open) {
+            setInvoiceToEdit(null)
+            setShowNewInvoice(false)
+          }
+        }}
         existingInvoice={invoiceToEdit}
       />
     </div>

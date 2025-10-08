@@ -34,10 +34,11 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         }
       }
 
-      // Header - INVOICE Title (drawn second, so it appears on top of logo)
+      // Header - INVOICE/CREDIT NOTE Title (drawn second, so it appears on top of logo)
+      const title = invoice.type === 'credit_note' ? 'CREDIT NOTE' : 'INVOICE';
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .text('INVOICE', 50, 20, { width: 140, align: 'center' });
+         .text(title, 50, 20, { width: 140, align: 'center' });
 
       // Header - Company Details (right side with company name)
       doc.fontSize(9)
@@ -88,10 +89,11 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         }
       }
 
-      // Invoice To Section (moved up to reduce gap)
+      // Invoice To / Credit To Section (moved up to reduce gap)
+      const toLabel = invoice.type === 'credit_note' ? 'CREDIT TO' : 'INVOICE TO';
       doc.fontSize(10)
          .font('Helvetica-Bold')
-         .text('INVOICE TO', 50, 190);
+         .text(toLabel, 50, 190);
 
       // No border around Invoice To box
 
@@ -280,11 +282,12 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Horizontal line below the section
       doc.moveTo(50, consignorY + 88).lineTo(545, consignorY + 88).stroke();
 
-      // Description of Charges Table - positioned immediately below consignor table
+      // Description of Charges/Credits Table - positioned immediately below consignor table
       const chargesTableY = consignorY + 93; // 5pt gap below consignor table
+      const chargesLabel = invoice.type === 'credit_note' ? 'DESCRIPTION OF CREDITS' : 'DESCRIPTION OF CHARGES';
       doc.fontSize(9)
          .font('Helvetica-Bold')
-         .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
+         .text(chargesLabel, 50, chargesTableY);
 
       const chargesY = chargesTableY + 10;
       
@@ -292,11 +295,12 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.rect(50, chargesY, 495, 18)
          .fillAndStroke('#f0f0f0', '#000000');
 
+      const amountLabel = invoice.type === 'credit_note' ? 'CREDIT AMOUNT' : 'CHARGE AMOUNT';
       doc.fillColor('#000000')
          .fontSize(8)
          .font('Helvetica-Bold')
          .text('Description', 55, chargesY + 6)
-         .text('CHARGE AMOUNT', 360, chargesY + 6)
+         .text(amountLabel, 360, chargesY + 6)
          .text('VAT AMOUNT', 450, chargesY + 6)
          .text('CODE', 510, chargesY + 6);
 

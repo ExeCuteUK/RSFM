@@ -91,6 +91,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   })
 
   // Invoice fields - Header section
+  const [type, setType] = useState<'invoice' | 'credit_note'>('invoice')
   const [taxPointDate, setTaxPointDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [ourRef, setOurRef] = useState('')
   const [exportersRef, setExportersRef] = useState('')
@@ -153,6 +154,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   useEffect(() => {
     if (existingInvoice) {
       // Edit mode - populate from existing invoice
+      setType((existingInvoice.type as 'invoice' | 'credit_note') || 'invoice')
       setTaxPointDate(existingInvoice.taxPointDate || existingInvoice.invoiceDate)
       setOurRef(existingInvoice.ourRef || '')
       setExportersRef(existingInvoice.exportersRef || '')
@@ -322,6 +324,15 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
     }
   }, [job, jobType, existingInvoice, importCustomer, exportCustomer, exportReceiver])
 
+  // Clear payment terms when type changes to credit_note
+  useEffect(() => {
+    if (type === 'credit_note') {
+      setPaymentTerms('')
+    } else if (type === 'invoice' && !paymentTerms) {
+      setPaymentTerms('Payment due within 30 days of invoice date')
+    }
+  }, [type])
+
   const addLineItem = () => {
     setLineItems([...lineItems, { description: '', chargeAmount: '', vatCode: '2', vatAmount: '0' }])
   }
@@ -429,6 +440,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
     }
 
     const invoiceData = {
+      type,
       jobRef: job?.jobRef || existingInvoice?.jobRef,
       jobType: jobType,
       jobId: job?.id || existingInvoice?.jobId,
@@ -484,9 +496,21 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           {/* Invoice Details Card */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">Invoice Details</CardTitle>
+              <CardTitle className="text-sm font-semibold">{type === 'credit_note' ? 'Credit Details' : 'Invoice Details'}</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="mb-4">
+                <Label htmlFor="type">Type</Label>
+                <Select value={type} onValueChange={(value: 'invoice' | 'credit_note') => setType(value)}>
+                  <SelectTrigger id="type" data-testid="select-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="invoice">Invoice</SelectItem>
+                    <SelectItem value="credit_note">Credit Note</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="taxPointDate">Date/Tax Point</Label>
@@ -504,6 +528,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                     id="ourRef"
                     value={ourRef}
                     onChange={(e) => setOurRef(e.target.value)}
+                    disabled={!!job}
                     data-testid="input-our-ref"
                   />
                 </div>
@@ -523,7 +548,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           {/* Invoice To Card */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">Invoice To</CardTitle>
+              <CardTitle className="text-sm font-semibold">{type === 'credit_note' ? 'Credit To' : 'Invoice To'}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
@@ -796,7 +821,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor={`charge-${index}`}>Charge Amount</Label>
+                    <Label htmlFor={`charge-${index}`}>{type === 'credit_note' ? 'Credit Amount' : 'Charge Amount'}</Label>
                     <Input
                       id={`charge-${index}`}
                       type="number"

@@ -2219,7 +2219,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { generateInvoicePDF } = await import("./pdf-generator");
       const pdfBuffer = await generateInvoicePDF({ invoice });
 
-      const filename = `RS Invoice - ${invoice.jobRef}.pdf`;
+      const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
+      const filename = `${prefix} - ${invoice.jobRef}.pdf`;
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Length', pdfBuffer.length);
