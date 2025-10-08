@@ -1176,7 +1176,7 @@ Hope all is OK.`
                           className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer`}
                           data-testid={`button-invoice-customer-${shipment.id}`}
                         >
-                          Invoice Customer
+                          Send Invoice/Credit to Customer
                         </button>
                       </div>
                       <div className="flex items-center gap-1">

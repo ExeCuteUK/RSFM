@@ -1382,7 +1382,7 @@ export default function CustomClearances() {
                                 className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer`}
                                 data-testid={`button-invoice-customer-${clearance.id}`}
                               >
-                                Invoice Customer
+                                Send Invoice/Credit to Customer
                               </button>
                             </div>
                             <div className="flex items-center gap-1">
