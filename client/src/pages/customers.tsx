@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Search, Package, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Package, ChevronLeft, ChevronRight, Receipt } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ImportCustomerForm } from "@/components/import-customer-form"
 import { ExportCustomerForm } from "@/components/export-customer-form"
@@ -26,7 +26,7 @@ import { ExportReceiverForm } from "@/components/export-receiver-form"
 import { HaulierForm } from "@/components/haulier-form"
 import { ShippingLineForm } from "@/components/shipping-line-form"
 import { ClearanceAgentForm } from "@/components/clearance-agent-form"
-import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, ShippingLine, ClearanceAgent, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier, InsertShippingLine, InsertClearanceAgent, ImportShipment, ExportShipment } from "@shared/schema"
+import type { ImportCustomer, ExportCustomer, ExportReceiver, Haulier, ShippingLine, ClearanceAgent, InsertImportCustomer, InsertExportCustomer, InsertExportReceiver, InsertHaulier, InsertShippingLine, InsertClearanceAgent, ImportShipment, ExportShipment, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 
@@ -93,6 +93,70 @@ function JobHistory({ customerId, type }: { customerId: string; type: "import" |
                         {format(new Date(exportShipment.bookingDate), "dd/MM/yy")}
                       </p>
                     ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
+// Invoice History Component
+function InvoiceHistory({ customerId, type }: { customerId: string; type: "import" | "export" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const endpoint = type === "import" 
+    ? `/api/import-customers/${customerId}/invoices`
+    : `/api/export-customers/${customerId}/invoices`;
+    
+  const { data: invoices = [], isLoading } = useQuery<Invoice[]>({
+    queryKey: [endpoint],
+  });
+
+  return (
+    <Accordion type="single" collapsible className="mt-2 pt-2 border-t" onValueChange={(value) => setIsOpen(value === "invoices")}>
+      <AccordionItem value="invoices" className="border-0">
+        <AccordionTrigger className="py-1 hover:no-underline" data-testid={`accordion-invoice-history-${customerId}`}>
+          <div className="flex items-center gap-1.5 text-xs">
+            <Receipt className="h-3.5 w-3.5" />
+            <span>Invoice History {invoices.length > 0 && `(${invoices.length})`}</span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="pb-0">
+          {isLoading ? (
+            <div className="text-xs text-muted-foreground px-1 py-1">Loading...</div>
+          ) : invoices.length === 0 ? (
+            <div className="text-xs text-muted-foreground px-1 py-1">No invoices</div>
+          ) : (
+            <div className="space-y-1 pt-1">
+              {invoices.map((invoice) => {
+                const isInvoice = invoice.type === "invoice";
+                const prefix = isInvoice ? "INV" : "CR";
+                const prefixColor = isInvoice ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+                
+                return (
+                  <div 
+                    key={invoice.id} 
+                    className="flex items-center justify-between px-1.5 py-1 bg-background/50 rounded text-xs"
+                    data-testid={`invoice-history-item-${invoice.id}`}
+                  >
+                    <div className="flex-1">
+                      <Link 
+                        href={`/invoices?search=${invoice.invoiceNumber}`}
+                        className="font-medium hover:underline"
+                        data-testid={`link-invoice-${invoice.invoiceNumber}`}
+                      >
+                        <span className={prefixColor}>{prefix}</span> {invoice.invoiceNumber}
+                      </Link>
+                      {invoice.ourRef && (
+                        <p className="text-muted-foreground">Job: {invoice.ourRef}</p>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground">
+                      £{invoice.total.toFixed(2)}
+                    </p>
                   </div>
                 );
               })}

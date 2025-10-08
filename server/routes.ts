@@ -361,6 +361,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get invoices by import customer ID
+  app.get("/api/import-customers/:id/invoices", requireAuth, async (req, res) => {
+    try {
+      const invoices = await storage.getInvoicesByImportCustomerId(req.params.id);
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch customer invoices" });
+    }
+  });
+
+  // Get invoices by export customer ID
+  app.get("/api/export-customers/:id/invoices", requireAuth, async (req, res) => {
+    try {
+      const invoices = await storage.getInvoicesByExportCustomerId(req.params.id);
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch customer invoices" });
+    }
+  });
+
   // ========== Import Customers Routes ==========
   // ========== Import Customers Routes ==========
   

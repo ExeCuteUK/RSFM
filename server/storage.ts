@@ -160,6 +160,8 @@ export interface IStorage {
   // Job History methods
   getImportShipmentsByCustomerId(customerId: string): Promise<ImportShipment[]>;
   getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]>;
+  getInvoicesByImportCustomerId(customerId: string): Promise<Invoice[]>;
+  getInvoicesByExportCustomerId(customerId: string): Promise<Invoice[]>;
 
   // Purchase Invoice methods
   getAllPurchaseInvoices(): Promise<PurchaseInvoice[]>;
@@ -1082,6 +1084,16 @@ export class MemStorage implements IStorage {
   async getExportShipmentsByCustomerId(customerId: string): Promise<ExportShipment[]> {
     return Array.from(this.exportShipments.values()).filter(s => s.destinationCustomerId === customerId);
   }
+
+  async getInvoicesByImportCustomerId(customerId: string): Promise<Invoice[]> {
+    // MemStorage doesn't support invoices, return empty array
+    return [];
+  }
+
+  async getInvoicesByExportCustomerId(customerId: string): Promise<Invoice[]> {
+    // MemStorage doesn't support invoices, return empty array
+    return [];
+  }
 }
 
 // Database Storage Implementation using Drizzle ORM
@@ -1883,6 +1895,42 @@ export class DatabaseStorage implements IStorage {
       .where(eq(exportShipments.destinationCustomerId, customerId))
       .orderBy(desc(exportShipments.jobRef));
     return shipments;
+  }
+
+  async getInvoicesByImportCustomerId(customerId: string): Promise<Invoice[]> {
+    // Get all import shipments for this customer
+    const shipments = await this.getImportShipmentsByCustomerId(customerId);
+    const shipmentIds = shipments.map(s => s.id);
+    
+    if (shipmentIds.length === 0) {
+      return [];
+    }
+    
+    // Get invoices that match these shipment IDs
+    const customerInvoices = await db.select()
+      .from(invoices)
+      .where(inArray(invoices.jobId, shipmentIds))
+      .orderBy(desc(invoices.invoiceNumber));
+    
+    return customerInvoices;
+  }
+
+  async getInvoicesByExportCustomerId(customerId: string): Promise<Invoice[]> {
+    // Get all export shipments for this customer
+    const shipments = await this.getExportShipmentsByCustomerId(customerId);
+    const shipmentIds = shipments.map(s => s.id);
+    
+    if (shipmentIds.length === 0) {
+      return [];
+    }
+    
+    // Get invoices that match these shipment IDs
+    const customerInvoices = await db.select()
+      .from(invoices)
+      .where(inArray(invoices.jobId, shipmentIds))
+      .orderBy(desc(invoices.invoiceNumber));
+    
+    return customerInvoices;
   }
 
   // Purchase Invoice methods
