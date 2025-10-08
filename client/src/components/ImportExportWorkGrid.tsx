@@ -172,11 +172,16 @@ export function ImportExportWorkGrid() {
   }
 
   const toggleJobTypeFilter = (type: "import" | "export") => {
-    setJobTypeFilter(prev =>
-      prev.includes(type)
+    setJobTypeFilter(prev => {
+      // If trying to deselect and it's the only one selected, don't allow it
+      if (prev.includes(type) && prev.length === 1) {
+        return prev
+      }
+      
+      return prev.includes(type)
         ? prev.filter(t => t !== type)
         : [...prev, type]
-    )
+    })
   }
 
   // Update mutations
