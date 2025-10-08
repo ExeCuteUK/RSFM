@@ -82,7 +82,6 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   })
 
   // Invoice fields - Header section
-  const [invoiceDate, setInvoiceDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [taxPointDate, setTaxPointDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [ourRef, setOurRef] = useState('')
   const [exportersRef, setExportersRef] = useState('')
@@ -140,7 +139,6 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   useEffect(() => {
     if (existingInvoice) {
       // Edit mode - populate from existing invoice
-      setInvoiceDate(existingInvoice.invoiceDate)
       setTaxPointDate(existingInvoice.taxPointDate || existingInvoice.invoiceDate)
       setOurRef(existingInvoice.ourRef || '')
       setExportersRef(existingInvoice.exportersRef || '')
@@ -367,7 +365,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
       jobRef: job?.jobRef || existingInvoice?.jobRef,
       jobType: jobType,
       jobId: job?.id || existingInvoice?.jobId,
-      invoiceDate,
+      invoiceDate: taxPointDate,
       taxPointDate,
       ourRef,
       exportersRef,
@@ -413,16 +411,6 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
         <div className="space-y-6 py-4">
           {/* Header Section */}
           <div className="grid grid-cols-4 gap-4">
-            <div>
-              <Label htmlFor="invoiceDate">Invoice Date</Label>
-              <Input
-                id="invoiceDate"
-                type="date"
-                value={invoiceDate}
-                onChange={(e) => setInvoiceDate(e.target.value)}
-                data-testid="input-invoice-date"
-              />
-            </div>
             <div>
               <Label htmlFor="taxPointDate">Date/Tax Point</Label>
               <Input
