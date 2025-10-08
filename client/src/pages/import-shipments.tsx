@@ -1900,14 +1900,6 @@ Hope all is OK.`
                   <div className="mt-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <button
-                          onClick={() => setInvoiceShipment(shipment)}
-                          className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer`}
-                          data-testid={`button-invoice-customer-${shipment.id}`}
-                        >
-                          Invoice Customer
-                        </button>
                         <button
                           onClick={() => handleSendInvoiceToCustomerEmail(shipment)}
                           className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
@@ -1915,6 +1907,13 @@ Hope all is OK.`
                           title="Send invoice email to customer"
                         >
                           <Send className="h-4 w-4 text-muted-foreground" />
+                        </button>
+                        <button
+                          onClick={() => setInvoiceShipment(shipment)}
+                          className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer`}
+                          data-testid={`button-invoice-customer-${shipment.id}`}
+                        >
+                          Invoice Customer
                         </button>
                       </div>
                       <div className="flex items-center gap-1">
