@@ -376,7 +376,7 @@ export function ImportExportWorkGrid() {
                 <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>ETA Port</th>
                 <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>Delivery Date</th>
                 <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Delivery Address</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Quote In/out</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Quote Out / Net In</th>
                 <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Haulier</th>
                 <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>POD Sent</th>
                 <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[15] ? { width: `${columnWidths[15]}px` } : undefined}>Booker</th>
@@ -632,7 +632,7 @@ export function ImportExportWorkGrid() {
                       )}
                     </td>
                     
-                    {/* Quote In/out - Not editable, status color */}
+                    {/* Quote Out / Net In - Not editable, status color */}
                     <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
                       <div className="space-y-0.5">
                         <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
