@@ -64,6 +64,7 @@ export type Message = typeof messages.$inferSelect;
 // Import Customers Database
 export const importCustomers = pgTable("import_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdBy: varchar("created_by"),
   
   // Contact Information
   companyName: text("company_name").notNull(),
@@ -95,6 +96,7 @@ export const importCustomers = pgTable("import_customers", {
 
 export const insertImportCustomerSchema = createInsertSchema(importCustomers).omit({
   id: true,
+  createdBy: true,
 });
 
 export type InsertImportCustomer = z.infer<typeof insertImportCustomerSchema>;
@@ -103,6 +105,7 @@ export type ImportCustomer = typeof importCustomers.$inferSelect;
 // Export Customers Database
 export const exportCustomers = pgTable("export_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdBy: varchar("created_by"),
   
   // Contact Information
   companyName: text("company_name").notNull(),
@@ -125,6 +128,7 @@ export const exportCustomers = pgTable("export_customers", {
 
 export const insertExportCustomerSchema = createInsertSchema(exportCustomers).omit({
   id: true,
+  createdBy: true,
 });
 
 export type InsertExportCustomer = z.infer<typeof insertExportCustomerSchema>;
@@ -133,6 +137,7 @@ export type ExportCustomer = typeof exportCustomers.$inferSelect;
 // Export Receivers Database
 export const exportReceivers = pgTable("export_receivers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdBy: varchar("created_by"),
   
   // Contact Information
   companyName: text("company_name").notNull(),
@@ -142,6 +147,7 @@ export const exportReceivers = pgTable("export_receivers", {
 
 export const insertExportReceiverSchema = createInsertSchema(exportReceivers).omit({
   id: true,
+  createdBy: true,
 });
 
 export type InsertExportReceiver = z.infer<typeof insertExportReceiverSchema>;
@@ -159,6 +165,7 @@ export type HaulierContact = z.infer<typeof haulierContactSchema>;
 
 export const hauliers = pgTable("hauliers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdBy: varchar("created_by"),
   
   // Contact Information
   haulierName: text("haulier_name").notNull(),
@@ -170,6 +177,7 @@ export const hauliers = pgTable("hauliers", {
 
 export const insertHaulierSchema = createInsertSchema(hauliers).omit({
   id: true,
+  createdBy: true,
 }).extend({
   contacts: z.array(haulierContactSchema).default([]),
 });
@@ -180,6 +188,7 @@ export type Haulier = typeof hauliers.$inferSelect;
 // Shipping Lines Database
 export const shippingLines = pgTable("shipping_lines", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdBy: varchar("created_by"),
   
   // Contact Information
   shippingLineName: text("shipping_line_name").notNull(),
@@ -193,6 +202,7 @@ export const shippingLines = pgTable("shipping_lines", {
 
 export const insertShippingLineSchema = createInsertSchema(shippingLines).omit({
   id: true,
+  createdBy: true,
 });
 
 export type InsertShippingLine = z.infer<typeof insertShippingLineSchema>;
@@ -201,6 +211,7 @@ export type ShippingLine = typeof shippingLines.$inferSelect;
 // Clearance Agents Database
 export const clearanceAgents = pgTable("clearance_agents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdBy: varchar("created_by"),
   
   // Agent Information
   agentName: text("agent_name").notNull(),
@@ -212,6 +223,7 @@ export const clearanceAgents = pgTable("clearance_agents", {
 
 export const insertClearanceAgentSchema = createInsertSchema(clearanceAgents).omit({
   id: true,
+  createdBy: true,
 });
 
 export type InsertClearanceAgent = z.infer<typeof insertClearanceAgentSchema>;
@@ -252,6 +264,7 @@ export const importShipments = pgTable("import_shipments", {
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull().default("import"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
+  createdBy: varchar("created_by"),
   
   // Status
   status: text("status").notNull().default("Pending"),
@@ -358,6 +371,7 @@ export const importShipments = pgTable("import_shipments", {
 export const insertImportShipmentSchema = createInsertSchema(importShipments).omit({
   id: true,
   jobRef: true,
+  createdBy: true,
 }).extend({
   importCustomerId: z.string().min(1, "Import Customer is required").nullable().transform((val) => {
     if (!val || val.length === 0) {
@@ -427,6 +441,7 @@ export const exportShipments = pgTable("export_shipments", {
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull().default("export"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
+  createdBy: varchar("created_by"),
   
   // Status
   status: text("status").notNull().default("Pending"),
@@ -528,6 +543,7 @@ export const exportShipments = pgTable("export_shipments", {
 export const insertExportShipmentSchema = createInsertSchema(exportShipments).omit({
   id: true,
   jobRef: true,
+  createdBy: true,
 }).extend({
   destinationCustomerId: z.string().nullable().refine(
     (val) => val !== null && val !== undefined && val.length > 0,
@@ -585,6 +601,7 @@ export const customClearances = pgTable("custom_clearances", {
   jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_DATE`),
+  createdBy: varchar("created_by"),
   
   // Status (Customs-specific)
   status: text("status").notNull().default("Request CC"),
@@ -653,6 +670,7 @@ export const customClearances = pgTable("custom_clearances", {
 export const insertCustomClearanceSchema = createInsertSchema(customClearances).omit({
   id: true,
   jobRef: true,
+  createdBy: true,
 }).extend({
   jobType: z.string().min(1, "Job Type is required"),
   status: z.string().min(1, "Status is required"),
@@ -748,6 +766,7 @@ export type ShipmentLine = z.infer<typeof shipmentLineSchema>;
 
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  createdBy: varchar("created_by"),
   
   // Invoice identification
   invoiceNumber: integer("invoice_number").notNull().unique(),
@@ -809,6 +828,7 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   id: true,
   invoiceNumber: true, // Auto-generated
   createdAt: true,
+  createdBy: true,
   updatedAt: true,
 }).extend({
   lineItems: z.array(invoiceLineItemSchema).min(1, "At least one line item is required"),
