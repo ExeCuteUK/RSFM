@@ -1219,9 +1219,13 @@ export default function CustomClearances() {
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
                               <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
-                              <p className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium`} data-testid={`todo-invoice-${clearance.id}`}>
+                              <button
+                                onClick={() => setInvoiceClearance(clearance)}
+                                className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer`}
+                                data-testid={`button-invoice-customer-${clearance.id}`}
+                              >
                                 Invoice Customer
-                              </p>
+                              </button>
                             </div>
                             <div className="flex items-center gap-1">
                               <button

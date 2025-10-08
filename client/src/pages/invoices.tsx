@@ -1,9 +1,10 @@
 import { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
+import { Link } from "wouter"
 import type { Invoice } from "@shared/schema"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { FileOutput, Search, Pencil, Trash2 } from "lucide-react"
+import { FileOutput, Search, Pencil, Trash2, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { apiRequest, queryClient } from "@/lib/queryClient"
 import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
@@ -25,6 +26,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export default function Invoices() {
   const [searchText, setSearchText] = useState("")
@@ -76,6 +82,41 @@ export default function Invoices() {
             View and download customer invoices
           </p>
         </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button data-testid="button-new-invoice">
+              <Plus className="h-4 w-4 mr-2" />
+              New Invoice
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-3">
+              <div>
+                <h4 className="font-medium mb-1">Create Invoice from Job</h4>
+                <p className="text-sm text-muted-foreground">
+                  Select a job type to create an invoice
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Link href="/import-shipments">
+                  <Button variant="outline" className="w-full justify-start" data-testid="link-import-shipments">
+                    Import Shipments
+                  </Button>
+                </Link>
+                <Link href="/export-shipments">
+                  <Button variant="outline" className="w-full justify-start" data-testid="link-export-shipments">
+                    Export Shipments
+                  </Button>
+                </Link>
+                <Link href="/custom-clearances">
+                  <Button variant="outline" className="w-full justify-start" data-testid="link-custom-clearances">
+                    Custom Clearances
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="flex items-center gap-2">

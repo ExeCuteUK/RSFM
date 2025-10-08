@@ -1033,9 +1033,13 @@ Hope all is OK.`
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
                         <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)}`} data-testid={`text-invoice-customer-${shipment.id}`}>
+                        <button
+                          onClick={() => setInvoiceShipment(shipment)}
+                          className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer`}
+                          data-testid={`button-invoice-customer-${shipment.id}`}
+                        >
                           Invoice Customer
-                        </p>
+                        </button>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
