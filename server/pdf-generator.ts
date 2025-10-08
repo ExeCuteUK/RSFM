@@ -161,8 +161,6 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
 
       // Consignor/Consignee Section - dynamically positioned based on shipment table
       const consignorY = shipmentY + 35; // 15pt gap added above table
-      doc.rect(50, consignorY, 495, 100)
-         .stroke();
 
       // Equal width columns: 165pt each
       const col1X = 50;
@@ -271,12 +269,12 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.moveTo(50, consignorY + 88).lineTo(545, consignorY + 88).stroke();
 
       // Description of Charges Table - positioned immediately below consignor table
-      const chargesTableY = consignorY + 98; // 10pt gap below consignor table
+      const chargesTableY = consignorY + 93; // 5pt gap below consignor table
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
 
-      const chargesY = chargesTableY + 20;
+      const chargesY = chargesTableY + 10;
       
       // Table header
       doc.rect(50, chargesY, 495, 18)
