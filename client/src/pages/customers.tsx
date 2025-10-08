@@ -744,6 +744,7 @@ export default function Customers() {
                         )}
                       </div>
                       <JobHistory customerId={customer.id} type="export" />
+                      <InvoiceHistory customerId={customer.id} type="export" />
                     </CardContent>
                   </Card>
                 ))}
