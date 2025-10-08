@@ -68,8 +68,15 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.text('Our Ref :', 400, 156);
       doc.text(invoice.ourRef || String(invoice.jobRef || ''), valueX, 156);
       
-      doc.text('Exporters Ref :', 400, 168);
-      doc.text(invoice.exportersRef || '', valueX, 168);
+      if (invoice.exportersRef) {
+        doc.font('Helvetica-Bold')
+           .text('Exporters Ref :', 400, 168);
+        doc.text(invoice.exportersRef, valueX, 168);
+        doc.font('Helvetica'); // Reset to normal font
+      } else {
+        doc.text('Exporters Ref :', 400, 168);
+        doc.text('', valueX, 168);
+      }
 
       // BIFA Logo placeholder (top right) - Add BIFA logo image here if available
       const bifaPath = path.join(process.cwd(), 'attached_assets', 'bifa-logo.jpg');
@@ -128,10 +135,10 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Table headers (no border)
       doc.fontSize(8)
          .font('Helvetica-Bold')
-         .text('No. Packages', 50, shipmentTableY)
-         .text('Commodity', 150, shipmentTableY)
-         .text('KGS', 410, shipmentTableY)
-         .text('CBM', 465, shipmentTableY);
+         .text('No. Packages', 50, shipmentTableY, { underline: true })
+         .text('Commodity', 150, shipmentTableY, { underline: true })
+         .text('KGS', 410, shipmentTableY, { underline: true })
+         .text('CBM', 465, shipmentTableY, { underline: true });
 
       // Shipment data - display multiple lines if available
       doc.fontSize(9)
@@ -168,10 +175,15 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       const col3X = 380;
       const colWidth = 165;
 
+      // Draw border lines for consignor/consignee table
+      doc.moveTo(50, consignorY).lineTo(545, consignorY).stroke(); // Top border
+      doc.moveTo(50, consignorY).lineTo(50, consignorY + 88).stroke(); // Left border
+      doc.moveTo(545, consignorY).lineTo(545, consignorY + 88).stroke(); // Right border
+
       // Consignor column (left)
       doc.fontSize(8)
          .font('Helvetica-Bold')
-         .text('CONSIGNOR', col1X + 5, consignorY + 5);
+         .text('CONSIGNOR', col1X + 5, consignorY + 5, { underline: true });
 
       doc.fontSize(8)
          .font('Helvetica');
@@ -202,7 +214,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Consignee column (middle)
       doc.fontSize(8)
          .font('Helvetica-Bold')
-         .text('CONSIGNEE', col2X + 5, consignorY + 5);
+         .text('CONSIGNEE', col2X + 5, consignorY + 5, { underline: true });
 
       doc.fontSize(8)
          .font('Helvetica');
@@ -286,7 +298,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text('Description', 55, chargesY + 5)
          .text('CHARGE AMOUNT', 360, chargesY + 5)
          .text('VAT AMOUNT', 450, chargesY + 5)
-         .text('CODE', 510, chargesY + 5);
+         .text('CODE', 510, chargesY + 5, { underline: true });
 
       // Line items - 15pt gap below header
       let yPosition = chargesY + 33;
@@ -320,8 +332,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
 
       doc.fontSize(8)
          .font('Helvetica-Bold')
-         .text('Code', 50, yPosition)
-         .text('VAT RATE', 140, yPosition)
+         .text('Code', 50, yPosition, { underline: true })
+         .text('VAT RATE', 140, yPosition, { underline: true })
          .text('INVOICE TOTAL', 360, yPosition)
          .text(`${invoice.subtotal.toFixed(2)}`, 465, yPosition);
 
@@ -373,8 +385,10 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.text('Barclays Bank PLC', 50, yPosition + 20);
       doc.text('Holborn Circus Branch', 50, yPosition + 30);
       doc.text('London EC1', 50, yPosition + 40);
-      doc.text('Sort Code: 20 00 20', 50, yPosition + 50);
-      doc.text('Account No: 69103569', 50, yPosition + 60);
+      doc.font('Helvetica-Bold')
+         .text('Sort Code: 20 00 20', 50, yPosition + 50)
+         .text('Account No: 69103569', 50, yPosition + 60);
+      doc.font('Helvetica'); // Reset to normal font
 
       doc.font('Helvetica-Bold')
          .text('Thank you for your custom', 400, yPosition + 60);
