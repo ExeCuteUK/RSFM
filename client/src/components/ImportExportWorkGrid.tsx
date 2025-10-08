@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { type ImportShipment, type ExportShipment, type ImportCustomer, type ExportCustomer, type ExportReceiver, type User } from "@shared/schema"
 import { Search } from "lucide-react"
@@ -16,11 +15,18 @@ export function ImportExportWorkGrid() {
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const tableRef = useRef<HTMLTableElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
 
   useEffect(() => {
     if (!editingCell) {
       setColumnWidths([])
+    }
+  }, [editingCell])
+
+  useEffect(() => {
+    if (editingCell && inputRef.current) {
+      inputRef.current.focus()
     }
   }, [editingCell])
 
@@ -168,12 +174,10 @@ export function ImportExportWorkGrid() {
   }
 
   const handleCellClick = (shipmentId: string, fieldName: string, currentValue: any, jobType: 'import' | 'export') => {
+    // Capture column widths before entering edit mode
     if (tableRef.current && !editingCell) {
-      const cells = tableRef.current.querySelectorAll('td')
-      const widths: number[] = []
-      cells.forEach(cell => {
-        widths.push(cell.offsetWidth)
-      })
+      const headers = tableRef.current.querySelectorAll('thead th')
+      const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
       setColumnWidths(widths)
     }
     
@@ -183,11 +187,16 @@ export function ImportExportWorkGrid() {
 
   const handleKeyDown = (e: React.KeyboardEvent, shipmentId: string, fieldName: string, jobType: 'import' | 'export') => {
     if (e.key === "Enter") {
+      e.preventDefault()
       handleSave(shipmentId, fieldName, tempValue, jobType)
     } else if (e.key === "Escape") {
       setEditingCell(null)
       setTempValue("")
     }
+  }
+
+  const handleBlur = (shipmentId: string, fieldName: string, jobType: 'import' | 'export') => {
+    handleSave(shipmentId, fieldName, tempValue, jobType)
   }
 
   const formatDate = (dateStr: string | null) => {
@@ -197,6 +206,13 @@ export function ImportExportWorkGrid() {
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const year = String(date.getFullYear()).slice(-2)
     return `${day}/${month}/${year}`
+  }
+
+  const formatAddress = (address: string | null | undefined) => {
+    if (!address) return ""
+    return address.split(',').map((line, i) => (
+      <div key={i}>{line.trim()}</div>
+    ))
   }
 
   const getQuoteDisplay = (job: (ImportShipment | ExportShipment) & { _jobType: 'import' | 'export' }) => {
@@ -233,6 +249,24 @@ export function ImportExportWorkGrid() {
     }
     
     return parts.join(' / ')
+  }
+
+  // Get row color based on haulier status
+  const getRowColor = (job: ImportShipment | ExportShipment) => {
+    const ead = job.sendHaulierEadStatusIndicator
+    const gvms = job.sendHaulierGvmsStatusIndicator
+    
+    // Green if either status is 3 (completed)
+    if (ead === 3 || gvms === 3) {
+      return 'bg-green-100 dark:bg-green-900'
+    }
+    
+    // Yellow if either status is pending (2 for EAD, 1 for GVMS, or other values)
+    if (ead === 2 || ead === 1 || gvms === 2 || gvms === 1) {
+      return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+    }
+    
+    return ''
   }
 
   return (
@@ -275,22 +309,22 @@ export function ImportExportWorkGrid() {
           <table ref={tableRef} className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
             <thead className="sticky top-0 bg-background z-10">
               <tr className="border-b-2">
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Job Ref</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Shipper Ref</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Consignor/ee</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Departure Date</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Destination / Port of Arrival</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Truck Number</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Total Packages</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Weight</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">LDM</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">ETA Port</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Estimate</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Delivery Address</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Quote In/out</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Haulier</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">POD Sent?</th>
-                <th className="p-1 text-center font-semibold border-r border-border bg-background">Booker</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Job Ref</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[1] ? { width: `${columnWidths[1]}px` } : undefined}>Shipper Ref</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Customer Name</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Departure Date</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Destination / Port of Arrival</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Identifier</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>Qty</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>Weight</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[8] ? { width: `${columnWidths[8]}px` } : undefined}>CBM</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>ETA Port</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>Delivery Date</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Delivery Address</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Quote In/out</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Haulier</th>
+                <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>POD Sent</th>
+                <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[15] ? { width: `${columnWidths[15]}px` } : undefined}>Booker</th>
               </tr>
             </thead>
             <tbody>
@@ -305,9 +339,7 @@ export function ImportExportWorkGrid() {
                 
                 const receiver = exportJob ? exportReceivers.find(r => r.id === exportJob.receiverId) : null
                 
-                const consignorConsignee = isImport
-                  ? `${importJob?.supplierName || ''} / ${customer?.companyName || ''}`
-                  : `${customer?.companyName || ''} / ${receiver?.companyName || ''}`
+                const customerName = customer?.companyName || ''
                 
                 const booker = users.find(u => u.id === job.createdBy)
                 const bookerName = booker?.fullName?.split(' ')[0] || ''
@@ -316,70 +348,104 @@ export function ImportExportWorkGrid() {
                   ? importJob?.sendPodToCustomerStatusIndicatorTimestamp
                   : exportJob?.sendPodToCustomerStatusIndicatorTimestamp
 
+                const rowColor = getRowColor(job)
+                const isEditing = editingCell?.shipmentId === job.id
+
                 return (
                   <tr key={job.id} className="border-b hover:bg-muted/50">
-                    <td className="p-1 text-center border-r border-border">{job.jobRef}</td>
+                    {/* Job Ref - first 9 columns get conditional coloring */}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{job.jobRef}</td>
+                    
+                    {/* Shipper Ref - editable */}
                     <td 
-                      className={`p-1 border-r border-border cursor-pointer ${
-                        editingCell?.shipmentId === job.id && editingCell?.fieldName === 'customerReferenceNumber' ? 'bg-green-100 dark:bg-green-900' : ''
-                      }`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'customerReferenceNumber', isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber, job._jobType)}
                     >
-                      {editingCell?.shipmentId === job.id && editingCell?.fieldName === 'customerReferenceNumber' ? (
-                        <Input
+                      {isEditing && editingCell?.fieldName === 'customerReferenceNumber' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
                           value={tempValue}
                           onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'customerReferenceNumber', job._jobType)}
                           onKeyDown={(e) => handleKeyDown(e, job.id, 'customerReferenceNumber', job._jobType)}
-                          onBlur={() => handleSave(job.id, 'customerReferenceNumber', tempValue, job._jobType)}
-                          className="h-6 text-xs"
-                          autoFocus
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
                         />
                       ) : (
                         isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber
                       )}
                     </td>
-                    <td className="p-1 border-r border-border text-xs">{consignorConsignee}</td>
+                    
+                    {/* Customer Name */}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{customerName}</td>
+                    
+                    {/* Departure Date - editable */}
                     <td 
-                      className={`p-1 text-center border-r border-border cursor-pointer ${
-                        editingCell?.shipmentId === job.id && editingCell?.fieldName === 'dispatchDate' ? 'bg-green-100 dark:bg-green-900' : ''
-                      }`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'dispatchDate', isImport ? importJob?.dispatchDate : exportJob?.dispatchDate, job._jobType)}
                     >
-                      {editingCell?.shipmentId === job.id && editingCell?.fieldName === 'dispatchDate' ? (
-                        <Input
+                      {isEditing && editingCell?.fieldName === 'dispatchDate' ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
                           value={tempValue}
                           onChange={(e) => setTempValue(e.target.value)}
+                          onBlur={() => handleBlur(job.id, 'dispatchDate', job._jobType)}
                           onKeyDown={(e) => handleKeyDown(e, job.id, 'dispatchDate', job._jobType)}
-                          onBlur={() => handleSave(job.id, 'dispatchDate', tempValue, job._jobType)}
                           placeholder="DD/MM/YY"
-                          className="h-6 text-xs"
-                          autoFocus
+                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
                         />
                       ) : (
                         formatDate(isImport ? importJob?.dispatchDate || null : exportJob?.dispatchDate || null)
                       )}
                     </td>
-                    <td className="p-1 border-r border-border text-xs">{isImport ? importJob?.portOfArrival : exportJob?.portOfArrival}</td>
-                    <td className="p-1 border-r border-border text-xs">{isImport ? importJob?.trailerOrContainerNumber : exportJob?.trailerNo}</td>
-                    <td className="p-1 text-center border-r border-border">{isImport ? importJob?.numberOfPieces : exportJob?.numberOfPieces}</td>
-                    <td className="p-1 border-r border-border text-xs">{isImport ? importJob?.weight : exportJob?.weight}</td>
-                    <td className="p-1 border-r border-border text-xs">{isImport ? importJob?.cube : exportJob?.cube}</td>
+                    
+                    {/* Destination / Port of Arrival */}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.portOfArrival : exportJob?.portOfArrival}</td>
+                    
+                    {/* Identifier */}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.trailerOrContainerNumber : exportJob?.trailerNo}</td>
+                    
+                    {/* Qty */}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.numberOfPieces : exportJob?.numberOfPieces}</td>
+                    
+                    {/* Weight */}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.weight : exportJob?.weight}</td>
+                    
+                    {/* CBM */}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{isImport ? importJob?.cube : exportJob?.cube}</td>
+                    
+                    {/* ETA Port - remaining columns don't get colored */}
                     <td className="p-1 text-center border-r border-border">
                       {formatDate(isImport ? importJob?.importDateEtaPort || null : exportJob?.etaPortDate || null)}
                     </td>
+                    
+                    {/* Delivery Date */}
                     <td className="p-1 text-center border-r border-border">
                       {formatDate(isImport ? importJob?.deliveryDate || null : exportJob?.deliveryDate || null)}
                     </td>
-                    <td className="p-1 border-r border-border text-xs">{isImport ? importJob?.deliveryAddress : exportJob?.deliveryAddress}</td>
-                    <td className="p-1 border-r border-border text-xs">
+                    
+                    {/* Delivery Address - multiline */}
+                    <td className="p-1 text-center border-r border-border text-xs leading-tight">
+                      {formatAddress(isImport ? importJob?.deliveryAddress : exportJob?.deliveryAddress)}
+                    </td>
+                    
+                    {/* Quote In/out */}
+                    <td className="p-1 text-center border-r border-border text-xs">
                       <div className="space-y-0.5">
                         <div>Quote: {getQuoteDisplay(job)}</div>
                         <div>Net: {getNetDisplay(job)}</div>
                       </div>
                     </td>
-                    <td className="p-1 border-r border-border text-xs">{isImport ? importJob?.haulierName : exportJob?.haulierName}</td>
-                    <td className="p-1 text-center border-r border-border text-xs">{podTimestamp ? formatDate(podTimestamp) : ''}</td>
-                    <td className="p-1 text-center border-r border-border">{bookerName}</td>
+                    
+                    {/* Haulier */}
+                    <td className="p-1 text-center border-r border-border">{isImport ? importJob?.haulierName : exportJob?.haulierName}</td>
+                    
+                    {/* POD Sent */}
+                    <td className="p-1 text-center border-r border-border">{podTimestamp ? formatDate(podTimestamp) : ''}</td>
+                    
+                    {/* Booker */}
+                    <td className="p-1 text-center">{bookerName}</td>
                   </tr>
                 )
               })}
