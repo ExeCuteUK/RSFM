@@ -63,9 +63,13 @@ export function DraggableEmailComposer() {
   const sendEmailMutation = useMutation({
     mutationFn: async (emailData: any) => {
       const { isMinimized: _, attachments, metadata, ...restData } = emailData;
+      // Extract URLs from attachment objects (handle both string URLs and {url, name} objects)
+      const attachmentUrls = (attachments || []).map((att: any) => 
+        typeof att === 'string' ? att : att.url
+      );
       const sendData = {
         ...restData,
-        attachmentUrls: attachments || []
+        attachmentUrls
       };
       return apiRequest("POST", "/api/gmail/send-with-attachments", sendData);
     },
@@ -674,25 +678,28 @@ export function DraggableEmailComposer() {
           </div>
           {data.attachments.length > 0 && (
             <div className="grid grid-cols-2 gap-1">
-              {data.attachments.filter(file => file).map((file, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between px-1.5 py-1 bg-muted/50 rounded"
-                  data-testid={`attachment-${idx}`}
-                >
-                  <span className="text-xs truncate flex-1">{file.split('/').pop()}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 w-5 p-0 ml-1"
-                    onClick={() => handleRemoveAttachment(idx)}
-                    data-testid={`button-remove-attachment-${idx}`}
+              {data.attachments.filter(file => file).map((file, idx) => {
+                const fileName = typeof file === 'string' ? file.split('/').pop() : file.name;
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between px-1.5 py-1 bg-muted/50 rounded"
+                    data-testid={`attachment-${idx}`}
                   >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
+                    <span className="text-xs truncate flex-1">{fileName}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 ml-1"
+                      onClick={() => handleRemoveAttachment(idx)}
+                      data-testid={`button-remove-attachment-${idx}`}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
