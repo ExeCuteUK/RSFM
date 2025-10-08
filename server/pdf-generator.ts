@@ -288,8 +288,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text('VAT AMOUNT', 450, chargesY + 5)
          .text('CODE', 510, chargesY + 5);
 
-      // Line items
-      let yPosition = chargesY + 18;
+      // Line items - 15pt gap below header
+      let yPosition = chargesY + 33;
       doc.font('Helvetica');
 
       const lineItems = invoice.lineItems || [];
