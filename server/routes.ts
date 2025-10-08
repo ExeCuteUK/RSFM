@@ -423,7 +423,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/import-customers", async (req, res) => {
     try {
       const validatedData = insertImportCustomerSchema.parse(req.body);
-      const customer = await storage.createImportCustomer(validatedData);
+      const customer = await storage.createImportCustomer({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       res.status(201).json(customer);
     } catch (error) {
       res.status(400).json({ error: "Invalid import customer data" });
@@ -501,7 +504,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/export-customers", async (req, res) => {
     try {
       const validatedData = insertExportCustomerSchema.parse(req.body);
-      const customer = await storage.createExportCustomer(validatedData);
+      const customer = await storage.createExportCustomer({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       res.status(201).json(customer);
     } catch (error) {
       res.status(400).json({ error: "Invalid export customer data" });
@@ -579,7 +585,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/export-receivers", async (req, res) => {
     try {
       const validatedData = insertExportReceiverSchema.parse(req.body);
-      const receiver = await storage.createExportReceiver(validatedData);
+      const receiver = await storage.createExportReceiver({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       res.status(201).json(receiver);
     } catch (error) {
       res.status(400).json({ error: "Invalid export receiver data" });
@@ -706,7 +715,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/hauliers", async (req, res) => {
     try {
       const validatedData = insertHaulierSchema.parse(req.body);
-      const haulier = await storage.createHaulier(validatedData);
+      const haulier = await storage.createHaulier({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       res.status(201).json(haulier);
     } catch (error) {
       res.status(400).json({ error: "Invalid haulier data" });
@@ -772,7 +784,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/shipping-lines", async (req, res) => {
     try {
       const validatedData = insertShippingLineSchema.parse(req.body);
-      const shippingLine = await storage.createShippingLine(validatedData);
+      const shippingLine = await storage.createShippingLine({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       res.status(201).json(shippingLine);
     } catch (error) {
       res.status(400).json({ error: "Invalid shipping line data" });
@@ -838,7 +853,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/clearance-agents", async (req, res) => {
     try {
       const validatedData = insertClearanceAgentSchema.parse(req.body);
-      const agent = await storage.createClearanceAgent(validatedData);
+      const agent = await storage.createClearanceAgent({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       res.status(201).json(agent);
     } catch (error) {
       res.status(400).json({ error: "Invalid clearance agent data" });
@@ -947,7 +965,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/import-shipments", async (req, res) => {
     try {
       const validatedData = insertImportShipmentSchema.parse(req.body);
-      const shipment = await storage.createImportShipment(validatedData);
+      const shipment = await storage.createImportShipment({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       
       // Always create/update job_file_groups for new jobs
       const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
@@ -1353,7 +1374,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/export-shipments", async (req, res) => {
     try {
       const validatedData = insertExportShipmentSchema.parse(req.body);
-      const shipment = await storage.createExportShipment(validatedData);
+      const shipment = await storage.createExportShipment({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       
       // Always create/update job_file_groups for new jobs
       const existingGroup = await storage.getJobFileGroupByJobRef(shipment.jobRef);
@@ -1627,7 +1651,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/custom-clearances", async (req, res) => {
     try {
       const validatedData = insertCustomClearanceSchema.parse(req.body);
-      const clearance = await storage.createCustomClearance(validatedData);
+      const clearance = await storage.createCustomClearance({
+        ...validatedData,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       
       // Sync documents to job_file_groups
       const allDocs = [
@@ -2174,7 +2201,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create invoice
   app.post("/api/invoices", async (req, res) => {
     try {
-      const invoice = await storage.createInvoice(req.body);
+      const invoice = await storage.createInvoice({
+        ...req.body,
+        createdBy: (req.user as User | undefined)?.id
+      } as any);
       
       // Update the invoice customer status indicator for the job
       const { jobType, jobId } = req.body;
