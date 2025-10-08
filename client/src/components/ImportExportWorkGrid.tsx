@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { type ImportShipment, type ExportShipment, type ImportCustomer, type ExportCustomer, type ExportReceiver, type User, type Haulier } from "@shared/schema"
-import { Search } from "lucide-react"
+import { Search, X, Plus } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
@@ -12,7 +13,11 @@ import { useLocation } from "wouter"
 
 export function ImportExportWorkGrid() {
   const [searchText, setSearchText] = useState("")
-  const [excludeFilter, setExcludeFilter] = useState("")
+  const [excludeInputValue, setExcludeInputValue] = useState("")
+  const [excludedCustomers, setExcludedCustomers] = useState<string[]>(() => {
+    const saved = localStorage.getItem('excludedCustomers')
+    return saved ? JSON.parse(saved) : []
+  })
   const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active", "completed"])
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string; jobType: 'import' | 'export' } | null>(null)
   const [tempValue, setTempValue] = useState("")
@@ -22,6 +27,23 @@ export function ImportExportWorkGrid() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
+
+  // Save excluded customers to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('excludedCustomers', JSON.stringify(excludedCustomers))
+  }, [excludedCustomers])
+
+  const addExcludedCustomer = () => {
+    const name = excludeInputValue.trim()
+    if (name && !excludedCustomers.includes(name)) {
+      setExcludedCustomers([...excludedCustomers, name])
+      setExcludeInputValue("")
+    }
+  }
+
+  const removeExcludedCustomer = (name: string) => {
+    setExcludedCustomers(excludedCustomers.filter(n => n !== name))
+  }
 
   useEffect(() => {
     if (!editingCell) {
@@ -71,12 +93,6 @@ export function ImportExportWorkGrid() {
     queryKey: ["/api/hauliers"],
   })
 
-  // Parse exclude filter (comma-separated names)
-  const excludedNames = excludeFilter
-    .split(',')
-    .map(name => name.trim().toLowerCase())
-    .filter(name => name.length > 0)
-
   // Filter jobs: Exclude Container Shipments, Nisbets customers, and manually excluded customers
   const filteredJobs = [
     ...importShipments
@@ -85,8 +101,8 @@ export function ImportExportWorkGrid() {
         const customerName = customer?.companyName?.toLowerCase().trim() || ''
         
         // Check if customer matches any excluded name
-        const isExcluded = excludedNames.some(excludedName => 
-          customerName.includes(excludedName) || excludedName.includes(customerName)
+        const isExcluded = excludedCustomers.some(excludedName => 
+          customerName.includes(excludedName.toLowerCase().trim())
         )
         
         return job.containerShipment !== "Container Shipment" && 
@@ -100,8 +116,8 @@ export function ImportExportWorkGrid() {
         const customerName = customer?.companyName?.toLowerCase().trim() || ''
         
         // Check if customer matches any excluded name
-        const isExcluded = excludedNames.some(excludedName => 
-          customerName.includes(excludedName) || excludedName.includes(customerName)
+        const isExcluded = excludedCustomers.some(excludedName => 
+          customerName.includes(excludedName.toLowerCase().trim())
         )
         
         return job.containerShipment !== "Container Shipment" && 
@@ -353,29 +369,60 @@ export function ImportExportWorkGrid() {
         <CardTitle>Import / Export Work</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search and Filter Bar */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by job ref, customer, supplier, or container number..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="pl-9"
-              data-testid="input-search-import-export"
-            />
-          </div>
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by job ref, customer, supplier, or container number..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="pl-9"
+            data-testid="input-search-import-export"
+          />
         </div>
 
         {/* Exclude Filter and Job Status Buttons */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Exclude customers (comma-separated names)..."
-              value={excludeFilter}
-              onChange={(e) => setExcludeFilter(e.target.value)}
-              data-testid="input-exclude-filter"
-            />
+        <div className="flex items-start gap-4">
+          <div className="flex-1 space-y-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Add customer name to exclude..."
+                value={excludeInputValue}
+                onChange={(e) => setExcludeInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addExcludedCustomer()
+                  }
+                }}
+                data-testid="input-exclude-customer"
+              />
+              <Button
+                onClick={addExcludedCustomer}
+                variant="outline"
+                size="icon"
+                data-testid="button-add-exclude"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {excludedCustomers.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {excludedCustomers.map((name) => (
+                  <Badge key={name} variant="secondary" className="gap-1">
+                    {name}
+                    <button
+                      type="button"
+                      onClick={() => removeExcludedCustomer(name)}
+                      className="hover-elevate active-elevate-2 rounded-full"
+                      data-testid={`button-remove-${name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Button
