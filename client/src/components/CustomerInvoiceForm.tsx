@@ -253,7 +253,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
         
         // Shipping info
         setIdentifier(importJob.trailerOrContainerNumber || '')
-        setVesselName(importJob.vesselName || '')
+        setVesselName(importJob.vesselName || 'N/A')
         setDateOfShipment(importJob.dispatchDate || '')
         setPortLoading(importJob.departureCountry || '')
         setPortDischarge(importJob.portOfArrival || '')
@@ -309,7 +309,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
         
         // Shipping info
         setIdentifier(exportJob.trailerNo || '')
-        setVesselName(exportJob.vesselName || '')
+        setVesselName(exportJob.vesselName || 'N/A')
         setDateOfShipment(exportJob.dispatchDate || '')
         setPortLoading(exportJob.departureFrom || '')
         // Port discharge: try portOfArrival first, then deliveryAddress destination
@@ -698,7 +698,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             <CardContent>
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <Label htmlFor="identifier">Trailer/Cont No.</Label>
+                  <Label htmlFor="identifier">Identifier</Label>
                   <Input
                     id="identifier"
                     value={identifier}
@@ -707,7 +707,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                   />
                 </div>
                 <div>
-                  <Label htmlFor="vesselName">Vessel/Flight No.</Label>
+                  <Label htmlFor="vesselName">Vessel Name</Label>
                   <Input
                     id="vesselName"
                     value={vesselName}

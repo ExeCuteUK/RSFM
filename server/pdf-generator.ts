@@ -27,8 +27,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          // Logo positioned at Y=40
-          doc.image(logoPath, 50, 40, { width: 140 });
+          // Logo positioned at Y=30
+          doc.image(logoPath, 50, 30, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
@@ -37,7 +37,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Header - INVOICE Title (drawn second, so it appears on top of logo)
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
+         .text('INVOICE', 50, 30, { width: 140, align: 'center' });
 
       // Header - Company Details (right side with company name)
       doc.fontSize(9)
@@ -244,8 +244,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       
       doc.fontSize(7)
          .font('Helvetica')
-         .text('Trailer/Cont:', labelX, consignorY + 5)
-         .text('Vessel/Flight:', labelX, consignorY + 17)
+         .text('Identifier:', labelX, consignorY + 5)
+         .text('Vessel Name:', labelX, consignorY + 17)
          .text('Date:', labelX, consignorY + 29)
          .text('Port Load:', labelX, consignorY + 41)
          .text('Port Disch:', labelX, consignorY + 53)
@@ -269,7 +269,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.moveTo(50, consignorY + 100).lineTo(545, consignorY + 100).stroke();
 
       // Description of Charges Table - positioned immediately below consignor table
-      const chargesTableY = consignorY + 105; // Minimal gap below consignor table
+      const chargesTableY = consignorY + 110; // 5pt gap below consignor table
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
@@ -363,7 +363,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .font('Helvetica')
          .text(invoice.paymentTerms || 'PAYMENT - Due now, please remit to the above address', 50, yPosition, { width: 495 });
 
-      yPosition += 20;
+      yPosition += 40;
       doc.fontSize(7)
          .text('VAT No. GB 656 7314 17', 50, yPosition);
 
@@ -376,7 +376,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.text('Sort Code: 20 00 20', 50, yPosition + 50);
       doc.text('Account No: 69103569', 50, yPosition + 60);
 
-      doc.text('Thank you for your custom', 400, yPosition + 60);
+      doc.font('Helvetica-Bold')
+         .text('Thank you for your custom', 400, yPosition + 60);
 
       doc.end();
     } catch (error) {
