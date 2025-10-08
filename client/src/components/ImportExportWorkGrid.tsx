@@ -192,7 +192,14 @@ export function ImportExportWorkGrid() {
     }
     
     setEditingCell({ shipmentId, fieldName, jobType })
-    setTempValue(currentValue || "")
+    
+    // Format date fields to DD/MM/YY when editing
+    const dateFields = ['collectionDate', 'dispatchDate', 'importDateEtaPort', 'etaPortDate', 'deliveryDate', 'sendPodToCustomerStatusIndicatorTimestamp']
+    if (dateFields.includes(fieldName) && currentValue) {
+      setTempValue(formatDate(currentValue))
+    } else {
+      setTempValue(currentValue || "")
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent, shipmentId: string, fieldName: string, jobType: 'import' | 'export') => {
