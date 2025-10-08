@@ -23,21 +23,21 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       });
       doc.on('error', reject);
 
-      // Header - INVOICE Title (centered above RS logo) - moved to top
-      doc.fontSize(18)
-         .font('Helvetica-Bold')
-         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
-
-      // Header - RS Logo - positioned below INVOICE title
+      // Header - RS Logo (drawn first, so INVOICE text appears on top)
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          // Logo positioned at Y=40, moved up 20pts
+          // Logo positioned at Y=40
           doc.image(logoPath, 50, 40, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
       }
+
+      // Header - INVOICE Title (drawn second, so it appears on top of logo)
+      doc.fontSize(18)
+         .font('Helvetica-Bold')
+         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
 
       // Header - Company Details (right side with company name)
       doc.fontSize(9)
@@ -158,7 +158,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       });
 
       // Consignor/Consignee Section - dynamically positioned based on shipment table
-      const consignorY = shipmentY + 20; // Add spacing after shipment table
+      const consignorY = shipmentY + 35; // 15pt gap added above table
       doc.rect(50, consignorY, 495, 100)
          .stroke();
 
@@ -268,8 +268,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Horizontal line below the section
       doc.moveTo(50, consignorY + 100).lineTo(545, consignorY + 100).stroke();
 
-      // Description of Charges Table - dynamically positioned with gap above
-      const chargesTableY = consignorY + 115; // Position below consignor section with line gap
+      // Description of Charges Table - positioned immediately below consignor table
+      const chargesTableY = consignorY + 105; // Minimal gap below consignor table
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
@@ -352,8 +352,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text(`${invoice.total.toFixed(2)}`, 465, yPosition + 3)
          .text('GBP', 515, yPosition + 3);
 
-      // Payment terms and bank details
-      yPosition += 25;
+      // Payment terms and bank details - 20pt gap added above
+      yPosition += 45;
       if (yPosition > 700) {
         doc.addPage();
         yPosition = 50;
