@@ -195,80 +195,93 @@ function AppContent() {
       {user && (
         <>
           <WindowTaskbar />
-          {activeWindow && !activeWindow.isMinimized && (
-            <>
-              {activeWindow.type === 'email' && <DraggableEmailComposer />}
-              {activeWindow.type === 'import-shipment' && (
-                <ImportShipmentWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'export-shipment' && (
-                <ExportShipmentWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'custom-clearance' && (
-                <CustomClearanceWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'import-customer' && (
-                <ImportCustomerWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'export-customer' && (
-                <ExportCustomerWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'export-receiver' && (
-                <ExportReceiverWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'haulier' && (
-                <HaulierWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'shipping-line' && (
-                <ShippingLineWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'clearance-agent' && (
-                <ClearanceAgentWindow
-                  windowId={activeWindow.id}
-                  payload={activeWindow.payload}
-                  onSubmitSuccess={() => {}}
-                />
-              )}
-              {activeWindow.type === 'expense-invoice' && (
-                <ExpenseInvoiceWindow
-                  windowId={activeWindow.id}
-                />
-              )}
-              {activeWindow.type === 'customer-invoice' && <DraggableInvoiceWindow />}
-            </>
-          )}
+          {windows.map((window) => {
+            const isActive = activeWindow?.id === window.id;
+            const zIndex = isActive ? 50 : 40;
+            const visibility = window.isMinimized ? 'hidden' : 'visible';
+            
+            return (
+              <div
+                key={window.id}
+                style={{
+                  position: 'fixed',
+                  zIndex,
+                  visibility,
+                }}
+              >
+                {window.type === 'email' && <DraggableEmailComposer />}
+                {window.type === 'import-shipment' && (
+                  <ImportShipmentWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'export-shipment' && (
+                  <ExportShipmentWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'custom-clearance' && (
+                  <CustomClearanceWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'import-customer' && (
+                  <ImportCustomerWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'export-customer' && (
+                  <ExportCustomerWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'export-receiver' && (
+                  <ExportReceiverWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'haulier' && (
+                  <HaulierWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'shipping-line' && (
+                  <ShippingLineWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'clearance-agent' && (
+                  <ClearanceAgentWindow
+                    windowId={window.id}
+                    payload={window.payload}
+                    onSubmitSuccess={() => {}}
+                  />
+                )}
+                {window.type === 'expense-invoice' && (
+                  <ExpenseInvoiceWindow
+                    windowId={window.id}
+                  />
+                )}
+                {window.type === 'customer-invoice' && <DraggableInvoiceWindow />}
+              </div>
+            );
+          })}
         </>
       )}
     </SidebarProvider>
