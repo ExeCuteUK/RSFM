@@ -23,17 +23,17 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       });
       doc.on('error', reject);
 
-      // Header - INVOICE Title (centered above RS logo) - moved up to align with Exporters Ref
+      // Header - INVOICE Title (centered above RS logo) - positioned higher
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .text('INVOICE', 50, 30, { width: 140, align: 'center' });
+         .text('INVOICE', 50, 65, { width: 140, align: 'center' });
 
-      // Header - RS Logo - moved up, bottom aligns with Exporters Ref at Y=168
+      // Header - RS Logo - bottom edge aligns with Exporters Ref at Y=168
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          // Logo height is approximately 80pt at width 140, so position at Y=88 for bottom at ~168
-          doc.image(logoPath, 50, 88, { width: 140 });
+          // Logo height is approximately 70pt at width 140, position at Y=98 so bottom aligns at Y=168
+          doc.image(logoPath, 50, 98, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
@@ -268,8 +268,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Horizontal line below the section
       doc.moveTo(50, consignorY + 100).lineTo(545, consignorY + 100).stroke();
 
-      // Description of Charges Table - dynamically positioned
-      const chargesTableY = consignorY + 120; // Position below consignor section with spacing
+      // Description of Charges Table - dynamically positioned, gap removed
+      const chargesTableY = consignorY + 105; // Position below consignor section with minimal spacing
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
@@ -299,14 +299,14 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
           yPosition = 50;
         }
 
-        const rowHeight = 9; // Reduced from 18 to 9 (50% reduction)
+        const rowHeight = 11; // Increased for better readability
 
         doc.fillColor('#000000')
            .fontSize(8)
-           .text(item.description, 55, yPosition + 2, { width: 290 })
-           .text(`${parseFloat(item.chargeAmount || '0').toFixed(2)}`, 380, yPosition + 2)
-           .text(`${parseFloat(item.vatAmount || '0').toFixed(2)}`, 465, yPosition + 2)
-           .text(item.vatCode, 520, yPosition + 2);
+           .text(item.description, 55, yPosition + 3, { width: 290 })
+           .text(`${parseFloat(item.chargeAmount || '0').toFixed(2)}`, 380, yPosition + 3)
+           .text(`${parseFloat(item.vatAmount || '0').toFixed(2)}`, 465, yPosition + 3)
+           .text(item.vatCode, 520, yPosition + 3);
 
         yPosition += rowHeight;
       });
@@ -323,7 +323,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text('Code', 50, yPosition)
          .text('VAT RATE', 140, yPosition)
          .text('INVOICE TOTAL', 360, yPosition)
-         .text(`${invoice.subtotal.toFixed(2)}`, 460, yPosition);
+         .text(`${invoice.subtotal.toFixed(2)}`, 465, yPosition);
 
       yPosition += 12;
       doc.fontSize(8)
@@ -335,7 +335,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.text('2', 50, yPosition)
          .text('20.00% STANDARD', 140, yPosition)
          .text('VAT TOTAL', 360, yPosition)
-         .text(`${invoice.vat.toFixed(2)}`, 460, yPosition);
+         .text(`${invoice.vat.toFixed(2)}`, 465, yPosition);
 
       yPosition += 10;
       doc.text('3', 50, yPosition)
@@ -349,7 +349,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .fontSize(9)
          .font('Helvetica-Bold')
          .text('GRAND TOTAL', 360, yPosition + 3)
-         .text(`${invoice.total.toFixed(2)}`, 460, yPosition + 3)
+         .text(`${invoice.total.toFixed(2)}`, 465, yPosition + 3)
          .text('GBP', 515, yPosition + 3);
 
       // Payment terms and bank details
