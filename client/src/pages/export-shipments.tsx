@@ -537,7 +537,7 @@ export default function ExportShipments() {
         body: body,
         attachments: invoiceFiles,
         metadata: {
-          source: 'send-invoice-customer',
+          source: 'send-invoice-customer-export',
           shipmentId: shipment.id
         }
       })
@@ -599,7 +599,7 @@ export default function ExportShipments() {
       body: body,
       attachments: invoiceFiles,
       metadata: {
-        source: 'send-invoice-customer',
+        source: 'send-invoice-customer-export',
         shipmentId: shipment.id
       }
     })

@@ -115,6 +115,18 @@ export function DraggableEmailComposer() {
             // Update Send Haulier EAD status to Green (3)
             await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-haulier-ead-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+          } else if (source === 'send-invoice-customer') {
+            // Update Invoice Customer status to Green (3) for import shipments
+            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/invoice-customer-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+          } else if (source === 'send-invoice-customer-export') {
+            // Update Invoice Customer status to Green (3) for export shipments
+            await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/invoice-customer-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
+          } else if (source === 'send-invoice-customer-clearance') {
+            // Update Invoice Customer status to Green (3) for custom clearances
+            await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/invoice-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           }
         } catch (error) {
           console.error('Failed to update status:', error);

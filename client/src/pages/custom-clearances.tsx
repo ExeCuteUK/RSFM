@@ -409,7 +409,7 @@ export default function CustomClearances() {
         body: body,
         attachments: invoiceFiles,
         metadata: {
-          source: 'send-invoice-customer',
+          source: 'send-invoice-customer-clearance',
           shipmentId: clearance.id
         }
       })
@@ -480,7 +480,7 @@ export default function CustomClearances() {
       body: body,
       attachments: invoiceFiles,
       metadata: {
-        source: 'send-invoice-customer',
+        source: 'send-invoice-customer-clearance',
         shipmentId: clearance.id
       }
     })
