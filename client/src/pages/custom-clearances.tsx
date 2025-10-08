@@ -1510,71 +1510,73 @@ export default function CustomClearances() {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-2 pt-2 border-t">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-medium text-muted-foreground">R.S Invoice & Credits</p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-2"
-                              onClick={() => setInvoiceClearance(clearance)}
-                              data-testid={`button-create-invoice-${clearance.id}`}
-                            >
-                              <Plus className="h-3 w-3 mr-1" />
-                              <span className="text-xs">Invoice</span>
-                            </Button>
+                      {!clearance.createdFromId && (
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-medium text-muted-foreground">R.S Invoice & Credits</p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2"
+                                onClick={() => setInvoiceClearance(clearance)}
+                                data-testid={`button-create-invoice-${clearance.id}`}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                <span className="text-xs">Invoice</span>
+                              </Button>
+                            </div>
+                            {(() => {
+                              const clearanceInvoices = allInvoices.filter(inv => 
+                                inv.jobRef === clearance.jobRef && inv.jobType === 'clearance' && inv.jobId === clearance.id
+                              )
+                              return clearanceInvoices.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-1">
+                                  {clearanceInvoices.map((invoice) => {
+                                    const isCredit = invoice.type === 'credit_note'
+                                    const prefix = isCredit ? 'CR' : 'INV'
+                                    const colorClass = isCredit ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                                    return (
+                                    <div key={invoice.id} className="flex items-center gap-1 group">
+                                      <span
+                                        className={`text-xs ${colorClass} hover:underline cursor-pointer truncate flex-1`}
+                                        title={`${prefix} ${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
+                                      >
+                                        {prefix} {invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
+                                      </span>
+                                      <button
+                                        onClick={() => setEditingInvoice({ invoice, clearance })}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-edit-invoice-${invoice.id}`}
+                                      >
+                                        <Pencil className="h-3 w-3 text-primary hover:text-primary/80" />
+                                      </button>
+                                      <button
+                                        onClick={() => setDeletingInvoice(invoice)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-delete-invoice-${invoice.id}`}
+                                      >
+                                        <Trash2 className="h-3 w-3 text-destructive hover:text-destructive/80" />
+                                      </button>
+                                      <a
+                                        href={`/api/invoices/${invoice.id}/pdf`}
+                                        download={`RS Invoice - ${invoice.jobRef}.pdf`}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-download-invoice-${invoice.id}`}
+                                      >
+                                        <FileOutput className="h-3 w-3 text-primary hover:text-primary/80" />
+                                      </a>
+                                    </div>
+                                    )
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground italic">None</p>
+                              )
+                            })()}
                           </div>
-                          {(() => {
-                            const clearanceInvoices = allInvoices.filter(inv => 
-                              inv.jobRef === clearance.jobRef && inv.jobType === 'clearance' && inv.jobId === clearance.id
-                            )
-                            return clearanceInvoices.length > 0 ? (
-                              <div className="grid grid-cols-2 gap-1">
-                                {clearanceInvoices.map((invoice) => {
-                                  const isCredit = invoice.type === 'credit_note'
-                                  const prefix = isCredit ? 'CR' : 'INV'
-                                  const colorClass = isCredit ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
-                                  return (
-                                  <div key={invoice.id} className="flex items-center gap-1 group">
-                                    <span
-                                      className={`text-xs ${colorClass} hover:underline cursor-pointer truncate flex-1`}
-                                      title={`${prefix} ${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
-                                    >
-                                      {prefix} {invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
-                                    </span>
-                                    <button
-                                      onClick={() => setEditingInvoice({ invoice, clearance })}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                      data-testid={`button-edit-invoice-${invoice.id}`}
-                                    >
-                                      <Pencil className="h-3 w-3 text-primary hover:text-primary/80" />
-                                    </button>
-                                    <button
-                                      onClick={() => setDeletingInvoice(invoice)}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                      data-testid={`button-delete-invoice-${invoice.id}`}
-                                    >
-                                      <Trash2 className="h-3 w-3 text-destructive hover:text-destructive/80" />
-                                    </button>
-                                    <a
-                                      href={`/api/invoices/${invoice.id}/pdf`}
-                                      download={`RS Invoice - ${invoice.jobRef}.pdf`}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                      data-testid={`button-download-invoice-${invoice.id}`}
-                                    >
-                                      <FileOutput className="h-3 w-3 text-primary hover:text-primary/80" />
-                                    </a>
-                                  </div>
-                                  )
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-muted-foreground italic">None</p>
-                            )
-                          })()}
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
