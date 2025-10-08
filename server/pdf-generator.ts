@@ -23,40 +23,52 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       });
       doc.on('error', reject);
 
+      // Header - INVOICE Title (centered above RS logo)
+      doc.fontSize(18)
+         .font('Helvetica-Bold')
+         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
+
       // Header - RS Logo
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          doc.image(logoPath, 50, 45, { width: 140 });
+          doc.image(logoPath, 50, 65, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
       }
 
-      // Header - INVOICE Title
-      doc.fontSize(18)
+      // Header - Company Details (right side with company name)
+      doc.fontSize(9)
          .font('Helvetica-Bold')
-         .text('INVOICE', 220, 50);
-
-      // Header - Company Details (right side)
+         .text('R.S. International Freight Ltd', 400, 40);
+      
       doc.fontSize(9)
          .font('Helvetica')
-         .text('10b Hornsby Square', 400, 50)
-         .text('Landon', 400, 62)
-         .text('Essex, SS15 6SD', 400, 74)
-         .text('Tel: 01708 865000', 400, 90)
-         .text('Fax: 01708 865010', 400, 102);
+         .text('10b Hornsby Square', 400, 54)
+         .text('Landon', 400, 66)
+         .text('Essex, SS15 6SD', 400, 78)
+         .text('Tel: 01708 865000', 400, 94)
+         .text('Fax: 01708 865010', 400, 106);
 
-      // Invoice Details (right side below company details)
+      // Invoice Details (right side below company details) - with aligned values
+      const valueX = 490; // Align all values at this X position
+      
       doc.fontSize(10)
          .font('Helvetica-Bold')
-         .text(`Invoice No. ${invoice.invoiceNumber}`, 400, 125);
+         .text('Invoice No.', 400, 129);
+      doc.text(invoice.invoiceNumber.toString(), valueX, 129);
 
       doc.fontSize(9)
          .font('Helvetica')
-         .text(`Date/Tax Point : ${new Date(invoice.taxPointDate || invoice.invoiceDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })}`, 400, 140)
-         .text(`Our Ref : ${invoice.ourRef || invoice.jobRef}`, 400, 152)
-         .text(`Exporters Ref : ${invoice.exportersRef || ''}`, 400, 164);
+         .text('Date/Tax Point :', 400, 144);
+      doc.text(new Date(invoice.taxPointDate || invoice.invoiceDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }), valueX, 144);
+      
+      doc.text('Our Ref :', 400, 156);
+      doc.text(invoice.ourRef || invoice.jobRef || '', valueX, 156);
+      
+      doc.text('Exporters Ref :', 400, 168);
+      doc.text(invoice.exportersRef || '', valueX, 168);
 
       // BIFA Logo placeholder (top right) - Add BIFA logo image here if available
       const bifaPath = path.join(process.cwd(), 'attached_assets', 'bifa-logo.jpg');
@@ -73,7 +85,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .font('Helvetica-Bold')
          .text('INVOICE TO', 50, 200);
 
-      doc.rect(50, 215, 280, 60)
+      doc.rect(50, 215, 280, 80)
          .stroke();
 
       doc.fontSize(9)
@@ -86,10 +98,17 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       }
       
       if (invoice.customerAddress) {
-        const addressLines = invoice.customerAddress.split('\n').slice(0, 3);
+        // Filter out UK/United Kingdom from address
+        const filteredAddress = invoice.customerAddress
+          .replace(/,?\s*(UK|United Kingdom)\s*$/im, '')
+          .replace(/\n\s*(UK|United Kingdom)\s*$/im, '');
+        
+        const addressLines = filteredAddress.split('\n').filter(line => line.trim());
         addressLines.forEach(line => {
-          doc.text(line.trim(), 55, invoiceToY);
-          invoiceToY += 12;
+          if (invoiceToY < 285) { // Ensure we don't overflow the box
+            doc.text(line.trim(), 55, invoiceToY);
+            invoiceToY += 10;
+          }
         });
       }
 
@@ -97,8 +116,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       if (invoice.customerVatNumber) {
         doc.fontSize(8)
            .font('Helvetica')
-           .text(`VAT No.`, 55, 263)
-           .text(invoice.customerVatNumber, 85, 263);
+           .text(`VAT No.`, 55, 283)
+           .text(invoice.customerVatNumber, 85, 283);
       }
 
       // Shipment Details Table (No Packages, Commodity, KGS, CBM)
@@ -135,7 +154,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       doc.rect(50, consignorY, 495, 100)
          .stroke();
 
-      // Consignor column
+      // Consignor column (left)
       doc.fontSize(8)
          .font('Helvetica-Bold')
          .text('CONSIGNOR', 55, consignorY + 5);
@@ -145,37 +164,49 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       
       let consignorTextY = consignorY + 20;
       if (invoice.consignorName) {
-        doc.text(invoice.consignorName, 55, consignorTextY, { width: 190 });
+        doc.text(invoice.consignorName, 55, consignorTextY, { width: 185 });
         consignorTextY += 12;
       }
       if (invoice.consignorAddress) {
-        const consignorLines = invoice.consignorAddress.split('\n').slice(0, 5);
+        // Filter out UK/United Kingdom from consignor address for export jobs
+        let filteredConsignorAddress = invoice.consignorAddress;
+        if (invoice.jobType === 'export') {
+          filteredConsignorAddress = invoice.consignorAddress
+            .replace(/,?\s*(UK|United Kingdom)\s*$/im, '')
+            .replace(/\n\s*(UK|United Kingdom)\s*$/im, '');
+        }
+        
+        const consignorLines = filteredConsignorAddress.split('\n').filter(line => line.trim()).slice(0, 5);
         consignorLines.forEach(line => {
           if (consignorTextY < consignorY + 95) {
-            doc.text(line.trim(), 55, consignorTextY, { width: 190 });
+            doc.text(line.trim(), 55, consignorTextY, { width: 185 });
             consignorTextY += 10;
           }
         });
       }
 
-      // Shipping details column (middle)
+      // Shipping details column (middle) - labels on left, values on right
       const middleX = 250;
+      const middleValueX = 355; // Values aligned at this X position
+      
       doc.fontSize(7)
          .font('Helvetica')
-         .text('TRAILER/CONT NO.', middleX, consignorY + 5)
-         .text('VESSEL/FLIGHT NO.', middleX, consignorY + 20)
-         .text('DATE OF SHIPMENT', middleX, consignorY + 35)
-         .text('PORT DISCHARGE', middleX, consignorY + 50)
-         .text('DELIVERY TERMS', middleX, consignorY + 65)
-         .text('DESTINATION', middleX, consignorY + 80);
+         .text('TRAILER/CONT. NO.', middleX, consignorY + 5)
+         .text('VESSEL/FLIGHT NO.', middleX, consignorY + 18)
+         .text('DATE OF SHIPMENT', middleX, consignorY + 31)
+         .text('PORT OF LOADING', middleX, consignorY + 44)
+         .text('PORT DISCHARGE', middleX, consignorY + 57)
+         .text('DELIVERY TERMS', middleX, consignorY + 70)
+         .text('DESTINATION', middleX, consignorY + 83);
 
       doc.font('Helvetica-Bold')
-         .text(invoice.trailerContainerNo || 'TBA', middleX + 95, consignorY + 5)
-         .text(invoice.vesselFlightNo || 'FAV', middleX + 95, consignorY + 20)
-         .text(invoice.dateOfShipment ? new Date(invoice.dateOfShipment).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '', middleX + 95, consignorY + 35)
-         .text(invoice.portLoading || 'Calais', middleX + 95, consignorY + 50)
-         .text(invoice.portDischarge || '', middleX + 95, consignorY + 65)
-         .text(invoice.deliveryTerms || '', middleX + 95, consignorY + 80);
+         .text(invoice.trailerContainerNo || 'TBA', middleValueX, consignorY + 5)
+         .text(invoice.vesselFlightNo || 'FAV', middleValueX, consignorY + 18)
+         .text(invoice.dateOfShipment ? new Date(invoice.dateOfShipment).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '', middleValueX, consignorY + 31)
+         .text(invoice.portLoading || '', middleValueX, consignorY + 44)
+         .text(invoice.portDischarge || '', middleValueX, consignorY + 57)
+         .text(invoice.deliveryTerms || '', middleValueX, consignorY + 70)
+         .text(invoice.destination || '', middleValueX, consignorY + 83);
 
       // Consignee column (right)
       doc.fontSize(8)
@@ -191,19 +222,29 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         consigneeTextY += 12;
       }
       if (invoice.consigneeAddress) {
-        const consigneeLines = invoice.consigneeAddress.split('\n').slice(0, 5);
+        // Filter address based on job type
+        let filteredConsigneeAddress = invoice.consigneeAddress;
+        if (invoice.jobType === 'import') {
+          // For import jobs, remove all country info
+          filteredConsigneeAddress = invoice.consigneeAddress
+            .split('\n')
+            .filter(line => line.trim())
+            .slice(0, -1) // Remove last line (usually country)
+            .join('\n');
+        } else {
+          // For export jobs, remove only UK/United Kingdom
+          filteredConsigneeAddress = invoice.consigneeAddress
+            .replace(/,?\s*(UK|United Kingdom)\s*$/im, '')
+            .replace(/\n\s*(UK|United Kingdom)\s*$/im, '');
+        }
+        
+        const consigneeLines = filteredConsigneeAddress.split('\n').filter(line => line.trim()).slice(0, 5);
         consigneeLines.forEach(line => {
           if (consigneeTextY < consignorY + 95) {
             doc.text(line.trim(), 410, consigneeTextY, { width: 130 });
             consigneeTextY += 10;
           }
         });
-      }
-      
-      if (invoice.destination) {
-        doc.fontSize(8)
-           .font('Helvetica')
-           .text(invoice.destination, 410, consignorY + 85, { width: 130 });
       }
 
       // Vertical dividers in consignor section
@@ -262,31 +303,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         yPosition += rowHeight;
       });
 
-      // Totals section
+      // VAT CODE legend (no totals here - they come after the legend)
       yPosition += 10;
-      
-      doc.fontSize(9)
-         .font('Helvetica-Bold')
-         .text('INVOICE TOTAL', 360, yPosition)
-         .text(`${invoice.subtotal.toFixed(2)}`, 460, yPosition);
-
-      yPosition += 15;
-      doc.text('VAT TOTAL', 360, yPosition)
-         .text(`${invoice.vat.toFixed(2)}`, 460, yPosition);
-
-      yPosition += 20;
-      doc.rect(350, yPosition, 195, 20)
-         .fillAndStroke('#f0f0f0', '#000000');
-
-      doc.fillColor('#000000')
-         .fontSize(10)
-         .font('Helvetica-Bold')
-         .text('GRAND TOTAL', 360, yPosition + 5)
-         .text(`${invoice.total.toFixed(2)}`, 460, yPosition + 5)
-         .text('PDS STERLING', 490, yPosition + 5);
-
-      // VAT CODE legend
-      yPosition += 35;
       if (yPosition > 720) {
         doc.addPage();
         yPosition = 50;
@@ -294,7 +312,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
 
       doc.fontSize(8)
          .font('Helvetica-Bold')
-         .text('VAT CODE', 50, yPosition)
+         .text('Code', 50, yPosition)
          .text('VAT RATE', 140, yPosition)
          .text('INVOICE TOTAL', 360, yPosition)
          .text(`${invoice.subtotal.toFixed(2)}`, 460, yPosition);
@@ -324,7 +342,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .font('Helvetica-Bold')
          .text('GRAND TOTAL', 360, yPosition + 3)
          .text(`${invoice.total.toFixed(2)}`, 460, yPosition + 3)
-         .text('PDS STERLING', 490, yPosition + 3);
+         .text('(£)GBP', 515, yPosition + 3);
 
       // Payment terms and bank details
       yPosition += 25;
