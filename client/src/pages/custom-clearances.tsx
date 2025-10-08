@@ -1156,11 +1156,6 @@ export default function CustomClearances() {
                           data-testid={`text-job-ref-${clearance.id}`}
                         >
                           {clearance.jobRef}
-                          {clearance.etaPort && (
-                            <span className="ml-3 font-semibold text-lg" data-testid={`text-eta-${clearance.id}`}>
-                              ETA: {formatDate(clearance.etaPort)}
-                            </span>
-                          )}
                         </h3>
                         <div className="flex -space-x-1">
                           <Button
@@ -1249,9 +1244,16 @@ export default function CustomClearances() {
                   </div>
                   <div className="space-y-1 text-xs">
                     {clearance.trailerOrContainerNumber && (
-                      <p className="text-lg font-semibold" data-testid={`text-trailer-${clearance.id}`}>
-                        {clearance.trailerOrContainerNumber}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-semibold" data-testid={`text-trailer-${clearance.id}`}>
+                          {clearance.trailerOrContainerNumber}
+                        </p>
+                        {clearance.etaPort && (
+                          <p className="text-lg font-semibold text-right" data-testid={`text-eta-${clearance.id}`}>
+                            ETA: {formatDate(clearance.etaPort)}
+                          </p>
+                        )}
+                      </div>
                     )}
                     {clearance.portOfArrival && (
                       <p data-testid={`text-port-${clearance.id}`}>
