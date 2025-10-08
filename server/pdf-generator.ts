@@ -123,7 +123,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       }
 
       // Shipment Details Table (No Packages, Commodity, KGS, CBM) - No border - reduced gap
-      const shipmentTableY = 288;
+      const shipmentTableY = 278;
 
       // Table headers (no border)
       doc.fontSize(8)
@@ -264,14 +264,14 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text(invoice.destination || '', shippingValueX, consignorY + 77, { width: 95 });
 
       // Vertical dividers in consignor section (equal spacing)
-      doc.moveTo(col2X, consignorY).lineTo(col2X, consignorY + 82).stroke();
-      doc.moveTo(col3X, consignorY).lineTo(col3X, consignorY + 82).stroke();
+      doc.moveTo(col2X, consignorY).lineTo(col2X, consignorY + 88).stroke();
+      doc.moveTo(col3X, consignorY).lineTo(col3X, consignorY + 88).stroke();
       
       // Horizontal line below the section
-      doc.moveTo(50, consignorY + 82).lineTo(545, consignorY + 82).stroke();
+      doc.moveTo(50, consignorY + 88).lineTo(545, consignorY + 88).stroke();
 
       // Description of Charges Table - positioned immediately below consignor table
-      const chargesTableY = consignorY + 92; // 10pt gap below consignor table
+      const chargesTableY = consignorY + 98; // 10pt gap below consignor table
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
@@ -365,7 +365,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .font('Helvetica')
          .text(invoice.paymentTerms || 'PAYMENT - Due now, please remit to the above address', 50, yPosition, { width: 495 });
 
-      yPosition += 40;
+      yPosition += 20;
       doc.fontSize(7)
          .text('VAT No. GB 656 7314 17', 50, yPosition);
 
