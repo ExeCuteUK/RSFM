@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import {
@@ -50,6 +51,8 @@ export default function ExportShipments() {
   const [invoiceShipment, setInvoiceShipment] = useState<ExportShipment | null>(null)
   const [editingInvoice, setEditingInvoice] = useState<{ invoice: Invoice; shipment: ExportShipment } | null>(null)
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
+  const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ shipment: ExportShipment; invoices: Invoice[] } | null>(null)
+  const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
   const { toast} = useToast()
   const [, setLocation] = useLocation()
   
@@ -495,6 +498,12 @@ export default function ExportShipments() {
         return
       }
 
+      // If multiple invoices, show selection dialog
+      if (shipmentInvoices.length > 1) {
+        setInvoiceSelectionDialog({ shipment, invoices: shipmentInvoices })
+        return
+      }
+
       // Build email recipient data (handle both array and legacy string formats)
       const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
         ? shipment.jobContactEmail 
@@ -539,6 +548,63 @@ export default function ExportShipments() {
         variant: "destructive",
       })
     }
+  }
+
+  const handleConfirmInvoiceSelection = () => {
+    if (!invoiceSelectionDialog) return
+    
+    const { shipment, invoices } = invoiceSelectionDialog
+    const selectedInvoiceObjects = invoices.filter(inv => selectedInvoices.includes(inv.id))
+    
+    if (selectedInvoiceObjects.length === 0) {
+      toast({
+        title: "No Invoices Selected",
+        description: "Please select at least one invoice to attach.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Build email recipient data (handle both array and legacy string formats)
+    const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
+      ? shipment.jobContactEmail 
+      : (shipment.jobContactEmail ? [shipment.jobContactEmail] : [])
+    const jobContactEmail = jobContactEmailArray[0] || ""
+    const ccEmails = jobContactEmailArray.slice(1).join(", ")
+    
+    // Build subject
+    const jobRef = shipment.jobRef || "N/A"
+    const customerRef = shipment.customerReferenceNumber
+    
+    // Conditionally include "Your Ref" only if customerRef exists
+    const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
+    const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
+    
+    const body = "Please find attached our Invoice."
+    
+    // Get invoice PDF paths - use the API endpoint for downloading invoices
+    const invoiceFiles = selectedInvoiceObjects.map(invoice => 
+      `/api/invoices/${invoice.id}/pdf`
+    )
+    
+    // Open email composer
+    openEmailComposer({
+      id: `email-${Date.now()}`,
+      to: jobContactEmail,
+      cc: ccEmails,
+      bcc: "",
+      subject: subject,
+      body: body,
+      attachments: invoiceFiles,
+      metadata: {
+        source: 'send-invoice-customer',
+        shipmentId: shipment.id
+      }
+    })
+    
+    // Close dialog
+    setInvoiceSelectionDialog(null)
+    setSelectedInvoices([])
   }
 
   const handleSendPodToCustomerEmail = (shipment: ExportShipment) => {
@@ -2038,6 +2104,53 @@ Hope all is OK.`
         onOpenChange={(open) => !open && setEditingInvoice(null)}
         existingInvoice={editingInvoice?.invoice || null}
       />
+
+      {/* Invoice Selection Dialog */}
+      <Dialog open={!!invoiceSelectionDialog} onOpenChange={(open) => !open && setInvoiceSelectionDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Invoices to Attach</DialogTitle>
+            <DialogDescription>Choose which invoices to attach to the email</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {invoiceSelectionDialog?.invoices.map((invoice) => {
+              const isCredit = invoice.type === 'credit_note'
+              const prefix = isCredit ? 'CR' : 'INV'
+              const colorClass = isCredit ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+              return (
+                <div key={invoice.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`invoice-${invoice.id}`}
+                    checked={selectedInvoices.includes(invoice.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedInvoices([...selectedInvoices, invoice.id])
+                      } else {
+                        setSelectedInvoices(selectedInvoices.filter(id => id !== invoice.id))
+                      }
+                    }}
+                    data-testid={`checkbox-invoice-${invoice.id}`}
+                  />
+                  <label
+                    htmlFor={`invoice-${invoice.id}`}
+                    className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer ${colorClass}`}
+                  >
+                    {prefix} {invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
+                  </label>
+                </div>
+              )
+            })}
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setInvoiceSelectionDialog(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmInvoiceSelection} data-testid="confirm-invoice-selection">
+              Attach Selected
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Invoice Confirmation Dialog */}
       <AlertDialog open={!!deletingInvoice} onOpenChange={(open) => !open && setDeletingInvoice(null)}>
