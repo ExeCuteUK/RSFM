@@ -27,8 +27,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          // Logo positioned at Y=50
-          doc.image(logoPath, 50, 50, { width: 140 });
+          // Logo positioned at Y=40
+          doc.image(logoPath, 50, 40, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
@@ -37,7 +37,7 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       // Header - INVOICE Title (drawn second, so it appears on top of logo)
       doc.fontSize(18)
          .font('Helvetica-Bold')
-         .text('INVOICE', 50, 50, { width: 140, align: 'center' });
+         .text('INVOICE', 50, 40, { width: 140, align: 'center' });
 
       // Header - Company Details (right side with company name)
       doc.fontSize(9)
