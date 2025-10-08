@@ -254,15 +254,14 @@ export function ImportExportWorkGrid() {
   // Get row color based on haulier status
   const getRowColor = (job: ImportShipment | ExportShipment) => {
     const ead = job.sendHaulierEadStatusIndicator
-    const gvms = job.sendHaulierGvmsStatusIndicator
     
-    // Green if either status is 3 (completed)
-    if (ead === 3 || gvms === 3) {
+    // Green if status is 3 (completed)
+    if (ead === 3) {
       return 'bg-green-100 dark:bg-green-900'
     }
     
-    // Yellow if either status is pending (2 for EAD, 1 for GVMS, or other values)
-    if (ead === 2 || ead === 1 || gvms === 2 || gvms === 1) {
+    // Yellow if status is pending (2 or 1)
+    if (ead === 2 || ead === 1) {
       return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
     }
     
