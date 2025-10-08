@@ -130,13 +130,31 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text('KGS', 410, shipmentTableY)
          .text('CBM', 465, shipmentTableY);
 
-      // Shipment data
+      // Shipment data - display multiple lines if available
       doc.fontSize(9)
-         .font('Helvetica')
-         .text(invoice.numberOfPackages ? `${invoice.numberOfPackages} ${invoice.packingType || ''}`.trim() : '', 50, shipmentTableY + 15, { width: 90 })
-         .text(invoice.commodity || '', 150, shipmentTableY + 15, { width: 250 })
-         .text(invoice.kgs || '', 410, shipmentTableY + 15)
-         .text(invoice.cbm || '', 465, shipmentTableY + 15);
+         .font('Helvetica');
+      
+      const shipmentLines = invoice.shipmentLines && invoice.shipmentLines.length > 0 
+        ? invoice.shipmentLines 
+        : [{
+            numberOfPackages: invoice.numberOfPackages || '',
+            packingType: invoice.packingType || '',
+            commodity: invoice.commodity || '',
+            kgs: invoice.kgs || '',
+            cbm: invoice.cbm || ''
+          }];
+      
+      let shipmentY = shipmentTableY + 15;
+      shipmentLines.forEach((line: any, index: number) => {
+        if (index < 3) { // Limit to 3 lines maximum
+          const packagesText = line.numberOfPackages ? `${line.numberOfPackages} ${line.packingType || ''}`.trim() : '';
+          doc.text(packagesText, 50, shipmentY, { width: 90 })
+             .text(line.commodity || '', 150, shipmentY, { width: 250 })
+             .text(line.kgs || '', 410, shipmentY)
+             .text(line.cbm || '', 465, shipmentY);
+          shipmentY += 12; // Space between lines
+        }
+      });
 
       // Consignor/Consignee Section
       const consignorY = 355;
@@ -174,40 +192,17 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         });
       }
 
-      // Shipping details column (middle) - labels on left, values on right
-      const middleX = 250;
-      const middleValueX = 355; // Values aligned at this X position
-      
-      doc.fontSize(7)
-         .font('Helvetica')
-         .text('TRAILER/CONT. NO.', middleX, consignorY + 5)
-         .text('VESSEL/FLIGHT NO.', middleX, consignorY + 18)
-         .text('DATE OF SHIPMENT', middleX, consignorY + 31)
-         .text('PORT OF LOADING', middleX, consignorY + 44)
-         .text('PORT DISCHARGE', middleX, consignorY + 57)
-         .text('DELIVERY TERMS', middleX, consignorY + 70)
-         .text('DESTINATION', middleX, consignorY + 83);
-
-      doc.font('Helvetica-Bold')
-         .text(invoice.trailerContainerNo || 'TBA', middleValueX, consignorY + 5)
-         .text(invoice.vesselFlightNo || 'FAV', middleValueX, consignorY + 18)
-         .text(invoice.dateOfShipment ? new Date(invoice.dateOfShipment).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '', middleValueX, consignorY + 31)
-         .text(invoice.portLoading || '', middleValueX, consignorY + 44)
-         .text(invoice.portDischarge || '', middleValueX, consignorY + 57)
-         .text(invoice.deliveryTerms || '', middleValueX, consignorY + 70)
-         .text(invoice.destination || '', middleValueX, consignorY + 83);
-
-      // Consignee column (right)
+      // Consignee column (middle)
       doc.fontSize(8)
          .font('Helvetica-Bold')
-         .text('CONSIGNEE', 410, consignorY + 5);
+         .text('CONSIGNEE', 250, consignorY + 5);
 
       doc.fontSize(8)
          .font('Helvetica');
       
       let consigneeTextY = consignorY + 20;
       if (invoice.consigneeName) {
-        doc.text(invoice.consigneeName, 410, consigneeTextY, { width: 130 });
+        doc.text(invoice.consigneeName, 250, consigneeTextY, { width: 150 });
         consigneeTextY += 12;
       }
       if (invoice.consigneeAddress) {
@@ -230,11 +225,49 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         const consigneeLines = filteredConsigneeAddress.split('\n').filter(line => line.trim()).slice(0, 5);
         consigneeLines.forEach(line => {
           if (consigneeTextY < consignorY + 95) {
-            doc.text(line.trim(), 410, consigneeTextY, { width: 130 });
+            doc.text(line.trim(), 250, consigneeTextY, { width: 150 });
             consigneeTextY += 10;
           }
         });
       }
+
+      // Shipping details column (right) - stacked label above value
+      const rightX = 410;
+      let rightY = consignorY + 5;
+      
+      // Trailer/Container
+      doc.fontSize(6).font('Helvetica').text('Trailer/Cont:', rightX, rightY);
+      doc.fontSize(7).font('Helvetica-Bold').text(invoice.trailerContainerNo || 'TBA', rightX, rightY + 7, { width: 135 });
+      rightY += 14;
+      
+      // Vessel/Flight
+      doc.fontSize(6).font('Helvetica').text('Vessel/Flight:', rightX, rightY);
+      doc.fontSize(7).font('Helvetica-Bold').text(invoice.vesselFlightNo || 'FAV', rightX, rightY + 7, { width: 135 });
+      rightY += 14;
+      
+      // Date of Shipment
+      doc.fontSize(6).font('Helvetica').text('Date:', rightX, rightY);
+      doc.fontSize(7).font('Helvetica-Bold').text(invoice.dateOfShipment ? new Date(invoice.dateOfShipment).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '', rightX, rightY + 7, { width: 135 });
+      rightY += 14;
+      
+      // Port of Loading
+      doc.fontSize(6).font('Helvetica').text('Port Load:', rightX, rightY);
+      doc.fontSize(7).font('Helvetica-Bold').text(invoice.portLoading || '', rightX, rightY + 7, { width: 135 });
+      rightY += 14;
+      
+      // Port Discharge
+      doc.fontSize(6).font('Helvetica').text('Port Disch:', rightX, rightY);
+      doc.fontSize(7).font('Helvetica-Bold').text(invoice.portDischarge || '', rightX, rightY + 7, { width: 135 });
+      rightY += 14;
+      
+      // Delivery Terms
+      doc.fontSize(6).font('Helvetica').text('Del Terms:', rightX, rightY);
+      doc.fontSize(7).font('Helvetica-Bold').text(invoice.deliveryTerms || '', rightX, rightY + 7, { width: 135 });
+      rightY += 14;
+      
+      // Destination
+      doc.fontSize(6).font('Helvetica').text('Destination:', rightX, rightY);
+      doc.fontSize(7).font('Helvetica-Bold').text(invoice.destination || '', rightX, rightY + 7, { width: 135 });
 
       // Vertical dividers in consignor section
       doc.moveTo(245, consignorY).lineTo(245, consignorY + 100).stroke();
