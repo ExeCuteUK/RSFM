@@ -750,8 +750,8 @@ export const invoices = pgTable("invoices", {
   jobId: varchar("job_id").notNull(), // Link to specific job record
   
   // Customer information (INVOICE TO section)
-  customerCompanyName: text("customer_company_name").notNull(),
-  customerAddress: text("customer_address").notNull(),
+  customerCompanyName: text("customer_company_name"),
+  customerAddress: text("customer_address"),
   customerVatNumber: text("customer_vat_number"),
   
   // References
