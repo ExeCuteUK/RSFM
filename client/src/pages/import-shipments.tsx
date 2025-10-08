@@ -1836,7 +1836,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.clearanceStatusIndicator === 1 || shipment.clearanceStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-status-yellow-${shipment.id}`}
                           title="To Do"
@@ -1851,7 +1851,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.clearanceStatusIndicator === 3
                               ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
+                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-status-green-${shipment.id}`}
                           title="Completed"
@@ -1878,7 +1878,7 @@ Hope all is OK.`
                             className={`h-5 w-5 rounded border-2 transition-all ${
                               shipment.sendHaulierEadStatusIndicator === 2 || shipment.sendHaulierEadStatusIndicator === null
                                 ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                             }`}
                             data-testid={`button-send-haulier-gvms-yellow-${shipment.id}`}
                             title="To Do"
@@ -1893,7 +1893,7 @@ Hope all is OK.`
                             className={`h-5 w-5 rounded border-2 transition-all ${
                               shipment.sendHaulierEadStatusIndicator === 3
                                 ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
+                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                             }`}
                             data-testid={`button-send-haulier-gvms-green-${shipment.id}`}
                             title="Completed"
@@ -1923,7 +1923,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.deliveryBookedStatusIndicator === 1 || shipment.deliveryBookedStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-delivery-status-yellow-${shipment.id}`}
                           title="To Do"
@@ -1933,7 +1933,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.deliveryBookedStatusIndicator === 2
                               ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover-elevate'
+                              : 'bg-orange-200 border-orange-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-delivery-status-orange-${shipment.id}`}
                           title="Waiting for Reply"
@@ -1943,7 +1943,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.deliveryBookedStatusIndicator === 3
                               ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
+                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-delivery-status-green-${shipment.id}`}
                           title="Completed"
@@ -1968,7 +1968,7 @@ Hope all is OK.`
                             className={`h-5 w-5 rounded border-2 transition-all ${
                               shipment.containerReleaseStatusIndicator === 1 || shipment.containerReleaseStatusIndicator === null
                                 ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                             }`}
                             data-testid={`button-container-status-yellow-${shipment.id}`}
                             title="To Do"
@@ -1978,7 +1978,7 @@ Hope all is OK.`
                             className={`h-5 w-5 rounded border-2 transition-all ${
                               shipment.containerReleaseStatusIndicator === 2
                                 ? 'bg-orange-400 border-orange-500 scale-110'
-                                : 'bg-orange-200 border-orange-300 hover-elevate'
+                                : 'bg-orange-200 border-orange-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                             }`}
                             data-testid={`button-container-status-orange-${shipment.id}`}
                             title="Waiting for Reply"
@@ -1988,7 +1988,7 @@ Hope all is OK.`
                             className={`h-5 w-5 rounded border-2 transition-all ${
                               shipment.containerReleaseStatusIndicator === 3
                                 ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover-elevate'
+                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                             }`}
                             data-testid={`button-container-status-green-${shipment.id}`}
                             title="Completed"
@@ -2022,7 +2022,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.invoiceCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-invoice-status-yellow-${shipment.id}`}
                           title="To Do"
@@ -2037,7 +2037,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.invoiceCustomerStatusIndicator === 3
                               ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
+                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-invoice-status-green-${shipment.id}`}
                           title="Completed"
@@ -2066,7 +2066,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.sendPodToCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-send-pod-status-yellow-${shipment.id}`}
                           title="To Do"
@@ -2081,7 +2081,7 @@ Hope all is OK.`
                           className={`h-5 w-5 rounded border-2 transition-all ${
                             shipment.sendPodToCustomerStatusIndicator === 3
                               ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover-elevate'
+                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
                           data-testid={`button-send-pod-status-green-${shipment.id}`}
                           title="Completed"

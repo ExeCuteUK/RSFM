@@ -1405,7 +1405,7 @@ export default function CustomClearances() {
                               className={`h-5 w-5 rounded border-2 transition-all ${
                                 clearance.adviseAgentStatusIndicator === 1 || clearance.adviseAgentStatusIndicator === null
                                   ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                  : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
                               }`}
                               data-testid={`button-advise-yellow-${clearance.id}`}
                               title="To Do"
@@ -1415,7 +1415,7 @@ export default function CustomClearances() {
                               className={`h-5 w-5 rounded border-2 transition-all ${
                                 clearance.adviseAgentStatusIndicator === 3
                                   ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover-elevate'
+                                  : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
                               }`}
                               data-testid={`button-advise-green-${clearance.id}`}
                               title="Completed"
@@ -1448,7 +1448,7 @@ export default function CustomClearances() {
                               className={`h-5 w-5 rounded border-2 transition-all ${
                                 clearance.sendHaulierEadStatusIndicator === 1 || clearance.sendHaulierEadStatusIndicator === null
                                   ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                  : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
                               }`}
                               data-testid={`button-send-haulier-ead-yellow-${clearance.id}`}
                               title="To Do"
@@ -1458,7 +1458,7 @@ export default function CustomClearances() {
                               className={`h-5 w-5 rounded border-2 transition-all ${
                                 clearance.sendHaulierEadStatusIndicator === 3
                                   ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover-elevate'
+                                  : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
                               }`}
                               data-testid={`button-send-haulier-ead-green-${clearance.id}`}
                               title="Completed"
@@ -1491,7 +1491,7 @@ export default function CustomClearances() {
                                 className={`h-5 w-5 rounded border-2 transition-all ${
                                   clearance.invoiceCustomerStatusIndicator === 1 || clearance.invoiceCustomerStatusIndicator === null
                                     ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                    : 'bg-yellow-200 border-yellow-300 hover-elevate'
+                                    : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
                                 }`}
                                 data-testid={`button-invoice-yellow-${clearance.id}`}
                                 title="To Do"
@@ -1501,7 +1501,7 @@ export default function CustomClearances() {
                                 className={`h-5 w-5 rounded border-2 transition-all ${
                                   clearance.invoiceCustomerStatusIndicator === 3
                                     ? 'bg-green-400 border-green-500 scale-110'
-                                    : 'bg-green-200 border-green-300 hover-elevate'
+                                    : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
                                 }`}
                                 data-testid={`button-invoice-green-${clearance.id}`}
                                 title="Completed"
