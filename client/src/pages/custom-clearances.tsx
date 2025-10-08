@@ -391,7 +391,57 @@ export default function CustomClearances() {
       const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
       const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
       
-      const body = "Please find attached our Invoice."
+      // Build personalized greeting
+      const jobContactNameArray = Array.isArray(linkedShipment?.jobContactName)
+        ? linkedShipment.jobContactName.filter(Boolean)
+        : (linkedShipment?.jobContactName ? linkedShipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+      
+      let greeting = "Hi there"
+      if (jobContactNameArray.length === 1) {
+        greeting = `Hi ${jobContactNameArray[0]}`
+      } else if (jobContactNameArray.length === 2) {
+        greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
+      } else if (jobContactNameArray.length >= 3) {
+        const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
+        const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+        greeting = `Hi ${otherContacts}, and ${lastContact}`
+      }
+      
+      // Determine document type text
+      const hasInvoices = clearanceInvoices.some(inv => inv.type === 'invoice')
+      const hasCredits = clearanceInvoices.some(inv => inv.type === 'credit_note')
+      let documentText = "Invoice"
+      
+      if (hasInvoices && hasCredits) {
+        if (clearanceInvoices.filter(inv => inv.type === 'invoice').length > 1 && clearanceInvoices.filter(inv => inv.type === 'credit_note').length > 1) {
+          documentText = "Invoices and Credit Notes"
+        } else if (clearanceInvoices.filter(inv => inv.type === 'invoice').length > 1) {
+          documentText = "Invoices and Credit Note"
+        } else if (clearanceInvoices.filter(inv => inv.type === 'credit_note').length > 1) {
+          documentText = "Invoice and Credit Notes"
+        } else {
+          documentText = "Invoice and Credit Note"
+        }
+      } else if (hasCredits) {
+        documentText = clearanceInvoices.length > 1 ? "Credit Notes" : "Credit Note"
+      } else {
+        documentText = clearanceInvoices.length > 1 ? "Invoices" : "Invoice"
+      }
+      
+      // Build body with agent information if present
+      let body = `${greeting},\n\nPlease find attached our ${documentText}.`
+      
+      // Add agent information if present
+      const agentContactNameArray = Array.isArray(linkedShipment?.agentContactName)
+        ? linkedShipment.agentContactName.filter(Boolean)
+        : (linkedShipment?.agentContactName ? linkedShipment.agentContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+      const agentEmailArray = Array.isArray(linkedShipment?.agentEmail)
+        ? linkedShipment.agentEmail.filter(Boolean)
+        : (linkedShipment?.agentEmail ? linkedShipment.agentEmail.split(',').map(e => e.trim()).filter(Boolean) : [])
+      
+      if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
+        body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
+      }
       
       // Get invoice PDF paths with proper filenames
       const invoiceFiles = clearanceInvoices.map(invoice => ({
@@ -462,7 +512,57 @@ export default function CustomClearances() {
     const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
     const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
     
-    const body = "Please find attached our Invoice."
+    // Build personalized greeting
+    const jobContactNameArray = Array.isArray(linkedShipment?.jobContactName)
+      ? linkedShipment.jobContactName.filter(Boolean)
+      : (linkedShipment?.jobContactName ? linkedShipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+    
+    let greeting = "Hi there"
+    if (jobContactNameArray.length === 1) {
+      greeting = `Hi ${jobContactNameArray[0]}`
+    } else if (jobContactNameArray.length === 2) {
+      greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
+    } else if (jobContactNameArray.length >= 3) {
+      const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
+      const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+      greeting = `Hi ${otherContacts}, and ${lastContact}`
+    }
+    
+    // Determine document type text
+    const hasInvoices = selectedInvoiceObjects.some(inv => inv.type === 'invoice')
+    const hasCredits = selectedInvoiceObjects.some(inv => inv.type === 'credit_note')
+    let documentText = "Invoice"
+    
+    if (hasInvoices && hasCredits) {
+      if (selectedInvoiceObjects.filter(inv => inv.type === 'invoice').length > 1 && selectedInvoiceObjects.filter(inv => inv.type === 'credit_note').length > 1) {
+        documentText = "Invoices and Credit Notes"
+      } else if (selectedInvoiceObjects.filter(inv => inv.type === 'invoice').length > 1) {
+        documentText = "Invoices and Credit Note"
+      } else if (selectedInvoiceObjects.filter(inv => inv.type === 'credit_note').length > 1) {
+        documentText = "Invoice and Credit Notes"
+      } else {
+        documentText = "Invoice and Credit Note"
+      }
+    } else if (hasCredits) {
+      documentText = selectedInvoiceObjects.length > 1 ? "Credit Notes" : "Credit Note"
+    } else {
+      documentText = selectedInvoiceObjects.length > 1 ? "Invoices" : "Invoice"
+    }
+    
+    // Build body with agent information if present
+    let body = `${greeting},\n\nPlease find attached our ${documentText}.`
+    
+    // Add agent information if present
+    const agentContactNameArray = Array.isArray(linkedShipment?.agentContactName)
+      ? linkedShipment.agentContactName.filter(Boolean)
+      : (linkedShipment?.agentContactName ? linkedShipment.agentContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+    const agentEmailArray = Array.isArray(linkedShipment?.agentEmail)
+      ? linkedShipment.agentEmail.filter(Boolean)
+      : (linkedShipment?.agentEmail ? linkedShipment.agentEmail.split(',').map(e => e.trim()).filter(Boolean) : [])
+    
+    if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
+      body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
+    }
     
     // Get invoice PDF paths with proper filenames
     const invoiceFiles = selectedInvoiceObjects.map(invoice => ({
