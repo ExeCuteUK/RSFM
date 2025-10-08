@@ -24,12 +24,21 @@ import {
 } from '@/components/ui/select'
 import { Plus, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface LineItem {
   description: string
   chargeAmount: string
   vatCode: '1' | '2' | '3' // 1=0%, 2=20%, 3=exempt
   vatAmount: string
+}
+
+interface ShipmentLine {
+  numberOfPackages: string
+  packingType: string
+  commodity: string
+  kgs: string
+  cbm: string
 }
 
 interface CustomerInvoiceFormProps {
@@ -91,12 +100,17 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   const [customerAddress, setCustomerAddress] = useState('')
   const [customerVatNumber, setCustomerVatNumber] = useState('')
   
-  // Shipment details section
+  // Shipment details section (legacy fields kept for backward compatibility)
   const [numberOfPackages, setNumberOfPackages] = useState('')
   const [packingType, setPackingType] = useState('')
   const [commodity, setCommodity] = useState('')
   const [kgs, setKgs] = useState('')
   const [cbm, setCbm] = useState('')
+  
+  // New shipment lines (up to 3)
+  const [shipmentLines, setShipmentLines] = useState<ShipmentLine[]>([
+    { numberOfPackages: '', packingType: '', commodity: '', kgs: '', cbm: '' }
+  ])
   
   // Consignor/Consignee section
   const [consignorName, setConsignorName] = useState('')
@@ -145,6 +159,22 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
       setCustomerCompanyName(existingInvoice.customerCompanyName || '')
       setCustomerAddress(existingInvoice.customerAddress || '')
       setCustomerVatNumber(existingInvoice.customerVatNumber || '')
+      
+      // Load shipment lines from invoice (prefer new format, fallback to legacy)
+      if (existingInvoice.shipmentLines && existingInvoice.shipmentLines.length > 0) {
+        setShipmentLines(existingInvoice.shipmentLines as ShipmentLine[])
+      } else {
+        // Fallback to legacy single shipment fields
+        setShipmentLines([{
+          numberOfPackages: existingInvoice.numberOfPackages || '',
+          packingType: existingInvoice.packingType || '',
+          commodity: existingInvoice.commodity || '',
+          kgs: existingInvoice.kgs || '',
+          cbm: existingInvoice.cbm || ''
+        }])
+      }
+      
+      // Keep legacy fields in sync for backward compatibility
       setNumberOfPackages(existingInvoice.numberOfPackages || '')
       setPackingType(existingInvoice.packingType || '')
       setCommodity(existingInvoice.commodity || '')
@@ -194,7 +224,17 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           }
         }
         
-        // Shipment details
+        // Shipment details - populate first shipment line from job
+        const firstLine: ShipmentLine = {
+          numberOfPackages: importJob.numberOfPieces || '',
+          packingType: importJob.packaging || '',
+          commodity: importJob.goodsDescription || '',
+          kgs: importJob.weight || '',
+          cbm: importJob.cube || ''
+        }
+        setShipmentLines([firstLine])
+        
+        // Keep legacy fields in sync
         setNumberOfPackages(importJob.numberOfPieces || '')
         setPackingType(importJob.packaging || '')
         setCommodity(importJob.goodsDescription || '')
@@ -238,7 +278,17 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           }
         }
         
-        // Shipment details
+        // Shipment details - populate first shipment line from job
+        const firstLine: ShipmentLine = {
+          numberOfPackages: exportJob.numberOfPieces || '',
+          packingType: exportJob.packaging || '',
+          commodity: exportJob.goodsDescription || '',
+          kgs: exportJob.weight || '',
+          cbm: exportJob.cube || ''
+        }
+        setShipmentLines([firstLine])
+        
+        // Keep legacy fields in sync
         setNumberOfPackages(exportJob.numberOfPieces || '')
         setPackingType(exportJob.packaging || '')
         setCommodity(exportJob.goodsDescription || '')
@@ -307,6 +357,24 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
     setLineItems(updated)
   }
 
+  const addShipmentLine = () => {
+    if (shipmentLines.length < 3) {
+      setShipmentLines([...shipmentLines, { numberOfPackages: '', packingType: '', commodity: '', kgs: '', cbm: '' }])
+    }
+  }
+
+  const removeShipmentLine = (index: number) => {
+    if (shipmentLines.length > 1) {
+      setShipmentLines(shipmentLines.filter((_, i) => i !== index))
+    }
+  }
+
+  const updateShipmentLine = (index: number, field: keyof ShipmentLine, value: string) => {
+    const updated = [...shipmentLines]
+    updated[index][field] = value
+    setShipmentLines(updated)
+  }
+
   const subtotal = lineItems.reduce((sum, item) => sum + (parseFloat(item.chargeAmount) || 0), 0)
   const vatAmount = lineItems.reduce((sum, item) => sum + (parseFloat(item.vatAmount) || 0), 0)
   const total = subtotal + vatAmount
@@ -371,11 +439,16 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
       customerCompanyName,
       customerAddress,
       customerVatNumber,
-      numberOfPackages,
-      packingType,
-      commodity,
-      kgs,
-      cbm,
+      // Legacy fields (keep for backward compatibility, populated from first shipment line)
+      numberOfPackages: shipmentLines[0]?.numberOfPackages || '',
+      packingType: shipmentLines[0]?.packingType || '',
+      commodity: shipmentLines[0]?.commodity || '',
+      kgs: shipmentLines[0]?.kgs || '',
+      cbm: shipmentLines[0]?.cbm || '',
+      // New shipment lines array
+      shipmentLines: shipmentLines.filter(line => 
+        line.numberOfPackages || line.packingType || line.commodity || line.kgs || line.cbm
+      ),
       consignorName,
       consignorAddress,
       consigneeName,
@@ -407,254 +480,309 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Header Section */}
-          <div className="grid grid-cols-4 gap-4">
-            <div>
-              <Label htmlFor="taxPointDate">Date/Tax Point</Label>
-              <Input
-                id="taxPointDate"
-                type="date"
-                value={taxPointDate}
-                onChange={(e) => setTaxPointDate(e.target.value)}
-                data-testid="input-tax-point-date"
-              />
-            </div>
-            <div>
-              <Label htmlFor="ourRef">Our Ref</Label>
-              <Input
-                id="ourRef"
-                value={ourRef}
-                onChange={(e) => setOurRef(e.target.value)}
-                data-testid="input-our-ref"
-              />
-            </div>
-            <div>
-              <Label htmlFor="exportersRef">Exporters Ref</Label>
-              <Input
-                id="exportersRef"
-                value={exportersRef}
-                onChange={(e) => setExportersRef(e.target.value)}
-                data-testid="input-exporters-ref"
-              />
-            </div>
-          </div>
+        <div className="space-y-4 py-4">
+          {/* Invoice Details Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">Invoice Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="taxPointDate">Date/Tax Point</Label>
+                  <Input
+                    id="taxPointDate"
+                    type="date"
+                    value={taxPointDate}
+                    onChange={(e) => setTaxPointDate(e.target.value)}
+                    data-testid="input-tax-point-date"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ourRef">Our Ref</Label>
+                  <Input
+                    id="ourRef"
+                    value={ourRef}
+                    onChange={(e) => setOurRef(e.target.value)}
+                    data-testid="input-our-ref"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="exportersRef">Exporters Ref</Label>
+                  <Input
+                    id="exportersRef"
+                    value={exportersRef}
+                    onChange={(e) => setExportersRef(e.target.value)}
+                    data-testid="input-exporters-ref"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Invoice To Section */}
-          <div className="space-y-2">
-            <h3 className="font-semibold text-sm">INVOICE TO</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="customerName">Customer Name</Label>
-                <Input
-                  id="customerName"
-                  value={customerCompanyName}
-                  onChange={(e) => setCustomerCompanyName(e.target.value)}
-                  data-testid="input-customer-name"
-                />
+          {/* Invoice To Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">Invoice To</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="customerName">Customer Name</Label>
+                  <Input
+                    id="customerName"
+                    value={customerCompanyName}
+                    onChange={(e) => setCustomerCompanyName(e.target.value)}
+                    data-testid="input-customer-name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customerAddress">Customer Address</Label>
+                  <Textarea
+                    id="customerAddress"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    rows={3}
+                    data-testid="input-customer-address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customerVat">VAT No.</Label>
+                  <Input
+                    id="customerVat"
+                    value={customerVatNumber}
+                    onChange={(e) => setCustomerVatNumber(e.target.value)}
+                    data-testid="input-customer-vat"
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="customerAddress">Customer Address</Label>
-                <Textarea
-                  id="customerAddress"
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  rows={3}
-                  data-testid="input-customer-address"
-                />
-              </div>
-              <div>
-                <Label htmlFor="customerVat">VAT No.</Label>
-                <Input
-                  id="customerVat"
-                  value={customerVatNumber}
-                  onChange={(e) => setCustomerVatNumber(e.target.value)}
-                  data-testid="input-customer-vat"
-                />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Shipment Details Section */}
-          <div className="space-y-2">
-            <h3 className="font-semibold text-sm">SHIPMENT DETAILS</h3>
-            <div className="grid grid-cols-5 gap-4">
-              <div>
-                <Label htmlFor="packages">No. Packages</Label>
-                <Input
-                  id="packages"
-                  value={numberOfPackages}
-                  onChange={(e) => setNumberOfPackages(e.target.value)}
-                  data-testid="input-packages"
-                />
+          {/* Shipment Details Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold">Shipment Details</CardTitle>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addShipmentLine}
+                  disabled={shipmentLines.length >= 3}
+                  data-testid="button-add-shipment-line"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Line
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="packingType">Packing Type</Label>
-                <Input
-                  id="packingType"
-                  value={packingType}
-                  onChange={(e) => setPackingType(e.target.value)}
-                  placeholder="e.g., Pallet(s)"
-                  data-testid="input-packing-type"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label htmlFor="commodity">Commodity</Label>
-                <Input
-                  id="commodity"
-                  value={commodity}
-                  onChange={(e) => setCommodity(e.target.value)}
-                  data-testid="input-commodity"
-                />
-              </div>
-              <div>
-                <Label htmlFor="kgs">KGS</Label>
-                <Input
-                  id="kgs"
-                  value={kgs}
-                  onChange={(e) => setKgs(e.target.value)}
-                  data-testid="input-kgs"
-                />
-              </div>
-              <div>
-                <Label htmlFor="cbm">CBM</Label>
-                <Input
-                  id="cbm"
-                  value={cbm}
-                  onChange={(e) => setCbm(e.target.value)}
-                  data-testid="input-cbm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Consignor/Consignee Section */}
-          <div className="space-y-2">
-            <h3 className="font-semibold text-sm">CONSIGNOR / CONSIGNEE</h3>
-            <div className="grid grid-cols-2 gap-4">
+            </CardHeader>
+            <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="consignorName">Consignor Name</Label>
-                <Input
-                  id="consignorName"
-                  value={consignorName}
-                  onChange={(e) => setConsignorName(e.target.value)}
-                  data-testid="input-consignor-name"
-                />
-                <Label htmlFor="consignorAddress">Consignor Address</Label>
-                <Textarea
-                  id="consignorAddress"
-                  value={consignorAddress}
-                  onChange={(e) => setConsignorAddress(e.target.value)}
-                  rows={3}
-                  data-testid="input-consignor-address"
-                />
+                {shipmentLines.map((line, index) => (
+                  <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                    <div className="col-span-2">
+                      <Label htmlFor={`packages-${index}`}>No. Packages</Label>
+                      <Input
+                        id={`packages-${index}`}
+                        value={line.numberOfPackages}
+                        onChange={(e) => updateShipmentLine(index, 'numberOfPackages', e.target.value)}
+                        data-testid={`input-packages-${index}`}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label htmlFor={`packing-${index}`}>Packing Type</Label>
+                      <Input
+                        id={`packing-${index}`}
+                        value={line.packingType}
+                        onChange={(e) => updateShipmentLine(index, 'packingType', e.target.value)}
+                        placeholder="e.g., Pallet(s)"
+                        data-testid={`input-packing-type-${index}`}
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <Label htmlFor={`commodity-${index}`}>Commodity</Label>
+                      <Input
+                        id={`commodity-${index}`}
+                        value={line.commodity}
+                        onChange={(e) => updateShipmentLine(index, 'commodity', e.target.value)}
+                        data-testid={`input-commodity-${index}`}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label htmlFor={`kgs-${index}`}>KGS</Label>
+                      <Input
+                        id={`kgs-${index}`}
+                        value={line.kgs}
+                        onChange={(e) => updateShipmentLine(index, 'kgs', e.target.value)}
+                        data-testid={`input-kgs-${index}`}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Label htmlFor={`cbm-${index}`}>CBM</Label>
+                      <Input
+                        id={`cbm-${index}`}
+                        value={line.cbm}
+                        onChange={(e) => updateShipmentLine(index, 'cbm', e.target.value)}
+                        data-testid={`input-cbm-${index}`}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeShipmentLine(index)}
+                        disabled={shipmentLines.length === 1}
+                        data-testid={`button-remove-shipment-${index}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="consigneeName">Consignee Name</Label>
-                <Input
-                  id="consigneeName"
-                  value={consigneeName}
-                  onChange={(e) => setConsigneeName(e.target.value)}
-                  data-testid="input-consignee-name"
-                />
-                <Label htmlFor="consigneeAddress">Consignee Address</Label>
-                <Textarea
-                  id="consigneeAddress"
-                  value={consigneeAddress}
-                  onChange={(e) => setConsigneeAddress(e.target.value)}
-                  rows={3}
-                  data-testid="input-consignee-address"
-                />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Shipping Information Section */}
-          <div className="space-y-2">
-            <h3 className="font-semibold text-sm">SHIPPING INFORMATION</h3>
-            <div className="grid grid-cols-4 gap-4">
-              <div>
-                <Label htmlFor="identifier">Trailer/Cont No.</Label>
-                <Input
-                  id="identifier"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  data-testid="input-identifier"
-                />
+          {/* Consignor/Consignee Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">Consignor / Consignee</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="consignorName">Consignor Name</Label>
+                  <Input
+                    id="consignorName"
+                    value={consignorName}
+                    onChange={(e) => setConsignorName(e.target.value)}
+                    data-testid="input-consignor-name"
+                  />
+                  <Label htmlFor="consignorAddress">Consignor Address</Label>
+                  <Textarea
+                    id="consignorAddress"
+                    value={consignorAddress}
+                    onChange={(e) => setConsignorAddress(e.target.value)}
+                    rows={3}
+                    data-testid="input-consignor-address"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="consigneeName">Consignee Name</Label>
+                  <Input
+                    id="consigneeName"
+                    value={consigneeName}
+                    onChange={(e) => setConsigneeName(e.target.value)}
+                    data-testid="input-consignee-name"
+                  />
+                  <Label htmlFor="consigneeAddress">Consignee Address</Label>
+                  <Textarea
+                    id="consigneeAddress"
+                    value={consigneeAddress}
+                    onChange={(e) => setConsigneeAddress(e.target.value)}
+                    rows={3}
+                    data-testid="input-consignee-address"
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="vesselName">Vessel/Flight No.</Label>
-                <Input
-                  id="vesselName"
-                  value={vesselName}
-                  onChange={(e) => setVesselName(e.target.value)}
-                  data-testid="input-vessel-name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="dateOfShipment">Date of Shipment</Label>
-                <Input
-                  id="dateOfShipment"
-                  type="date"
-                  value={dateOfShipment}
-                  onChange={(e) => setDateOfShipment(e.target.value)}
-                  data-testid="input-date-of-shipment"
-                />
-              </div>
-              <div>
-                <Label htmlFor="portLoading">Port Loading</Label>
-                <Input
-                  id="portLoading"
-                  value={portLoading}
-                  onChange={(e) => setPortLoading(e.target.value)}
-                  data-testid="input-port-loading"
-                />
-              </div>
-              <div>
-                <Label htmlFor="portDischarge">Port Discharge</Label>
-                <Input
-                  id="portDischarge"
-                  value={portDischarge}
-                  onChange={(e) => setPortDischarge(e.target.value)}
-                  data-testid="input-port-discharge"
-                />
-              </div>
-              <div>
-                <Label htmlFor="deliveryTerms">Delivery Terms</Label>
-                <Input
-                  id="deliveryTerms"
-                  value={deliveryTerms}
-                  onChange={(e) => setDeliveryTerms(e.target.value)}
-                  data-testid="input-delivery-terms"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label htmlFor="destination">Destination</Label>
-                <Input
-                  id="destination"
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  data-testid="input-destination"
-                />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Line Items Section */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm">DESCRIPTION OF CHARGES</h3>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={addLineItem}
-                data-testid="button-add-line-item"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Line
-              </Button>
-            </div>
+          {/* Shipping Information Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">Shipping Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <Label htmlFor="identifier">Trailer/Cont No.</Label>
+                  <Input
+                    id="identifier"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    data-testid="input-identifier"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vesselName">Vessel/Flight No.</Label>
+                  <Input
+                    id="vesselName"
+                    value={vesselName}
+                    onChange={(e) => setVesselName(e.target.value)}
+                    data-testid="input-vessel-name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dateOfShipment">Date of Shipment</Label>
+                  <Input
+                    id="dateOfShipment"
+                    type="date"
+                    value={dateOfShipment}
+                    onChange={(e) => setDateOfShipment(e.target.value)}
+                    data-testid="input-date-of-shipment"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="portLoading">Port Loading</Label>
+                  <Input
+                    id="portLoading"
+                    value={portLoading}
+                    onChange={(e) => setPortLoading(e.target.value)}
+                    data-testid="input-port-loading"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="portDischarge">Port Discharge</Label>
+                  <Input
+                    id="portDischarge"
+                    value={portDischarge}
+                    onChange={(e) => setPortDischarge(e.target.value)}
+                    data-testid="input-port-discharge"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="deliveryTerms">Delivery Terms</Label>
+                  <Input
+                    id="deliveryTerms"
+                    value={deliveryTerms}
+                    onChange={(e) => setDeliveryTerms(e.target.value)}
+                    data-testid="input-delivery-terms"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="destination">Destination</Label>
+                  <Input
+                    id="destination"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    data-testid="input-destination"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Description of Charges Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold">Description of Charges</CardTitle>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addLineItem}
+                  data-testid="button-add-line-item"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Line
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
             <div className="space-y-2">
               {lineItems.map((item, index) => (
                 <div key={index} className="grid grid-cols-12 gap-2 items-end">
@@ -718,37 +846,38 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Totals */}
-          <div className="flex justify-end">
-            <div className="w-64 space-y-2">
-              <div className="flex justify-between">
-                <span className="font-medium">Invoice Total:</span>
-                <span>£{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">VAT Total:</span>
-                <span>£{vatAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold border-t pt-2">
-                <span>GRAND TOTAL:</span>
-                <span>£{total.toFixed(2)}</span>
+            
+            {/* Totals */}
+            <div className="flex justify-end mt-4">
+              <div className="w-64 space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-medium">Invoice Total:</span>
+                  <span>£{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">VAT Total:</span>
+                  <span>£{vatAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t pt-2">
+                  <span>GRAND TOTAL:</span>
+                  <span>£{total.toFixed(2)}</span>
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Payment Terms */}
-          <div>
-            <Label htmlFor="paymentTerms">Payment Terms</Label>
-            <Textarea
-              id="paymentTerms"
-              value={paymentTerms}
-              onChange={(e) => setPaymentTerms(e.target.value)}
-              rows={2}
-              data-testid="input-payment-terms"
-            />
-          </div>
+            
+            {/* Payment Terms */}
+            <div className="mt-4">
+              <Label htmlFor="paymentTerms">Payment Terms</Label>
+              <Textarea
+                id="paymentTerms"
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+                rows={2}
+                data-testid="input-payment-terms"
+              />
+            </div>
+            </CardContent>
+          </Card>
         </div>
 
         <DialogFooter>
