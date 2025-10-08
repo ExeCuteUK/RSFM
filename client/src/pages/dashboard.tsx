@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from "react"
 import { useLocation } from "wouter"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
+import { ImportExportWorkGrid } from "@/components/ImportExportWorkGrid"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("container-management")
@@ -1211,14 +1212,7 @@ export default function Dashboard() {
         </TabsContent>
 
         <TabsContent value="import-export-work" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Import/Export Work</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Import/Export work view - coming soon</p>
-            </CardContent>
-          </Card>
+          <ImportExportWorkGrid />
         </TabsContent>
 
         <TabsContent value="clearance-work" className="mt-4">
