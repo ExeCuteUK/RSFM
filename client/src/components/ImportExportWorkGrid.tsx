@@ -8,6 +8,7 @@ import { Search } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
+import { useLocation } from "wouter"
 
 export function ImportExportWorkGrid() {
   const [searchText, setSearchText] = useState("")
@@ -19,6 +20,7 @@ export function ImportExportWorkGrid() {
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { toast } = useToast()
+  const [, setLocation] = useLocation()
 
   useEffect(() => {
     if (!editingCell) {
@@ -316,6 +318,12 @@ export function ImportExportWorkGrid() {
     return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
   }
 
+  // Handle Job Ref click to navigate to shipment page
+  const handleJobRefClick = (jobRef: number, jobType: 'import' | 'export') => {
+    const page = jobType === 'import' ? '/import-shipments' : '/export-shipments'
+    setLocation(`${page}?search=${jobRef}`)
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -409,8 +417,14 @@ export function ImportExportWorkGrid() {
 
                 return (
                   <tr key={job.id} className="border-b hover:bg-muted/50">
-                    {/* Job Ref - Not editable */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{job.jobRef}</td>
+                    {/* Job Ref - Clickable to navigate to shipment page */}
+                    <td 
+                      className={`p-1 text-center border-r border-border cursor-pointer hover:underline ${rowColor}`}
+                      onClick={() => handleJobRefClick(job.jobRef, job._jobType)}
+                      data-testid={`link-job-ref-${job.jobRef}`}
+                    >
+                      {job.jobRef}
+                    </td>
                     
                     {/* Shipper Ref - Editable */}
                     <td 
