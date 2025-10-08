@@ -1435,7 +1435,7 @@ export default function CustomClearances() {
                       <div className="mt-2 pt-2 border-t">
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <p className="text-xs font-medium text-muted-foreground">R.S Invoices</p>
+                            <p className="text-xs font-medium text-muted-foreground">R.S Invoice & Credits</p>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1453,14 +1453,18 @@ export default function CustomClearances() {
                             )
                             return clearanceInvoices.length > 0 ? (
                               <div className="grid grid-cols-2 gap-1">
-                                {clearanceInvoices.map((invoice) => (
+                                {clearanceInvoices.map((invoice) => {
+                                  const isCredit = invoice.type === 'credit_note'
+                                  const prefix = isCredit ? 'CR' : 'INV'
+                                  const colorClass = isCredit ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                                  return (
                                   <div key={invoice.id} className="flex items-center gap-1 group">
                                     <Receipt className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                     <span
-                                      className="text-xs text-primary hover:underline cursor-pointer truncate flex-1"
-                                      title={`Invoice #${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
+                                      className={`text-xs ${colorClass} hover:underline cursor-pointer truncate flex-1`}
+                                      title={`${prefix} ${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
                                     >
-                                      #{invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
+                                      {prefix} {invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
                                     </span>
                                     <button
                                       onClick={() => setEditingInvoice({ invoice, clearance })}
@@ -1485,7 +1489,8 @@ export default function CustomClearances() {
                                       <FileOutput className="h-3 w-3 text-primary hover:text-primary/80" />
                                     </a>
                                   </div>
-                                ))}
+                                  )
+                                })}
                               </div>
                             ) : (
                               <p className="text-xs text-muted-foreground italic">None</p>
