@@ -32,8 +32,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
       if (fs.existsSync(logoPath)) {
         try {
-          // Logo positioned at Y=60, below INVOICE header
-          doc.image(logoPath, 50, 60, { width: 140 });
+          // Logo positioned at Y=40, moved up 20pts
+          doc.image(logoPath, 50, 40, { width: 140 });
         } catch (e) {
           console.error('Error loading logo:', e);
         }
