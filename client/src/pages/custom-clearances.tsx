@@ -1369,14 +1369,6 @@ export default function CustomClearances() {
                         {!clearance.createdFromId && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
-                              <PoundSterling className="h-4 w-4 text-muted-foreground shrink-0" />
-                              <button
-                                onClick={() => setInvoiceClearance(clearance)}
-                                className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer`}
-                                data-testid={`button-invoice-customer-${clearance.id}`}
-                              >
-                                Invoice Customer
-                              </button>
                               <button
                                 onClick={() => handleSendInvoiceToCustomerEmail(clearance)}
                                 className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
@@ -1384,6 +1376,13 @@ export default function CustomClearances() {
                                 title="Send invoice email to customer"
                               >
                                 <Send className="h-4 w-4 text-muted-foreground" />
+                              </button>
+                              <button
+                                onClick={() => setInvoiceClearance(clearance)}
+                                className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer`}
+                                data-testid={`button-invoice-customer-${clearance.id}`}
+                              >
+                                Invoice Customer
                               </button>
                             </div>
                             <div className="flex items-center gap-1">
@@ -1538,7 +1537,6 @@ export default function CustomClearances() {
                                   const colorClass = isCredit ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
                                   return (
                                   <div key={invoice.id} className="flex items-center gap-1 group">
-                                    <Receipt className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                     <span
                                       className={`text-xs ${colorClass} hover:underline cursor-pointer truncate flex-1`}
                                       title={`${prefix} ${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
