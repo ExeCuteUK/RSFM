@@ -1666,7 +1666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingGroup = await storage.getJobFileGroupByJobRef(clearance.jobRef);
         if (existingGroup) {
           // Merge with existing documents to avoid duplicates
-          const mergedDocs = [...new Set([...(existingGroup.documents || []), ...allDocs])];
+          const mergedDocs = Array.from(new Set([...(existingGroup.documents || []), ...allDocs]));
           await storage.updateJobFileGroup(clearance.jobRef, {
             documents: mergedDocs,
           });
@@ -1704,7 +1704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingGroup = await storage.getJobFileGroupByJobRef(clearance.jobRef);
         if (existingGroup) {
           // Merge with existing documents to avoid duplicates
-          const mergedDocs = [...new Set(allDocs)];
+          const mergedDocs = Array.from(new Set(allDocs));
           await storage.updateJobFileGroup(clearance.jobRef, {
             documents: mergedDocs,
           });
