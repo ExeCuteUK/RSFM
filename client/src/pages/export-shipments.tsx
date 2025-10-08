@@ -48,6 +48,8 @@ export default function ExportShipments() {
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [invoiceShipment, setInvoiceShipment] = useState<ExportShipment | null>(null)
+  const [editingInvoice, setEditingInvoice] = useState<{ invoice: Invoice; shipment: ExportShipment } | null>(null)
+  const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const { toast} = useToast()
   const [, setLocation] = useLocation()
   
@@ -288,6 +290,26 @@ export default function ExportShipments() {
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       toast({ title: "File deleted successfully" })
+    },
+  })
+
+  const deleteInvoice = useMutation({
+    mutationFn: async (invoiceId: string) => {
+      await apiRequest('DELETE', `/api/invoices/${invoiceId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/invoices'] })
+      toast({
+        title: 'Invoice deleted successfully',
+      })
+      setDeletingInvoice(null)
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Delete failed',
+        description: error.message || 'Failed to delete invoice',
+        variant: 'destructive',
+      })
     },
   })
 
@@ -1209,7 +1231,7 @@ Hope all is OK.`
                                 inv.jobRef === shipment.jobRef && inv.jobType === 'export' && inv.jobId === shipment.id
                               )
                               return shipmentInvoices.length > 0 ? (
-                                <div className="space-y-0.5">
+                                <div className="grid grid-cols-2 gap-1">
                                   {shipmentInvoices.map((invoice) => (
                                     <div key={invoice.id} className="flex items-center gap-1 group">
                                       <Receipt className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -1219,6 +1241,20 @@ Hope all is OK.`
                                       >
                                         #{invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
                                       </span>
+                                      <button
+                                        onClick={() => setEditingInvoice({ invoice, shipment })}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-edit-invoice-${invoice.id}`}
+                                      >
+                                        <Pencil className="h-3 w-3 text-primary hover:text-primary/80" />
+                                      </button>
+                                      <button
+                                        onClick={() => setDeletingInvoice(invoice)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                        data-testid={`button-delete-invoice-${invoice.id}`}
+                                      >
+                                        <Trash2 className="h-3 w-3 text-destructive hover:text-destructive/80" />
+                                      </button>
                                       <a
                                         href={`/api/invoices/${invoice.id}/pdf`}
                                         download={`RS Invoice - ${invoice.jobRef}.pdf`}
@@ -1906,13 +1942,44 @@ Hope all is OK.`
         </DialogContent>
       </Dialog>
 
-      {/* Customer Invoice Form Dialog */}
+      {/* Customer Invoice Form Dialog - Create */}
       <CustomerInvoiceForm
         job={invoiceShipment}
         jobType="export"
         open={!!invoiceShipment}
         onOpenChange={(open) => !open && setInvoiceShipment(null)}
       />
+
+      {/* Customer Invoice Form Dialog - Edit */}
+      <CustomerInvoiceForm
+        job={editingInvoice?.shipment || null}
+        jobType="export"
+        open={!!editingInvoice}
+        onOpenChange={(open) => !open && setEditingInvoice(null)}
+        existingInvoice={editingInvoice?.invoice || null}
+      />
+
+      {/* Delete Invoice Confirmation Dialog */}
+      <AlertDialog open={!!deletingInvoice} onOpenChange={(open) => !open && setDeletingInvoice(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete invoice #{deletingInvoice?.invoiceNumber}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingInvoice && deleteInvoice.mutate(deletingInvoice.id)}
+              className="bg-destructive hover:bg-destructive/90"
+              data-testid="confirm-delete-invoice"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   )
