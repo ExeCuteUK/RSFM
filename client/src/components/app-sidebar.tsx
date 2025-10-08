@@ -66,7 +66,7 @@ const menuItems = [
 
 const secondaryItems = [
   {
-    title: "Messages",
+    title: "Internal Messages",
     url: "/messages",
     icon: MessageSquare,
   },
@@ -101,8 +101,11 @@ export function AppSidebar() {
           </div>
           <div className="flex-1">
             <h2 className="text-sm font-semibold leading-tight" data-testid="text-app-title">
-              R.S International Freight Manager 4.0.1 alpha
+              R.S. Freight Manager
             </h2>
+            <p className="text-[11px] text-muted-foreground" data-testid="text-app-version">
+              Version : 4.0.1 alpha
+            </p>
           </div>
         </div>
       </SidebarHeader>
@@ -145,7 +148,7 @@ export function AppSidebar() {
                     <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                      {item.title === "Messages" && unreadCount > 0 && (
+                      {item.title === "Internal Messages" && unreadCount > 0 && (
                         <Badge 
                           variant="destructive" 
                           className="ml-auto h-5 min-w-5 flex items-center justify-center px-1.5 text-[10px] font-semibold"
