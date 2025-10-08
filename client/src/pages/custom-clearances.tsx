@@ -341,6 +341,78 @@ export default function CustomClearances() {
     updateSendHaulierClearanceDocStatus.mutate({ id, status })
   }
 
+  const handleSendInvoiceToCustomerEmail = (clearance: CustomClearance) => {
+    try {
+      const isImport = clearance.jobType === 'import'
+      
+      // Get the linked shipment based on clearance type
+      const linkedShipment = isImport
+        ? importShipments.find((s: any) => s.jobRef === clearance.jobRef)
+        : clearance.createdFromId
+          ? exportShipments.find((s: any) => s.id === clearance.createdFromId)
+          : null
+
+      // Get all invoices for this clearance
+      const clearanceInvoices = allInvoices.filter(inv => 
+        inv.jobRef === clearance.jobRef && inv.jobType === 'clearance' && inv.jobId === clearance.id
+      )
+      
+      // Check if invoices exist
+      if (clearanceInvoices.length === 0) {
+        toast({
+          title: "No Invoices Found",
+          description: "No invoices are attached to this job. Please create an invoice first.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Build email recipient data from linked shipment (handle both array and legacy string formats)
+      const jobContactEmailArray = Array.isArray(linkedShipment?.jobContactEmail) 
+        ? linkedShipment.jobContactEmail 
+        : (linkedShipment?.jobContactEmail ? [linkedShipment.jobContactEmail] : [])
+      const jobContactEmail = jobContactEmailArray[0] || ""
+      const ccEmails = jobContactEmailArray.slice(1).join(", ")
+      
+      // Build subject
+      const jobRef = clearance.jobRef || "N/A"
+      const customerRef = linkedShipment?.customerReferenceNumber
+      
+      // Conditionally include "Your Ref" only if customerRef exists
+      const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
+      const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
+      
+      const body = "Please find attached our Invoice."
+      
+      // Get invoice PDF paths - use the API endpoint for downloading invoices
+      const invoiceFiles = clearanceInvoices.map(invoice => 
+        `/api/invoices/${invoice.id}/pdf`
+      )
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: jobContactEmail,
+        cc: ccEmails,
+        bcc: "",
+        subject: subject,
+        body: body,
+        attachments: invoiceFiles,
+        metadata: {
+          source: 'send-invoice-customer',
+          shipmentId: clearance.id
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleSendHaulierEadEmail = (clearance: CustomClearance) => {
     const isImport = clearance.jobType === 'import'
     
@@ -1225,6 +1297,14 @@ export default function CustomClearances() {
                                 data-testid={`button-invoice-customer-${clearance.id}`}
                               >
                                 Invoice Customer
+                              </button>
+                              <button
+                                onClick={() => handleSendInvoiceToCustomerEmail(clearance)}
+                                className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                                data-testid={`button-send-invoice-email-${clearance.id}`}
+                                title="Send invoice email to customer"
+                              >
+                                <Send className="h-4 w-4 text-muted-foreground" />
                               </button>
                             </div>
                             <div className="flex items-center gap-1">

@@ -871,6 +871,69 @@ export default function ImportShipments() {
     }
   }
 
+  const handleSendInvoiceToCustomerEmail = (shipment: ImportShipment) => {
+    try {
+      // Get all invoices for this shipment
+      const shipmentInvoices = allInvoices.filter(inv => 
+        inv.jobRef === shipment.jobRef && inv.jobType === 'import' && inv.jobId === shipment.id
+      )
+      
+      // Check if invoices exist
+      if (shipmentInvoices.length === 0) {
+        toast({
+          title: "No Invoices Found",
+          description: "No invoices are attached to this job. Please create an invoice first.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Build email recipient data (handle both array and legacy string formats)
+      const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
+        ? shipment.jobContactEmail 
+        : (shipment.jobContactEmail ? [shipment.jobContactEmail] : [])
+      const jobContactEmail = jobContactEmailArray[0] || ""
+      const ccEmails = jobContactEmailArray.slice(1).join(", ")
+      
+      // Build subject
+      const jobRef = shipment.jobRef || "N/A"
+      const customerRef = shipment.customerReferenceNumber
+      
+      // Conditionally include "Your Ref" only if customerRef exists
+      const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
+      const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
+      
+      const body = "Please find attached our Invoice."
+      
+      // Get invoice PDF paths - use the API endpoint for downloading invoices
+      const invoiceFiles = shipmentInvoices.map(invoice => 
+        `/api/invoices/${invoice.id}/pdf`
+      )
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: jobContactEmail,
+        cc: ccEmails,
+        bcc: "",
+        subject: subject,
+        body: body,
+        attachments: invoiceFiles,
+        metadata: {
+          source: 'send-invoice-customer',
+          shipmentId: shipment.id
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleSendPodToCustomerEmail = (shipment: ImportShipment) => {
     try {
       // Check if POD documents exist
@@ -1775,6 +1838,14 @@ Hope all is OK.`
                           data-testid={`button-invoice-customer-${shipment.id}`}
                         >
                           Invoice Customer
+                        </button>
+                        <button
+                          onClick={() => handleSendInvoiceToCustomerEmail(shipment)}
+                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                          data-testid={`button-send-invoice-email-${shipment.id}`}
+                          title="Send invoice email to customer"
+                        >
+                          <Send className="h-4 w-4 text-muted-foreground" />
                         </button>
                       </div>
                       <div className="flex items-center gap-1">
