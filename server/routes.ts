@@ -1268,6 +1268,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update send customer GVMS status indicator
+  app.patch("/api/import-shipments/:id/send-customer-gvms-status", async (req, res) => {
+    try {
+      const sendCustomerGvmsStatusSchema = z.object({
+        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+      });
+      const { status } = sendCustomerGvmsStatusSchema.parse(req.body);
+      const shipment = await storage.updateImportShipment(req.params.id, { 
+        sendCustomerGvmsStatusIndicator: status ?? null,
+        sendCustomerGvmsStatusIndicatorTimestamp: new Date().toISOString()
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to update send customer GVMS status" });
+    }
+  });
+
   // Update advise clearance to agent status indicator
   app.patch("/api/import-shipments/:id/advise-clearance-to-agent-status", async (req, res) => {
     try {
@@ -1588,6 +1614,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(shipment);
     } catch (error) {
       res.status(500).json({ error: "Failed to update send haulier EAD status" });
+    }
+  });
+
+  // Update send customer EAD status indicator
+  app.patch("/api/export-shipments/:id/send-customer-ead-status", async (req, res) => {
+    try {
+      const sendCustomerEadStatusSchema = z.object({
+        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+      });
+      const { status } = sendCustomerEadStatusSchema.parse(req.body);
+      const shipment = await storage.updateExportShipment(req.params.id, { 
+        sendCustomerEadStatusIndicator: status ?? null,
+        sendCustomerEadStatusIndicatorTimestamp: new Date().toISOString()
+      });
+      if (!shipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+      res.json(shipment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: "Failed to update send customer EAD status" });
     }
   });
 

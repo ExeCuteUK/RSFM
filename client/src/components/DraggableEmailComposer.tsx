@@ -115,6 +115,10 @@ export function DraggableEmailComposer() {
             // Update Send Haulier EAD status to Green (3)
             await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-haulier-ead-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+          } else if (source === 'send-customer-gvms') {
+            // Update Send Customer GVMS status to Green (3)
+            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-customer-gvms-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
           } else if (source === 'send-invoice-customer') {
             // Update Invoice Customer status to Green (3) for import shipments
             await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/invoice-customer-status`, { status: 3 });

@@ -283,6 +283,15 @@ export default function ImportShipments() {
     },
   })
 
+  const updateSendCustomerGvmsStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number | null }) => {
+      return apiRequest("PATCH", `/api/import-shipments/${id}/send-customer-gvms-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+    },
+  })
+
   const deleteFile = useMutation({
     mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
       return apiRequest("DELETE", `/api/import-shipments/${id}/files`, { filePath, fileType })
@@ -709,6 +718,10 @@ export default function ImportShipments() {
     updateSendHaulierEadStatus.mutate({ id, status })
   }
 
+  const handleSendCustomerGvmsStatusUpdate = (id: string, status: number) => {
+    updateSendCustomerGvmsStatus.mutate({ id, status })
+  }
+
   const handleSendHaulierGvmsEmail = (shipment: ImportShipment) => {
     try {
       // Get haulier email(s) - support both array and legacy string format
@@ -776,6 +789,89 @@ export default function ImportShipments() {
         attachments,
         metadata: {
           source: 'send-haulier-ead',
+          shipmentId: shipment.id,
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleSendCustomerGvmsEmail = (shipment: ImportShipment) => {
+    try {
+      // Get customer details
+      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
+      
+      // Get customer email(s) - support both array and legacy string format
+      const customerEmailField = customer?.email
+      const customerEmails = Array.isArray(customerEmailField)
+        ? customerEmailField.filter(Boolean)
+        : typeof customerEmailField === 'string' && customerEmailField
+          ? customerEmailField.split(',').map((e: any) => e.trim()).filter(Boolean)
+          : []
+
+      // Get customer contact name(s) - support both array and legacy string format
+      const customerContactField = customer?.contactName
+      const customerContacts = Array.isArray(customerContactField)
+        ? customerContactField.filter(Boolean)
+        : typeof customerContactField === 'string' && customerContactField
+          ? customerContactField.split('/').map((c: any) => c.trim()).filter(Boolean)
+          : []
+
+      // Build "Hi" greeting line with proper grammar
+      let greeting = "Hi there"
+      if (customerContacts.length === 1) {
+        greeting = `Hi ${customerContacts[0]}`
+      } else if (customerContacts.length === 2) {
+        greeting = `Hi ${customerContacts[0]} and ${customerContacts[1]}`
+      } else if (customerContacts.length > 2) {
+        const lastContact = customerContacts[customerContacts.length - 1]
+        const otherContacts = customerContacts.slice(0, -1).join(', ')
+        greeting = `Hi ${otherContacts}, and ${lastContact}`
+      }
+
+      // Build subject
+      let subject = `Import Job Update - Import GVMS Document / Our Ref: ${shipment.jobRef}`
+      
+      // Add trailer/container/flight number if available with correct label based on shipment type
+      if (shipment.trailerOrContainerNumber) {
+        let numberLabel = "Trailer Number"
+        if (shipment.containerShipment === "Air Freight") {
+          numberLabel = "Flight Number"
+        } else if (shipment.containerShipment === "Container Shipment") {
+          numberLabel = "Container Number"
+        }
+        subject += ` / ${numberLabel}: ${shipment.trailerOrContainerNumber}`
+      }
+      
+      // Add customer reference if available
+      if (shipment.customerReferenceNumber) {
+        subject += ` / Your Ref: ${shipment.customerReferenceNumber}`
+      }
+
+      // Build email body
+      const body = `${greeting},\n\nPlease find attached Import Entry for this shipment.\n\nHope all is OK.`
+
+      // Get attachments from linked clearance if available
+      const linkedClearance = customClearances.find((c: any) => c.jobRef === shipment.jobRef)
+      const attachments = linkedClearance?.clearanceDocuments || []
+
+      // Open email composer with clearance documents
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: customerEmails.join(', '),
+        cc: '',
+        bcc: '',
+        subject,
+        body,
+        attachments,
+        metadata: {
+          source: 'send-customer-gvms',
           shipmentId: shipment.id,
         }
       })
@@ -1896,6 +1992,49 @@ Hope all is OK.`
                                 : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                             }`}
                             data-testid={`button-send-haulier-gvms-green-${shipment.id}`}
+                            title="Completed"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {shipment.containerShipment === "Road Shipment" && !shipment.rsToClear && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <Mail 
+                            className="h-4 w-4 text-muted-foreground shrink-0 cursor-pointer hover-elevate active-elevate-2" 
+                            onClick={() => handleSendCustomerGvmsEmail(shipment)}
+                            data-testid={`button-send-customer-gvms-email-${shipment.id}`}
+                          />
+                          <p className={`text-xs ${getSendPodToCustomerStatusColor(shipment.sendCustomerGvmsStatusIndicator)} font-medium`} data-testid={`text-send-customer-gvms-${shipment.id}`}>
+                            Send Customer GVMS
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleSendCustomerGvmsStatusUpdate(shipment.id, 2)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendCustomerGvmsStatusIndicator === 2 || shipment.sendCustomerGvmsStatusIndicator === null
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-send-customer-gvms-yellow-${shipment.id}`}
+                            title="To Do"
+                          />
+                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleSendCustomerGvmsStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendCustomerGvmsStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-send-customer-gvms-green-${shipment.id}`}
                             title="Completed"
                           />
                         </div>
