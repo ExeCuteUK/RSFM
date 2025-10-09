@@ -1665,24 +1665,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: (req.user as User | undefined)?.id
       } as any);
       
-      // Sync documents to job_file_groups
-      const allDocs = [
-        ...(clearance.transportDocuments || []),
-        ...(clearance.clearanceDocuments || [])
-      ];
+      // Sync ONLY transport documents to job_file_groups (clearance documents are unique to clearance)
+      const transportDocsOnly = clearance.transportDocuments || [];
       
-      if (allDocs.length > 0) {
+      if (transportDocsOnly.length > 0) {
         const existingGroup = await storage.getJobFileGroupByJobRef(clearance.jobRef);
         if (existingGroup) {
           // Merge with existing documents to avoid duplicates
-          const mergedDocs = Array.from(new Set([...(existingGroup.documents || []), ...allDocs]));
+          const mergedDocs = Array.from(new Set([...(existingGroup.documents || []), ...transportDocsOnly]));
           await storage.updateJobFileGroup(clearance.jobRef, {
             documents: mergedDocs,
           });
         } else {
           await storage.createJobFileGroup({
             jobRef: clearance.jobRef,
-            documents: allDocs,
+            documents: transportDocsOnly,
             rsInvoices: [],
           });
         }
