@@ -260,14 +260,14 @@ export default function CustomClearances() {
       // If it's a clearance document, scan for MRN
       if (fileType === "clearance") {
         try {
-          const ocrResponse = await fetch("/api/objects/extract-mrn", {
+          const ocrResponse = await fetch("/api/objects/ocr", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filePath })
+            body: JSON.stringify({ objectPath: filePath })
           })
-          const { mrn } = await ocrResponse.json()
+          const { mrnNumber } = await ocrResponse.json()
           
-          if (mrn) {
+          if (mrnNumber) {
             // Update clearance with MRN and file
             const clearance = clearances.find(c => c.id === id)
             if (!clearance) throw new Error("Clearance not found")
@@ -278,11 +278,11 @@ export default function CustomClearances() {
             const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
               ...clearance,
               clearanceDocuments: updatedFiles,
-              mrn
+              mrn: mrnNumber
             })
             toast({ 
               title: "MRN Detected", 
-              description: `Found MRN: ${mrn}. Added to clearance.` 
+              description: `Found MRN: ${mrnNumber}. Added to clearance.` 
             })
             return res.json()
           }
