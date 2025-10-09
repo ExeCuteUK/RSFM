@@ -209,6 +209,12 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
     setIsProcessingOCR(true);
     
+    // Show scanning notification
+    toast({
+      title: "Scanning Document",
+      description: "Analyzing clearance document for MRN number...",
+    });
+    
     try {
       const response = await fetch('/api/objects/ocr', {
         method: 'POST',
@@ -223,11 +229,28 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       const data = await response.json();
       
       if (data.mrnNumber) {
+        // Show what was found
+        toast({
+          title: "MRN Number Detected",
+          description: `Found MRN: ${data.mrnNumber}`,
+        });
         setExtractedMRN(data.mrnNumber);
         setMrnDialogOpen(true);
+      } else {
+        // Show that scanning completed but no MRN found
+        const textPreview = data.text ? data.text.substring(0, 100) + (data.text.length > 100 ? '...' : '') : 'No text found';
+        toast({
+          title: "Document Scanned",
+          description: `No MRN number detected. Preview: ${textPreview}`,
+        });
       }
     } catch (error) {
       console.error('OCR error:', error);
+      toast({
+        title: "Scan Failed",
+        description: "Could not scan document for MRN number",
+        variant: "destructive",
+      });
     } finally {
       setIsProcessingOCR(false);
     }
