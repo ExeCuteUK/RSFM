@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { useLocation } from "wouter"
+import { format } from "date-fns"
 
 export function ClearanceWorkGrid() {
   const [searchText, setSearchText] = useState("")
@@ -188,6 +189,16 @@ export function ClearanceWorkGrid() {
     setLinkedFilter(prev =>
       prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
     )
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return ""
+    try {
+      const date = new Date(dateString)
+      return format(date, "dd/MM/yy")
+    } catch {
+      return dateString
+    }
   }
 
   const getCustomerName = (clearance: CustomClearance) => {
@@ -472,7 +483,7 @@ export function ClearanceWorkGrid() {
                       {renderCell(clearance, "jobType", clearance.jobType === "import" ? "Import" : "Export", columnWidths[2])}
                       {renderCell(clearance, "clearanceType", clearance.clearanceType, columnWidths[3])}
                       {renderCell(clearance, "customerName", customerName, columnWidths[4])}
-                      {renderCell(clearance, "etaPort", clearance.etaPort, columnWidths[5])}
+                      {renderCell(clearance, "etaPort", formatDate(clearance.etaPort), columnWidths[5])}
                       {renderCell(clearance, "trailerOrContainerNumber", clearance.trailerOrContainerNumber, columnWidths[6])}
                       {renderCell(clearance, "mrn", clearance.mrn, columnWidths[7])}
                       {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[8])}
