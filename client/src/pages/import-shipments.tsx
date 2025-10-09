@@ -340,7 +340,16 @@ export default function ImportShipments() {
       
       // Update shipment with new file object
       const currentFiles = fileType === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
-      const updatedFiles = [...currentFiles, fileObject]
+      
+      // Convert any old string files to new object format for consistency
+      const normalizedCurrentFiles = currentFiles.map((f: any) => {
+        if (typeof f === 'string') {
+          return { filename: f.split('/').pop() || f, path: f };
+        }
+        return f;
+      });
+      
+      const updatedFiles = [...normalizedCurrentFiles, fileObject]
       
       const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
         ...shipment,

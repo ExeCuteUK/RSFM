@@ -324,7 +324,16 @@ export default function CustomClearances() {
       
       // Update clearance with new file object (no MRN found or transport doc)
       const currentFiles = fileType === "transport" ? (clearance.transportDocuments || []) : (clearance.clearanceDocuments || [])
-      const updatedFiles = [...currentFiles, fileObject]
+      
+      // Convert any old string files to new object format for consistency
+      const normalizedCurrentFiles = currentFiles.map((f: any) => {
+        if (typeof f === 'string') {
+          return { filename: f.split('/').pop() || f, path: f };
+        }
+        return f;
+      });
+      
+      const updatedFiles = [...normalizedCurrentFiles, fileObject]
       
       const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
         ...clearance,
