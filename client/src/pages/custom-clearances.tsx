@@ -1370,7 +1370,7 @@ export default function CustomClearances() {
             Manage customs clearance operations for import and export shipments
           </p>
         </div>
-        <Button data-testid="button-new-clearance" onClick={handleCreateNew}>
+        <Button data-testid="button-new-clearance" onClick={handleCreateNew} className="bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30">
           <Plus className="h-4 w-4 mr-2" />
           New Customs Clearance
         </Button>
@@ -1397,6 +1397,7 @@ export default function CustomClearances() {
           <Button
             variant={selectedShipmentTypes.includes("Container Shipment") ? "default" : "outline"}
             size="sm"
+            className={selectedShipmentTypes.includes("Container Shipment") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Container Shipment") && prev.length === 1) {
@@ -1415,6 +1416,7 @@ export default function CustomClearances() {
           <Button
             variant={selectedShipmentTypes.includes("Road Shipment") ? "default" : "outline"}
             size="sm"
+            className={selectedShipmentTypes.includes("Road Shipment") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Road Shipment") && prev.length === 1) {
@@ -1433,6 +1435,7 @@ export default function CustomClearances() {
           <Button
             variant={selectedShipmentTypes.includes("Air Freight") ? "default" : "outline"}
             size="sm"
+            className={selectedShipmentTypes.includes("Air Freight") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Air Freight") && prev.length === 1) {
@@ -1454,6 +1457,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.length === 0 ? "default" : "outline"}
           size="sm"
+          className={selectedStatuses.length === 0 ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
           onClick={handleAllClick}
           data-testid="filter-all"
         >
@@ -1462,6 +1466,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Request CC") ? "default" : "outline"}
           size="sm"
+          className={selectedStatuses.includes("Request CC") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
           onClick={() => handleStatusToggle("Request CC")}
           data-testid="filter-request-cc"
         >
@@ -1470,6 +1475,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Awaiting Entry") ? "default" : "outline"}
           size="sm"
+          className={selectedStatuses.includes("Awaiting Entry") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
           onClick={() => handleStatusToggle("Awaiting Entry")}
           data-testid="filter-awaiting-entry"
         >
@@ -1478,6 +1484,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Waiting Arrival") ? "default" : "outline"}
           size="sm"
+          className={selectedStatuses.includes("Waiting Arrival") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
           onClick={() => handleStatusToggle("Waiting Arrival")}
           data-testid="filter-waiting-arrival"
         >
@@ -1486,6 +1493,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("P.H Hold") ? "default" : "outline"}
           size="sm"
+          className={selectedStatuses.includes("P.H Hold") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
           onClick={() => handleStatusToggle("P.H Hold")}
           data-testid="filter-ph-hold"
         >
@@ -1494,6 +1502,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Customs Issue") ? "default" : "outline"}
           size="sm"
+          className={selectedStatuses.includes("Customs Issue") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
           onClick={() => handleStatusToggle("Customs Issue")}
           data-testid="filter-customs-issue"
         >
@@ -1502,6 +1511,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Fully Cleared") ? "default" : "outline"}
           size="sm"
+          className={selectedStatuses.includes("Fully Cleared") ? "bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30" : ""}
           onClick={() => handleStatusToggle("Fully Cleared")}
           data-testid="filter-fully-cleared"
         >
