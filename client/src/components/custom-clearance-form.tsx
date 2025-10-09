@@ -202,11 +202,6 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       return;
     }
 
-    // Don't process if already has MRN
-    if (form.getValues('mrn')) {
-      return;
-    }
-
     setIsProcessingOCR(true);
     
     // Show scanning notification
