@@ -11,7 +11,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, EyeOff } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -43,9 +42,6 @@ export default function MyAccount() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordSuccessOpen, setPasswordSuccessOpen] = useState(false);
 
   const profileForm = useForm<ProfileFormData>({
@@ -188,7 +184,7 @@ export default function MyAccount() {
           </CardHeader>
           <CardContent>
             <Form {...passwordForm}>
-              <form onSubmit={passwordForm.handleSubmit((data) => changePasswordMutation.mutate(data))} className="space-y-4">
+              <form onSubmit={passwordForm.handleSubmit((data) => changePasswordMutation.mutate(data))} className="space-y-3">
                 <FormField
                   control={passwordForm.control}
                   name="currentPassword"
@@ -196,24 +192,11 @@ export default function MyAccount() {
                     <FormItem>
                       <FormLabel>Current Password</FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Input
-                            {...field}
-                            type={showCurrentPassword ? "text" : "password"}
-                            className="pr-10"
-                            data-testid="input-current-password"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                            data-testid="button-toggle-current-password"
-                          >
-                            {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
+                        <Input
+                          {...field}
+                          type="password"
+                          data-testid="input-current-password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -227,24 +210,11 @@ export default function MyAccount() {
                     <FormItem>
                       <FormLabel>New Password</FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Input
-                            {...field}
-                            type={showNewPassword ? "text" : "password"}
-                            className="pr-10"
-                            data-testid="input-new-password"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                            onClick={() => setShowNewPassword(!showNewPassword)}
-                            data-testid="button-toggle-new-password"
-                          >
-                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
+                        <Input
+                          {...field}
+                          type="password"
+                          data-testid="input-new-password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -258,24 +228,11 @@ export default function MyAccount() {
                     <FormItem>
                       <FormLabel>Confirm New Password</FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Input
-                            {...field}
-                            type={showConfirmPassword ? "text" : "password"}
-                            className="pr-10"
-                            data-testid="input-confirm-password"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            data-testid="button-toggle-confirm-password"
-                          >
-                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
+                        <Input
+                          {...field}
+                          type="password"
+                          data-testid="input-confirm-password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

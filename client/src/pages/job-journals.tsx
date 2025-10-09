@@ -118,11 +118,11 @@ export default function JobJournals() {
         setGeneralRefDialogOpen(true)
       }
     } else if (lowerType === 'import') {
-      setLocation(`/import-shipments?search=#${jobRef}`)
+      setLocation(`/import-shipments?search=${jobRef}`)
     } else if (lowerType === 'export') {
-      setLocation(`/export-shipments?search=#${jobRef}`)
+      setLocation(`/export-shipments?search=${jobRef}`)
     } else if (lowerType === 'customs') {
-      setLocation(`/custom-clearances?search=#${jobRef}`)
+      setLocation(`/custom-clearances?search=${jobRef}`)
     }
   }
   
