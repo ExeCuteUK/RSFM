@@ -4,7 +4,7 @@
 
 R.S International Freight Manager is a web-based enterprise solution for logistics operations, designed to manage import/export shipments, customs clearances, customer records, invoicing, and freight rate calculations. It replaces a legacy VB6 application, offering unified job referencing (starting at #26001) across Import Shipments, Export Shipments, and Custom Clearances. A key feature is the automatic generation of Custom Clearance jobs for Import Shipments marked "R.S To Clear", sharing the same job reference. The system supports multi-currency financial fields and maintains separate databases for different customer types. Visual clarity is enhanced by distinct color themes for each job type.
 
-The application includes comprehensive file upload functionality integrated with Replit's App Storage, featuring a shared document storage system (`job_file_groups` table). This system automatically syncs files between linked jobs (import/export shipments and their custom clearances) via their shared `jobRef`, ensuring seamless access to Documents and R.S Invoices.
+The application includes comprehensive file upload functionality integrated with Google Drive, featuring a shared document storage system (`job_file_groups` table). This system automatically syncs files between linked jobs (import/export shipments and their custom clearances) via their shared `jobRef`, ensuring seamless access to Documents and R.S Invoices.
 
 Key features include:
 - Dual-engine OCR system (Scribe.js for PDFs, Tesseract.js for images) for text extraction, with backend functionality intact.
@@ -64,7 +64,7 @@ The API provides RESTful endpoints for managing:
 -   **Jobs**: Import Shipments, Export Shipments, Custom Clearances (GET, POST, PATCH, DELETE, with auto-clearance generation and file syncing).
 -   **Job File Groups**: Shared document storage by `jobRef` (GET, PATCH for documents and RS invoices).
 -   **Messages**: Internal messaging (GET for user messages and unread count, POST, PATCH for read status, DELETE).
--   **File Storage**: Presigned upload URLs, file downloads, and URL normalization.
+-   **File Storage**: Direct file uploads to Google Drive, file downloads, and URL normalization.
 
 ### Navigation Routes
 
@@ -75,7 +75,7 @@ Key routes include `/` (Dashboard), `/job-journals`, `/import-shipments`, `/expo
 -   **UI Component Libraries:** Radix UI primitives, Shadcn/ui, Lucide React, Embla Carousel.
 -   **Form & Validation:** React Hook Form, Zod, @hookform/resolvers, Drizzle-Zod.
 -   **Utility Libraries:** clsx, tailwind-merge, class-variance-authority, date-fns.
--   **File Upload & Storage:** Uppy (core, react, dashboard, aws-s3), @google-cloud/storage.
+-   **File Upload & Storage:** Google Drive API (googleapis), Multer for multipart uploads (50MB limit).
 -   **Container Tracking:** Terminal49 API integration with SCAC code mapping.
 -   **OCR:** Scribe.js (PDFs), Tesseract.js (images).
 -   **Email Signature System:** File-based HTML templates, logo image upload, dynamic placeholders, `localStorage` for per-user signature toggle.
