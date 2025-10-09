@@ -23,6 +23,8 @@ export function ImportExportWorkGrid() {
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string; jobType: 'import' | 'export' } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [recordsPerPage, setRecordsPerPage] = useState(30)
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -164,6 +166,30 @@ export function ImportExportWorkGrid() {
     
     return statusMatch && typeMatch
   }).sort((a, b) => b.jobRef - a.jobRef)
+
+  // Pagination
+  const totalRecords = displayedJobs.length
+  const totalPages = Math.ceil(totalRecords / recordsPerPage)
+  const startIndex = (currentPage - 1) * recordsPerPage
+  const endIndex = startIndex + recordsPerPage
+  const paginatedJobs = displayedJobs.slice(startIndex, endIndex)
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, jobStatusFilter, jobTypeFilter, excludedCustomers])
+
+  // Clamp currentPage to valid bounds when totalPages changes
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [totalPages, currentPage])
+
+  const handleRecordsPerPageChange = (value: string) => {
+    setRecordsPerPage(Number(value))
+    setCurrentPage(1)
+  }
 
   const toggleJobStatusFilter = (status: "active" | "completed") => {
     setJobStatusFilter(prev =>
@@ -496,7 +522,7 @@ export function ImportExportWorkGrid() {
               </tr>
             </thead>
             <tbody>
-              {displayedJobs.map((job) => {
+              {paginatedJobs.map((job) => {
                 const isImport = job._jobType === 'import'
                 const importJob = isImport ? job as ImportShipment & { _jobType: 'import' } : null
                 const exportJob = !isImport ? job as ExportShipment & { _jobType: 'export' } : null
@@ -811,6 +837,53 @@ export function ImportExportWorkGrid() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {displayedJobs.length > 0 && (
+          <div className="flex items-center justify-between gap-4 pt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Records per page:</span>
+              <Select value={recordsPerPage.toString()} onValueChange={handleRecordsPerPageChange}>
+                <SelectTrigger className="w-20" data-testid="select-records-per-page">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground">
+                Showing {startIndex + 1}-{Math.min(endIndex, totalRecords)} of {totalRecords}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                data-testid="button-prev-page"
+              >
+                Previous
+              </Button>
+              <span className="text-sm font-medium">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                data-testid="button-next-page"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

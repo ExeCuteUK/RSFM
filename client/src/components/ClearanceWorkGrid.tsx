@@ -20,6 +20,8 @@ export function ClearanceWorkGrid() {
   const [editingCell, setEditingCell] = useState<{ clearanceId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [recordsPerPage, setRecordsPerPage] = useState(30)
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -125,6 +127,31 @@ export function ClearanceWorkGrid() {
       const refB = b.jobRef || 0
       return refB - refA
     })
+
+  // Pagination
+  const totalRecords = filteredClearances.length
+  const totalPages = Math.ceil(totalRecords / recordsPerPage)
+  const startIndex = (currentPage - 1) * recordsPerPage
+  const endIndex = startIndex + recordsPerPage
+  const paginatedClearances = filteredClearances.slice(startIndex, endIndex)
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, jobStatusFilter, jobTypeFilter, linkedFilter])
+
+  // Clamp currentPage to valid bounds when totalPages changes
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [totalPages, currentPage])
+
+  // Reset to page 1 when recordsPerPage changes
+  const handleRecordsPerPageChange = (value: string) => {
+    setRecordsPerPage(Number(value))
+    setCurrentPage(1)
+  }
 
   const updateClearanceMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<CustomClearance> }) => {
@@ -582,7 +609,7 @@ export function ClearanceWorkGrid() {
                 </tr>
               </thead>
               <tbody>
-                {filteredClearances.map((clearance) => {
+                {paginatedClearances.map((clearance) => {
                   const customerName = getCustomerName(clearance)
                   
                   return (
@@ -604,6 +631,53 @@ export function ClearanceWorkGrid() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {filteredClearances.length > 0 && (
+            <div className="flex items-center justify-between gap-4 pt-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Records per page:</span>
+                <Select value={recordsPerPage.toString()} onValueChange={handleRecordsPerPageChange}>
+                  <SelectTrigger className="w-20" data-testid="select-records-per-page">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1}-{Math.min(endIndex, totalRecords)} of {totalRecords}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  data-testid="button-prev-page"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm font-medium">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  data-testid="button-next-page"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
 
           {filteredClearances.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">

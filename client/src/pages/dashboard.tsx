@@ -26,6 +26,14 @@ export default function Dashboard() {
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const tableRef = useRef<HTMLTableElement>(null)
 
+  // Pagination state for Container Management
+  const [containerCurrentPage, setContainerCurrentPage] = useState(1)
+  const [containerRecordsPerPage, setContainerRecordsPerPage] = useState(30)
+
+  // Pagination state for Nisbets
+  const [nisbetsCurrentPage, setNisbetsCurrentPage] = useState(1)
+  const [nisbetsRecordsPerPage, setNisbetsRecordsPerPage] = useState(30)
+
   // Clear column widths when exiting edit mode
   useEffect(() => {
     if (!editingCell) {
@@ -324,6 +332,115 @@ export default function Dashboard() {
         s.customerReferenceNumber?.toLowerCase().includes(search)
       )
     })
+
+  // Pagination for Container Management
+  const containerTotalRecords = containerShipments.length
+  const containerTotalPages = Math.ceil(containerTotalRecords / containerRecordsPerPage)
+  const containerStartIndex = (containerCurrentPage - 1) * containerRecordsPerPage
+  const containerEndIndex = containerStartIndex + containerRecordsPerPage
+  const paginatedContainerShipments = containerShipments.slice(containerStartIndex, containerEndIndex)
+
+  // Reset container page when filters change
+  useEffect(() => {
+    setContainerCurrentPage(1)
+  }, [searchText, jobStatusFilter])
+
+  // Clamp container page to valid bounds
+  useEffect(() => {
+    if (containerTotalPages > 0 && containerCurrentPage > containerTotalPages) {
+      setContainerCurrentPage(containerTotalPages)
+    }
+  }, [containerTotalPages, containerCurrentPage])
+
+  const handleContainerRecordsPerPageChange = (value: string) => {
+    setContainerRecordsPerPage(Number(value))
+    setContainerCurrentPage(1)
+  }
+
+  // Find Nisbets PLC customer ID
+  const nisbetsCustomer = importCustomers.find(c => c.companyName === "Nisbets PLC")
+  
+  // Filter for Road Shipment jobs with Nisbets PLC customer
+  const nisbetsShipments = importShipments
+    .filter(s => s.containerShipment === "Road Shipment" && s.importCustomerId === nisbetsCustomer?.id)
+    .filter(s => {
+      if (!searchText.trim()) return true
+      const search = searchText.toLowerCase()
+      return (
+        s.jobRef?.toString().includes(search) ||
+        s.customerReferenceNumber?.toLowerCase().includes(search) ||
+        s.haulierName?.toLowerCase().includes(search) ||
+        s.supplierName?.toLowerCase().includes(search) ||
+        s.trailerOrContainerNumber?.toLowerCase().includes(search)
+      )
+    })
+    .sort((a, b) => (b.jobRef || 0) - (a.jobRef || 0))
+
+  // Pagination for Nisbets
+  const nibsetsTotalRecords = nisbetsShipments.length
+  const nibsetsTotalPages = Math.ceil(nibsetsTotalRecords / nisbetsRecordsPerPage)
+  const nisbetsStartIndex = (nisbetsCurrentPage - 1) * nisbetsRecordsPerPage
+  const nisbetsEndIndex = nisbetsStartIndex + nisbetsRecordsPerPage
+  const paginatedNisbetsShipments = nisbetsShipments.slice(nisbetsStartIndex, nisbetsEndIndex)
+
+  // Reset nisbets page when filters change
+  useEffect(() => {
+    setNisbetsCurrentPage(1)
+  }, [searchText, jobStatusFilter])
+
+  // Clamp nisbets page to valid bounds
+  useEffect(() => {
+    if (nibsetsTotalPages > 0 && nisbetsCurrentPage > nibsetsTotalPages) {
+      setNisbetsCurrentPage(nibsetsTotalPages)
+    }
+  }, [nibsetsTotalPages, nisbetsCurrentPage])
+
+  const handleNisbetsRecordsPerPageChange = (value: string) => {
+    setNisbetsRecordsPerPage(Number(value))
+    setNisbetsCurrentPage(1)
+  }
+
+  // Helper to extract city/town from delivery address
+  const getDestination = (address: string | null): string => {
+    if (!address) return ""
+    const lines = address.split('\n').map(l => l.trim()).filter(l => l)
+    return lines.length > 1 ? lines[lines.length - 2] : lines[0] || ""
+  }
+
+  // Helper to format Price Out (3 lines max)
+  const formatPriceOut = (shipment: ImportShipment): string => {
+    const lines: string[] = []
+    if (shipment.freightRateOut && parseFloat(shipment.freightRateOut) > 0) {
+      lines.push(`£${shipment.freightRateOut} Freight`)
+    }
+    if (shipment.exportCustomsClearanceCharge && parseFloat(shipment.exportCustomsClearanceCharge) > 0) {
+      lines.push(`£${shipment.exportCustomsClearanceCharge} Exp CC`)
+    }
+    if (shipment.clearanceCharge && parseFloat(shipment.clearanceCharge) > 0) {
+      lines.push(`£${shipment.clearanceCharge} Imp CC`)
+    }
+    return lines.join('\n')
+  }
+
+  // Helper to format Net Cost (3 lines max)
+  const formatNetCost = (shipment: ImportShipment): string => {
+    const lines: string[] = []
+    if (shipment.haulierFreightRateIn && parseFloat(shipment.haulierFreightRateIn) > 0) {
+      lines.push(`£${shipment.haulierFreightRateIn} Freight`)
+    }
+    if (shipment.exportClearanceChargeIn && parseFloat(shipment.exportClearanceChargeIn) > 0) {
+      lines.push(`£${shipment.exportClearanceChargeIn} Exp CC`)
+    }
+    if (shipment.destinationClearanceCostIn && parseFloat(shipment.destinationClearanceCostIn) > 0) {
+      lines.push(`£${shipment.destinationClearanceCostIn} Imp CC`)
+    }
+    return lines.join('\n')
+  }
+
+  // Helper to get cell color (green if populated, yellow if empty)
+  const getNisbetsCellColor = (value: string | null | undefined): string => {
+    return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+  }
 
   // Helper to get customer name
   const getCustomerName = (customerId: string | null): string => {
@@ -780,7 +897,7 @@ export default function Dashboard() {
                         </td>
                       </tr>
                     ) : (
-                      containerShipments.map((shipment) => {
+                      paginatedContainerShipments.map((shipment) => {
                         const clearanceColor = getClearanceStatusColor(shipment)
                         const deliveryBookedColor = getDeliveryBookedColor(shipment.deliveryBookedStatusIndicator)
                         const releaseColor = getContainerReleaseColor(shipment.containerReleaseStatusIndicator)
@@ -911,6 +1028,53 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {containerShipments.length > 0 && (
+                <div className="flex items-center justify-between gap-4 pt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Records per page:</span>
+                    <Select value={containerRecordsPerPage.toString()} onValueChange={handleContainerRecordsPerPageChange}>
+                      <SelectTrigger className="w-20" data-testid="select-container-records-per-page">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="30">30</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="text-sm text-muted-foreground">
+                      Showing {containerStartIndex + 1}-{Math.min(containerEndIndex, containerTotalRecords)} of {containerTotalRecords}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setContainerCurrentPage(containerCurrentPage - 1)}
+                      disabled={containerCurrentPage === 1}
+                      data-testid="button-container-prev-page"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm font-medium">
+                      Page {containerCurrentPage} of {containerTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setContainerCurrentPage(containerCurrentPage + 1)}
+                      disabled={containerCurrentPage >= containerTotalPages}
+                      data-testid="button-container-next-page"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -962,69 +1126,7 @@ export default function Dashboard() {
                   </thead>
                   <tbody className="text-xs">
                     {(() => {
-                      // Find Nisbets PLC customer ID
-                      const nisbetsCustomer = importCustomers.find(c => c.companyName === "Nisbets PLC")
-                      
-                      // Filter for Road Shipment jobs with Nisbets PLC customer
-                      const nisbetsShipments = importShipments
-                        .filter(s => s.containerShipment === "Road Shipment" && s.importCustomerId === nisbetsCustomer?.id)
-                        .filter(s => {
-                          if (!searchText.trim()) return true
-                          const search = searchText.toLowerCase()
-                          return (
-                            s.jobRef?.toString().includes(search) ||
-                            s.customerReferenceNumber?.toLowerCase().includes(search) ||
-                            s.haulierName?.toLowerCase().includes(search) ||
-                            s.supplierName?.toLowerCase().includes(search) ||
-                            s.trailerOrContainerNumber?.toLowerCase().includes(search)
-                          )
-                        })
-                        .sort((a, b) => (b.jobRef || 0) - (a.jobRef || 0))
-
-                      // Helper to extract city/town from delivery address
-                      const getDestination = (address: string | null): string => {
-                        if (!address) return ""
-                        const lines = address.split('\n').map(l => l.trim()).filter(l => l)
-                        // Return second-to-last line (usually city/town) or last line if only one line exists
-                        return lines.length > 1 ? lines[lines.length - 2] : lines[0] || ""
-                      }
-
-                      // Helper to format Price Out (3 lines max)
-                      const formatPriceOut = (shipment: ImportShipment): string => {
-                        const lines: string[] = []
-                        if (shipment.freightRateOut && parseFloat(shipment.freightRateOut) > 0) {
-                          lines.push(`£${shipment.freightRateOut} Freight`)
-                        }
-                        if (shipment.exportCustomsClearanceCharge && parseFloat(shipment.exportCustomsClearanceCharge) > 0) {
-                          lines.push(`£${shipment.exportCustomsClearanceCharge} Exp CC`)
-                        }
-                        if (shipment.clearanceCharge && parseFloat(shipment.clearanceCharge) > 0) {
-                          lines.push(`£${shipment.clearanceCharge} Imp CC`)
-                        }
-                        return lines.join('\n')
-                      }
-
-                      // Helper to format Net Cost (3 lines max)
-                      const formatNetCost = (shipment: ImportShipment): string => {
-                        const lines: string[] = []
-                        if (shipment.haulierFreightRateIn && parseFloat(shipment.haulierFreightRateIn) > 0) {
-                          lines.push(`£${shipment.haulierFreightRateIn} Freight`)
-                        }
-                        if (shipment.exportClearanceChargeIn && parseFloat(shipment.exportClearanceChargeIn) > 0) {
-                          lines.push(`£${shipment.exportClearanceChargeIn} Exp CC`)
-                        }
-                        if (shipment.destinationClearanceCostIn && parseFloat(shipment.destinationClearanceCostIn) > 0) {
-                          lines.push(`£${shipment.destinationClearanceCostIn} Imp CC`)
-                        }
-                        return lines.join('\n')
-                      }
-
-                      // Helper to get cell color (green if populated, yellow if empty)
-                      const getCellColor = (value: string | null | undefined): string => {
-                        return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
-                      }
-
-                      if (nisbetsShipments.length === 0) {
+                      if (paginatedNisbetsShipments.length === 0 && nisbetsShipments.length === 0) {
                         return (
                           <tr>
                             <td colSpan={19} className="p-4 text-center text-muted-foreground">
@@ -1034,7 +1136,7 @@ export default function Dashboard() {
                         )
                       }
 
-                      return nisbetsShipments.map((shipment) => {
+                      return paginatedNisbetsShipments.map((shipment) => {
                         const destination = getDestination(shipment.deliveryAddress)
                         const priceOut = formatPriceOut(shipment)
                         const netCost = formatNetCost(shipment)
@@ -1048,7 +1150,7 @@ export default function Dashboard() {
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-nisbets-${shipment.jobRef}`}>
                             {/* Job Ref - READ ONLY */}
-                            <td className={`px-1 text-center border-r border-border align-middle ${getCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                            <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
                                 className="text-blue-600 dark:text-blue-300 hover:underline"
@@ -1184,12 +1286,12 @@ export default function Dashboard() {
                             />
                             
                             {/* Net Cost - READ ONLY */}
-                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
+                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getNisbetsCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
                               {netCost}
                             </td>
                             
                             {/* Price Out - READ ONLY */}
-                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
+                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getNisbetsCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
                               {priceOut}
                             </td>
                             
@@ -1208,6 +1310,53 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {nisbetsShipments.length > 0 && (
+                <div className="flex items-center justify-between gap-4 pt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Records per page:</span>
+                    <Select value={nisbetsRecordsPerPage.toString()} onValueChange={handleNisbetsRecordsPerPageChange}>
+                      <SelectTrigger className="w-20" data-testid="select-nisbets-records-per-page">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="30">30</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="text-sm text-muted-foreground">
+                      Showing {nisbetsStartIndex + 1}-{Math.min(nisbetsEndIndex, nibsetsTotalRecords)} of {nibsetsTotalRecords}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNisbetsCurrentPage(nisbetsCurrentPage - 1)}
+                      disabled={nisbetsCurrentPage === 1}
+                      data-testid="button-nisbets-prev-page"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm font-medium">
+                      Page {nisbetsCurrentPage} of {nibsetsTotalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNisbetsCurrentPage(nisbetsCurrentPage + 1)}
+                      disabled={nisbetsCurrentPage >= nibsetsTotalPages}
+                      data-testid="button-nisbets-next-page"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
