@@ -9,6 +9,11 @@ import { storage } from "./storage";
 const app = express();
 // Skip body parsers for multipart/form-data (file uploads)
 app.use((req, res, next) => {
+  const contentType = req.headers['content-type'];
+  if (req.path === '/api/objects/upload') {
+    console.log('[MIDDLEWARE DEBUG] Upload route - Content-Type:', contentType);
+    console.log('[MIDDLEWARE DEBUG] req.is multipart?:', req.is('multipart/form-data'));
+  }
   if (req.is('multipart/form-data')) {
     return next();
   }
