@@ -1414,6 +1414,11 @@ export default function CustomClearances() {
                         )}
                       </p>
                     )}
+                    {clearance.mrn && (
+                      <p data-testid={`text-mrn-${clearance.id}`}>
+                        <span className="font-medium">MRN:</span> {clearance.mrn}
+                      </p>
+                    )}
                     {clearance.goodsDescription && (
                       <p className="text-muted-foreground line-clamp-2" data-testid={`text-description-${clearance.id}`}>
                         {clearance.goodsDescription}
