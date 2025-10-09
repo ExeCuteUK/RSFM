@@ -246,7 +246,7 @@ export default function CustomClearances() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename: file.name })
       })
-      const { uploadURL } = await uploadResponse.json()
+      const { uploadURL, objectPath } = await uploadResponse.json()
       
       // Upload file to storage
       await fetch(uploadURL, {
@@ -254,10 +254,44 @@ export default function CustomClearances() {
         body: file
       })
       
-      // Get the file path (remove query params)
-      const filePath = uploadURL.split('?')[0]
+      // Get the file path (use objectPath from response)
+      const filePath = objectPath || uploadURL.split('?')[0]
       
-      // Update clearance with new file
+      // If it's a clearance document, scan for MRN
+      if (fileType === "clearance") {
+        try {
+          const ocrResponse = await fetch("/api/objects/extract-mrn", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filePath })
+          })
+          const { mrn } = await ocrResponse.json()
+          
+          if (mrn) {
+            // Update clearance with MRN and file
+            const clearance = clearances.find(c => c.id === id)
+            if (!clearance) throw new Error("Clearance not found")
+            
+            const currentFiles = clearance.clearanceDocuments || []
+            const updatedFiles = [...currentFiles, filePath]
+            
+            const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
+              ...clearance,
+              clearanceDocuments: updatedFiles,
+              mrn
+            })
+            toast({ 
+              title: "MRN Detected", 
+              description: `Found MRN: ${mrn}. Added to clearance.` 
+            })
+            return res.json()
+          }
+        } catch (error) {
+          console.error("OCR failed:", error)
+        }
+      }
+      
+      // Update clearance with new file (no MRN found or transport doc)
       const clearance = clearances.find(c => c.id === id)
       if (!clearance) throw new Error("Clearance not found")
       
