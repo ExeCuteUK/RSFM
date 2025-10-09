@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { type CustomClearance, type ImportCustomer, type ExportCustomer } from "@shared/schema"
+import { type CustomClearance, type ImportCustomer, type ExportCustomer, type ImportShipment, type ExportShipment } from "@shared/schema"
 import { Search, X, ExternalLink } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
@@ -54,6 +54,14 @@ export function ClearanceWorkGrid() {
 
   const { data: exportCustomers = [] } = useQuery<ExportCustomer[]>({
     queryKey: ["/api/export-customers"],
+  })
+
+  const { data: importShipments = [] } = useQuery<ImportShipment[]>({
+    queryKey: ["/api/import-shipments"],
+  })
+
+  const { data: exportShipments = [] } = useQuery<ExportShipment[]>({
+    queryKey: ["/api/export-shipments"],
   })
 
   // Filter clearances
@@ -221,14 +229,54 @@ export function ClearanceWorkGrid() {
     }
   }
 
+  const getAgentAdvisedTimestamp = (clearance: CustomClearance) => {
+    // If clearance is linked to an import/export shipment, use parent's timestamp
+    if (clearance.createdFromId) {
+      if (clearance.jobType === "import") {
+        const parentShipment = importShipments.find(s => s.id === clearance.createdFromId)
+        return parentShipment?.clearanceStatusIndicatorTimestamp || null
+      } else if (clearance.jobType === "export") {
+        const parentShipment = exportShipments.find(s => s.id === clearance.createdFromId)
+        return parentShipment?.adviseClearanceToAgentStatusIndicatorTimestamp || null
+      }
+    }
+    
+    // For non-linked clearances, use the clearance's own timestamp
+    return clearance.adviseAgentStatusIndicatorTimestamp
+  }
+
   const getCellColor = (clearance: CustomClearance, fieldName: string, value: any) => {
     // Link column and Job Ref always green
     if (fieldName === "link" || fieldName === "jobRef") {
       return "bg-green-100 dark:bg-green-950"
     }
 
-    // Agent Advised column: green if BOTH adviseAgent and sendHaulierEad are 3, otherwise yellow
+    // Agent Advised column: check parent shipment status for linked jobs
     if (fieldName === "agentAdvised") {
+      // If clearance is linked to an import/export shipment
+      if (clearance.createdFromId) {
+        if (clearance.jobType === "import") {
+          const parentShipment = importShipments.find(s => s.id === clearance.createdFromId)
+          if (parentShipment) {
+            // Check clearanceStatusIndicator: 1=yellow, 3=green
+            if (parentShipment.clearanceStatusIndicator === 3) {
+              return "bg-green-100 dark:bg-green-950"
+            }
+            return "bg-yellow-100 dark:bg-yellow-950"
+          }
+        } else if (clearance.jobType === "export") {
+          const parentShipment = exportShipments.find(s => s.id === clearance.createdFromId)
+          if (parentShipment) {
+            // Check adviseClearanceToAgentStatusIndicator: 1=yellow, 3=green
+            if (parentShipment.adviseClearanceToAgentStatusIndicator === 3) {
+              return "bg-green-100 dark:bg-green-950"
+            }
+            return "bg-yellow-100 dark:bg-yellow-950"
+          }
+        }
+      }
+      
+      // For non-linked clearances: green if BOTH adviseAgent and sendHaulierEad are 3
       if (clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3) {
         return "bg-green-100 dark:bg-green-950"
       }
@@ -497,7 +545,7 @@ export function ClearanceWorkGrid() {
                       {renderCell(clearance, "trailerOrContainerNumber", clearance.trailerOrContainerNumber, columnWidths[6])}
                       {renderCell(clearance, "mrn", clearance.mrn, columnWidths[7])}
                       {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[8])}
-                      {renderCell(clearance, "agentAdvised", formatDateTime(clearance.adviseAgentStatusIndicatorTimestamp), columnWidths[9])}
+                      {renderCell(clearance, "agentAdvised", formatDateTime(getAgentAdvisedTimestamp(clearance)), columnWidths[9])}
                       {renderCell(clearance, "notes", clearance.additionalNotes, columnWidths[10])}
                     </tr>
                   )
