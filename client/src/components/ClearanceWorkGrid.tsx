@@ -12,21 +12,50 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { useLocation } from "wouter"
 import { format } from "date-fns"
 
+const STORAGE_KEY = 'clearanceWorkGrid_preferences'
+
 export function ClearanceWorkGrid() {
-  const [searchText, setSearchText] = useState("")
-  const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active"])
-  const [jobTypeFilter, setJobTypeFilter] = useState<("import" | "export")[]>(["import", "export"])
-  const [linkedFilter, setLinkedFilter] = useState<("linked" | "dedicated")[]>(["linked", "dedicated"])
+  // Load preferences from localStorage
+  const loadPreferences = () => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return {}
+      }
+    }
+    return {}
+  }
+
+  const prefs = loadPreferences()
+
+  const [searchText, setSearchText] = useState(prefs.searchText || "")
+  const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(prefs.jobStatusFilter || ["active"])
+  const [jobTypeFilter, setJobTypeFilter] = useState<("import" | "export")[]>(prefs.jobTypeFilter || ["import", "export"])
+  const [linkedFilter, setLinkedFilter] = useState<("linked" | "dedicated")[]>(prefs.linkedFilter || ["linked", "dedicated"])
   const [editingCell, setEditingCell] = useState<{ clearanceId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [recordsPerPage, setRecordsPerPage] = useState(30)
+  const [recordsPerPage, setRecordsPerPage] = useState(prefs.recordsPerPage || 30)
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
+
+  // Save preferences to localStorage whenever they change
+  useEffect(() => {
+    const preferences = {
+      searchText,
+      jobStatusFilter,
+      jobTypeFilter,
+      linkedFilter,
+      recordsPerPage
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
+  }, [searchText, jobStatusFilter, jobTypeFilter, linkedFilter, recordsPerPage])
 
   useEffect(() => {
     if (!editingCell) {

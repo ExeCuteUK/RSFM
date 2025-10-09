@@ -11,20 +11,37 @@ import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { useLocation } from "wouter"
 
+const STORAGE_KEY = 'importExportWorkGrid_preferences'
+
 export function ImportExportWorkGrid() {
-  const [searchText, setSearchText] = useState("")
+  // Load preferences
+  const loadPreferences = () => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return {}
+      }
+    }
+    return {}
+  }
+
+  const prefs = loadPreferences()
+
+  const [searchText, setSearchText] = useState(prefs.searchText || "")
   const [excludeInputValue, setExcludeInputValue] = useState("")
   const [excludedCustomers, setExcludedCustomers] = useState<string[]>(() => {
     const saved = localStorage.getItem('excludedCustomers')
     return saved ? JSON.parse(saved) : []
   })
-  const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active", "completed"])
-  const [jobTypeFilter, setJobTypeFilter] = useState<("import" | "export")[]>(["import", "export"])
+  const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(prefs.jobStatusFilter || ["active", "completed"])
+  const [jobTypeFilter, setJobTypeFilter] = useState<("import" | "export")[]>(prefs.jobTypeFilter || ["import", "export"])
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string; jobType: 'import' | 'export' } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [recordsPerPage, setRecordsPerPage] = useState(30)
+  const [recordsPerPage, setRecordsPerPage] = useState(prefs.recordsPerPage || 30)
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -35,6 +52,17 @@ export function ImportExportWorkGrid() {
   useEffect(() => {
     localStorage.setItem('excludedCustomers', JSON.stringify(excludedCustomers))
   }, [excludedCustomers])
+
+  // Save other preferences to localStorage
+  useEffect(() => {
+    const preferences = {
+      searchText,
+      jobStatusFilter,
+      jobTypeFilter,
+      recordsPerPage
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
+  }, [searchText, jobStatusFilter, jobTypeFilter, recordsPerPage])
 
   const addExcludedCustomer = () => {
     const name = excludeInputValue.trim()

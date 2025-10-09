@@ -13,10 +13,34 @@ import { queryClient, apiRequest } from "@/lib/queryClient"
 import { ImportExportWorkGrid } from "@/components/ImportExportWorkGrid"
 import { ClearanceWorkGrid } from "@/components/ClearanceWorkGrid"
 
+const DASHBOARD_STORAGE_KEY = 'dashboard_preferences'
+const CONTAINER_STORAGE_KEY = 'containerGrid_preferences'
+const NISBETS_STORAGE_KEY = 'nisbetsGrid_preferences'
+
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("container-management")
-  const [searchText, setSearchText] = useState("")
-  const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(["active", "completed"])
+  // Load dashboard preferences
+  const loadDashboardPrefs = () => {
+    const saved = localStorage.getItem(DASHBOARD_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : {}
+  }
+
+  const loadContainerPrefs = () => {
+    const saved = localStorage.getItem(CONTAINER_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : {}
+  }
+
+  const loadNisbetsPrefs = () => {
+    const saved = localStorage.getItem(NISBETS_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : {}
+  }
+
+  const dashPrefs = loadDashboardPrefs()
+  const containerPrefs = loadContainerPrefs()
+  const nisbetsPrefs = loadNisbetsPrefs()
+
+  const [activeTab, setActiveTab] = useState(dashPrefs.activeTab || "container-management")
+  const [searchText, setSearchText] = useState(dashPrefs.searchText || "")
+  const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(dashPrefs.jobStatusFilter || ["active", "completed"])
   const [, setLocation] = useLocation()
   const { toast } = useToast()
 
@@ -28,11 +52,29 @@ export default function Dashboard() {
 
   // Pagination state for Container Management
   const [containerCurrentPage, setContainerCurrentPage] = useState(1)
-  const [containerRecordsPerPage, setContainerRecordsPerPage] = useState(30)
+  const [containerRecordsPerPage, setContainerRecordsPerPage] = useState(containerPrefs.recordsPerPage || 30)
 
   // Pagination state for Nisbets
   const [nisbetsCurrentPage, setNisbetsCurrentPage] = useState(1)
-  const [nisbetsRecordsPerPage, setNisbetsRecordsPerPage] = useState(30)
+  const [nisbetsRecordsPerPage, setNisbetsRecordsPerPage] = useState(nisbetsPrefs.recordsPerPage || 30)
+
+  // Save dashboard preferences
+  useEffect(() => {
+    const prefs = { activeTab, searchText, jobStatusFilter }
+    localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(prefs))
+  }, [activeTab, searchText, jobStatusFilter])
+
+  // Save container preferences
+  useEffect(() => {
+    const prefs = { recordsPerPage: containerRecordsPerPage }
+    localStorage.setItem(CONTAINER_STORAGE_KEY, JSON.stringify(prefs))
+  }, [containerRecordsPerPage])
+
+  // Save nisbets preferences
+  useEffect(() => {
+    const prefs = { recordsPerPage: nisbetsRecordsPerPage }
+    localStorage.setItem(NISBETS_STORAGE_KEY, JSON.stringify(prefs))
+  }, [nisbetsRecordsPerPage])
 
   // Clear column widths when exiting edit mode
   useEffect(() => {
