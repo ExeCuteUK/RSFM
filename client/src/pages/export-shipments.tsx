@@ -54,11 +54,11 @@ export default function ExportShipments() {
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ shipment: ExportShipment; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
   const { toast} = useToast()
-  const [, setLocation] = useLocation()
+  const [location, setLocation] = useLocation()
   
   const ITEMS_PER_PAGE = 30
 
-  // Read search parameter from URL or localStorage on mount
+  // Read search parameter from URL or localStorage on mount or when URL changes
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const searchParam = params.get('search')
@@ -72,7 +72,7 @@ export default function ExportShipments() {
       setSelectedStatuses([]) // Select "All" filter
       localStorage.removeItem('shipmentSearchJobRef') // Clear after use
     }
-  }, [])
+  }, [location])
 
   const { data: allShipments = [], isLoading } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
