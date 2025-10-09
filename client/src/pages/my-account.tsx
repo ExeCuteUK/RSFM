@@ -200,13 +200,14 @@ export default function MyAccount() {
                           <Input
                             {...field}
                             type={showCurrentPassword ? "text" : "password"}
+                            className="pr-10"
                             data-testid="input-current-password"
                           />
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute right-0 top-0 h-full px-3"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
                             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                             data-testid="button-toggle-current-password"
                           >
@@ -230,13 +231,14 @@ export default function MyAccount() {
                           <Input
                             {...field}
                             type={showNewPassword ? "text" : "password"}
+                            className="pr-10"
                             data-testid="input-new-password"
                           />
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute right-0 top-0 h-full px-3"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
                             onClick={() => setShowNewPassword(!showNewPassword)}
                             data-testid="button-toggle-new-password"
                           >
@@ -260,13 +262,14 @@ export default function MyAccount() {
                           <Input
                             {...field}
                             type={showConfirmPassword ? "text" : "password"}
+                            className="pr-10"
                             data-testid="input-confirm-password"
                           />
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute right-0 top-0 h-full px-3"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             data-testid="button-toggle-confirm-password"
                           >

@@ -59,6 +59,7 @@ export default function Messages() {
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [urlSearchParams, setUrlSearchParams] = useState(window.location.search);
 
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
@@ -155,9 +156,30 @@ export default function Messages() {
     }
   };
 
+  // Watch for URL changes
+  useEffect(() => {
+    const handleUrlChange = () => {
+      setUrlSearchParams(window.location.search);
+    };
+    
+    window.addEventListener('popstate', handleUrlChange);
+    
+    // Also check on interval for navigation that doesn't trigger popstate
+    const intervalId = setInterval(() => {
+      if (window.location.search !== urlSearchParams) {
+        setUrlSearchParams(window.location.search);
+      }
+    }, 100);
+    
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      clearInterval(intervalId);
+    };
+  }, [urlSearchParams]);
+
   // Handle userId parameter from URL to auto-open composer
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(urlSearchParams);
     const userIdParam = params.get('userId');
     
     if (userIdParam && users.length > 0) {
@@ -168,9 +190,10 @@ export default function Messages() {
         
         // Clear the URL parameter
         window.history.replaceState({}, '', '/messages');
+        setUrlSearchParams('');
       }
     }
-  }, [users, user, form, location]);
+  }, [urlSearchParams, users, user, form]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (data: MessageFormData) => {
