@@ -68,8 +68,8 @@ export function ClearanceWorkGrid() {
 
       // Job Type Filter
       if (jobTypeFilter.length > 0 && clearance.jobType) {
-        const isImport = clearance.jobType === "Import"
-        const isExport = clearance.jobType === "Export"
+        const isImport = clearance.jobType === "import"
+        const isExport = clearance.jobType === "export"
         
         if (!jobTypeFilter.includes("import") && isImport) return false
         if (!jobTypeFilter.includes("export") && isExport) return false
@@ -86,7 +86,7 @@ export function ClearanceWorkGrid() {
       // Search Filter
       if (searchText) {
         const searchLower = searchText.toLowerCase()
-        const customer = clearance.jobType === "Import" 
+        const customer = clearance.jobType === "import" 
           ? importCustomers.find(c => c.id === clearance.importCustomerId)
           : exportCustomers.find(c => c.id === clearance.exportCustomerId)
         
@@ -191,7 +191,7 @@ export function ClearanceWorkGrid() {
   }
 
   const getCustomerName = (clearance: CustomClearance) => {
-    if (clearance.jobType === "Import") {
+    if (clearance.jobType === "import") {
       const customer = importCustomers.find(c => c.id === clearance.importCustomerId)
       return customer?.companyName || ""
     } else {
@@ -244,7 +244,7 @@ export function ClearanceWorkGrid() {
         
         // If it's a linked job (created from import/export shipment)
         if (clearance.createdFromId) {
-          if (clearance.jobType === "Import") {
+          if (clearance.jobType === "import") {
             setLocation(`/import-shipments?search=${jobRefStr}`)
           } else {
             setLocation(`/export-shipments?search=${jobRefStr}`)
@@ -469,7 +469,7 @@ export function ClearanceWorkGrid() {
                     <tr key={clearance.id}>
                       {renderCell(clearance, "link", null, columnWidths[0])}
                       {renderCell(clearance, "jobRef", clearance.jobRef, columnWidths[1])}
-                      {renderCell(clearance, "jobType", clearance.jobType === "Import" ? "IMP" : "EXP", columnWidths[2])}
+                      {renderCell(clearance, "jobType", clearance.jobType === "import" ? "Import" : "Export", columnWidths[2])}
                       {renderCell(clearance, "clearanceType", clearance.clearanceType, columnWidths[3])}
                       {renderCell(clearance, "customerName", customerName, columnWidths[4])}
                       {renderCell(clearance, "etaPort", clearance.etaPort, columnWidths[5])}
