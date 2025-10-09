@@ -576,6 +576,97 @@ export default function CustomClearances() {
     }
   }
 
+  const handleSendCustomerGvmsEadEmail = (clearance: CustomClearance) => {
+    try {
+      const isImport = clearance.jobType === 'import'
+      const isExport = clearance.jobType === 'export'
+      
+      // Get the linked shipment based on clearance type
+      const linkedShipment = isImport
+        ? importShipments.find((s: any) => s.jobRef === clearance.jobRef)
+        : clearance.createdFromId
+          ? exportShipments.find((s: any) => s.id === clearance.createdFromId)
+          : null
+
+      // Check if clearance documents exist
+      if (!clearance.clearanceDocuments || clearance.clearanceDocuments.length === 0) {
+        toast({
+          title: "No Documents Found",
+          description: "No clearance documents are attached to this job. Please upload documents first.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Build email recipient data from linked shipment (handle both array and legacy string formats)
+      const jobContactEmailArray = Array.isArray(linkedShipment?.jobContactEmail) 
+        ? linkedShipment.jobContactEmail 
+        : (linkedShipment?.jobContactEmail ? [linkedShipment.jobContactEmail] : [])
+      const jobContactEmail = jobContactEmailArray[0] || ""
+      const ccEmails = jobContactEmailArray.slice(1).join(", ")
+      
+      // Build subject with conditional parts
+      const jobRef = clearance.jobRef || "N/A"
+      const customerRef = linkedShipment?.customerReferenceNumber
+      const mrn = clearance.mrn
+      
+      const clearanceType = isImport ? "Import Clearance" : "Export Clearance"
+      const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
+      const mrnPart = mrn ? ` / MRN: ${mrn}` : ""
+      const subject = `R.S ${clearanceType} / Our Ref: ${jobRef}${yourRefPart}${mrnPart}`
+      
+      // Build personalized greeting
+      const jobContactNameArray = Array.isArray(linkedShipment?.jobContactName)
+        ? linkedShipment.jobContactName.filter(Boolean)
+        : (linkedShipment?.jobContactName ? linkedShipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+      
+      let greeting = "Hi there"
+      if (jobContactNameArray.length === 1) {
+        greeting = `Hi ${jobContactNameArray[0]}`
+      } else if (jobContactNameArray.length === 2) {
+        greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
+      } else if (jobContactNameArray.length >= 3) {
+        const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
+        const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+        greeting = `Hi ${otherContacts}, and ${lastContact}`
+      }
+      
+      // Build simple body
+      const body = `${greeting},\n\nPlease find attached clearance Document for this shipment.\n\nAny issues please let me know.`
+      
+      // Get clearance document paths with proper filenames
+      const clearanceFiles = clearance.clearanceDocuments.map(docPath => ({
+        url: docPath,
+        name: docPath.split('/').pop() || 'document.pdf'
+      }))
+      
+      // Determine metadata source based on clearance type
+      const metadataSource = isExport ? 'send-customer-ead' : 'send-customer-gvms'
+      
+      // Open email composer
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: jobContactEmail,
+        cc: ccEmails,
+        bcc: "",
+        subject: subject,
+        body: body,
+        attachments: clearanceFiles,
+        metadata: {
+          source: metadataSource,
+          shipmentId: clearance.id
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleConfirmInvoiceSelection = () => {
     if (!invoiceSelectionDialog) return
     
@@ -1683,7 +1774,14 @@ export default function CustomClearances() {
 
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <button
+                              onClick={() => handleSendCustomerGvmsEadEmail(clearance)}
+                              className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                              data-testid={`button-send-customer-doc-email-${clearance.id}`}
+                              title="Send GVMS/EAD email to customer"
+                            >
+                              <Mail className="h-4 w-4 text-muted-foreground" />
+                            </button>
                             <p className={`text-xs ${getStatusColor(clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-customer-${clearance.id}`}>
                               {clearance.jobType === 'export' ? 'Send Customer EAD' : 'Send Customer GVMS'}
                               {(clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === 3 && <Check className="h-3 w-3" />}
