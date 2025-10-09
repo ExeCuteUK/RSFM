@@ -1975,6 +1975,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update send customer GVMS status indicator
+  app.patch("/api/custom-clearances/:id/send-customer-gvms-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.updateCustomClearance(req.params.id, { 
+        sendCustomerGvmsStatusIndicator: status,
+        sendCustomerGvmsStatusIndicatorTimestamp: new Date().toISOString()
+      });
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
+  // Update send customer EAD status indicator
+  app.patch("/api/custom-clearances/:id/send-customer-ead-status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const clearance = await storage.updateCustomClearance(req.params.id, { 
+        sendCustomerEadStatusIndicator: status,
+        sendCustomerEadStatusIndicatorTimestamp: new Date().toISOString()
+      });
+      if (!clearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+      res.json(clearance);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update status" });
+    }
+  });
+
   // Update send haulier clearance document status indicator
   app.patch("/api/custom-clearances/:id/send-haulier-clearance-doc-status", async (req, res) => {
     try {

@@ -191,6 +191,24 @@ export default function CustomClearances() {
     },
   })
 
+  const updateSendCustomerGvmsStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/send-customer-gvms-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
+  const updateSendCustomerEadStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: number }) => {
+      return apiRequest("PATCH", `/api/custom-clearances/${id}/send-customer-ead-status`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+    },
+  })
+
   const updateSendHaulierClearanceDocStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: number }) => {
       return apiRequest("PATCH", `/api/custom-clearances/${id}/send-haulier-clearance-doc-status`, { status })
@@ -415,6 +433,14 @@ export default function CustomClearances() {
 
   const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
     updateSendHaulierEadStatus.mutate({ id, status })
+  }
+
+  const handleSendCustomerGvmsStatusUpdate = (id: string, status: number) => {
+    updateSendCustomerGvmsStatus.mutate({ id, status })
+  }
+
+  const handleSendCustomerEadStatusUpdate = (id: string, status: number) => {
+    updateSendCustomerEadStatus.mutate({ id, status })
   }
 
   const handleSendHaulierClearanceDocStatusUpdate = (id: string, status: number) => {
@@ -1653,6 +1679,50 @@ export default function CustomClearances() {
                                   : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
                               }`}
                               data-testid={`button-send-haulier-ead-green-${clearance.id}`}
+                              title="Completed"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <p className={`text-xs ${getStatusColor(clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-customer-${clearance.id}`}>
+                              {clearance.jobType === 'export' ? 'Send Customer EAD' : 'Send Customer GVMS'}
+                              {(clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === 3 && <Check className="h-3 w-3" />}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                if (clearance.jobType === 'export') {
+                                  handleSendCustomerEadStatusUpdate(clearance.id, 1)
+                                } else {
+                                  handleSendCustomerGvmsStatusUpdate(clearance.id, 1)
+                                }
+                              }}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                (clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === 1 || (clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === null
+                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                  : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
+                              }`}
+                              data-testid={`button-send-customer-yellow-${clearance.id}`}
+                              title="To Do"
+                            />
+                            <button
+                              onClick={() => {
+                                if (clearance.jobType === 'export') {
+                                  handleSendCustomerEadStatusUpdate(clearance.id, 3)
+                                } else {
+                                  handleSendCustomerGvmsStatusUpdate(clearance.id, 3)
+                                }
+                              }}
+                              className={`h-5 w-5 rounded border-2 transition-all ${
+                                (clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === 3
+                                  ? 'bg-green-400 border-green-500 scale-110'
+                                  : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
+                              }`}
+                              data-testid={`button-send-customer-green-${clearance.id}`}
                               title="Completed"
                             />
                           </div>
