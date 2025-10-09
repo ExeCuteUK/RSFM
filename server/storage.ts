@@ -1813,6 +1813,8 @@ export class DatabaseStorage implements IStorage {
       .where(eq(customClearances.id, id))
       .returning();
     
+    if (!updated) return undefined;
+    
     // Sync files to job_file_groups if jobRef exists and transportDocuments were updated
     if (updated.jobRef && updates.transportDocuments !== undefined) {
       const newDocuments = updated.transportDocuments || [];
