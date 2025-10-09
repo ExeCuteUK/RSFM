@@ -63,9 +63,10 @@ const formatDateToDDMMYY = (dateString: string | null | undefined): string => {
 }
 
 const getJobTypeAbbreviation = (jobType: string): string => {
-  if (jobType === "import") return "IMP"
-  if (jobType === "export") return "EXP"
-  if (jobType === "Customs") return "CC"
+  const lowerType = jobType.toLowerCase()
+  if (lowerType === "import") return "IMP"
+  if (lowerType === "export") return "EXP"
+  if (lowerType === "customs") return "CC"
   return ""
 }
 
