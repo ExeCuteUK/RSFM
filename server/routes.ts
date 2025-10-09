@@ -1703,8 +1703,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
       
-      // Sync documents to job_file_groups if they were updated
-      if (req.body.transportDocuments !== undefined || req.body.clearanceDocuments !== undefined) {
+      // Sync ONLY transport documents to job_file_groups (clearance documents are unique to clearance)
+      if (req.body.transportDocuments !== undefined) {
         // Get documents from the linked shipment if it exists
         let shipmentAttachments: string[] = [];
         if (clearance.createdFromId && clearance.createdFromType) {
@@ -1721,11 +1721,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        // Merge shipment attachments with clearance documents
+        // Merge shipment attachments with clearance transport documents ONLY
         const allDocs = [
           ...shipmentAttachments,
-          ...(clearance.transportDocuments || []),
-          ...(clearance.clearanceDocuments || [])
+          ...(clearance.transportDocuments || [])
         ];
         
         const existingGroup = await storage.getJobFileGroupByJobRef(clearance.jobRef);
