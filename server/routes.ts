@@ -2513,9 +2513,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Extract MRN number from text
-          const mrnMatch = extractedText.match(/\b\d{2}GB[A-Z0-9]{13,16}\b/);
-          const mrnNumber = mrnMatch ? mrnMatch[0] : null;
+          // Extract MRN number from text - matches "MRN: 25GBB1QSFFBJOAXAR1" or "25GBB1QSFFBJOAXAR1"
+          const mrnMatch = extractedText.match(/(?:MRN:\s*)?(\d{2}[A-Z]{2,}[A-Z0-9]{10,})/i);
+          const mrnNumber = mrnMatch ? mrnMatch[1] || mrnMatch[0] : null;
 
           res.json({ 
             text: extractedText || "No text found in PDF",
@@ -2543,9 +2543,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           await worker.terminate();
           
-          // Extract MRN number from text
-          const mrnMatch = text.match(/\b\d{2}GB[A-Z0-9]{13,16}\b/);
-          const mrnNumber = mrnMatch ? mrnMatch[0] : null;
+          // Extract MRN number from text - matches "MRN: 25GBB1QSFFBJOAXAR1" or "25GBB1QSFFBJOAXAR1"
+          const mrnMatch = text.match(/(?:MRN:\s*)?(\d{2}[A-Z]{2,}[A-Z0-9]{10,})/i);
+          const mrnNumber = mrnMatch ? mrnMatch[1] || mrnMatch[0] : null;
 
           res.json({ 
             text, 
