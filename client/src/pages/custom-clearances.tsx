@@ -256,28 +256,22 @@ export default function CustomClearances() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "transport" | "clearance" }) => {
-      // Get upload URL
+      // Direct upload to backend
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('filename', file.name);
+      
       const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename: file.name })
-      })
-      const { uploadURL, objectPath } = await uploadResponse.json()
-      
-      // Upload file to storage
-      await fetch(uploadURL, {
-        method: "PUT",
-        body: file
+        body: formData
       })
       
-      // Normalize the file to make it accessible
-      const normalizeResponse = await fetch("/api/objects/normalize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: [uploadURL] })
-      })
-      const { paths } = await normalizeResponse.json()
-      const filePath = paths[0] || objectPath
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload file');
+      }
+      
+      const { objectPath } = await uploadResponse.json()
+      const filePath = objectPath
       
       // If it's a clearance document, scan for MRN
       if (fileType === "clearance") {
