@@ -18,6 +18,7 @@ import {
   insertCustomClearanceSchema,
   insertUserSchema,
   updateUserSchema,
+  insertGeneralReferenceSchema,
   type User
 } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -2353,6 +2354,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating PDF:", error);
       res.status(500).json({ error: "Failed to generate PDF" });
+    }
+  });
+
+  // ========== General References Routes ==========
+
+  // Get all general references
+  app.get("/api/general-references", async (_req, res) => {
+    try {
+      const references = await storage.getAllGeneralReferences();
+      res.json(references);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch general references" });
+    }
+  });
+
+  // Create general reference
+  app.post("/api/general-references", async (req, res) => {
+    try {
+      const validatedData = insertGeneralReferenceSchema.parse(req.body);
+      const reference = await storage.createGeneralReference(validatedData);
+      res.status(201).json(reference);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid general reference data" });
+      }
+      console.error("Error creating general reference:", error);
+      res.status(500).json({ error: "Failed to create general reference" });
     }
   });
 
