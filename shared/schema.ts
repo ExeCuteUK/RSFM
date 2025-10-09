@@ -345,6 +345,8 @@ export const importShipments = pgTable("import_shipments", {
   sendPodToCustomerStatusIndicatorTimestamp: text("send_pod_to_customer_status_indicator_timestamp"),
   sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
   sendHaulierEadStatusIndicatorTimestamp: text("send_haulier_ead_status_indicator_timestamp"),
+  sendCustomerGvmsStatusIndicator: integer("send_customer_gvms_status_indicator").default(1),
+  sendCustomerGvmsStatusIndicatorTimestamp: text("send_customer_gvms_status_indicator_timestamp"),
   
   // Additional Details
   customerReferenceNumber: text("customer_reference_number"),
@@ -540,6 +542,8 @@ export const exportShipments = pgTable("export_shipments", {
   adviseClearanceToAgentStatusIndicatorTimestamp: text("advise_clearance_to_agent_status_indicator_timestamp"),
   sendHaulierEadStatusIndicator: integer("send_haulier_ead_status_indicator").default(1),
   sendHaulierEadStatusIndicatorTimestamp: text("send_haulier_ead_status_indicator_timestamp"),
+  sendCustomerEadStatusIndicator: integer("send_customer_ead_status_indicator").default(1),
+  sendCustomerEadStatusIndicatorTimestamp: text("send_customer_ead_status_indicator_timestamp"),
   invoiceCustomerStatusIndicator: integer("invoice_customer_status_indicator").default(1),
   invoiceCustomerStatusIndicatorTimestamp: text("invoice_customer_status_indicator_timestamp"),
   sendPodToCustomerStatusIndicator: integer("send_pod_to_customer_status_indicator").default(1),
