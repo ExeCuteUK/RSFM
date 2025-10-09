@@ -238,6 +238,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change password
+  app.post("/api/users/:id/change-password", requireAuth, async (req, res) => {
+    try {
+      const requestingUser = req.user as User;
+      const targetUserId = req.params.id;
+      
+      // Users can only change their own password
+      if (requestingUser.id !== targetUserId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current password and new password are required" });
+      }
+      
+      // Verify current password
+      const user = await storage.getUser(targetUserId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+      
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // Update password
+      const updatedUser = await storage.updateUser(targetUserId, { password: hashedPassword });
+      if (!updatedUser) {
+        return res.status(500).json({ error: "Failed to update password" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to change password" });
+    }
+  });
+
+  // Change email
+  app.post("/api/users/:id/change-email", requireAuth, async (req, res) => {
+    try {
+      const requestingUser = req.user as User;
+      const targetUserId = req.params.id;
+      
+      // Users can only change their own email
+      if (requestingUser.id !== targetUserId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const { currentPassword, newEmail } = req.body;
+      
+      if (!currentPassword || !newEmail) {
+        return res.status(400).json({ error: "Current password and new email are required" });
+      }
+      
+      // Verify current password
+      const user = await storage.getUser(targetUserId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+      
+      // Update email
+      const updatedUser = await storage.updateUser(targetUserId, { email: newEmail });
+      if (!updatedUser) {
+        return res.status(500).json({ error: "Failed to update email" });
+      }
+      
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to change email" });
+    }
+  });
+
   // Presence tracking routes
   app.post("/api/presence/heartbeat", requireAuth, async (req, res) => {
     try {

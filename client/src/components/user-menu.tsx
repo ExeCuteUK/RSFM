@@ -80,7 +80,7 @@ export function UserMenu() {
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setLocation("/settings")} data-testid="menu-item-my-account">
+        <DropdownMenuItem onClick={() => setLocation("/my-account")} data-testid="menu-item-my-account">
           <User className="mr-2 h-4 w-4" />
           <span>My Account</span>
         </DropdownMenuItem>
