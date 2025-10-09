@@ -1691,7 +1691,7 @@ export default function CustomClearances() {
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
                             <Mail 
-                              className="h-4 w-4 text-muted-foreground shrink-0 cursor-pointer hover-elevate active-elevate-2" 
+                              className="h-4 w-4 text-muted-foreground hover:text-purple-500 shrink-0 cursor-pointer hover-elevate active-elevate-2 transition-colors" 
                               onClick={() => handleAdviseAgentEmail(clearance)}
                               data-testid={`button-advise-agent-email-${clearance.id}`}
                             />
@@ -1741,7 +1741,7 @@ export default function CustomClearances() {
                               className="hover-elevate rounded p-0 shrink-0"
                               data-testid={`button-send-haulier-ead-icon-${clearance.id}`}
                             >
-                              <Mail className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                              <Mail className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-purple-500 transition-colors" />
                             </button>
                             <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-haulier-ead-${clearance.id}`}>
                               {clearance.jobType === 'export' ? 'Send Haulier EAD' : 'Send Haulier GVMS'}
@@ -1780,7 +1780,7 @@ export default function CustomClearances() {
                               data-testid={`button-send-customer-doc-email-${clearance.id}`}
                               title="Send GVMS/EAD email to customer"
                             >
-                              <Mail className="h-4 w-4 text-muted-foreground" />
+                              <Mail className="h-4 w-4 text-muted-foreground hover:text-purple-500 transition-colors" />
                             </button>
                             <p className={`text-xs ${getStatusColor(clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-customer-${clearance.id}`}>
                               {clearance.jobType === 'export' ? 'Send Customer EAD' : 'Send Customer GVMS'}
@@ -1832,7 +1832,7 @@ export default function CustomClearances() {
                                 data-testid={`button-send-invoice-email-${clearance.id}`}
                                 title="Send invoice email to customer"
                               >
-                                <Send className="h-4 w-4 text-muted-foreground" />
+                                <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-purple-500 transition-colors" />
                               </button>
                               <button
                                 onClick={() => openWindow({ 
