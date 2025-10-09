@@ -64,10 +64,10 @@ export type Message = typeof messages.$inferSelect;
 // General References Database (for miscellaneous charges)
 export const generalReferences = pgTable("general_references", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  jobRef: text("job_ref").notNull(),
+  jobRef: integer("job_ref").notNull(),
   jobType: text("job_type").notNull().default('general'),
-  month: text("month").notNull(),
-  year: text("year").notNull(),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
   referenceName: text("reference_name").notNull().default('General Reference'),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

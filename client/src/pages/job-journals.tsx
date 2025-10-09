@@ -10,7 +10,7 @@ import { Search, Calendar, Plus, Eye, EyeOff } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { InvoiceEditDialog } from "@/components/InvoiceEditDialog"
 import { GeneralReferenceDialog } from "@/components/GeneralReferenceDialog"
-import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice, Invoice } from "@shared/schema"
+import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice, Invoice, GeneralReference } from "@shared/schema"
 
 interface JobJournalEntry {
   jobRef: number
@@ -98,7 +98,7 @@ export default function JobJournals() {
   const [selectedYear, setSelectedYear] = useState(prefs.selectedYear || currentDate.getFullYear().toString())
   const [startDate, setStartDate] = useState(prefs.startDate || "")
   const [endDate, setEndDate] = useState(prefs.endDate || "")
-  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(prefs.selectedJobTypes || ["Import", "Export", "Customs"])
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(prefs.selectedJobTypes || ["Import", "Export", "Customs", "General"])
   const [searchText, setSearchText] = useState(prefs.searchText || "")
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
@@ -163,6 +163,10 @@ export default function JobJournals() {
 
   const { data: customerInvoices = [] } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
+  })
+
+  const { data: generalReferences = [] } = useQuery<GeneralReference[]>({
+    queryKey: ["/api/general-references"],
   })
 
   const getCustomerName = (
@@ -374,9 +378,22 @@ export default function JobJournals() {
           clearance.importCustomerId ? "import" : "export"
         ),
       })),
+    ...generalReferences.map(ref => ({
+      jobRef: ref.jobRef,
+      jobType: "General",
+      customerName: ref.referenceName,
+      destination: "",
+      date: "",
+      regContainerFlight: "",
+      supplier: "",
+      customer: ref.referenceName,
+    })),
   ].sort((a, b) => b.jobRef - a.jobRef)
 
-  const filteredByDate = allJournalEntries.filter(entry => matchesFilter(entry.date))
+  const filteredByDate = allJournalEntries.filter(entry => {
+    if (entry.jobType === "General") return true
+    return matchesFilter(entry.date)
+  })
   
   const journalEntries = filteredByDate.filter(entry => {
     const matchesJobType = selectedJobTypes.length === 0 || selectedJobTypes.includes(entry.jobType)
@@ -594,6 +611,14 @@ export default function JobJournals() {
             data-testid="filter-customs"
           >
             Clearance Only Jobs
+          </Button>
+          <Button
+            variant={selectedJobTypes.includes("General") ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleJobTypeToggle("General")}
+            data-testid="filter-general"
+          >
+            General References
           </Button>
         </div>
         <Button
