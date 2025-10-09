@@ -1121,7 +1121,7 @@ Hope all is OK.`
                           data-testid={`badge-status-${shipment.id}`}
                         >
                           {shipment.status}
-                          <ChevronDown className="h-3 w-3 text-white" />
+                          <ChevronDown className="h-3 w-3" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
