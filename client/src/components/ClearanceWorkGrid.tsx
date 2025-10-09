@@ -143,7 +143,7 @@ export function ClearanceWorkGrid() {
   })
 
   const handleCellClick = (clearanceId: string, fieldName: string, currentValue: any) => {
-    if (fieldName === "jobRef" || fieldName === "customerName") {
+    if (fieldName === "jobRef" || fieldName === "customerName" || fieldName === "jobType") {
       return
     }
 
