@@ -9,6 +9,11 @@ import {
   importShipments,
   exportShipments,
   customClearances,
+  jobFileGroups,
+  messages,
+  purchaseInvoices,
+  invoices,
+  // generalReferences, // TODO: Uncomment when table is created in task 13
   settings,
   users
 } from "../shared/schema";
@@ -88,6 +93,42 @@ async function backupContactDatabases() {
     writeFileSync(`${backupDir}/custom_clearances_backup.sql`, customClearancesSQL);
     console.log(`✓ Custom Clearances backed up: ${customClearancesData.length} records`);
 
+    // Backup Job File Groups
+    console.log("Backing up Job File Groups...");
+    const jobFileGroupsData = await db.select().from(jobFileGroups);
+    const jobFileGroupsSQL = generateInsertSQL("job_file_groups", jobFileGroupsData);
+    writeFileSync(`${backupDir}/job_file_groups_backup.sql`, jobFileGroupsSQL);
+    console.log(`✓ Job File Groups backed up: ${jobFileGroupsData.length} records`);
+
+    // Backup Messages
+    console.log("Backing up Messages...");
+    const messagesData = await db.select().from(messages);
+    const messagesSQL = generateInsertSQL("messages", messagesData);
+    writeFileSync(`${backupDir}/messages_backup.sql`, messagesSQL);
+    console.log(`✓ Messages backed up: ${messagesData.length} records`);
+
+    // Backup Purchase Invoices
+    console.log("Backing up Purchase Invoices...");
+    const purchaseInvoicesData = await db.select().from(purchaseInvoices);
+    const purchaseInvoicesSQL = generateInsertSQL("purchase_invoices", purchaseInvoicesData);
+    writeFileSync(`${backupDir}/purchase_invoices_backup.sql`, purchaseInvoicesSQL);
+    console.log(`✓ Purchase Invoices backed up: ${purchaseInvoicesData.length} records`);
+
+    // Backup Invoices
+    console.log("Backing up Invoices...");
+    const invoicesData = await db.select().from(invoices);
+    const invoicesSQL = generateInsertSQL("invoices", invoicesData);
+    writeFileSync(`${backupDir}/invoices_backup.sql`, invoicesSQL);
+    console.log(`✓ Invoices backed up: ${invoicesData.length} records`);
+
+    // TODO: Uncomment when general_references table is created in task 13
+    // // Backup General References
+    // console.log("Backing up General References...");
+    // const generalReferencesData = await db.select().from(generalReferences);
+    // const generalReferencesSQL = generateInsertSQL("general_references", generalReferencesData);
+    // writeFileSync(`${backupDir}/general_references_backup.sql`, generalReferencesSQL);
+    // console.log(`✓ General References backed up: ${generalReferencesData.length} records`);
+
     // Backup Settings
     console.log("Backing up Settings...");
     const settingsData = await db.select().from(settings);
@@ -107,7 +148,9 @@ async function backupContactDatabases() {
                          exportReceiversData.length + hauliersData.length + 
                          shippingLinesData.length + clearanceAgentsData.length +
                          importShipmentsData.length + exportShipmentsData.length +
-                         customClearancesData.length + settingsData.length + usersData.length;
+                         customClearancesData.length + jobFileGroupsData.length +
+                         messagesData.length + purchaseInvoicesData.length +
+                         invoicesData.length + /* generalReferencesData.length + */ settingsData.length + usersData.length;
     
     const metadata = {
       timestamp: new Date().toISOString(),
@@ -122,6 +165,11 @@ async function backupContactDatabases() {
         { name: "import_shipments", count: importShipmentsData.length },
         { name: "export_shipments", count: exportShipmentsData.length },
         { name: "custom_clearances", count: customClearancesData.length },
+        { name: "job_file_groups", count: jobFileGroupsData.length },
+        { name: "messages", count: messagesData.length },
+        { name: "purchase_invoices", count: purchaseInvoicesData.length },
+        { name: "invoices", count: invoicesData.length },
+        // { name: "general_references", count: generalReferencesData.length }, // TODO: Uncomment when table is created
         { name: "settings", count: settingsData.length },
         { name: "users", count: usersData.length },
       ],
