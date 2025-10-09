@@ -11,6 +11,7 @@ import { useLocation } from "wouter"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { ImportExportWorkGrid } from "@/components/ImportExportWorkGrid"
+import { ClearanceWorkGrid } from "@/components/ClearanceWorkGrid"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("container-management")
@@ -1216,14 +1217,7 @@ export default function Dashboard() {
         </TabsContent>
 
         <TabsContent value="clearance-work" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Clearance Work</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Clearance work view - coming soon</p>
-            </CardContent>
-          </Card>
+          <ClearanceWorkGrid />
         </TabsContent>
       </Tabs>
     </div>
