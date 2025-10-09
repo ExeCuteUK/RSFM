@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { type CustomClearance, type ImportCustomer, type ExportCustomer, type ImportShipment, type ExportShipment } from "@shared/schema"
+import { type CustomClearance, type ImportCustomer, type ExportCustomer, type ImportShipment, type ExportShipment, type ClearanceAgent } from "@shared/schema"
 import { Search, X, ExternalLink } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
@@ -64,6 +64,10 @@ export function ClearanceWorkGrid() {
 
   const { data: exportShipments = [] } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
+  })
+
+  const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
+    queryKey: ["/api/clearance-agents"],
   })
 
   // Filter clearances
@@ -369,6 +373,71 @@ export function ClearanceWorkGrid() {
     }
 
     if (isEditing) {
+      if (fieldName === "clearanceType") {
+        return (
+          <td 
+            key={fieldName} 
+            className="border px-2 py-1"
+            style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+          >
+            <Select
+              value={tempValue}
+              onValueChange={(val) => {
+                setTempValue(val)
+                updateClearanceMutation.mutate({
+                  id: clearance.id,
+                  data: { clearanceType: val }
+                })
+              }}
+            >
+              <SelectTrigger className="h-8 border-2 border-blue-500">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Export">Export</SelectItem>
+                <SelectItem value="GVMS">GVMS</SelectItem>
+              </SelectContent>
+            </Select>
+          </td>
+        )
+      }
+
+      if (fieldName === "clearanceAgent") {
+        const sortedAgents = [...clearanceAgents].sort((a, b) => 
+          (a.agentName || "").localeCompare(b.agentName || "")
+        )
+        
+        return (
+          <td 
+            key={fieldName} 
+            className="border px-2 py-1"
+            style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+          >
+            <Select
+              value={tempValue}
+              onValueChange={(val) => {
+                setTempValue(val)
+                updateClearanceMutation.mutate({
+                  id: clearance.id,
+                  data: { clearanceAgent: val }
+                })
+              }}
+            >
+              <SelectTrigger className="h-8 border-2 border-blue-500">
+                <SelectValue placeholder="Select agent" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortedAgents.map((agent) => (
+                  <SelectItem key={agent.id} value={agent.agentName || ""}>
+                    {agent.agentName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </td>
+        )
+      }
+
       if (fieldName === "notes") {
         return (
           <td 
