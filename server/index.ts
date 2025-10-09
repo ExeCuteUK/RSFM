@@ -7,8 +7,19 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Skip body parsers for multipart/form-data (file uploads)
+app.use((req, res, next) => {
+  if (req.is('multipart/form-data')) {
+    return next();
+  }
+  express.json()(req, res, next);
+});
+app.use((req, res, next) => {
+  if (req.is('multipart/form-data')) {
+    return next();
+  }
+  express.urlencoded({ extended: false })(req, res, next);
+});
 
 // Session configuration - MUST be set up before routes
 app.use(
