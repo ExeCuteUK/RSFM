@@ -33,6 +33,17 @@ import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { useEmail } from "@/contexts/EmailContext"
 
+// Helper functions for file objects
+const getFileName = (file: any): string => {
+  if (typeof file === 'string') return file.split('/').pop() || file; // backwards compat
+  return file?.filename || 'Unknown';
+};
+
+const getFilePath = (file: any): string => {
+  if (typeof file === 'string') return file; // backwards compat
+  return file?.path || file;
+};
+
 export default function ExportShipments() {
   const { openWindow } = useWindowManager()
   const { openEmailComposer } = useEmail()
@@ -232,10 +243,17 @@ export default function ExportShipments() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "attachment" | "pod" }) => {
-      // Direct upload to backend
+      // Get shipment info for folder organization
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      // Direct upload to backend with job organization
       const formData = new FormData();
       formData.append('file', file);
       formData.append('filename', file.name);
+      formData.append('jobType', 'Export Shipments');
+      formData.append('jobRef', shipment.jobRef.toString());
+      formData.append('documentType', fileType === "attachment" ? "Transport Documents" : "POD");
       
       const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
@@ -246,21 +264,18 @@ export default function ExportShipments() {
         throw new Error('Failed to upload file');
       }
       
-      const { objectPath } = await uploadResponse.json()
-      const filePath = objectPath
+      const { objectPath, filename } = await uploadResponse.json()
+      const fileObject = { filename, path: objectPath }
       
-      // Update shipment with new file
-      const shipment = allShipments.find(s => s.id === id)
-      if (!shipment) throw new Error("Shipment not found")
-      
+      // Update shipment with new file object
       const currentFiles = fileType === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
-      const updatedFiles = [...currentFiles, filePath]
+      const updatedFiles = [...currentFiles, fileObject]
       
       await apiRequest("PATCH", `/api/export-shipments/${id}`, {
         [fileType === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
       })
       
-      return { filePath }
+      return { filePath: objectPath, filename }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
@@ -279,7 +294,8 @@ export default function ExportShipments() {
       if (!shipment) throw new Error("Shipment not found")
       
       const currentFiles = fileType === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
-      const updatedFiles = currentFiles.filter(f => f !== filePath)
+      // Filter out the file by comparing the path property
+      const updatedFiles = currentFiles.filter((f: any) => f?.path !== filePath && f !== filePath)
       
       return apiRequest("PATCH", `/api/export-shipments/${id}`, {
         [fileType === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
@@ -449,11 +465,12 @@ export default function ExportShipments() {
     }
   }
 
-  const parseAttachments = (attachments: string[] | null) => {
+  const parseAttachments = (attachments: any[] | null) => {
     if (!attachments) return []
-    if (Array.isArray(attachments)) return attachments
+    if (Array.isArray(attachments)) return attachments.map(file => getFilePath(file))
     try {
-      return JSON.parse(attachments as any)
+      const parsed = JSON.parse(attachments as any)
+      return Array.isArray(parsed) ? parsed.map(file => getFilePath(file)) : []
     } catch {
       return []
     }
@@ -1355,8 +1372,8 @@ Hope all is OK.`
                     </div>
                   </div>
                   {(() => {
-                    const attachmentFiles = parseAttachments(shipment.attachments)
-                    const podFiles = parseAttachments(shipment.proofOfDelivery)
+                    const attachmentFiles = shipment.attachments || []
+                    const podFiles = shipment.proofOfDelivery || []
                     return (
                       <div className="mt-2 pt-2 border-t">
                         <div className="grid grid-cols-2 gap-2">
@@ -1374,8 +1391,9 @@ Hope all is OK.`
                             }`}>
                               {attachmentFiles.length > 0 ? (
                                 <div className="space-y-0.5">
-                                  {attachmentFiles.map((filePath: string, idx: number) => {
-                                    const fileName = filePath.split('/').pop() || filePath
+                                  {attachmentFiles.map((file: any, idx: number) => {
+                                    const fileName = getFileName(file)
+                                    const filePath = getFilePath(file)
                                     const downloadPath = normalizeFilePath(filePath)
                                     return (
                                       <div key={idx} className="flex items-center gap-1 group">
@@ -1426,8 +1444,9 @@ Hope all is OK.`
                             }`}>
                               {podFiles.length > 0 ? (
                                 <div className="space-y-0.5">
-                                  {podFiles.map((filePath: string, idx: number) => {
-                                    const fileName = filePath.split('/').pop() || filePath
+                                  {podFiles.map((file: any, idx: number) => {
+                                    const fileName = getFileName(file)
+                                    const filePath = getFilePath(file)
                                     const downloadPath = normalizeFilePath(filePath)
                                     return (
                                       <div key={idx} className="flex items-center gap-1 group">

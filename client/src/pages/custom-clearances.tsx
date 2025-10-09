@@ -32,6 +32,17 @@ import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { useEmail } from "@/contexts/EmailContext"
 
+// Helper functions for file object handling (supports both new {filename, path} and legacy string formats)
+const getFileName = (file: any): string => {
+  if (typeof file === 'string') return file.split('/').pop() || file;
+  return file?.filename || 'Unknown';
+};
+
+const getFilePath = (file: any): string => {
+  if (typeof file === 'string') return file;
+  return file?.path || file;
+};
+
 export default function CustomClearances() {
   const { openWindow } = useWindowManager()
   const { openEmailComposer } = useEmail()
@@ -104,10 +115,10 @@ export default function CustomClearances() {
 
   // Fetch shared documents for all clearances
   const jobRefs = clearances.map(c => c.jobRef).filter((ref): ref is number => ref !== undefined)
-  const { data: sharedDocsMap = {} } = useQuery<Record<number, string[]>>({
+  const { data: sharedDocsMap = {} } = useQuery<Record<number, any[]>>({
     queryKey: ["/api/job-file-groups/batch", jobRefs],
     queryFn: async () => {
-      const map: Record<number, string[]> = {}
+      const map: Record<number, any[]> = {}
       
       // Fetch job file groups for each unique jobRef
       const uniqueRefs = Array.from(new Set(jobRefs))
@@ -256,10 +267,17 @@ export default function CustomClearances() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "transport" | "clearance" }) => {
-      // Direct upload to backend
+      // Get clearance info for folder organization
+      const clearance = clearances.find(c => c.id === id)
+      if (!clearance) throw new Error("Clearance not found")
+      
+      // Direct upload to backend with job organization
       const formData = new FormData();
       formData.append('file', file);
       formData.append('filename', file.name);
+      formData.append('jobType', 'Custom Clearances');
+      formData.append('jobRef', clearance.jobRef.toString());
+      formData.append('documentType', fileType === "transport" ? "Transport Documents" : "Clearance Documents");
       
       const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
@@ -270,8 +288,8 @@ export default function CustomClearances() {
         throw new Error('Failed to upload file');
       }
       
-      const { objectPath } = await uploadResponse.json()
-      const filePath = objectPath
+      const { objectPath, filename } = await uploadResponse.json()
+      const fileObject = { filename, path: objectPath }
       
       // If it's a clearance document, scan for MRN
       if (fileType === "clearance") {
@@ -279,16 +297,13 @@ export default function CustomClearances() {
           const ocrResponse = await fetch("/api/objects/ocr", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ objectPath: filePath })
+            body: JSON.stringify({ objectPath })
           })
           const { mrnNumber } = await ocrResponse.json()
           
           if (mrnNumber) {
             // Show confirmation dialog for detected MRN
-            const clearance = clearances.find(c => c.id === id)
-            if (!clearance) throw new Error("Clearance not found")
-            
-            setMrnConfirmation({ id, filePath, mrnNumber, clearance })
+            setMrnConfirmation({ id, filePath: objectPath, mrnNumber, clearance })
             return { pending: true } // Return to prevent success toast
           } else {
             // Show "No MRN Found" toast
@@ -307,12 +322,9 @@ export default function CustomClearances() {
         }
       }
       
-      // Update clearance with new file (no MRN found or transport doc)
-      const clearance = clearances.find(c => c.id === id)
-      if (!clearance) throw new Error("Clearance not found")
-      
+      // Update clearance with new file object (no MRN found or transport doc)
       const currentFiles = fileType === "transport" ? (clearance.transportDocuments || []) : (clearance.clearanceDocuments || [])
-      const updatedFiles = [...currentFiles, filePath]
+      const updatedFiles = [...currentFiles, fileObject]
       
       const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
         ...clearance,
@@ -341,7 +353,8 @@ export default function CustomClearances() {
       if (!clearance) throw new Error("Clearance not found")
       
       const currentFiles = fileType === "transport" ? (clearance.transportDocuments || []) : (clearance.clearanceDocuments || [])
-      const updatedFiles = currentFiles.filter(f => f !== filePath)
+      // Filter out the file by comparing the path property
+      const updatedFiles = currentFiles.filter((f: any) => f?.path !== filePath && f !== filePath)
       
       const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
         ...clearance,
@@ -629,9 +642,9 @@ export default function CustomClearances() {
       const body = `${greeting},\n\nPlease find attached clearance Document for this shipment.\n\nAny issues please let me know.`
       
       // Get clearance document paths with proper filenames
-      const clearanceFiles = clearance.clearanceDocuments.map(docPath => ({
-        url: docPath,
-        name: docPath.split('/').pop() || 'document.pdf'
+      const clearanceFiles = clearance.clearanceDocuments.map(doc => ({
+        url: getFilePath(doc),
+        name: getFileName(doc)
       }))
       
       // Determine metadata source based on clearance type
@@ -1020,9 +1033,10 @@ export default function CustomClearances() {
     return "N/A"
   }
 
-  const parseAttachments = (attachments: string[] | null) => {
+  const parseAttachments = (attachments: any[] | null) => {
     if (!attachments) return []
-    return attachments
+    // Extract paths from file objects or return strings directly for backwards compatibility
+    return attachments.map(file => getFilePath(file))
   }
 
   const normalizeFilePath = (filePath: string): string => {
@@ -1039,8 +1053,9 @@ export default function CustomClearances() {
       : filePath.startsWith('/') ? filePath : `/objects/${filePath}`
   }
 
-  const handleFileClick = (e: React.MouseEvent, filePath: string) => {
-    const fileName = filePath.split('/').pop() || filePath
+  const handleFileClick = (e: React.MouseEvent, file: any) => {
+    const fileName = getFileName(file)
+    const filePath = getFilePath(file)
     const fileExtension = fileName.split('.').pop()?.toLowerCase()
     
     if (fileExtension === 'pdf') {
@@ -1536,8 +1551,8 @@ export default function CustomClearances() {
           {filteredClearances.map((clearance) => {
             // Use shared documents from job_file_groups if available, otherwise fall back to clearance's own documents
             const sharedDocs = clearance.jobRef ? (sharedDocsMap[clearance.jobRef] || []) : []
-            const transportDocs = sharedDocs.length > 0 ? sharedDocs : parseAttachments(clearance.transportDocuments || null)
-            const clearanceDocs = parseAttachments(clearance.clearanceDocuments || null)
+            const transportDocs = sharedDocs.length > 0 ? sharedDocs : (clearance.transportDocuments || [])
+            const clearanceDocs = clearance.clearanceDocuments || []
             const totalFiles = transportDocs.length + clearanceDocs.length
             const hasNotes = clearance.additionalNotes && clearance.additionalNotes.trim().length > 0
 
@@ -1900,15 +1915,16 @@ export default function CustomClearances() {
                           }`}>
                             {transportDocs.length > 0 ? (
                               <div className="space-y-0.5">
-                                {transportDocs.map((filePath, idx) => {
-                                  const fileName = filePath.split('/').pop() || filePath
+                                {transportDocs.map((file, idx) => {
+                                  const fileName = getFileName(file)
+                                  const filePath = getFilePath(file)
                                   const downloadPath = normalizeFilePath(filePath)
                                   return (
                                     <div key={idx} className="flex items-center gap-1 group">
                                       <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                       <a
                                         href={downloadPath}
-                                        onClick={(e) => handleFileClick(e, filePath)}
+                                        onClick={(e) => handleFileClick(e, file)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-xs truncate hover:text-primary flex-1 cursor-pointer"
@@ -1947,15 +1963,16 @@ export default function CustomClearances() {
                           }`}>
                             {clearanceDocs.length > 0 ? (
                               <div className="space-y-0.5">
-                                {clearanceDocs.map((filePath, idx) => {
-                                  const fileName = filePath.split('/').pop() || filePath
+                                {clearanceDocs.map((file, idx) => {
+                                  const fileName = getFileName(file)
+                                  const filePath = getFilePath(file)
                                   const downloadPath = normalizeFilePath(filePath)
                                   return (
                                     <div key={idx} className="flex items-center gap-1 group">
                                       <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                       <a
                                         href={downloadPath}
-                                        onClick={(e) => handleFileClick(e, filePath)}
+                                        onClick={(e) => handleFileClick(e, file)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-xs truncate hover:text-primary flex-1 cursor-pointer"

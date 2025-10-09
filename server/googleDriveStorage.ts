@@ -81,7 +81,7 @@ export class GoogleDriveStorageService {
     }
 
     const drive = await getGoogleDriveClient();
-    const folderName = 'RS_Freight_Manager';
+    const folderName = 'RS Freight Manager';
 
     // Search for existing folder
     const response = await drive.files.list({
@@ -244,6 +244,54 @@ export class GoogleDriveStorageService {
     const objectPath = `/objects/${fileId}`;
 
     return { fileId, objectPath };
+  }
+
+  // Upload a file to organized job folder structure
+  async uploadFileToJobFolder(
+    fileName: string, 
+    buffer: Buffer, 
+    mimeType: string,
+    jobType: 'Import Shipments' | 'Export Shipments' | 'Custom Clearances' | 'Messages',
+    jobRef: string,
+    documentType: 'Transport Documents' | 'POD' | 'Clearance Documents' | 'RS Invoice' | null = null
+  ): Promise<{ fileId: string; objectPath: string; filename: string }> {
+    const drive = await getGoogleDriveClient();
+    
+    // Get root folder
+    const rootId = await this.getRootFolder();
+    
+    // Get or create job type folder (e.g., "Import Shipments")
+    const jobTypeFolder = await this.getOrCreateFolder(rootId, jobType);
+    
+    // Get or create job reference folder (e.g., "26001")
+    const jobRefFolder = await this.getOrCreateFolder(jobTypeFolder, jobRef);
+    
+    // Get final folder ID (with or without document type subfolder)
+    let folderId = jobRefFolder;
+    if (documentType) {
+      folderId = await this.getOrCreateFolder(jobRefFolder, documentType);
+    }
+    
+    const fileMetadata = {
+      name: fileName,
+      parents: [folderId]
+    };
+
+    const media = {
+      mimeType: mimeType,
+      body: Readable.from(buffer)
+    };
+
+    const file = await drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id'
+    });
+
+    const fileId = file.data.id!;
+    const objectPath = `/objects/${fileId}`;
+
+    return { fileId, objectPath, filename: fileName };
   }
 
   // Generate an upload URL (for Google Drive, we'll handle uploads differently)

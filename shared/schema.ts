@@ -48,7 +48,7 @@ export const messages = pgTable("messages", {
   recipientId: varchar("recipient_id").notNull(),
   subject: text("subject").notNull(),
   content: text("content").notNull(),
-  attachments: text("attachments").array().default([]),
+  attachments: jsonb("attachments").$type<Array<{filename: string; path: string}>>().default([]),
   isRead: boolean("is_read").default(false).notNull(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
@@ -302,7 +302,7 @@ export const importShipments = pgTable("import_shipments", {
   deliveryTime: text("delivery_time"),
   deliveryReference: text("delivery_reference"),
   deliveryTimeNotes: text("delivery_time_notes"),
-  proofOfDelivery: text("proof_of_delivery").array(),
+  proofOfDelivery: jsonb("proof_of_delivery").$type<Array<{filename: string; path: string}>>(),
   importDateEtaPort: text("import_date_eta_port"),
   portOfArrival: text("port_of_arrival"),
   trailerOrContainerNumber: text("trailer_or_container_number"),
@@ -385,8 +385,8 @@ export const importShipments = pgTable("import_shipments", {
   additionalNotes: text("additional_notes"),
   jobTags: text("job_tags").array(),
   
-  // File Attachments (stored as array of file paths from object storage)
-  attachments: text("attachments").array(),
+  // File Attachments (stored as array of {filename, path} objects)
+  attachments: jsonb("attachments").$type<Array<{filename: string; path: string}>>(),
   
   // Link to auto-created customs clearance
   linkedClearanceId: varchar("linked_clearance_id"),
@@ -488,7 +488,7 @@ export const exportShipments = pgTable("export_shipments", {
   deliveryTime: text("delivery_time"),
   deliveryReference: text("delivery_reference"),
   deliveryTimeNotes: text("delivery_time_notes"),
-  proofOfDelivery: text("proof_of_delivery").array(),
+  proofOfDelivery: jsonb("proof_of_delivery").$type<Array<{filename: string; path: string}>>(),
   trailerNo: text("trailer_no"),
   departureFrom: text("departure_from"),
   portOfArrival: text("port_of_arrival"),
@@ -549,8 +549,8 @@ export const exportShipments = pgTable("export_shipments", {
   additionalNotes: text("additional_notes"),
   jobTags: text("job_tags").array(),
   
-  // File Attachments (stored as array of file paths from object storage)
-  attachments: text("attachments").array(),
+  // File Attachments (stored as array of {filename, path} objects)
+  attachments: jsonb("attachments").$type<Array<{filename: string; path: string}>>(),
   
   // Link to auto-created customs clearance
   linkedClearanceId: varchar("linked_clearance_id"),
@@ -676,9 +676,9 @@ export const customClearances = pgTable("custom_clearances", {
   // Additional Notes
   additionalNotes: text("additional_notes"),
   
-  // File Attachments (stored as array of file paths from object storage)
-  transportDocuments: text("transport_documents").array(),
-  clearanceDocuments: text("clearance_documents").array(),
+  // File Attachments (stored as array of {filename, path} objects)
+  transportDocuments: jsonb("transport_documents").$type<Array<{filename: string; path: string}>>(),
+  clearanceDocuments: jsonb("clearance_documents").$type<Array<{filename: string; path: string}>>(),
   
   // Status Indicators (1=yellow, 2=orange, 3=green, 4=red)
   adviseAgentStatusIndicator: integer("advise_agent_status_indicator").default(1),
@@ -750,8 +750,8 @@ export const jobFileGroups = pgTable("job_file_groups", {
   jobRef: integer("job_ref").notNull().unique(), // Unique constraint ensures one record per jobRef
   
   // Shared Documents and Invoices
-  documents: text("documents").array().default([]),
-  rsInvoices: text("rs_invoices").array().default([]),
+  documents: jsonb("documents").$type<Array<{filename: string; path: string}>>().default([]),
+  rsInvoices: jsonb("rs_invoices").$type<Array<{filename: string; path: string}>>().default([]),
   
   // Timestamps
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),

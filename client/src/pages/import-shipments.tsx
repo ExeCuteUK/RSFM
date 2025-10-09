@@ -38,6 +38,17 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
+// Helper functions for file objects
+const getFileName = (file: any): string => {
+  if (typeof file === 'string') return file.split('/').pop() || file; // backwards compat
+  return file?.filename || 'Unknown';
+};
+
+const getFilePath = (file: any): string => {
+  if (typeof file === 'string') return file; // backwards compat
+  return file?.path || file;
+};
+
 export default function ImportShipments() {
   const { openEmailComposer } = useEmail()
   const { openWindow } = useWindowManager()
@@ -107,10 +118,10 @@ export default function ImportShipments() {
 
   // Fetch shared documents for all import shipments
   const jobRefs = allShipments.map(s => s.jobRef).filter((ref): ref is number => ref !== undefined)
-  const { data: sharedDocsMap = {} } = useQuery<Record<number, string[]>>({
+  const { data: sharedDocsMap = {} } = useQuery<Record<number, any[]>>({
     queryKey: ["/api/job-file-groups/batch", jobRefs],
     queryFn: async () => {
-      const map: Record<number, string[]> = {}
+      const map: Record<number, any[]> = {}
       
       // Fetch job file groups for each unique jobRef
       const uniqueRefs = Array.from(new Set(jobRefs))
@@ -303,10 +314,17 @@ export default function ImportShipments() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "attachment" | "pod" }) => {
-      // Direct upload to backend
+      // Get shipment info for folder organization
+      const shipment = allShipments.find(s => s.id === id)
+      if (!shipment) throw new Error("Shipment not found")
+      
+      // Direct upload to backend with job organization
       const formData = new FormData();
       formData.append('file', file);
       formData.append('filename', file.name);
+      formData.append('jobType', 'Import Shipments');
+      formData.append('jobRef', shipment.jobRef.toString());
+      formData.append('documentType', fileType === "attachment" ? "Transport Documents" : "POD");
       
       const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
@@ -317,15 +335,12 @@ export default function ImportShipments() {
         throw new Error('Failed to upload file');
       }
       
-      const { objectPath } = await uploadResponse.json()
-      const filePath = objectPath
+      const { objectPath, filename } = await uploadResponse.json()
+      const fileObject = { filename, path: objectPath }
       
-      // Update shipment with new file
-      const shipment = allShipments.find(s => s.id === id)
-      if (!shipment) throw new Error("Shipment not found")
-      
+      // Update shipment with new file object
       const currentFiles = fileType === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
-      const updatedFiles = [...currentFiles, filePath]
+      const updatedFiles = [...currentFiles, fileObject]
       
       const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
         ...shipment,
@@ -1451,9 +1466,10 @@ Hope all is OK.`
     }
   }
 
-  const parseAttachments = (attachments: string[] | null) => {
+  const parseAttachments = (attachments: any[] | null) => {
     if (!attachments || !Array.isArray(attachments)) return []
-    return attachments
+    // Extract paths from file objects or return strings directly for backwards compatibility
+    return attachments.map(file => getFilePath(file))
   }
 
   const normalizeFilePath = (filePath: string): string => {
@@ -1470,8 +1486,9 @@ Hope all is OK.`
       : filePath.startsWith('/') ? filePath : `/objects/${filePath}`
   }
 
-  const handleFileClick = (e: React.MouseEvent, filePath: string) => {
-    const fileName = filePath.split('/').pop() || filePath
+  const handleFileClick = (e: React.MouseEvent, file: any) => {
+    const fileName = getFileName(file)
+    const filePath = getFilePath(file)
     const fileExtension = fileName.split('.').pop()?.toLowerCase()
     
     if (fileExtension === 'pdf') {
@@ -2246,8 +2263,8 @@ Hope all is OK.`
                   {(() => {
                     // Use shared documents from job_file_groups if available, otherwise fall back to shipment's own attachments
                     const sharedDocs = shipment.jobRef ? (sharedDocsMap[shipment.jobRef] || []) : []
-                    const attachmentFiles = sharedDocs.length > 0 ? sharedDocs : parseAttachments(shipment.attachments)
-                    const podFiles = parseAttachments(shipment.proofOfDelivery)
+                    const attachmentFiles = sharedDocs.length > 0 ? sharedDocs : (shipment.attachments || [])
+                    const podFiles = shipment.proofOfDelivery || []
                     return (
                       <div className="mt-2 pt-2 border-t">
                         <div className="grid grid-cols-2 gap-2">
@@ -2265,15 +2282,16 @@ Hope all is OK.`
                             }`}>
                               {attachmentFiles.length > 0 ? (
                                 <div className="space-y-0.5">
-                                  {attachmentFiles.map((filePath, idx) => {
-                                    const fileName = filePath.split('/').pop() || filePath
+                                  {attachmentFiles.map((file, idx) => {
+                                    const fileName = getFileName(file)
+                                    const filePath = getFilePath(file)
                                     const downloadPath = normalizeFilePath(filePath)
                                     return (
                                       <div key={idx} className="flex items-center gap-1 group">
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                         <a
                                           href={downloadPath}
-                                          onClick={(e) => handleFileClick(e, filePath)}
+                                          onClick={(e) => handleFileClick(e, file)}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-xs text-primary hover:underline truncate flex-1 cursor-pointer"
@@ -2320,15 +2338,16 @@ Hope all is OK.`
                             }`}>
                               {podFiles.length > 0 ? (
                                 <div className="space-y-0.5">
-                                  {podFiles.map((filePath, idx) => {
-                                    const fileName = filePath.split('/').pop() || filePath
+                                  {podFiles.map((file, idx) => {
+                                    const fileName = getFileName(file)
+                                    const filePath = getFilePath(file)
                                     const downloadPath = normalizeFilePath(filePath)
                                     return (
                                       <div key={idx} className="flex items-center gap-1 group">
                                         <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                         <a
                                           href={downloadPath}
-                                          onClick={(e) => handleFileClick(e, filePath)}
+                                          onClick={(e) => handleFileClick(e, file)}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-xs text-primary hover:underline truncate flex-1 cursor-pointer"
@@ -3318,8 +3337,8 @@ Hope all is OK.`
               )}
 
               {(() => {
-                const attachmentFiles = parseAttachments(viewingShipment.attachments)
-                const podFiles = parseAttachments(viewingShipment.proofOfDelivery)
+                const attachmentFiles = viewingShipment.attachments || []
+                const podFiles = viewingShipment.proofOfDelivery || []
                 if (attachmentFiles.length > 0 || podFiles.length > 0) {
                   return (
                     <Card>
@@ -3333,8 +3352,9 @@ Hope all is OK.`
                             <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Documents</p>
                             {attachmentFiles.length > 0 ? (
                               <div className="space-y-2">
-                                {attachmentFiles.map((filePath, idx) => {
-                                  const fileName = filePath.split('/').pop() || filePath
+                                {attachmentFiles.map((file, idx) => {
+                                  const fileName = getFileName(file)
+                                  const filePath = getFilePath(file)
                                   const downloadPath = normalizeFilePath(filePath)
                                   return (
                                     <div key={idx} className="flex items-center gap-2 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group">
@@ -3343,7 +3363,7 @@ Hope all is OK.`
                                       </div>
                                       <a
                                         href={downloadPath}
-                                        onClick={(e) => handleFileClick(e, filePath)}
+                                        onClick={(e) => handleFileClick(e, file)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-sm truncate flex-1 group-hover:text-primary cursor-pointer"
@@ -3365,8 +3385,9 @@ Hope all is OK.`
                             <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Proof of Delivery</p>
                             {podFiles.length > 0 ? (
                               <div className="space-y-2">
-                                {podFiles.map((filePath, idx) => {
-                                  const fileName = filePath.split('/').pop() || filePath
+                                {podFiles.map((file, idx) => {
+                                  const fileName = getFileName(file)
+                                  const filePath = getFilePath(file)
                                   const downloadPath = normalizeFilePath(filePath)
                                   return (
                                     <div key={idx} className="flex items-center gap-2 p-3 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors group">
@@ -3375,7 +3396,7 @@ Hope all is OK.`
                                       </div>
                                       <a
                                         href={downloadPath}
-                                        onClick={(e) => handleFileClick(e, filePath)}
+                                        onClick={(e) => handleFileClick(e, file)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-sm truncate flex-1 group-hover:text-primary cursor-pointer"

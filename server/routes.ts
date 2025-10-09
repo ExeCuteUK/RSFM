@@ -2637,14 +2637,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filename = req.body?.filename || req.file.originalname;
       const mimeType = req.file.mimetype;
       
-      const { fileId, objectPath } = await storageService.uploadFile(
-        filename,
-        req.file.buffer,
-        mimeType,
-        false // private by default
-      );
+      // Check if we have job organization parameters
+      const jobType = req.body?.jobType as 'Import Shipments' | 'Export Shipments' | 'Custom Clearances' | 'Messages' | undefined;
+      const jobRef = req.body?.jobRef;
+      const documentType = req.body?.documentType as 'Transport Documents' | 'POD' | 'Clearance Documents' | 'RS Invoice' | null | undefined;
+      
+      let result;
+      if (jobType && jobRef) {
+        // Use organized folder structure
+        result = await storageService.uploadFileToJobFolder(
+          filename,
+          req.file.buffer,
+          mimeType,
+          jobType,
+          jobRef,
+          documentType || null
+        );
+      } else {
+        // Fallback to old method for backwards compatibility
+        const { fileId, objectPath } = await storageService.uploadFile(
+          filename,
+          req.file.buffer,
+          mimeType,
+          false
+        );
+        result = { fileId, objectPath, filename };
+      }
 
-      res.json({ uploadURL: objectPath, objectPath, fileId });
+      res.json({ 
+        uploadURL: result.objectPath, 
+        objectPath: result.objectPath, 
+        fileId: result.fileId,
+        filename: result.filename
+      });
     } catch (error) {
       console.error("Error uploading file:", error);
       res.status(500).json({ error: "Failed to upload file" });
