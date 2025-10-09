@@ -568,15 +568,15 @@ export function ClearanceWorkGrid() {
             <table ref={tableRef} className="w-full border-collapse text-sm table-fixed">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
-                  <th className="border px-2 py-1 text-center font-medium">Link</th>
-                  <th className="border px-2 py-1 text-center font-medium">REF</th>
-                  <th className="border px-2 py-1 text-center font-medium">IMP/EXP</th>
+                  <th className="border px-2 py-1 text-center font-medium w-12">Link</th>
+                  <th className="border px-2 py-1 text-center font-medium w-16">REF</th>
+                  <th className="border px-2 py-1 text-center font-medium w-20">IMP/EXP</th>
                   <th className="border px-2 py-1 text-center font-medium">Clearance Type</th>
                   <th className="border px-2 py-1 text-center font-medium">Customer</th>
                   <th className="border px-2 py-1 text-center font-medium">ETA Port</th>
                   <th className="border px-2 py-1 text-center font-medium">Trailer/Container</th>
                   <th className="border px-2 py-1 text-center font-medium">MRN Number</th>
-                  <th className="border px-2 py-1 text-center font-medium">Clearance Agent</th>
+                  <th className="border px-2 py-1 text-center font-medium w-56">Clearance Agent</th>
                   <th className="border px-2 py-1 text-center font-medium">Agent Advised</th>
                   <th className="border px-2 py-1 text-center font-medium">Notes</th>
                 </tr>
@@ -596,7 +596,7 @@ export function ClearanceWorkGrid() {
                       {renderCell(clearance, "trailerOrContainerNumber", clearance.trailerOrContainerNumber, columnWidths[6])}
                       {renderCell(clearance, "mrn", clearance.mrn, columnWidths[7])}
                       {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[8])}
-                      {renderCell(clearance, "agentAdvised", formatDateTime(getAgentAdvisedTimestamp(clearance)), columnWidths[9])}
+                      {renderCell(clearance, "agentAdvised", formatDate(getAgentAdvisedTimestamp(clearance)), columnWidths[9])}
                       {renderCell(clearance, "notes", clearance.additionalNotes, columnWidths[10])}
                     </tr>
                   )
