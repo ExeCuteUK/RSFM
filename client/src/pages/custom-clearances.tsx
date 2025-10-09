@@ -1646,7 +1646,11 @@ export default function CustomClearances() {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                      <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        clearance.jobType === 'import' 
+                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                          : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                      }`}>
                         {clearance.jobType}
                       </span>
                     </div>
