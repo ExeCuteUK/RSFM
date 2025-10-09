@@ -986,13 +986,15 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                           onChange={field.onChange}
                           pendingFiles={pendingClearanceDocuments}
                           onPendingFilesChange={(newPendingFiles) => {
+                            console.log('[OCR DEBUG] ===== CALLBACK CALLED =====');
+                            console.log('[OCR DEBUG] Previous files:', pendingClearanceDocuments);
+                            console.log('[OCR DEBUG] New files array:', newPendingFiles);
+                            
                             // Find NEW files that weren't in the previous array
                             const newFiles = newPendingFiles.filter(
                               file => !pendingClearanceDocuments.includes(file)
                             );
                             
-                            console.log('[OCR DEBUG] Previous files:', pendingClearanceDocuments);
-                            console.log('[OCR DEBUG] New files array:', newPendingFiles);
                             console.log('[OCR DEBUG] Detected new files:', newFiles);
                             
                             // Trigger OCR for each newly uploaded file
