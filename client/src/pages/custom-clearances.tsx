@@ -1047,6 +1047,109 @@ export default function CustomClearances() {
     }
   }
 
+  const handleAdviseAgentEmail = (clearance: CustomClearance) => {
+    try {
+      // Get customer based on job type
+      let customerName = "N/A"
+      let vatPaymentMethod = "N/A"
+      
+      if (clearance.jobType === "import") {
+        const customer = importCustomers.find(c => c.id === clearance.importCustomerId)
+        customerName = customer?.companyName || "N/A"
+        vatPaymentMethod = customer?.vatPaymentMethod || "N/A"
+      } else {
+        const customer = exportCustomers.find(c => c.id === clearance.exportCustomerId)
+        customerName = customer?.companyName || "N/A"
+      }
+      
+      // Build email subject
+      const truckContainerFlight = clearance.trailerOrContainerNumber || "TBA"
+      const eta = formatDate(clearance.etaPort) || "TBA"
+      
+      let subject: string
+      if (clearance.jobType === "export") {
+        // Export subject: no ETA field
+        subject = `Export Clearance / ${customerName} / Our Ref : ${clearance.jobRef} / ${truckContainerFlight}`
+      } else {
+        // Import subject: includes ETA
+        subject = `Import Clearance / ${customerName} / Our Ref : ${clearance.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
+      }
+      
+      // Build email body
+      const clearanceTypeText = clearance.jobType === "export" ? "an Export Clearance" : "clearance"
+      let body = `Hi Team,\n\nPlease could you arrange ${clearanceTypeText} on the below shipment. Our Ref : ${clearance.jobRef}\n\n`
+      
+      const arrivalDepartureText = clearance.jobType === "export" ? "depart" : "arrive"
+      body += `Consignment will ${arrivalDepartureText} on ${clearance.containerShipment === "Road Shipment" ? "Trailer" : clearance.containerShipment === "Air Freight" ? "Flight" : "Container"} : ${clearance.trailerOrContainerNumber || "TBA"} Into ${clearance.portOfArrival || "TBA"} on ${formatDate(clearance.etaPort) || "TBA"}.\n\n`
+      
+      // Add customer name with prefix for exports
+      if (clearance.jobType === "export") {
+        body += `Exporter : ${customerName}\n`
+      } else {
+        body += `${customerName}\n`
+      }
+      
+      body += `${clearance.numberOfPieces || ""} ${clearance.packaging || ""}.\n`
+      body += `${clearance.goodsDescription || ""}\n`
+      
+      // Add weight with "kgs" suffix if weight exists
+      const weightText = clearance.weight ? `${clearance.weight} kgs` : ""
+      body += `${weightText}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
+      
+      // Add VAT info for import clearances
+      if (clearance.jobType === "import") {
+        const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
+        body += `\nVAT Payment Method : ${displayVatMethod}\n`
+        
+        if (clearance.vatZeroRated) {
+          body += `VAT Zero Rated\n`
+        }
+        
+        // Add clearance type only for imports
+        body += `Clearance Type : ${clearance.clearanceType || "N/A"}\n`
+      }
+      
+      // Add closing signature
+      body += `\nKind Regards,`
+      
+      // Lookup agent email based on clearance agent name
+      let agentEmail = ""
+      if (clearance.clearanceAgent) {
+        const agent = clearanceAgents.find(a => a.agentName === clearance.clearanceAgent)
+        if (agent) {
+          agentEmail = clearance.jobType === "import" 
+            ? (agent.agentImportEmail && agent.agentImportEmail.length > 0 ? agent.agentImportEmail[0] : "")
+            : (agent.agentExportEmail && agent.agentExportEmail.length > 0 ? agent.agentExportEmail[0] : "")
+        }
+      }
+      
+      // Get transport documents
+      const transportDocs = parseAttachments(clearance.transportDocuments || null).map(normalizeFilePath).filter(Boolean)
+      
+      // Open email composer with auto-populated TO field (or empty if no agent found)
+      openEmailComposer({
+        id: `email-${Date.now()}`,
+        to: agentEmail,
+        cc: "",
+        bcc: "",
+        subject: subject || `${clearance.jobType === "import" ? "Import" : "Export"} Clearance`,
+        body: body || "",
+        attachments: transportDocs || [],
+        metadata: {
+          source: 'advise-clearance-agent',
+          shipmentId: clearance.id
+        }
+      })
+    } catch (error) {
+      console.error('Error opening email composer:', error)
+      toast({
+        title: "Failed to open email",
+        description: "Please try again",
+        variant: "destructive",
+      })
+    }
+  }
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return ""
     try {
@@ -1473,6 +1576,11 @@ export default function CustomClearances() {
                       <div className="space-y-1">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5">
+                            <Mail 
+                              className="h-4 w-4 text-muted-foreground shrink-0 cursor-pointer hover-elevate active-elevate-2" 
+                              onClick={() => handleAdviseAgentEmail(clearance)}
+                              data-testid={`button-advise-agent-email-${clearance.id}`}
+                            />
                             <button
                               onClick={() => setClearanceAgentDialog({ show: true, clearanceId: clearance.id })}
                               className="hover-elevate rounded p-0 shrink-0"
