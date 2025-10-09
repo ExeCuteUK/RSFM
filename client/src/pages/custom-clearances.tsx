@@ -53,6 +53,7 @@ export default function CustomClearances() {
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ clearance: CustomClearance; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
+  const [mrnConfirmation, setMrnConfirmation] = useState<{ id: string; filePath: string; mrnNumber: string; clearance: CustomClearance } | null>(null)
   const { toast } = useToast()
   const [location, setLocation] = useLocation()
   
@@ -274,26 +275,26 @@ export default function CustomClearances() {
           const { mrnNumber } = await ocrResponse.json()
           
           if (mrnNumber) {
-            // Update clearance with MRN and file
+            // Show confirmation dialog for detected MRN
             const clearance = clearances.find(c => c.id === id)
             if (!clearance) throw new Error("Clearance not found")
             
-            const currentFiles = clearance.clearanceDocuments || []
-            const updatedFiles = [...currentFiles, filePath]
-            
-            const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
-              ...clearance,
-              clearanceDocuments: updatedFiles,
-              mrn: mrnNumber
-            })
+            setMrnConfirmation({ id, filePath, mrnNumber, clearance })
+            return { pending: true } // Return to prevent success toast
+          } else {
+            // Show "No MRN Found" toast
             toast({ 
-              title: "MRN Detected", 
-              description: `Found MRN: ${mrnNumber}. Added to clearance.` 
+              title: "No MRN Found", 
+              description: "OCR scan completed but no MRN was detected in the document."
             })
-            return res.json()
           }
         } catch (error) {
           console.error("OCR failed:", error)
+          toast({ 
+            title: "OCR Failed", 
+            description: "Failed to scan document for MRN.",
+            variant: "destructive"
+          })
         }
       }
       
@@ -310,12 +311,15 @@ export default function CustomClearances() {
       })
       return res.json()
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
-      toast({ title: "File uploaded successfully" })
+      // Don't show toast if MRN confirmation is pending
+      if (!data?.pending) {
+        toast({ title: "File uploaded successfully" })
+      }
     },
     onError: () => {
       toast({ title: "File upload failed", variant: "destructive" })
@@ -367,6 +371,42 @@ export default function CustomClearances() {
       })
     },
   })
+
+  const handleMrnConfirmation = async (confirm: boolean) => {
+    if (!mrnConfirmation) return
+
+    const { id, filePath, mrnNumber, clearance } = mrnConfirmation
+    const currentFiles = clearance.clearanceDocuments || []
+    const updatedFiles = [...currentFiles, filePath]
+
+    try {
+      await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
+        ...clearance,
+        clearanceDocuments: updatedFiles,
+        ...(confirm && { mrn: mrnNumber }) // Only add MRN if user confirms
+      })
+
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+
+      toast({ 
+        title: confirm ? "MRN Added" : "File Uploaded",
+        description: confirm 
+          ? `MRN ${mrnNumber} has been added to the clearance.`
+          : "File uploaded without MRN."
+      })
+    } catch (error) {
+      toast({ 
+        title: "Update Failed", 
+        description: "Failed to update clearance.",
+        variant: "destructive"
+      })
+    } finally {
+      setMrnConfirmation(null)
+    }
+  }
 
   const handleAdviseAgentStatusUpdate = (id: string, status: number) => {
     if (status === 4) {
@@ -1805,6 +1845,23 @@ export default function CustomClearances() {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => handleRedButtonConfirm(false)}>No, Continue</AlertDialogCancel>
             <AlertDialogAction onClick={() => handleRedButtonConfirm(true)}>Yes, Add Note</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!mrnConfirmation} onOpenChange={(open) => !open && setMrnConfirmation(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>MRN Detected</AlertDialogTitle>
+            <AlertDialogDescription>
+              Found MRN: <strong>{mrnConfirmation?.mrnNumber}</strong>
+              <br />
+              Would you like to add this MRN to the clearance?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => handleMrnConfirmation(false)}>No, Just Upload File</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleMrnConfirmation(true)}>Yes, Add MRN</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
