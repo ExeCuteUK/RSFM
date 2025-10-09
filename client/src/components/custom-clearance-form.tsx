@@ -39,7 +39,7 @@ import { MRNConfirmationDialog } from "@/components/mrn-confirmation-dialog"
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
   onCancel: () => void
-  defaultValues?: Partial<InsertCustomClearance>
+  defaultValues?: Partial<InsertCustomClearance> & { jobRef?: number }
 }
 
 // Validation helpers
@@ -203,7 +203,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     }
 
     // Don't process if already has MRN
-    if (form.getValues('mrnNumber')) {
+    if (form.getValues('mrn')) {
       return;
     }
 
@@ -234,7 +234,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   };
 
   const handleConfirmMRN = () => {
-    form.setValue('mrnNumber', extractedMRN);
+    form.setValue('mrn', extractedMRN);
     setMrnDialogOpen(false);
     toast({
       title: "MRN Number Added",
