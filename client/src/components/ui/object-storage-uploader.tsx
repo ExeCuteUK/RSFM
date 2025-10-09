@@ -43,10 +43,15 @@ export function ObjectStorageUploader({
         formData.append('file', file);
         formData.append('filename', file.name);
 
+        console.log('[CLIENT DEBUG] Uploading file:', file.name, 'size:', file.size);
+        console.log('[CLIENT DEBUG] FormData entries:', Array.from(formData.entries()));
+        
         const response = await fetch("/api/objects/upload", {
           method: "POST",
           body: formData,
         });
+        
+        console.log('[CLIENT DEBUG] Response status:', response.status);
 
         const data = await response.json();
         uploadedPaths.push(data.objectPath);
