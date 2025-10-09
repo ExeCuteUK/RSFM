@@ -421,7 +421,7 @@ export function ClearanceWorkGrid() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Clearance Work Grid</CardTitle>
+          <CardTitle>Clearance Management</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Search */}

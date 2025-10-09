@@ -712,7 +712,7 @@ export default function Dashboard() {
           </TabsTrigger>
           <TabsTrigger value="clearance-work" data-testid="tab-clearance">
             <Clipboard className="h-4 w-4 mr-2" />
-            Clearance Work
+            Clearance Management
           </TabsTrigger>
         </TabsList>
 

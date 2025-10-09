@@ -13,7 +13,7 @@ Key features include:
 - Quick user access and real-time presence tracking, displaying online users and unread message indicators, with one-click messaging.
 - Draggable, minimizable email composer with multi-draft support, `localStorage` persistence, and automatic status updates for specific email actions (e.g., `send-haulier-ead`, `send-pod-customer`).
 - Specific email functionality for Custom Clearances, including "Send Haulier EAD" with automated document attachments and status updates.
-- Dashboard with tabbed card interface featuring Container Management (spreadsheet-like display with conditional cell coloring based on job statuses), Nisbets, Import/Export Work, and Clearance Work tabs.
+- Dashboard with tabbed card interface featuring Container Management (spreadsheet-like display with conditional cell coloring based on job statuses), Nisbets, Import/Export Work, and Clearance Management tabs.
 
 ## User Preferences
 
