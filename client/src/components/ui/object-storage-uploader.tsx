@@ -54,7 +54,7 @@ export function ObjectStorageUploader({
           },
         });
 
-        uploadedPaths.push(data.uploadURL);
+        uploadedPaths.push(data.objectPath);
       }
 
       if (onPendingFilesChange) {
