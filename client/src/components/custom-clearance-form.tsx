@@ -986,11 +986,21 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                           onChange={field.onChange}
                           pendingFiles={pendingClearanceDocuments}
                           onPendingFilesChange={(newPendingFiles) => {
-                            // Trigger OCR on newly uploaded files
-                            if (newPendingFiles.length > pendingClearanceDocuments.length) {
-                              const newFile = newPendingFiles[newPendingFiles.length - 1]
-                              handleClearanceDocumentOCR(newFile)
-                            }
+                            // Find NEW files that weren't in the previous array
+                            const newFiles = newPendingFiles.filter(
+                              file => !pendingClearanceDocuments.includes(file)
+                            );
+                            
+                            console.log('[OCR DEBUG] Previous files:', pendingClearanceDocuments);
+                            console.log('[OCR DEBUG] New files array:', newPendingFiles);
+                            console.log('[OCR DEBUG] Detected new files:', newFiles);
+                            
+                            // Trigger OCR for each newly uploaded file
+                            newFiles.forEach(filePath => {
+                              console.log('[OCR DEBUG] Triggering OCR for:', filePath);
+                              handleClearanceDocumentOCR(filePath);
+                            });
+                            
                             setPendingClearanceDocuments(newPendingFiles)
                           }}
                           maxFiles={10}
