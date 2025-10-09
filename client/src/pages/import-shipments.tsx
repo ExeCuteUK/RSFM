@@ -1917,7 +1917,7 @@ Hope all is OK.`
                           title="Send clearance details to agent"
                           className="p-0 border-0 bg-transparent shrink-0"
                         >
-                          <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                          <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-blue-500 transition-colors" />
                         </button>
                         <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           {shipment.rsToClear ? 'Advise Clearance to Agent' : 'Send Customs Arrival Info to Customer'}
@@ -1958,7 +1958,7 @@ Hope all is OK.`
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
                           <Mail 
-                            className="h-4 w-4 text-muted-foreground shrink-0 cursor-pointer hover-elevate active-elevate-2" 
+                            className="h-4 w-4 text-muted-foreground hover:text-blue-500 shrink-0 cursor-pointer hover-elevate active-elevate-2 transition-colors" 
                             onClick={() => handleSendHaulierGvmsEmail(shipment)}
                             data-testid={`button-send-haulier-gvms-email-${shipment.id}`}
                           />
@@ -2002,7 +2002,7 @@ Hope all is OK.`
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
                           <Mail 
-                            className="h-4 w-4 text-muted-foreground shrink-0 cursor-pointer hover-elevate active-elevate-2" 
+                            className="h-4 w-4 text-muted-foreground hover:text-blue-500 shrink-0 cursor-pointer hover-elevate active-elevate-2 transition-colors" 
                             onClick={() => handleSendCustomerGvmsEmail(shipment)}
                             data-testid={`button-send-customer-gvms-email-${shipment.id}`}
                           />
@@ -2050,7 +2050,7 @@ Hope all is OK.`
                           data-testid={`button-book-delivery-email-${shipment.id}`}
                           title="Send booking email to customer"
                         >
-                          <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                          <CalendarCheck className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
                         </button>
                         <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)} flex items-center gap-1`} data-testid={`text-delivery-booked-${shipment.id}`}>
                           Book Delivery With Customer
@@ -2095,7 +2095,7 @@ Hope all is OK.`
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
-                          <Unlock className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <Unlock className="h-4 w-4 text-muted-foreground hover:text-blue-500 shrink-0 transition-colors" />
                           <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
                             {shipment.deliveryRelease === "Line" 
                               ? "Pay Line for Delivery" 
@@ -2146,7 +2146,7 @@ Hope all is OK.`
                           data-testid={`button-send-invoice-email-${shipment.id}`}
                           title="Send invoice email to customer"
                         >
-                          <Send className="h-4 w-4 text-muted-foreground" />
+                          <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
                         </button>
                         <button
                           onClick={() => openWindow({ 
@@ -2199,7 +2199,7 @@ Hope all is OK.`
                           data-testid={`button-send-pod-email-${shipment.id}`}
                           title="Send POD email to customer"
                         >
-                          <Send className="h-4 w-4 text-muted-foreground" />
+                          <Mail className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
                         </button>
                         <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-customer-${shipment.id}`}>
                           Send POD To Customer
