@@ -20,7 +20,6 @@ export function ClearanceWorkGrid() {
   const [editingCell, setEditingCell] = useState<{ clearanceId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
-  const [rowHeights, setRowHeights] = useState<number[]>([])
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -30,7 +29,6 @@ export function ClearanceWorkGrid() {
   useEffect(() => {
     if (!editingCell) {
       setColumnWidths([])
-      setRowHeights([])
     }
   }, [editingCell])
 
@@ -147,18 +145,15 @@ export function ClearanceWorkGrid() {
   })
 
   const handleCellClick = (clearanceId: string, fieldName: string, currentValue: any) => {
-    if (fieldName === "jobRef" || fieldName === "customerName" || fieldName === "jobType") {
+    if (fieldName === "jobRef" || fieldName === "customerName" || fieldName === "jobType" || fieldName === "clearanceType") {
       return
     }
 
+    // Capture column widths before entering edit mode
     if (tableRef.current && !editingCell) {
-      const cells = Array.from(tableRef.current.querySelectorAll('td'))
-      const widths = cells.map(cell => cell.offsetWidth)
+      const headers = tableRef.current.querySelectorAll('thead th')
+      const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
       setColumnWidths(widths)
-      
-      const rows = Array.from(tableRef.current.querySelectorAll('tbody tr')) as HTMLElement[]
-      const heights = rows.map(row => row.offsetHeight)
-      setRowHeights(heights)
     }
 
     setEditingCell({ clearanceId, fieldName })
@@ -381,35 +376,6 @@ export function ClearanceWorkGrid() {
     }
 
     if (isEditing) {
-      if (fieldName === "clearanceType") {
-        return (
-          <td 
-            key={fieldName} 
-            className="border px-2 py-1"
-            style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
-          >
-            <Select
-              value={tempValue}
-              onValueChange={(val) => {
-                setTempValue(val)
-                updateClearanceMutation.mutate({
-                  id: clearance.id,
-                  data: { clearanceType: val }
-                })
-              }}
-            >
-              <SelectTrigger className="h-8 border-2 border-blue-500">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Export">Export</SelectItem>
-                <SelectItem value="GVMS">GVMS</SelectItem>
-              </SelectContent>
-            </Select>
-          </td>
-        )
-      }
-
       if (fieldName === "clearanceAgent") {
         const sortedAgents = [...clearanceAgents].sort((a, b) => 
           (a.agentName || "").localeCompare(b.agentName || "")
@@ -429,9 +395,11 @@ export function ClearanceWorkGrid() {
                   id: clearance.id,
                   data: { clearanceAgent: val }
                 })
+                setEditingCell(null)
+                setTempValue("")
               }}
             >
-              <SelectTrigger className="h-8 border-2 border-blue-500">
+              <SelectTrigger className="h-auto min-h-6 text-sm text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
                 <SelectValue placeholder="Select agent" />
               </SelectTrigger>
               <SelectContent>
@@ -450,7 +418,7 @@ export function ClearanceWorkGrid() {
         return (
           <td 
             key={fieldName} 
-            className="border px-0 py-0"
+            className="border px-2 py-1"
             style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
           >
             <textarea
@@ -459,7 +427,7 @@ export function ClearanceWorkGrid() {
               onChange={(e) => setTempValue(e.target.value)}
               onKeyDown={handleKeyDown}
               onBlur={handleSave}
-              className="w-full h-full px-2 py-1 text-center border-2 border-blue-500 focus:outline-none resize-none"
+              className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-sm text-center focus:outline-none resize-none"
               rows={2}
               data-testid={`input-${fieldName}-${clearance.id}`}
             />
@@ -470,7 +438,7 @@ export function ClearanceWorkGrid() {
       return (
         <td 
           key={fieldName} 
-          className="border px-0 py-0"
+          className="border px-2 py-1"
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
           <input
@@ -480,7 +448,7 @@ export function ClearanceWorkGrid() {
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
-            className="w-full h-full px-2 py-1 text-center border-2 border-blue-500 focus:outline-none"
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-sm text-center focus:outline-none"
             data-testid={`input-${fieldName}-${clearance.id}`}
           />
         </td>
@@ -597,7 +565,7 @@ export function ClearanceWorkGrid() {
 
           {/* Grid */}
           <div className="overflow-auto max-h-[600px]">
-            <table ref={tableRef} className="w-full border-collapse text-sm">
+            <table ref={tableRef} className={`w-full border-collapse text-sm ${editingCell ? 'table-fixed' : ''}`}>
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
                   <th className="border px-2 py-1 text-center font-medium">Link</th>
