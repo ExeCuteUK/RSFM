@@ -20,6 +20,7 @@ export function ClearanceWorkGrid() {
   const [editingCell, setEditingCell] = useState<{ clearanceId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
+  const [rowHeights, setRowHeights] = useState<number[]>([])
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -29,6 +30,7 @@ export function ClearanceWorkGrid() {
   useEffect(() => {
     if (!editingCell) {
       setColumnWidths([])
+      setRowHeights([])
     }
   }, [editingCell])
 
@@ -149,6 +151,10 @@ export function ClearanceWorkGrid() {
       const cells = Array.from(tableRef.current.querySelectorAll('td'))
       const widths = cells.map(cell => cell.offsetWidth)
       setColumnWidths(widths)
+      
+      const rows = Array.from(tableRef.current.querySelectorAll('tbody tr'))
+      const heights = rows.map(row => row.offsetHeight)
+      setRowHeights(heights)
     }
 
     setEditingCell({ clearanceId, fieldName })
@@ -533,9 +539,13 @@ export function ClearanceWorkGrid() {
               <tbody>
                 {filteredClearances.map((clearance, index) => {
                   const customerName = getCustomerName(clearance)
+                  const rowHeight = rowHeights[index]
                   
                   return (
-                    <tr key={clearance.id}>
+                    <tr 
+                      key={clearance.id}
+                      style={rowHeight ? { height: `${rowHeight}px` } : {}}
+                    >
                       {renderCell(clearance, "link", null, columnWidths[0])}
                       {renderCell(clearance, "jobRef", clearance.jobRef, columnWidths[1])}
                       {renderCell(clearance, "jobType", clearance.jobType === "import" ? "Import" : "Export", columnWidths[2])}
