@@ -1191,7 +1191,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                 data-testid="button-import-date"
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value ? (
+                                {field.value && field.value !== "" ? (
                                   format(parseISO(field.value), "dd/MM/yy")
                                 ) : (
                                   <span>Pick a date</span>
