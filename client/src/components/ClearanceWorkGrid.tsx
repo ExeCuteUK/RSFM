@@ -582,15 +582,11 @@ export function ClearanceWorkGrid() {
                 </tr>
               </thead>
               <tbody>
-                {filteredClearances.map((clearance, index) => {
+                {filteredClearances.map((clearance) => {
                   const customerName = getCustomerName(clearance)
-                  const rowHeight = rowHeights[index]
                   
                   return (
-                    <tr 
-                      key={clearance.id}
-                      style={rowHeight ? { height: `${rowHeight}px` } : {}}
-                    >
+                    <tr key={clearance.id}>
                       {renderCell(clearance, "link", null, columnWidths[0])}
                       {renderCell(clearance, "jobRef", clearance.jobRef, columnWidths[1])}
                       {renderCell(clearance, "jobType", clearance.jobType === "import" ? "Import" : "Export", columnWidths[2])}
