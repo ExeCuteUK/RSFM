@@ -13,7 +13,7 @@ import {
   messages,
   purchaseInvoices,
   invoices,
-  // generalReferences, // TODO: Uncomment when table is created in task 13
+  generalReferences,
   settings,
   users
 } from "../shared/schema";
@@ -121,13 +121,12 @@ async function backupContactDatabases() {
     writeFileSync(`${backupDir}/invoices_backup.sql`, invoicesSQL);
     console.log(`✓ Invoices backed up: ${invoicesData.length} records`);
 
-    // TODO: Uncomment when general_references table is created in task 13
-    // // Backup General References
-    // console.log("Backing up General References...");
-    // const generalReferencesData = await db.select().from(generalReferences);
-    // const generalReferencesSQL = generateInsertSQL("general_references", generalReferencesData);
-    // writeFileSync(`${backupDir}/general_references_backup.sql`, generalReferencesSQL);
-    // console.log(`✓ General References backed up: ${generalReferencesData.length} records`);
+    // Backup General References
+    console.log("Backing up General References...");
+    const generalReferencesData = await db.select().from(generalReferences);
+    const generalReferencesSQL = generateInsertSQL("general_references", generalReferencesData);
+    writeFileSync(`${backupDir}/general_references_backup.sql`, generalReferencesSQL);
+    console.log(`✓ General References backed up: ${generalReferencesData.length} records`);
 
     // Backup Settings
     console.log("Backing up Settings...");
@@ -150,7 +149,7 @@ async function backupContactDatabases() {
                          importShipmentsData.length + exportShipmentsData.length +
                          customClearancesData.length + jobFileGroupsData.length +
                          messagesData.length + purchaseInvoicesData.length +
-                         invoicesData.length + /* generalReferencesData.length + */ settingsData.length + usersData.length;
+                         invoicesData.length + generalReferencesData.length + settingsData.length + usersData.length;
     
     const metadata = {
       timestamp: new Date().toISOString(),
@@ -169,7 +168,7 @@ async function backupContactDatabases() {
         { name: "messages", count: messagesData.length },
         { name: "purchase_invoices", count: purchaseInvoicesData.length },
         { name: "invoices", count: invoicesData.length },
-        // { name: "general_references", count: generalReferencesData.length }, // TODO: Uncomment when table is created
+        { name: "general_references", count: generalReferencesData.length },
         { name: "settings", count: settingsData.length },
         { name: "users", count: usersData.length },
       ],

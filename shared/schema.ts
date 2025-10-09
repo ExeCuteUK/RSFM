@@ -61,6 +61,25 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 
+// General References Database (for miscellaneous charges)
+export const generalReferences = pgTable("general_references", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobRef: text("job_ref").notNull(),
+  jobType: text("job_type").notNull().default('general'),
+  month: text("month").notNull(),
+  year: text("year").notNull(),
+  referenceName: text("reference_name").notNull().default('General Reference'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertGeneralReferenceSchema = createInsertSchema(generalReferences).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertGeneralReference = z.infer<typeof insertGeneralReferenceSchema>;
+export type GeneralReference = typeof generalReferences.$inferSelect;
+
 // Import Customers Database
 export const importCustomers = pgTable("import_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

@@ -55,7 +55,7 @@ async function restoreContactDatabases() {
       { name: "import_customers", file: `${backupDir}/import_customers_backup.sql`, category: "Contacts" },
       
       // System Data
-      // { name: "general_references", file: `${backupDir}/general_references_backup.sql`, category: "System Data" }, // TODO: Uncomment when table is created
+      { name: "general_references", file: `${backupDir}/general_references_backup.sql`, category: "System Data" },
       { name: "settings", file: `${backupDir}/settings_backup.sql`, category: "System Data" },
       { name: "users", file: `${backupDir}/users_backup.sql`, category: "System Data" },
     ];
