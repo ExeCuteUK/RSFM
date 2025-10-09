@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, Download, ChevronLeft, ChevronRight, Container, Truck, Plane } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, Download, ChevronLeft, ChevronRight, Container, Truck, Plane, Check } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
 import {
   DropdownMenu,
@@ -1588,8 +1588,9 @@ export default function CustomClearances() {
                             >
                               <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                             </button>
-                            <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium`} data-testid={`todo-advise-agent-${clearance.id}`}>
+                            <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-advise-agent-${clearance.id}`}>
                               Advise Clearance To Agent
+                              {clearance.adviseAgentStatusIndicator === 3 && <Check className="h-3 w-3" />}
                             </p>
                           </div>
                           <div className="flex items-center gap-1">
@@ -1631,8 +1632,9 @@ export default function CustomClearances() {
                             >
                               <Mail className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                             </button>
-                            <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`todo-send-haulier-ead-${clearance.id}`}>
+                            <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-haulier-ead-${clearance.id}`}>
                               {clearance.jobType === 'export' ? 'Send Haulier EAD' : 'Send Haulier GVMS'}
+                              {clearance.sendHaulierEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
                             </p>
                           </div>
                           <div className="flex items-center gap-1">
@@ -1672,10 +1674,11 @@ export default function CustomClearances() {
                               </button>
                               <button
                                 onClick={() => setInvoiceClearance(clearance)}
-                                className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer`}
+                                className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer flex items-center gap-1`}
                                 data-testid={`button-invoice-customer-${clearance.id}`}
                               >
                                 Send Invoice/Credit to Customer
+                                {clearance.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                               </button>
                             </div>
                             <div className="flex items-center gap-1">

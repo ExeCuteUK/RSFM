@@ -1922,8 +1922,9 @@ Hope all is OK.`
                         >
                           <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                         </button>
-                        <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium`} data-testid={`text-rs-to-clear-${shipment.id}`}>
+                        <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`text-rs-to-clear-${shipment.id}`}>
                           {shipment.rsToClear ? 'Advise Clearance to Agent' : 'Send Customs Arrival Info to Customer'}
+                          {shipment.clearanceStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
@@ -1964,8 +1965,9 @@ Hope all is OK.`
                             onClick={() => handleSendHaulierGvmsEmail(shipment)}
                             data-testid={`button-send-haulier-gvms-email-${shipment.id}`}
                           />
-                          <p className={`text-xs ${getSendPodToCustomerStatusColor(shipment.sendHaulierEadStatusIndicator)} font-medium`} data-testid={`text-send-haulier-gvms-${shipment.id}`}>
+                          <p className={`text-xs ${getSendPodToCustomerStatusColor(shipment.sendHaulierEadStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`text-send-haulier-gvms-${shipment.id}`}>
                             Send Haulier GVMS
+                            {shipment.sendHaulierEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -2007,8 +2009,9 @@ Hope all is OK.`
                             onClick={() => handleSendCustomerGvmsEmail(shipment)}
                             data-testid={`button-send-customer-gvms-email-${shipment.id}`}
                           />
-                          <p className={`text-xs ${getSendPodToCustomerStatusColor(shipment.sendCustomerGvmsStatusIndicator)} font-medium`} data-testid={`text-send-customer-gvms-${shipment.id}`}>
+                          <p className={`text-xs ${getSendPodToCustomerStatusColor(shipment.sendCustomerGvmsStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`text-send-customer-gvms-${shipment.id}`}>
                             Send Customer GVMS
+                            {shipment.sendCustomerGvmsStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -2052,8 +2055,9 @@ Hope all is OK.`
                         >
                           <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                         </button>
-                        <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)}`} data-testid={`text-delivery-booked-${shipment.id}`}>
+                        <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)} flex items-center gap-1`} data-testid={`text-delivery-booked-${shipment.id}`}>
                           Book Delivery With Customer
+                          {shipment.deliveryBookedStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
@@ -2149,10 +2153,11 @@ Hope all is OK.`
                         </button>
                         <button
                           onClick={() => setInvoiceShipment(shipment)}
-                          className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer`}
+                          className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer flex items-center gap-1`}
                           data-testid={`button-invoice-customer-${shipment.id}`}
                         >
                           Send Invoice/Credit to Customer
+                          {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </button>
                       </div>
                       <div className="flex items-center gap-1">
@@ -2195,8 +2200,9 @@ Hope all is OK.`
                         >
                           <Send className="h-4 w-4 text-muted-foreground" />
                         </button>
-                        <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-customer-${shipment.id}`}>
+                        <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-customer-${shipment.id}`}>
                           Send POD To Customer
+                          {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">

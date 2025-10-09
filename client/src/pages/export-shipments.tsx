@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, Download, FileArchive, Send, Shield, ChevronLeft, ChevronRight, Receipt } from "lucide-react"
+import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, Download, FileArchive, Send, Shield, ChevronLeft, ChevronRight, Receipt, Check } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
 import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent, Haulier, Invoice } from "@shared/schema"
@@ -1230,8 +1230,9 @@ Hope all is OK.`
                           >
                             <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                           </button>
-                          <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.adviseClearanceToAgentStatusIndicator)}`} data-testid={`text-advise-clearance-${shipment.id}`}>
+                          <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.adviseClearanceToAgentStatusIndicator)} flex items-center gap-1`} data-testid={`text-advise-clearance-${shipment.id}`}>
                             Advise Clearance to Agent
+                            {shipment.adviseClearanceToAgentStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -1273,10 +1274,11 @@ Hope all is OK.`
                         </button>
                         <button
                           onClick={() => setInvoiceShipment(shipment)}
-                          className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer`}
+                          className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer flex items-center gap-1`}
                           data-testid={`button-invoice-customer-${shipment.id}`}
                         >
                           Send Invoice/Credit to Customer
+                          {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </button>
                       </div>
                       <div className="flex items-center gap-1">
@@ -1314,8 +1316,9 @@ Hope all is OK.`
                         >
                           <Send className="h-4 w-4 text-muted-foreground" />
                         </button>
-                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)}`} data-testid={`text-send-pod-${shipment.id}`}>
+                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-${shipment.id}`}>
                           Send POD To Customer
+                          {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
