@@ -1084,9 +1084,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update import shipment
   app.patch("/api/import-shipments/:id", async (req, res) => {
     try {
-      // For updates, we make the validation less strict by not requiring all fields
-      console.log('[DEBUG] Update import shipment:', req.params.id, 'rsToClear:', req.body.rsToClear);
-      const shipment = await storage.updateImportShipment(req.params.id, req.body);
+      // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
+      const { attachments, proofOfDelivery, ...restBody } = req.body;
+      
+      // Merge back file arrays without Zod validation
+      const updateData = {
+        ...restBody,
+        ...(attachments !== undefined && { attachments }),
+        ...(proofOfDelivery !== undefined && { proofOfDelivery })
+      };
+      
+      console.log('[DEBUG] Update import shipment:', req.params.id, 'rsToClear:', updateData.rsToClear);
+      const shipment = await storage.updateImportShipment(req.params.id, updateData);
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
       }
@@ -1535,8 +1544,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update export shipment
   app.patch("/api/export-shipments/:id", async (req, res) => {
     try {
-      // For updates, we make the validation less strict by not requiring all fields
-      const shipment = await storage.updateExportShipment(req.params.id, req.body);
+      // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
+      const { transportDocuments, proofOfDelivery, ...restBody } = req.body;
+      
+      // Merge back file arrays without Zod validation
+      const updateData = {
+        ...restBody,
+        ...(transportDocuments !== undefined && { transportDocuments }),
+        ...(proofOfDelivery !== undefined && { proofOfDelivery })
+      };
+      
+      const shipment = await storage.updateExportShipment(req.params.id, updateData);
       if (!shipment) {
         return res.status(404).json({ error: "Export shipment not found" });
       }
@@ -1831,8 +1849,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update custom clearance
   app.patch("/api/custom-clearances/:id", async (req, res) => {
     try {
-      const validatedData = insertCustomClearanceSchema.partial().parse(req.body);
-      const clearance = await storage.updateCustomClearance(req.params.id, validatedData);
+      // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
+      // Validate everything except file arrays
+      const { transportDocuments, clearanceDocuments, ...restBody } = req.body;
+      const validatedData = insertCustomClearanceSchema.partial().parse(restBody);
+      
+      // Add file arrays back without validation (database will handle the type)
+      const updateData = {
+        ...validatedData,
+        ...(transportDocuments !== undefined && { transportDocuments }),
+        ...(clearanceDocuments !== undefined && { clearanceDocuments })
+      };
+      
+      const clearance = await storage.updateCustomClearance(req.params.id, updateData);
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
