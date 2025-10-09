@@ -346,17 +346,13 @@ export function ImportExportWorkGrid() {
     return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
   }
 
-  // Get delivery date color for imports
-  const getDeliveryDateColor = (job: ImportShipment | ExportShipment) => {
-    if (job._jobType === 'import') {
-      const importJob = job as ImportShipment
-      if (importJob.deliveryBookedStatusIndicator === 3) {
-        return 'bg-green-100 dark:bg-green-900'
-      }
-      return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
-    }
-    // For exports, use data-based coloring
-    return getDataColor((job as ExportShipment).deliveryDate)
+  // Get delivery date color - yellow if empty, green if has value for both imports and exports
+  const getDeliveryDateColor = (job: (ImportShipment | ExportShipment) & { _jobType: 'import' | 'export' }) => {
+    const deliveryDate = job._jobType === 'import' 
+      ? (job as ImportShipment).deliveryDate
+      : (job as ExportShipment).deliveryDate
+    
+    return getDataColor(deliveryDate)
   }
 
   // Get quote color based on invoice status
