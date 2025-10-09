@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Search, Calendar, Plus, Eye, EyeOff } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { InvoiceEditDialog } from "@/components/InvoiceEditDialog"
+import { GeneralReferenceDialog } from "@/components/GeneralReferenceDialog"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice, Invoice } from "@shared/schema"
 
 interface JobJournalEntry {
@@ -454,14 +455,17 @@ export default function JobJournals() {
           <h1 className="text-3xl font-bold">Job Journals</h1>
           <p className="text-muted-foreground mt-1">Financial tracking for all jobs</p>
         </div>
-        <Button
-          onClick={handleAddExpenseInvoices}
-          size="default"
-          data-testid="button-add-expense-invoices"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Expense Invoices
-        </Button>
+        <div className="flex gap-2">
+          <GeneralReferenceDialog />
+          <Button
+            onClick={handleAddExpenseInvoices}
+            size="default"
+            data-testid="button-add-expense-invoices"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Expense Invoices
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-4 items-center">
