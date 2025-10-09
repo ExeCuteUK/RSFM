@@ -201,6 +201,16 @@ export function ClearanceWorkGrid() {
     }
   }
 
+  const formatDateTime = (dateString: string | null) => {
+    if (!dateString) return ""
+    try {
+      const date = new Date(dateString)
+      return format(date, "dd/MM/yy HH:mm")
+    } catch {
+      return dateString
+    }
+  }
+
   const getCustomerName = (clearance: CustomClearance) => {
     if (clearance.jobType === "import") {
       const customer = importCustomers.find(c => c.id === clearance.importCustomerId)
@@ -217,12 +227,12 @@ export function ClearanceWorkGrid() {
       return "bg-green-100 dark:bg-green-950"
     }
 
-    // All Complete shows Yes in green when Fully Cleared
-    if (fieldName === "allComplete") {
-      if (clearance.status === "Fully Cleared") {
+    // Agent Advised column: green if BOTH adviseAgent and sendHaulierEad are 3, otherwise yellow
+    if (fieldName === "agentAdvised") {
+      if (clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3) {
         return "bg-green-100 dark:bg-green-950"
       }
-      return ""
+      return "bg-yellow-100 dark:bg-yellow-950"
     }
 
     // Other cells green if has value
@@ -468,7 +478,7 @@ export function ClearanceWorkGrid() {
                   <th className="border px-2 py-1 text-center font-medium">Trailer/Container</th>
                   <th className="border px-2 py-1 text-center font-medium">MRN Number</th>
                   <th className="border px-2 py-1 text-center font-medium">Clearance Agent</th>
-                  <th className="border px-2 py-1 text-center font-medium">All Complete</th>
+                  <th className="border px-2 py-1 text-center font-medium">Agent Advised</th>
                   <th className="border px-2 py-1 text-center font-medium">Notes</th>
                 </tr>
               </thead>
@@ -487,7 +497,7 @@ export function ClearanceWorkGrid() {
                       {renderCell(clearance, "trailerOrContainerNumber", clearance.trailerOrContainerNumber, columnWidths[6])}
                       {renderCell(clearance, "mrn", clearance.mrn, columnWidths[7])}
                       {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[8])}
-                      {renderCell(clearance, "allComplete", null, columnWidths[9])}
+                      {renderCell(clearance, "agentAdvised", formatDateTime(clearance.adviseAgentStatusIndicatorTimestamp), columnWidths[9])}
                       {renderCell(clearance, "notes", clearance.additionalNotes, columnWidths[10])}
                     </tr>
                   )
