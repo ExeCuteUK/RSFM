@@ -1139,11 +1139,13 @@ export class DatabaseStorage implements IStorage {
     const [maxImport] = await db.select({ max: sql<number>`MAX(${importShipments.jobRef})` }).from(importShipments);
     const [maxExport] = await db.select({ max: sql<number>`MAX(${exportShipments.jobRef})` }).from(exportShipments);
     const [maxClearance] = await db.select({ max: sql<number>`MAX(${customClearances.jobRef})` }).from(customClearances);
+    const [maxGeneral] = await db.select({ max: sql<number>`MAX(${generalReferences.jobRef})` }).from(generalReferences);
     
     const currentMax = Math.max(
       maxImport.max || 26000,
       maxExport.max || 26000,
-      maxClearance.max || 26000
+      maxClearance.max || 26000,
+      maxGeneral.max || 26000
     );
     
     this.jobRefCounter = currentMax + 1;
