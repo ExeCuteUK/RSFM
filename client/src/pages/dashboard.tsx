@@ -21,17 +21,38 @@ export default function Dashboard() {
   // Load dashboard preferences
   const loadDashboardPrefs = () => {
     const saved = localStorage.getItem(DASHBOARD_STORAGE_KEY)
-    return saved ? JSON.parse(saved) : {}
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return {}
+      }
+    }
+    return {}
   }
 
   const loadContainerPrefs = () => {
     const saved = localStorage.getItem(CONTAINER_STORAGE_KEY)
-    return saved ? JSON.parse(saved) : {}
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return {}
+      }
+    }
+    return {}
   }
 
   const loadNisbetsPrefs = () => {
     const saved = localStorage.getItem(NISBETS_STORAGE_KEY)
-    return saved ? JSON.parse(saved) : {}
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return {}
+      }
+    }
+    return {}
   }
 
   const dashPrefs = loadDashboardPrefs()

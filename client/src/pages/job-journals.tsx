@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useLocation } from "wouter"
 import { format } from "date-fns"
@@ -69,20 +69,38 @@ const getJobTypeAbbreviation = (jobType: string): string => {
   return ""
 }
 
+const STORAGE_KEY = 'jobJournals_preferences'
+
 export default function JobJournals() {
   const currentDate = new Date()
   const [, setLocation] = useLocation()
   const { openWindow } = useWindowManager()
-  const [filterMode, setFilterMode] = useState<"month" | "range">("month")
-  const [selectedMonth, setSelectedMonth] = useState((currentDate.getMonth() + 1).toString())
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString())
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
-  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(["Import", "Export", "Customs"])
-  const [searchText, setSearchText] = useState("")
+
+  // Load preferences from localStorage
+  const loadPreferences = () => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return {}
+      }
+    }
+    return {}
+  }
+
+  const prefs = loadPreferences()
+
+  const [filterMode, setFilterMode] = useState<"month" | "range">(prefs.filterMode || "month")
+  const [selectedMonth, setSelectedMonth] = useState(prefs.selectedMonth || (currentDate.getMonth() + 1).toString())
+  const [selectedYear, setSelectedYear] = useState(prefs.selectedYear || currentDate.getFullYear().toString())
+  const [startDate, setStartDate] = useState(prefs.startDate || "")
+  const [endDate, setEndDate] = useState(prefs.endDate || "")
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(prefs.selectedJobTypes || ["Import", "Export", "Customs"])
+  const [searchText, setSearchText] = useState(prefs.searchText || "")
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
-  const [showReserveColumns, setShowReserveColumns] = useState(false)
+  const [showReserveColumns, setShowReserveColumns] = useState(prefs.showReserveColumns || false)
   
   const handleJobRefClick = (jobRef: number, jobType: string) => {
     localStorage.setItem('shipmentSearchJobRef', jobRef.toString())
@@ -101,6 +119,21 @@ export default function JobJournals() {
       payload: {},
     })
   }
+
+  // Save preferences to localStorage
+  useEffect(() => {
+    const preferences = {
+      filterMode,
+      selectedMonth,
+      selectedYear,
+      startDate,
+      endDate,
+      selectedJobTypes,
+      searchText,
+      showReserveColumns
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
+  }, [filterMode, selectedMonth, selectedYear, startDate, endDate, selectedJobTypes, searchText, showReserveColumns])
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
