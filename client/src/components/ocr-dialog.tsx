@@ -33,7 +33,7 @@ export function OCRDialog({ filePath, fileName, trigger }: OCRDialogProps) {
       const response = await fetch("/api/objects/ocr", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ objectPath: filePath }),
+        body: JSON.stringify({ objectPath: filePath, filename: fileName }),
       });
 
       if (!response.ok) {

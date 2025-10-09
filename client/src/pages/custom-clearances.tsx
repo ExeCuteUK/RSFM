@@ -297,7 +297,7 @@ export default function CustomClearances() {
           const ocrResponse = await fetch("/api/objects/ocr", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ objectPath })
+            body: JSON.stringify({ objectPath, filename })
           })
           const { mrnNumber } = await ocrResponse.json()
           

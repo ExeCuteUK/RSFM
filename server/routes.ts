@@ -2766,12 +2766,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OCR text extraction from uploaded files
   app.post("/api/objects/ocr", async (req, res) => {
     try {
-      const { objectPath } = req.body;
+      const { objectPath, filename } = req.body;
       if (!objectPath) {
         return res.status(400).json({ error: "objectPath is required" });
       }
 
-      const fileExtension = objectPath.toLowerCase().split('.').pop();
+      // Extract file extension from filename (not path, since Google Drive paths don't have extensions)
+      const fileExtension = filename ? filename.toLowerCase().split('.').pop() : objectPath.toLowerCase().split('.').pop();
       const supportedImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
       const isPDF = fileExtension === 'pdf';
       const isImage = supportedImageTypes.includes(fileExtension || '');
