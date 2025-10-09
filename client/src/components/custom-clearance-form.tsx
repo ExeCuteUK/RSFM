@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertCustomClearanceSchema, type InsertCustomClearance, type ImportCustomer, type ExportCustomer, type ExportReceiver } from "@shared/schema"
+import { insertCustomClearanceSchema, type InsertCustomClearance, type ImportCustomer, type ExportCustomer, type ExportReceiver, type ClearanceAgent } from "@shared/schema"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -131,6 +131,10 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
   const { data: exportReceivers } = useQuery<ExportReceiver[]>({
     queryKey: ["/api/export-receivers"],
+  })
+
+  const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
+    queryKey: ["/api/clearance-agents"],
   })
 
   // Fetch shared documents from job_file_groups if this is an existing clearance
@@ -701,6 +705,30 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="clearanceAgent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Clearance Agent</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-clearance-agent">
+                            <SelectValue placeholder="Select clearance agent" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {clearanceAgents.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.companyName}>
+                              {agent.companyName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 {jobType === "import" && (
                   <FormField
                     control={form.control}
