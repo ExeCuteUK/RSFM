@@ -2091,8 +2091,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference> {
+    await this.initialize();
+    const jobRef = this.getNextJobRef();
+    
     const [created] = await db.insert(generalReferences)
-      .values(reference)
+      .values({
+        ...reference,
+        jobRef: jobRef,
+      })
       .returning();
     return created;
   }

@@ -74,6 +74,7 @@ export const generalReferences = pgTable("general_references", {
 
 export const insertGeneralReferenceSchema = createInsertSchema(generalReferences).omit({
   id: true,
+  jobRef: true,
   createdAt: true,
 });
 
