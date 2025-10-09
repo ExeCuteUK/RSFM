@@ -239,12 +239,28 @@ export function ClearanceWorkGrid() {
     }
 
     if (fieldName === "jobRef") {
+      const handleJobRefClick = () => {
+        const jobRefStr = `#${value}`
+        
+        // If it's a linked job (created from import/export shipment)
+        if (clearance.createdFromId) {
+          if (clearance.jobType === "Import") {
+            setLocation(`/import-shipments?search=${jobRefStr}`)
+          } else {
+            setLocation(`/export-shipments?search=${jobRefStr}`)
+          }
+        } else {
+          // Dedicated clearance job
+          setLocation(`/custom-clearances?search=${jobRefStr}`)
+        }
+      }
+
       return (
         <td 
           key={fieldName} 
           className={`border px-2 py-1 text-center cursor-pointer hover-elevate ${cellColor}`}
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
-          onClick={() => setLocation(`/custom-clearances?id=${clearance.id}`)}
+          onClick={handleJobRefClick}
           data-testid={`link-clearance-${clearance.jobRef}`}
         >
           <span className="text-blue-600 dark:text-blue-400 underline">{value}</span>
