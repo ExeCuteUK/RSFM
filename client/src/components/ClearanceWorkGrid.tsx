@@ -323,7 +323,7 @@ export function ClearanceWorkGrid() {
             if (parentShipment.clearanceStatusIndicator === 3) {
               return "bg-green-100 dark:bg-green-900"
             }
-            return "bg-yellow-100 dark:bg-yellow-900"
+            return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
           }
         } else if (clearance.jobType === "export") {
           const parentShipment = exportShipments.find(s => s.id === clearance.createdFromId)
@@ -332,7 +332,7 @@ export function ClearanceWorkGrid() {
             if (parentShipment.adviseClearanceToAgentStatusIndicator === 3) {
               return "bg-green-100 dark:bg-green-900"
             }
-            return "bg-yellow-100 dark:bg-yellow-900"
+            return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
           }
         }
       }
@@ -341,7 +341,7 @@ export function ClearanceWorkGrid() {
       if (clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3) {
         return "bg-green-100 dark:bg-green-900"
       }
-      return "bg-yellow-100 dark:bg-yellow-900"
+      return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
     }
 
     // MRN Number column: yellow if empty, green if has value
@@ -349,7 +349,7 @@ export function ClearanceWorkGrid() {
       if (value && value.toString().trim()) {
         return "bg-green-100 dark:bg-green-900"
       }
-      return "bg-yellow-100 dark:bg-yellow-900"
+      return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
     }
 
     // Other cells green if has value
