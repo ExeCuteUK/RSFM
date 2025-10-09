@@ -33,19 +33,31 @@ async function restoreContactDatabases() {
     }
     console.log("WARNING: This will DELETE all existing data in selected tables!");
     
-    // All available tables (in dependency order for deletion)
+    // All available tables organized by category (in dependency order for deletion)
     const allTables = [
-      { name: "custom_clearances", file: `${backupDir}/custom_clearances_backup.sql` },
-      { name: "import_shipments", file: `${backupDir}/import_shipments_backup.sql` },
-      { name: "export_shipments", file: `${backupDir}/export_shipments_backup.sql` },
-      { name: "clearance_agents", file: `${backupDir}/clearance_agents_backup.sql` },
-      { name: "shipping_lines", file: `${backupDir}/shipping_lines_backup.sql` },
-      { name: "hauliers", file: `${backupDir}/hauliers_backup.sql` },
-      { name: "export_receivers", file: `${backupDir}/export_receivers_backup.sql` },
-      { name: "export_customers", file: `${backupDir}/export_customers_backup.sql` },
-      { name: "import_customers", file: `${backupDir}/import_customers_backup.sql` },
-      { name: "settings", file: `${backupDir}/settings_backup.sql` },
-      { name: "users", file: `${backupDir}/users_backup.sql` },
+      // Jobs (must be deleted first due to foreign key constraints)
+      { name: "custom_clearances", file: `${backupDir}/custom_clearances_backup.sql`, category: "Jobs" },
+      { name: "import_shipments", file: `${backupDir}/import_shipments_backup.sql`, category: "Jobs" },
+      { name: "export_shipments", file: `${backupDir}/export_shipments_backup.sql`, category: "Jobs" },
+      { name: "job_file_groups", file: `${backupDir}/job_file_groups_backup.sql`, category: "Jobs" },
+      { name: "messages", file: `${backupDir}/messages_backup.sql`, category: "Jobs" },
+      
+      // Financial
+      { name: "invoices", file: `${backupDir}/invoices_backup.sql`, category: "Financial" },
+      { name: "purchase_invoices", file: `${backupDir}/purchase_invoices_backup.sql`, category: "Financial" },
+      
+      // Contacts
+      { name: "clearance_agents", file: `${backupDir}/clearance_agents_backup.sql`, category: "Contacts" },
+      { name: "shipping_lines", file: `${backupDir}/shipping_lines_backup.sql`, category: "Contacts" },
+      { name: "hauliers", file: `${backupDir}/hauliers_backup.sql`, category: "Contacts" },
+      { name: "export_receivers", file: `${backupDir}/export_receivers_backup.sql`, category: "Contacts" },
+      { name: "export_customers", file: `${backupDir}/export_customers_backup.sql`, category: "Contacts" },
+      { name: "import_customers", file: `${backupDir}/import_customers_backup.sql`, category: "Contacts" },
+      
+      // System Data
+      // { name: "general_references", file: `${backupDir}/general_references_backup.sql`, category: "System Data" }, // TODO: Uncomment when table is created
+      { name: "settings", file: `${backupDir}/settings_backup.sql`, category: "System Data" },
+      { name: "users", file: `${backupDir}/users_backup.sql`, category: "System Data" },
     ];
 
     // Filter tables based on selection (if provided)
