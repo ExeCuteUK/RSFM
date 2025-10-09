@@ -399,7 +399,7 @@ export function ClearanceWorkGrid() {
                 setTempValue("")
               }}
             >
-              <SelectTrigger className="h-auto min-h-6 text-sm text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
+              <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
                 <SelectValue placeholder="Select agent" />
               </SelectTrigger>
               <SelectContent>
@@ -427,7 +427,7 @@ export function ClearanceWorkGrid() {
               onChange={(e) => setTempValue(e.target.value)}
               onKeyDown={handleKeyDown}
               onBlur={handleSave}
-              className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-sm text-center focus:outline-none resize-none"
+              className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none resize-none"
               rows={2}
               data-testid={`input-${fieldName}-${clearance.id}`}
             />
@@ -448,7 +448,7 @@ export function ClearanceWorkGrid() {
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
-            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-sm text-center focus:outline-none"
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
             data-testid={`input-${fieldName}-${clearance.id}`}
           />
         </td>
@@ -565,7 +565,7 @@ export function ClearanceWorkGrid() {
 
           {/* Grid */}
           <div className="overflow-auto max-h-[600px]">
-            <table ref={tableRef} className="w-full border-collapse text-sm table-fixed">
+            <table ref={tableRef} className="w-full border-collapse text-xs table-fixed">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
                   <th className="border px-2 py-1 text-center font-medium w-12">Link</th>
@@ -575,8 +575,8 @@ export function ClearanceWorkGrid() {
                   <th className="border px-2 py-1 text-center font-medium">Customer</th>
                   <th className="border px-2 py-1 text-center font-medium">ETA Port</th>
                   <th className="border px-2 py-1 text-center font-medium">Trailer/Container</th>
-                  <th className="border px-2 py-1 text-center font-medium">MRN Number</th>
-                  <th className="border px-2 py-1 text-center font-medium w-56">Clearance Agent</th>
+                  <th className="border px-2 py-1 text-center font-medium w-40">MRN Number</th>
+                  <th className="border px-2 py-1 text-center font-medium w-44">Clearance Agent</th>
                   <th className="border px-2 py-1 text-center font-medium">Agent Advised</th>
                   <th className="border px-2 py-1 text-center font-medium">Notes</th>
                 </tr>
