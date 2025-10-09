@@ -44,7 +44,10 @@ import {
   purchaseInvoices,
   invoices,
   users,
-  messages
+  messages,
+  generalReferences,
+  type GeneralReference,
+  type InsertGeneralReference
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db, pool } from "./db";
@@ -180,6 +183,10 @@ export interface IStorage {
   updateInvoice(id: string, invoice: Partial<InsertInvoice>): Promise<Invoice | undefined>;
   deleteInvoice(id: string): Promise<boolean>;
   getNextInvoiceNumber(): Promise<number>;
+
+  // General Reference methods (for miscellaneous charges)
+  getAllGeneralReferences(): Promise<GeneralReference[]>;
+  createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference>;
 }
 
 export class MemStorage implements IStorage {
@@ -1097,6 +1104,15 @@ export class MemStorage implements IStorage {
   async getInvoicesByExportCustomerId(customerId: string): Promise<Invoice[]> {
     // MemStorage doesn't support invoices, return empty array
     return [];
+  }
+
+  // General Reference methods (stubs for MemStorage)
+  async getAllGeneralReferences(): Promise<GeneralReference[]> {
+    return [];
+  }
+
+  async createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference> {
+    throw new Error("General references not supported in memory storage");
   }
 }
 
@@ -2065,6 +2081,20 @@ export class DatabaseStorage implements IStorage {
       .from(invoices);
     
     return (result?.maxInvoiceNumber || 106011) + 1;
+  }
+
+  // General Reference methods
+  async getAllGeneralReferences(): Promise<GeneralReference[]> {
+    return db.select()
+      .from(generalReferences)
+      .orderBy(desc(generalReferences.createdAt));
+  }
+
+  async createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference> {
+    const [created] = await db.insert(generalReferences)
+      .values(reference)
+      .returning();
+    return created;
   }
 }
 
