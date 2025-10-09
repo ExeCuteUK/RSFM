@@ -1225,7 +1225,7 @@ Hope all is OK.`
                             className="hover-elevate rounded p-0 shrink-0"
                             data-testid={`button-advise-clearance-icon-${shipment.id}`}
                           >
-                            <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                            <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-green-500 transition-colors" />
                           </button>
                           <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.adviseClearanceToAgentStatusIndicator)} flex items-center gap-1`} data-testid={`text-advise-clearance-${shipment.id}`}>
                             Advise Clearance to Agent
@@ -1267,7 +1267,7 @@ Hope all is OK.`
                           data-testid={`button-send-invoice-email-${shipment.id}`}
                           title="Send invoice email to customer"
                         >
-                          <Send className="h-4 w-4 text-muted-foreground" />
+                          <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-green-500 transition-colors" />
                         </button>
                         <button
                           onClick={() => openWindow({ 
@@ -1315,7 +1315,7 @@ Hope all is OK.`
                           data-testid={`button-send-pod-email-${shipment.id}`}
                           title="Send POD email to customer"
                         >
-                          <Send className="h-4 w-4 text-muted-foreground" />
+                          <Mail className="h-4 w-4 text-muted-foreground hover:text-green-500 transition-colors" />
                         </button>
                         <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-${shipment.id}`}>
                           Send POD To Customer
