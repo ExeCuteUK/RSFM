@@ -187,6 +187,8 @@ export interface IStorage {
   // General Reference methods (for miscellaneous charges)
   getAllGeneralReferences(): Promise<GeneralReference[]>;
   createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference>;
+  updateGeneralReference(id: string, updates: Partial<InsertGeneralReference>): Promise<GeneralReference | undefined>;
+  deleteGeneralReference(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -1112,6 +1114,14 @@ export class MemStorage implements IStorage {
   }
 
   async createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference> {
+    throw new Error("General references not supported in memory storage");
+  }
+
+  async updateGeneralReference(id: string, updates: Partial<InsertGeneralReference>): Promise<GeneralReference | undefined> {
+    throw new Error("General references not supported in memory storage");
+  }
+
+  async deleteGeneralReference(id: string): Promise<boolean> {
     throw new Error("General references not supported in memory storage");
   }
 }
@@ -2103,6 +2113,20 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return created;
+  }
+
+  async updateGeneralReference(id: string, updates: Partial<InsertGeneralReference>): Promise<GeneralReference | undefined> {
+    const [updated] = await db.update(generalReferences)
+      .set(updates)
+      .where(eq(generalReferences.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteGeneralReference(id: string): Promise<boolean> {
+    const result = await db.delete(generalReferences)
+      .where(eq(generalReferences.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 
