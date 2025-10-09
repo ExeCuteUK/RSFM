@@ -8,11 +8,13 @@ import {
   FileCheck,
   BookOpen,
   Database,
-  MessageSquare
+  MessageSquare,
+  Mail
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 import { useQuery } from "@tanstack/react-query"
 import { Badge } from "@/components/ui/badge"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 
 import {
   Sidebar,
@@ -84,6 +86,7 @@ const secondaryItems = [
 
 export function AppSidebar() {
   const [location] = useLocation()
+  const { openWindow } = useWindowManager()
   
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread-count"],
@@ -91,6 +94,23 @@ export function AppSidebar() {
   })
   
   const unreadCount = unreadData?.count || 0
+
+  const handleSendEmail = () => {
+    openWindow({
+      id: `email-${Date.now()}`,
+      type: 'email',
+      title: 'New Email',
+      payload: {
+        to: '',
+        cc: '',
+        bcc: '',
+        subject: '',
+        body: '',
+        attachments: [],
+        metadata: {}
+      }
+    })
+  }
 
   return (
     <Sidebar data-testid="sidebar-app">
@@ -137,6 +157,15 @@ export function AppSidebar() {
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={handleSendEmail}
+                  data-testid="button-send-email"
+                >
+                  <Mail />
+                  <span>Send Email</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
