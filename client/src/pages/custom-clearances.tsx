@@ -254,8 +254,14 @@ export default function CustomClearances() {
         body: file
       })
       
-      // Get the file path (use objectPath from response)
-      const filePath = objectPath || uploadURL.split('?')[0]
+      // Normalize the file to make it accessible
+      const normalizeResponse = await fetch("/api/objects/normalize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls: [uploadURL] })
+      })
+      const { paths } = await normalizeResponse.json()
+      const filePath = paths[0] || objectPath
       
       // If it's a clearance document, scan for MRN
       if (fileType === "clearance") {
