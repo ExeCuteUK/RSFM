@@ -897,6 +897,7 @@ export default function JobJournals() {
       />
       
       <GeneralReferenceDialog
+        trigger={<span className="hidden" />}
         reference={editingGeneralRef}
         open={generalRefDialogOpen}
         onOpenChange={(open) => {

@@ -380,18 +380,18 @@ export function ClearanceWorkGrid() {
 
     if (fieldName === "jobRef") {
       const handleJobRefClick = () => {
-        const jobRefStr = `#${value}`
+        const jobRefStr = `${value}`
         
         // If it's a linked job (created from import/export shipment)
         if (clearance.createdFromId) {
           if (clearance.jobType === "import") {
-            setLocation(`/import-shipments?search=${jobRefStr}`)
+            setLocation(`/import-shipments?search=#${jobRefStr}`)
           } else {
-            setLocation(`/export-shipments?search=${jobRefStr}`)
+            setLocation(`/export-shipments?search=#${jobRefStr}`)
           }
         } else {
           // Dedicated clearance job
-          setLocation(`/custom-clearances?search=${jobRefStr}`)
+          setLocation(`/custom-clearances?search=#${jobRefStr}`)
         }
       }
 

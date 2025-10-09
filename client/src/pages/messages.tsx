@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,6 +52,7 @@ type MessageFormData = z.infer<typeof messageSchema>;
 export default function Messages() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [location] = useLocation();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"inbox" | "sent">("inbox");
@@ -168,7 +170,7 @@ export default function Messages() {
         window.history.replaceState({}, '', '/messages');
       }
     }
-  }, [users, user, form]);
+  }, [users, user, form, location]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (data: MessageFormData) => {
