@@ -63,8 +63,8 @@ const formatDateToDDMMYY = (dateString: string | null | undefined): string => {
 }
 
 const getJobTypeAbbreviation = (jobType: string): string => {
-  if (jobType === "Import") return "IMP"
-  if (jobType === "Export") return "EXP"
+  if (jobType === "import") return "IMP"
+  if (jobType === "export") return "EXP"
   if (jobType === "Customs") return "CC"
   return ""
 }
@@ -86,9 +86,9 @@ export default function JobJournals() {
   
   const handleJobRefClick = (jobRef: number, jobType: string) => {
     localStorage.setItem('shipmentSearchJobRef', jobRef.toString())
-    if (jobType === 'Import') {
+    if (jobType === 'import') {
       setLocation('/import-shipments')
-    } else if (jobType === 'Export') {
+    } else if (jobType === 'export') {
       setLocation('/export-shipments')
     }
   }
