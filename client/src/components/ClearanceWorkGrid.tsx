@@ -565,7 +565,7 @@ export function ClearanceWorkGrid() {
 
           {/* Grid */}
           <div className="overflow-auto max-h-[600px]">
-            <table ref={tableRef} className={`w-full border-collapse text-sm ${editingCell ? 'table-fixed' : ''}`}>
+            <table ref={tableRef} className="w-full border-collapse text-sm table-fixed">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
                   <th className="border px-2 py-1 text-center font-medium">Link</th>
