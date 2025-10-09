@@ -2490,11 +2490,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
+          // Extract MRN number from text
+          const mrnMatch = extractedText.match(/\b\d{2}GB[A-Z0-9]{13,16}\b/);
+          const mrnNumber = mrnMatch ? mrnMatch[0] : null;
+
           res.json({ 
             text: extractedText || "No text found in PDF",
             confidence: 95, // Scribe.js doesn't provide confidence, use default
             filename: objectPath.split('/').pop(),
-            engine: 'scribe.js'
+            engine: 'scribe.js',
+            mrnNumber
           });
         } catch (scribeError) {
           console.error("[DEBUG-OCR] Scribe.js error:", scribeError);
@@ -2515,11 +2520,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           await worker.terminate();
           
+          // Extract MRN number from text
+          const mrnMatch = text.match(/\b\d{2}GB[A-Z0-9]{13,16}\b/);
+          const mrnNumber = mrnMatch ? mrnMatch[0] : null;
+
           res.json({ 
             text, 
             confidence,
             filename: objectPath.split('/').pop(),
-            engine: 'tesseract.js'
+            engine: 'tesseract.js',
+            mrnNumber
           });
         } catch (ocrError) {
           await worker.terminate();
