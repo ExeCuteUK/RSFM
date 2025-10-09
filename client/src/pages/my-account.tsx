@@ -36,14 +36,8 @@ const passwordSchema = z.object({
   path: ["confirmPassword"],
 });
 
-const emailSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newEmail: z.string().email("Invalid email address"),
-});
-
 type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
-type EmailFormData = z.infer<typeof emailSchema>;
 
 export default function MyAccount() {
   const { user } = useAuth();
@@ -52,9 +46,7 @@ export default function MyAccount() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showEmailPassword, setShowEmailPassword] = useState(false);
   const [passwordSuccessOpen, setPasswordSuccessOpen] = useState(false);
-  const [emailSuccessOpen, setEmailSuccessOpen] = useState(false);
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -71,14 +63,6 @@ export default function MyAccount() {
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-    },
-  });
-
-  const emailForm = useForm<EmailFormData>({
-    resolver: zodResolver(emailSchema),
-    defaultValues: {
-      currentPassword: "",
-      newEmail: user?.email || "",
     },
   });
 
@@ -116,24 +100,6 @@ export default function MyAccount() {
     onError: (error: Error) => {
       toast({
         title: "Failed to change password",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const changeEmailMutation = useMutation({
-    mutationFn: async (data: EmailFormData) => {
-      return apiRequest("POST", `/api/users/${user?.id}/change-email`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      emailForm.reset({ currentPassword: "", newEmail: "" });
-      setEmailSuccessOpen(true);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Failed to change email",
         description: error.message,
         variant: "destructive",
       });
@@ -324,71 +290,6 @@ export default function MyAccount() {
             </Form>
           </CardContent>
         </Card>
-
-        {/* Change Email */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Change Email</CardTitle>
-            <CardDescription>Update your email address</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...emailForm}>
-              <form onSubmit={emailForm.handleSubmit((data) => changeEmailMutation.mutate(data))} className="space-y-4">
-                <FormField
-                  control={emailForm.control}
-                  name="currentPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Current Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            {...field}
-                            type={showEmailPassword ? "text" : "password"}
-                            data-testid="input-email-current-password"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-0 top-0 h-full px-3"
-                            onClick={() => setShowEmailPassword(!showEmailPassword)}
-                            data-testid="button-toggle-email-password"
-                          >
-                            {showEmailPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={emailForm.control}
-                  name="newEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>New Email</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="email" data-testid="input-new-email" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  disabled={changeEmailMutation.isPending}
-                  data-testid="button-change-email"
-                >
-                  {changeEmailMutation.isPending ? "Changing..." : "Change Email"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Password Change Success Dialog */}
@@ -402,23 +303,6 @@ export default function MyAccount() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button onClick={() => setPasswordSuccessOpen(false)} data-testid="button-password-success-ok">
-              OK
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Email Change Success Dialog */}
-      <AlertDialog open={emailSuccessOpen} onOpenChange={setEmailSuccessOpen}>
-        <AlertDialogContent data-testid="dialog-email-success" aria-describedby="email-success-description">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Email Changed Successfully</AlertDialogTitle>
-            <AlertDialogDescription id="email-success-description">
-              Your email address has been updated successfully.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button onClick={() => setEmailSuccessOpen(false)} data-testid="button-email-success-ok">
               OK
             </Button>
           </AlertDialogFooter>
