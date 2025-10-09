@@ -2418,6 +2418,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update general reference
+  app.patch("/api/general-references/:id", async (req, res) => {
+    try {
+      const validatedData = insertGeneralReferenceSchema.partial().parse(req.body);
+      const reference = await storage.updateGeneralReference(req.params.id, validatedData);
+      if (!reference) {
+        return res.status(404).json({ error: "General reference not found" });
+      }
+      res.json(reference);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid general reference data" });
+      }
+      console.error("Error updating general reference:", error);
+      res.status(500).json({ error: "Failed to update general reference" });
+    }
+  });
+
+  // Delete general reference
+  app.delete("/api/general-references/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteGeneralReference(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "General reference not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting general reference:", error);
+      res.status(500).json({ error: "Failed to delete general reference" });
+    }
+  });
+
   // ========== Static Assets ==========
   
   // Serve company logo for email signatures
