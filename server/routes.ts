@@ -21,7 +21,7 @@ import {
   insertGeneralReferenceSchema,
   type User
 } from "@shared/schema";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { GoogleDriveStorageService, ObjectNotFoundError } from "./googleDriveStorage";
 import passport from "passport";
 import { registerUser } from "./auth";
 import bcrypt from "bcryptjs";
@@ -29,7 +29,7 @@ import bcrypt from "bcryptjs";
 // Configure multer for file uploads
 const upload = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit for logistics documents
 });
 
 // Auth middleware
@@ -2622,26 +2622,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Object Storage Routes ==========
 
-  // Get presigned upload URL for file uploads
-  app.post("/api/objects/upload", async (req, res) => {
+  // Upload file directly to Google Drive
+  app.post("/api/objects/upload", upload.single("file"), async (req, res) => {
     try {
-      const objectStorageService = new ObjectStorageService();
-      const filename = req.body?.filename;
-      const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL(filename);
-      res.json({ uploadURL, objectPath });
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const storageService = new GoogleDriveStorageService();
+      const filename = req.body?.filename || req.file.originalname;
+      const mimeType = req.file.mimetype;
+      
+      const { fileId, objectPath } = await storageService.uploadFile(
+        filename,
+        req.file.buffer,
+        mimeType,
+        false // private by default
+      );
+
+      res.json({ uploadURL: objectPath, objectPath, fileId });
     } catch (error) {
-      console.error("Error generating upload URL:", error);
-      res.status(500).json({ error: "Failed to generate upload URL" });
+      console.error("Error uploading file:", error);
+      res.status(500).json({ error: "Failed to upload file" });
     }
   });
 
   // Download/serve uploaded files
   app.get("/objects/:objectPath(*)", async (req, res) => {
     try {
-      const objectStorageService = new ObjectStorageService();
+      const storageService = new GoogleDriveStorageService();
       const decodedPath = decodeURIComponent(req.path);
-      const objectFile = await objectStorageService.getObjectEntityFile(decodedPath);
-      objectStorageService.downloadObject(objectFile, res);
+      
+      // Extract fileId from path (format: /objects/fileId)
+      const fileId = decodedPath.replace('/objects/', '');
+      
+      await storageService.downloadObject(fileId, res);
     } catch (error) {
       console.error("Error downloading object:", error);
       if (error instanceof ObjectNotFoundError) {
@@ -2659,14 +2674,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "urls array is required" });
       }
 
-      const objectStorageService = new ObjectStorageService();
+      const storageService = new GoogleDriveStorageService();
       const paths: string[] = [];
 
       for (const url of urls) {
-        const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        const objectPath = await storageService.trySetObjectEntityAclPolicy(
           url,
           {
-            owner: "system",
             visibility: "public",
           }
         );
@@ -2699,13 +2713,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const objectStorageService = new ObjectStorageService();
+      const storageService = new GoogleDriveStorageService();
       
       // Normalize the path if it's a full URL
-      const normalizedPath = objectStorageService.normalizeObjectEntityPath(objectPath);
+      const normalizedPath = storageService.normalizeObjectEntityPath(objectPath);
       
-      // Download the file from object storage
-      const fileBuffer = await objectStorageService.getObjectBuffer(normalizedPath);
+      // Download the file from Google Drive
+      const fileBuffer = await storageService.getObjectBuffer(normalizedPath);
       
       if (isPDF) {
         // Use Scribe.js for PDF OCR

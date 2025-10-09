@@ -38,22 +38,17 @@ export function ObjectStorageUploader({
 
     try {
       for (const file of files) {
+        // Create FormData for direct upload to backend
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('filename', file.name);
+
         const response = await fetch("/api/objects/upload", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: file.name }),
+          body: formData,
         });
 
         const data = await response.json();
-        
-        await fetch(data.uploadURL, {
-          method: "PUT",
-          body: file,
-          headers: {
-            "Content-Type": file.type || "application/octet-stream",
-          },
-        });
-
         uploadedPaths.push(data.objectPath);
       }
 

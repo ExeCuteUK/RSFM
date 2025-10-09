@@ -219,35 +219,27 @@ export function DraggableEmailComposer() {
       const uploadedUrls: string[] = [];
 
       for (const file of Array.from(files)) {
-        // Get presigned upload URL
+        // Create FormData for direct upload to backend
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('filename', file.name);
+
         const uploadResponse = await fetch('/api/objects/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: file.name }),
+          body: formData,
         });
 
         if (!uploadResponse.ok) {
-          throw new Error('Failed to get upload URL');
-        }
-
-        const { uploadURL } = await uploadResponse.json();
-
-        // Upload file to presigned URL
-        const uploadFileResponse = await fetch(uploadURL, {
-          method: 'PUT',
-          body: file,
-          headers: { 'Content-Type': file.type },
-        });
-
-        if (!uploadFileResponse.ok) {
           throw new Error('Failed to upload file');
         }
+
+        const { objectPath } = await uploadResponse.json();
 
         // Normalize the URL
         const normalizeResponse = await fetch('/api/objects/normalize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ urls: [uploadURL] }),
+          body: JSON.stringify({ urls: [objectPath] }),
         });
 
         const { paths } = await normalizeResponse.json();
