@@ -57,9 +57,16 @@ export function ObjectStorageUploader({
         uploadedPaths.push(data.objectPath);
       }
 
+      console.log('[UPLOADER DEBUG] Upload complete, uploadedPaths:', uploadedPaths);
+      console.log('[UPLOADER DEBUG] onPendingFilesChange exists?', !!onPendingFilesChange);
+      console.log('[UPLOADER DEBUG] pendingFiles before:', pendingFiles);
+      
       if (onPendingFilesChange) {
-        onPendingFilesChange([...pendingFiles, ...uploadedPaths]);
+        const newPendingFiles = [...pendingFiles, ...uploadedPaths];
+        console.log('[UPLOADER DEBUG] Calling onPendingFilesChange with:', newPendingFiles);
+        onPendingFilesChange(newPendingFiles);
       } else {
+        console.log('[UPLOADER DEBUG] No callback, using internal state');
         setInternalPendingFiles((prev) => [...prev, ...uploadedPaths]);
       }
     } catch (error) {
