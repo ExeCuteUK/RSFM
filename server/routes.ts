@@ -1892,10 +1892,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const existingGroup = await storage.getJobFileGroupByJobRef(clearance.jobRef);
         if (existingGroup) {
-          // Merge with existing documents to avoid duplicates
-          const mergedDocs = Array.from(new Set(allDocs));
+          // Deduplicate files by path (works for both string and object formats)
+          const uniqueDocs = allDocs.filter((doc, index, self) => {
+            const docPath = typeof doc === 'string' ? doc : doc?.path;
+            return index === self.findIndex(d => {
+              const dPath = typeof d === 'string' ? d : d?.path;
+              return dPath === docPath;
+            });
+          });
+          
           await storage.updateJobFileGroup(clearance.jobRef, {
-            documents: mergedDocs,
+            documents: uniqueDocs,
           });
         } else if (allDocs.length > 0) {
           await storage.createJobFileGroup({
@@ -2017,10 +2024,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ ...clearance, _syncedToShipment: syncedToShipment });
     } catch (error) {
+      console.error("[CUSTOM CLEARANCE UPDATE ERROR]", error);
       if (error instanceof Error && error.name === "ZodError") {
         return res.status(400).json({ error: "Invalid custom clearance data" });
       }
-      res.status(500).json({ error: "Failed to update custom clearance" });
+      res.status(500).json({ 
+        error: "Failed to update custom clearance", 
+        details: error instanceof Error ? error.message : String(error) 
+      });
     }
   });
 
