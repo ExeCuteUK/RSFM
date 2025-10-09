@@ -1606,15 +1606,12 @@ export default function CustomClearances() {
                             />
                             <button
                               onClick={() => setClearanceAgentDialog({ show: true, clearanceId: clearance.id })}
-                              className="hover-elevate rounded p-0 shrink-0"
-                              data-testid={`button-advise-clearance-icon-${clearance.id}`}
+                              className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium hover:underline cursor-pointer flex items-center gap-1`}
+                              data-testid={`button-advise-clearance-${clearance.id}`}
                             >
-                              <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
-                            </button>
-                            <p className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-advise-agent-${clearance.id}`}>
                               Advise Clearance To Agent
                               {clearance.adviseAgentStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                            </p>
+                            </button>
                           </div>
                           <div className="flex items-center gap-1">
                             <button
