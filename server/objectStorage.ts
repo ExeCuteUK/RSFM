@@ -138,7 +138,7 @@ export class ObjectStorageService {
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
 
-    const uploadURL = signObjectURL({
+    const uploadURL = await signObjectURL({
       bucketName,
       objectName,
       method: "PUT",
