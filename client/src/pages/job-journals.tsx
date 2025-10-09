@@ -68,6 +68,7 @@ const getJobTypeAbbreviation = (jobType: string): string => {
   if (lowerType === "import") return "IMP"
   if (lowerType === "export") return "EXP"
   if (lowerType === "customs") return "CC"
+  if (lowerType === "general") return "GR"
   return ""
 }
 
@@ -679,7 +680,12 @@ export default function JobJournals() {
                     <td className="p-1 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
                       <button
                         onClick={() => handleJobRefClick(entry.jobRef, entry.jobType)}
-                        className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                        className={`hover:underline cursor-pointer ${
+                          entry.jobType.toLowerCase() === 'import' ? 'text-blue-600 dark:text-blue-400' :
+                          entry.jobType.toLowerCase() === 'export' ? 'text-green-600 dark:text-green-400' :
+                          entry.jobType.toLowerCase() === 'customs' ? 'text-purple-600 dark:text-purple-400' :
+                          'text-foreground'
+                        }`}
                         data-testid={`link-jobref-${entry.jobRef}`}
                       >
                         {entry.jobRef}
