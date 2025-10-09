@@ -60,6 +60,17 @@ interface ImportShipmentFormProps {
   defaultValues?: Partial<InsertImportShipment>
 }
 
+// Date parsing helper to safely handle invalid date strings
+const safeParseDateString = (dateString: string | null | undefined): Date | undefined => {
+  if (!dateString || dateString === "") return undefined;
+  try {
+    const date = parseISO(dateString);
+    return isNaN(date.getTime()) ? undefined : date;
+  } catch {
+    return undefined;
+  }
+};
+
 // Validation helpers
 const numericWithDecimalsRegex = /^(\d+\.?\d*|\.\d+)?$/;
 
@@ -1050,14 +1061,14 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                               data-testid="button-booking-date"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                              {safeParseDateString(field.value) ? format(safeParseDateString(field.value)!, "dd/MM/yy") : <span>Pick a date</span>}
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
                           <Calendar
                             mode="single"
-                            selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                            selected={safeParseDateString(field.value)}
                             onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                             initialFocus
                           />
@@ -1087,14 +1098,14 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                 data-testid="button-approx-load-date"
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                                {safeParseDateString(field.value) ? format(safeParseDateString(field.value)!, "dd/MM/yy") : <span>Pick a date</span>}
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
                             <Calendar
                               mode="single"
-                              selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                              selected={safeParseDateString(field.value)}
                               onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                               initialFocus
                             />
@@ -1137,14 +1148,14 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                 data-testid="button-dispatch-date"
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                                {safeParseDateString(field.value) ? format(safeParseDateString(field.value)!, "dd/MM/yy") : <span>Pick a date</span>}
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
                             <Calendar
                               mode="single"
-                              selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                              selected={safeParseDateString(field.value)}
                               onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                               initialFocus
                             />
@@ -1191,8 +1202,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                 data-testid="button-import-date"
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value && field.value !== "" ? (
-                                  format(parseISO(field.value), "dd/MM/yy")
+                                {safeParseDateString(field.value) ? (
+                                  format(safeParseDateString(field.value)!, "dd/MM/yy")
                                 ) : (
                                   <span>Pick a date</span>
                                 )}
@@ -1202,7 +1213,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                           <PopoverContent className="w-auto p-0">
                             <Calendar
                               mode="single"
-                              selected={field.value ? parseISO(field.value) : undefined}
+                              selected={safeParseDateString(field.value)}
                               onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                               initialFocus
                             />
@@ -1247,14 +1258,14 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                                   data-testid="button-delivery-date"
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value && field.value !== "" ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                                  {safeParseDateString(field.value) ? format(safeParseDateString(field.value)!, "dd/MM/yy") : <span>Pick a date</span>}
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
                               <Calendar
                                 mode="single"
-                                selected={field.value && field.value !== "" ? new Date(field.value) : undefined}
+                                selected={safeParseDateString(field.value)}
                                 onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
                                 initialFocus
                               />
