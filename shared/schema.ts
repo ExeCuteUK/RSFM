@@ -329,6 +329,8 @@ export const importShipments = pgTable("import_shipments", {
   clearanceType: text("clearance_type"),
   customsClearanceAgent: text("customs_clearance_agent"),
   rsToClear: boolean("rs_to_clear").default(false),
+  clearanceAgent: text("clearance_agent"),
+  mrn: text("mrn"),
   clearanceStatusIndicator: integer("clearance_status_indicator").default(1),
   clearanceStatusIndicatorTimestamp: text("clearance_status_indicator_timestamp"),
   deliveryBookedStatusIndicator: integer("delivery_booked_status_indicator").default(1),
@@ -403,6 +405,8 @@ export const insertImportShipmentSchema = createInsertSchema(importShipments).om
     (val) => val !== null && val !== undefined && val.length > 0,
     { message: "Shipment Type is required" }
   ),
+  clearanceAgent: z.string().nullable().optional(),
+  mrn: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
   // Check if Import Customer is required
   if (!data.importCustomerId || data.importCustomerId.length === 0) {
@@ -508,6 +512,8 @@ export const exportShipments = pgTable("export_shipments", {
   // Additional Details
   deliveryAddress: text("delivery_address"),
   clearanceType: text("clearance_type"),
+  clearanceAgent: text("clearance_agent"),
+  mrn: text("mrn"),
   
   // Collection Information
   collectionAddress: text("collection_address"),
@@ -572,6 +578,8 @@ export const insertExportShipmentSchema = createInsertSchema(exportShipments).om
   exportClearanceAgent: z.string().min(1, "Export Clearance Agent is required"),
   arrivalClearanceAgent: z.string().min(1, "Arrival Clearance Agent is required"),
   haulierReference: z.string().nullable().optional(),
+  clearanceAgent: z.string().nullable().optional(),
+  mrn: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
   // Check conditional requirements when Export Clearance Agent is R.S
   if (data.exportClearanceAgent === "R.S") {
@@ -665,6 +673,10 @@ export const customClearances = pgTable("custom_clearances", {
   // Link to source shipment
   createdFromType: text("created_from_type"),
   createdFromId: varchar("created_from_id"),
+  
+  // Clearance Agent and MRN fields
+  clearanceAgent: text("clearance_agent"),
+  mrn: text("mrn"),
 });
 
 export const insertCustomClearanceSchema = createInsertSchema(customClearances).omit({
@@ -697,6 +709,8 @@ export const insertCustomClearanceSchema = createInsertSchema(customClearances).
   currency: z.string().min(1, "Currency is required"),
   invoiceValue: z.string().min(1, "Invoice Value is required"),
   clearanceType: z.string().nullable().optional(),
+  clearanceAgent: z.string().nullable().optional(),
+  mrn: z.string().nullable().optional(),
 });
 
 export type InsertCustomClearance = z.infer<typeof insertCustomClearanceSchema>;
