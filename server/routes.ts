@@ -1313,6 +1313,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const updatedDocs = (fileGroup.documents || []).filter(f => f !== filePath);
             await storage.updateJobFileGroup(shipment.jobRef, { documents: updatedDocs });
           }
+          
+          // Also remove from linked custom clearance's transportDocuments
+          if (shipment.linkedClearanceId) {
+            const clearance = await storage.getCustomClearance(shipment.linkedClearanceId);
+            if (clearance) {
+              const updatedTransportDocs = (clearance.transportDocuments || []).filter(f => f !== filePath);
+              await storage.updateCustomClearance(shipment.linkedClearanceId, { transportDocuments: updatedTransportDocs });
+            }
+          }
         }
       } else {
         updatedFiles = (shipment.proofOfDelivery || []).filter(f => f !== filePath);
@@ -1696,7 +1705,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Sync documents to job_file_groups if they were updated
       if (req.body.transportDocuments !== undefined || req.body.clearanceDocuments !== undefined) {
+        // Get documents from the linked shipment if it exists
+        let shipmentAttachments: string[] = [];
+        if (clearance.createdFromId && clearance.createdFromType) {
+          if (clearance.createdFromType === "import") {
+            const shipment = await storage.getImportShipment(clearance.createdFromId);
+            if (shipment) {
+              shipmentAttachments = shipment.attachments || [];
+            }
+          } else if (clearance.createdFromType === "export") {
+            const shipment = await storage.getExportShipment(clearance.createdFromId);
+            if (shipment) {
+              shipmentAttachments = shipment.transportDocuments || [];
+            }
+          }
+        }
+        
+        // Merge shipment attachments with clearance documents
         const allDocs = [
+          ...shipmentAttachments,
           ...(clearance.transportDocuments || []),
           ...(clearance.clearanceDocuments || [])
         ];
