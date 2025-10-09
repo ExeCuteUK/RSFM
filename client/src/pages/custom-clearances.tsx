@@ -27,7 +27,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
-import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup, ClearanceAgent, ExportShipment, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
@@ -48,8 +47,6 @@ export default function CustomClearances() {
   const [redButtonPrompt, setRedButtonPrompt] = useState<{ clearanceId: string; statusType: string; statusValue: number } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "transport" | "clearance"; fileName: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [invoiceClearance, setInvoiceClearance] = useState<CustomClearance | null>(null)
-  const [editingInvoice, setEditingInvoice] = useState<{ invoice: Invoice; clearance: CustomClearance } | null>(null)
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ clearance: CustomClearance; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
@@ -1673,7 +1670,11 @@ export default function CustomClearances() {
                                 <Send className="h-4 w-4 text-muted-foreground" />
                               </button>
                               <button
-                                onClick={() => setInvoiceClearance(clearance)}
+                                onClick={() => openWindow({ 
+                                  type: 'customer-invoice', 
+                                  id: `invoice-${clearance.id}-${Date.now()}`, 
+                                  payload: { job: clearance, jobType: 'clearance' } 
+                                })}
                                 className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer flex items-center gap-1`}
                                 data-testid={`button-invoice-customer-${clearance.id}`}
                               >
@@ -1815,7 +1816,11 @@ export default function CustomClearances() {
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 px-2"
-                                onClick={() => setInvoiceClearance(clearance)}
+                                onClick={() => openWindow({ 
+                                  type: 'customer-invoice', 
+                                  id: `invoice-${clearance.id}-${Date.now()}`, 
+                                  payload: { job: clearance, jobType: 'clearance' } 
+                                })}
                                 data-testid={`button-create-invoice-${clearance.id}`}
                               >
                                 <Plus className="h-3 w-3 mr-1" />
@@ -1841,7 +1846,11 @@ export default function CustomClearances() {
                                         {prefix} {invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
                                       </span>
                                       <button
-                                        onClick={() => setEditingInvoice({ invoice, clearance })}
+                                        onClick={() => openWindow({ 
+                                          type: 'customer-invoice', 
+                                          id: `invoice-edit-${invoice.id}-${Date.now()}`, 
+                                          payload: { job: clearance, jobType: 'clearance', existingInvoice: invoice } 
+                                        })}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-edit-invoice-${invoice.id}`}
                                       >
@@ -2074,22 +2083,6 @@ export default function CustomClearances() {
         </DialogContent>
       </Dialog>
 
-      {/* Customer Invoice Form Dialog - Create */}
-      <CustomerInvoiceForm
-        job={invoiceClearance}
-        jobType="clearance"
-        open={!!invoiceClearance}
-        onOpenChange={(open) => !open && setInvoiceClearance(null)}
-      />
-
-      {/* Customer Invoice Form Dialog - Edit */}
-      <CustomerInvoiceForm
-        job={editingInvoice?.clearance || null}
-        jobType="clearance"
-        open={!!editingInvoice}
-        onOpenChange={(open) => !open && setEditingInvoice(null)}
-        existingInvoice={editingInvoice?.invoice || null}
-      />
 
       {/* Invoice Selection Dialog */}
       <Dialog open={!!invoiceSelectionDialog} onOpenChange={(open) => !open && setInvoiceSelectionDialog(null)}>

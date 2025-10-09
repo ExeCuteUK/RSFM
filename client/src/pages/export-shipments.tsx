@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, Download, FileArchive, Send, Shield, ChevronLeft, ChevronRight, Receipt, Check } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
-import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent, Haulier, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
@@ -48,8 +47,6 @@ export default function ExportShipments() {
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [invoiceShipment, setInvoiceShipment] = useState<ExportShipment | null>(null)
-  const [editingInvoice, setEditingInvoice] = useState<{ invoice: Invoice; shipment: ExportShipment } | null>(null)
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ shipment: ExportShipment; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
@@ -1273,7 +1270,11 @@ Hope all is OK.`
                           <Send className="h-4 w-4 text-muted-foreground" />
                         </button>
                         <button
-                          onClick={() => setInvoiceShipment(shipment)}
+                          onClick={() => openWindow({ 
+                            type: 'customer-invoice', 
+                            id: `invoice-${shipment.id}-${Date.now()}`, 
+                            payload: { job: shipment, jobType: 'export' } 
+                          })}
                           className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer flex items-center gap-1`}
                           data-testid={`button-invoice-customer-${shipment.id}`}
                         >
@@ -1464,7 +1465,11 @@ Hope all is OK.`
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 px-2"
-                                onClick={() => setInvoiceShipment(shipment)}
+                                onClick={() => openWindow({ 
+                                  type: 'customer-invoice', 
+                                  id: `invoice-${shipment.id}-${Date.now()}`, 
+                                  payload: { job: shipment, jobType: 'export' } 
+                                })}
                                 data-testid={`button-create-invoice-${shipment.id}`}
                               >
                                 <Plus className="h-3 w-3 mr-1" />
@@ -1490,7 +1495,11 @@ Hope all is OK.`
                                         {prefix} {invoice.invoiceNumber} - £{invoice.total.toFixed(2)}
                                       </span>
                                       <button
-                                        onClick={() => setEditingInvoice({ invoice, shipment })}
+                                        onClick={() => openWindow({ 
+                                          type: 'customer-invoice', 
+                                          id: `invoice-edit-${invoice.id}-${Date.now()}`, 
+                                          payload: { job: shipment, jobType: 'export', existingInvoice: invoice } 
+                                        })}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-edit-invoice-${invoice.id}`}
                                       >
@@ -2191,22 +2200,6 @@ Hope all is OK.`
         </DialogContent>
       </Dialog>
 
-      {/* Customer Invoice Form Dialog - Create */}
-      <CustomerInvoiceForm
-        job={invoiceShipment}
-        jobType="export"
-        open={!!invoiceShipment}
-        onOpenChange={(open) => !open && setInvoiceShipment(null)}
-      />
-
-      {/* Customer Invoice Form Dialog - Edit */}
-      <CustomerInvoiceForm
-        job={editingInvoice?.shipment || null}
-        jobType="export"
-        open={!!editingInvoice}
-        onOpenChange={(open) => !open && setEditingInvoice(null)}
-        existingInvoice={editingInvoice?.invoice || null}
-      />
 
       {/* Invoice Selection Dialog */}
       <Dialog open={!!invoiceSelectionDialog} onOpenChange={(open) => !open && setInvoiceSelectionDialog(null)}>
