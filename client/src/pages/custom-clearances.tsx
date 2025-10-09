@@ -1738,7 +1738,8 @@ export default function CustomClearances() {
                               </button>
                               <button
                                 onClick={() => openWindow({ 
-                                  type: 'customer-invoice', 
+                                  type: 'customer-invoice',
+                                  title: `Invoice - CC#${clearance.jobRef}`,
                                   id: `invoice-${clearance.id}-${Date.now()}`, 
                                   payload: { job: clearance, jobType: 'clearance' } 
                                 })}
@@ -1884,7 +1885,8 @@ export default function CustomClearances() {
                                 size="sm"
                                 className="h-6 px-2"
                                 onClick={() => openWindow({ 
-                                  type: 'customer-invoice', 
+                                  type: 'customer-invoice',
+                                  title: `Invoice - CC#${clearance.jobRef}`,
                                   id: `invoice-${clearance.id}-${Date.now()}`, 
                                   payload: { job: clearance, jobType: 'clearance' } 
                                 })}
@@ -1914,7 +1916,8 @@ export default function CustomClearances() {
                                       </span>
                                       <button
                                         onClick={() => openWindow({ 
-                                          type: 'customer-invoice', 
+                                          type: 'customer-invoice',
+                                          title: `Edit Invoice - CC#${clearance.jobRef}`,
                                           id: `invoice-edit-${invoice.id}-${Date.now()}`, 
                                           payload: { job: clearance, jobType: 'clearance', existingInvoice: invoice } 
                                         })}
