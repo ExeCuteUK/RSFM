@@ -325,21 +325,15 @@ export function ImportExportWorkGrid() {
     return parts.join(' / ')
   }
 
-  // Get row color based on adviseClearanceToAgentStatusIndicator (only for import jobs)
+  // Get row color based on adviseClearanceToAgentStatusIndicator
   const getRowColor = (job: (ImportShipment | ExportShipment) & { _jobType: 'import' | 'export' }) => {
-    // Only apply coloring for import jobs
-    if (job._jobType === 'import') {
-      const status = job.adviseClearanceToAgentStatusIndicator
-      
-      if (status === 3) {
-        return 'bg-green-100 dark:bg-green-900'
-      }
-      
-      return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+    const status = job.adviseClearanceToAgentStatusIndicator
+    
+    if (status === 3) {
+      return 'bg-green-100 dark:bg-green-900'
     }
     
-    // For export jobs, no special coloring
-    return ''
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
   }
 
   // Get cell color based on value (green if has data, yellow if empty)
