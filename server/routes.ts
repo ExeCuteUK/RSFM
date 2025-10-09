@@ -2625,6 +2625,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Upload file directly to Google Drive
   app.post("/api/objects/upload", upload.single("file"), async (req, res) => {
     try {
+      console.log('[UPLOAD DEBUG] Content-Type:', req.headers['content-type']);
+      console.log('[UPLOAD DEBUG] req.file:', req.file);
+      console.log('[UPLOAD DEBUG] req.body:', req.body);
+      
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
