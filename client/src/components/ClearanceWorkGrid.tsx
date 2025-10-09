@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { type CustomClearance, type ImportCustomer, type ExportCustomer, type ImportShipment, type ExportShipment, type ClearanceAgent } from "@shared/schema"
-import { Search, X, ExternalLink } from "lucide-react"
+import { Search, X, Link2 } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
@@ -371,7 +371,9 @@ export function ClearanceWorkGrid() {
           className={`border px-2 py-1 text-center ${cellColor}`}
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
-          <ExternalLink className="w-4 h-4 mx-auto text-green-600 dark:text-green-400" />
+          {clearance.createdFromId && (
+            <Link2 className="w-4 h-4 mx-auto text-green-600 dark:text-green-400" />
+          )}
         </td>
       )
     }
