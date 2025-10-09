@@ -31,9 +31,10 @@ import { cn } from "@/lib/utils"
 import { ObjectStorageUploader } from "@/components/ui/object-storage-uploader"
 import { useJobFileGroup } from "@/hooks/use-job-file-group"
 import { FileText, Download, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { ContactCombobox } from "@/components/ContactCombobox"
+import { MRNConfirmationDialog } from "@/components/mrn-confirmation-dialog"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -83,6 +84,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const { toast } = useToast()
   const [pendingTransportDocuments, setPendingTransportDocuments] = useState<string[]>([])
   const [pendingClearanceDocuments, setPendingClearanceDocuments] = useState<string[]>([])
+  const [mrnDialogOpen, setMrnDialogOpen] = useState(false)
+  const [extractedMRN, setExtractedMRN] = useState("")
+  const [isProcessingOCR, setIsProcessingOCR] = useState(false)
   
   const form = useForm<InsertCustomClearance>({
     resolver: zodResolver(customClearanceFormSchema),
@@ -187,6 +191,60 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
         errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
+  };
+
+  const handleClearanceDocumentOCR = async (filePath: string) => {
+    // Only process PDFs or images
+    const fileExtension = filePath.toLowerCase().split('.').pop();
+    const supportedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
+    
+    if (!supportedTypes.includes(fileExtension || '')) {
+      return;
+    }
+
+    // Don't process if already has MRN
+    if (form.getValues('mrnNumber')) {
+      return;
+    }
+
+    setIsProcessingOCR(true);
+    
+    try {
+      const response = await fetch('/api/objects/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectPath: filePath }),
+      });
+
+      if (!response.ok) {
+        throw new Error('OCR failed');
+      }
+
+      const data = await response.json();
+      
+      if (data.mrnNumber) {
+        setExtractedMRN(data.mrnNumber);
+        setMrnDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('OCR error:', error);
+    } finally {
+      setIsProcessingOCR(false);
+    }
+  };
+
+  const handleConfirmMRN = () => {
+    form.setValue('mrnNumber', extractedMRN);
+    setMrnDialogOpen(false);
+    toast({
+      title: "MRN Number Added",
+      description: `MRN ${extractedMRN} has been added to the clearance`,
+    });
+  };
+
+  const handleCancelMRN = () => {
+    setMrnDialogOpen(false);
+    setExtractedMRN("");
   };
 
   return (
@@ -907,7 +965,14 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                       <FormControl>
                         <ObjectStorageUploader
                           value={field.value || []}
-                          onChange={field.onChange}
+                          onChange={(newFiles) => {
+                            field.onChange(newFiles)
+                            // Trigger OCR on newly uploaded files
+                            if (newFiles.length > (field.value || []).length) {
+                              const newFile = newFiles[newFiles.length - 1]
+                              handleClearanceDocumentOCR(newFile)
+                            }
+                          }}
                           pendingFiles={pendingClearanceDocuments}
                           onPendingFilesChange={setPendingClearanceDocuments}
                           maxFiles={10}
@@ -934,6 +999,14 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
           </Button>
         </div>
       </form>
+
+      <MRNConfirmationDialog
+        open={mrnDialogOpen}
+        onOpenChange={setMrnDialogOpen}
+        mrnNumber={extractedMRN}
+        onConfirm={handleConfirmMRN}
+        onCancel={handleCancelMRN}
+      />
     </Form>
   )
 }
