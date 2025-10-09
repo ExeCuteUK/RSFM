@@ -325,9 +325,11 @@ export function ImportExportWorkGrid() {
     return parts.join(' / ')
   }
 
-  // Get row color based on adviseClearanceToAgentStatusIndicator
+  // Get row color based on status indicator (clearanceStatusIndicator for imports, adviseClearanceToAgentStatusIndicator for exports)
   const getRowColor = (job: (ImportShipment | ExportShipment) & { _jobType: 'import' | 'export' }) => {
-    const status = job.adviseClearanceToAgentStatusIndicator
+    const status = job._jobType === 'import' 
+      ? (job as ImportShipment).clearanceStatusIndicator
+      : (job as ExportShipment).adviseClearanceToAgentStatusIndicator
     
     if (status === 3) {
       return 'bg-green-100 dark:bg-green-900'
