@@ -156,7 +156,7 @@ export function ClearanceWorkGrid() {
       const widths = cells.map(cell => cell.offsetWidth)
       setColumnWidths(widths)
       
-      const rows = Array.from(tableRef.current.querySelectorAll('tbody tr'))
+      const rows = Array.from(tableRef.current.querySelectorAll('tbody tr')) as HTMLElement[]
       const heights = rows.map(row => row.offsetHeight)
       setRowHeights(heights)
     }
