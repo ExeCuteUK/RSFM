@@ -303,22 +303,22 @@ export default function ImportShipments() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "attachment" | "pod" }) => {
-      // Get upload URL
+      // Direct upload to backend
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('filename', file.name);
+      
       const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename: file.name })
-      })
-      const { uploadURL } = await uploadResponse.json()
-      
-      // Upload file to storage
-      await fetch(uploadURL, {
-        method: "PUT",
-        body: file
+        body: formData
       })
       
-      // Get the file path (remove query params)
-      const filePath = uploadURL.split('?')[0]
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload file');
+      }
+      
+      const { objectPath } = await uploadResponse.json()
+      const filePath = objectPath
       
       // Update shipment with new file
       const shipment = allShipments.find(s => s.id === id)
