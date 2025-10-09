@@ -719,8 +719,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                         </FormControl>
                         <SelectContent>
                           {clearanceAgents.map((agent) => (
-                            <SelectItem key={agent.id} value={agent.companyName}>
-                              {agent.companyName}
+                            <SelectItem key={agent.id} value={agent.agentName}>
+                              {agent.agentName}
                             </SelectItem>
                           ))}
                         </SelectContent>

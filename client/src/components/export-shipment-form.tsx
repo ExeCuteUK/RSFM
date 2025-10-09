@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertExportShipmentSchema, type InsertExportShipment, type ExportReceiver, type ExportCustomer, type InsertExportCustomer, type InsertExportReceiver, type Haulier, type ShippingLine } from "@shared/schema"
+import { insertExportShipmentSchema, type InsertExportShipment, type ExportReceiver, type ExportCustomer, type InsertExportCustomer, type InsertExportReceiver, type Haulier, type ShippingLine, type ClearanceAgent } from "@shared/schema"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -179,6 +179,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
   const { data: shippingLines } = useQuery<ShippingLine[]>({
     queryKey: ["/api/shipping-lines"],
+  })
+
+  const { data: clearanceAgents = [] } = useQuery<ClearanceAgent[]>({
+    queryKey: ["/api/clearance-agents"],
   })
 
   const createCustomerMutation = useMutation({
@@ -1362,6 +1366,33 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   )}
                 />
               </div>
+
+              {exportClearanceAgent === "R.S" && (
+                <FormField
+                  control={form.control}
+                  name="clearanceAgent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Clearance Agent</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-clearance-agent">
+                            <SelectValue placeholder="Select clearance agent" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {clearanceAgents.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.agentName}>
+                              {agent.agentName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </CardContent>
           </Card>
 
