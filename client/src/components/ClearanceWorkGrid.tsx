@@ -309,7 +309,7 @@ export function ClearanceWorkGrid() {
   const getCellColor = (clearance: CustomClearance, fieldName: string, value: any) => {
     // Link column, Job Ref, and Notes always green
     if (fieldName === "link" || fieldName === "jobRef" || fieldName === "notes") {
-      return "bg-green-100 dark:bg-green-950"
+      return "bg-green-100 dark:bg-green-900"
     }
 
     // Agent Advised column: check parent shipment status for linked jobs
@@ -321,40 +321,40 @@ export function ClearanceWorkGrid() {
           if (parentShipment) {
             // Check clearanceStatusIndicator: 1=yellow, 3=green
             if (parentShipment.clearanceStatusIndicator === 3) {
-              return "bg-green-100 dark:bg-green-950"
+              return "bg-green-100 dark:bg-green-900"
             }
-            return "bg-yellow-100 dark:bg-yellow-950"
+            return "bg-yellow-100 dark:bg-yellow-900"
           }
         } else if (clearance.jobType === "export") {
           const parentShipment = exportShipments.find(s => s.id === clearance.createdFromId)
           if (parentShipment) {
             // Check adviseClearanceToAgentStatusIndicator: 1=yellow, 3=green
             if (parentShipment.adviseClearanceToAgentStatusIndicator === 3) {
-              return "bg-green-100 dark:bg-green-950"
+              return "bg-green-100 dark:bg-green-900"
             }
-            return "bg-yellow-100 dark:bg-yellow-950"
+            return "bg-yellow-100 dark:bg-yellow-900"
           }
         }
       }
       
       // For non-linked clearances: green if BOTH adviseAgent and sendHaulierEad are 3
       if (clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3) {
-        return "bg-green-100 dark:bg-green-950"
+        return "bg-green-100 dark:bg-green-900"
       }
-      return "bg-yellow-100 dark:bg-yellow-950"
+      return "bg-yellow-100 dark:bg-yellow-900"
     }
 
     // MRN Number column: yellow if empty, green if has value
     if (fieldName === "mrn") {
       if (value && value.toString().trim()) {
-        return "bg-green-100 dark:bg-green-950"
+        return "bg-green-100 dark:bg-green-900"
       }
-      return "bg-yellow-100 dark:bg-yellow-950"
+      return "bg-yellow-100 dark:bg-yellow-900"
     }
 
     // Other cells green if has value
     if (value && value.toString().trim()) {
-      return "bg-green-100 dark:bg-green-950"
+      return "bg-green-100 dark:bg-green-900"
     }
 
     return ""
