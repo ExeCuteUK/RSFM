@@ -12,6 +12,10 @@ interface ObjectStorageUploaderProps {
   testId?: string;
   label?: string;
   dragDropLabel?: string;
+  // Optional job-aware upload metadata
+  jobType?: string;
+  jobRef?: string;
+  documentType?: string;
 }
 
 export function ObjectStorageUploader({
@@ -24,6 +28,9 @@ export function ObjectStorageUploader({
   testId = "object-storage-uploader",
   label = "Attached Files:",
   dragDropLabel = "Drop files here or click to browse",
+  jobType,
+  jobRef,
+  documentType,
 }: ObjectStorageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -35,38 +42,50 @@ export function ObjectStorageUploader({
   const uploadFiles = async (files: File[]) => {
     setUploading(true);
     const uploadedPaths: string[] = [];
+    const useJobAwareUpload = jobType && jobRef && documentType;
 
     try {
       for (const file of files) {
-        // Create FormData for direct upload to backend
+        // Create FormData for upload to backend
         const formData = new FormData();
         formData.append('file', file);
         formData.append('filename', file.name);
+        
+        // If job metadata provided, use job-aware upload (like card drag-and-drop)
+        if (useJobAwareUpload) {
+          formData.append('jobType', jobType);
+          formData.append('jobRef', jobRef);
+          formData.append('documentType', documentType);
+        }
 
-        console.log('[CLIENT DEBUG] Uploading file:', file.name, 'size:', file.size);
-        console.log('[CLIENT DEBUG] FormData entries:', Array.from(formData.entries()));
+        console.log('[CLIENT DEBUG] Uploading file:', file.name, 'job-aware:', !!useJobAwareUpload);
         
         const response = await fetch("/api/objects/upload", {
           method: "POST",
           body: formData,
         });
         
-        console.log('[CLIENT DEBUG] Response status:', response.status);
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
 
         const data = await response.json();
-        uploadedPaths.push(data.objectPath);
+        
+        // For job-aware uploads, store file objects {filename, path}
+        // For generic uploads, store just the path (backward compatibility)
+        if (useJobAwareUpload) {
+          uploadedPaths.push(JSON.stringify({ filename: data.filename, path: data.objectPath }));
+        } else {
+          uploadedPaths.push(data.objectPath);
+        }
       }
 
       console.log('[UPLOADER DEBUG] Upload complete, uploadedPaths:', uploadedPaths);
-      console.log('[UPLOADER DEBUG] onPendingFilesChange exists?', !!onPendingFilesChange);
-      console.log('[UPLOADER DEBUG] pendingFiles before:', pendingFiles);
       
       if (onPendingFilesChange) {
         const newPendingFiles = [...pendingFiles, ...uploadedPaths];
-        console.log('[UPLOADER DEBUG] Calling onPendingFilesChange with:', newPendingFiles);
         onPendingFilesChange(newPendingFiles);
       } else {
-        console.log('[UPLOADER DEBUG] No callback, using internal state');
         setInternalPendingFiles((prev) => [...prev, ...uploadedPaths]);
       }
     } catch (error) {
@@ -141,7 +160,35 @@ export function ObjectStorageUploader({
     [value, onChange]
   );
 
-  const normalizeFilePath = (path: string) => {
+  // Helper to parse file data (handles objects, JSON strings, and legacy path strings)
+  const parseFileData = (fileData: any): { filename: string; path: string } => {
+    // If it's already an object with filename and path, return it
+    if (typeof fileData === 'object' && fileData !== null && fileData.filename && fileData.path) {
+      return { filename: fileData.filename, path: fileData.path };
+    }
+    
+    // If it's a string, try to parse as JSON
+    if (typeof fileData === 'string') {
+      try {
+        const parsed = JSON.parse(fileData);
+        if (parsed.filename && parsed.path) {
+          return parsed;
+        }
+      } catch {
+        // Not JSON, treat as legacy path string
+      }
+      
+      // Legacy format: extract filename from path
+      const filename = fileData.split('/').pop()?.split('?')[0] || 'File';
+      return { filename, path: fileData };
+    }
+    
+    // Fallback
+    return { filename: 'File', path: '' };
+  };
+
+  const normalizeFilePath = (fileData: any) => {
+    const { path } = parseFileData(fileData);
     return path.startsWith('/') ? path : `/objects/${path}`;
   };
 
@@ -193,29 +240,33 @@ export function ObjectStorageUploader({
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">{label}</p>
           <div className="space-y-2">
-            {pendingFiles.map((url, index) => (
-              <div
-                key={`pending-${index}`}
-                className="flex items-center justify-between p-2 border rounded-md bg-muted/30"
-                data-testid={`${testId}-pending-${index}`}
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-sm truncate">{url.split('/').pop()?.split('?')[0] || 'File'}</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removePendingFile(index)}
-                  data-testid={`${testId}-remove-pending-${index}`}
+            {pendingFiles.map((fileData, index) => {
+              const { filename } = parseFileData(fileData);
+              return (
+                <div
+                  key={`pending-${index}`}
+                  className="flex items-center justify-between p-2 border rounded-md bg-muted/30"
+                  data-testid={`${testId}-pending-${index}`}
                 >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-            {value.map((path, index) => {
-              const downloadPath = normalizeFilePath(path);
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-sm truncate">{filename}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removePendingFile(index)}
+                    data-testid={`${testId}-remove-pending-${index}`}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              );
+            })}
+            {value.map((fileData, index) => {
+              const { filename } = parseFileData(fileData);
+              const downloadPath = normalizeFilePath(fileData);
               return (
                 <div
                   key={`saved-${index}`}
@@ -224,7 +275,7 @@ export function ObjectStorageUploader({
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm truncate">{path.split('/').pop() || 'File'}</span>
+                    <span className="text-sm truncate">{filename}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <a href={downloadPath} target="_blank" rel="noopener noreferrer">

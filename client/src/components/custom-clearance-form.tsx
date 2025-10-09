@@ -152,17 +152,33 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const containerShipment = form.watch("containerShipment")
 
   const handleFormSubmit = (data: InsertCustomClearance) => {
-    const normalizedTransportDocuments: string[] = [...(data.transportDocuments || [])];
-    const normalizedClearanceDocuments: string[] = [...(data.clearanceDocuments || [])];
+    const normalizedTransportDocuments: any[] = [...(data.transportDocuments || [])];
+    const normalizedClearanceDocuments: any[] = [...(data.clearanceDocuments || [])];
 
     if (pendingTransportDocuments.length > 0) {
-      const cleanUrls = pendingTransportDocuments.map((url) => url.split("?")[0]);
-      normalizedTransportDocuments.push(...cleanUrls);
+      const fileObjects = pendingTransportDocuments.map((fileData) => {
+        try {
+          // Parse JSON file object
+          return JSON.parse(fileData);
+        } catch {
+          // Fallback for old-style path strings
+          return fileData.split("?")[0];
+        }
+      });
+      normalizedTransportDocuments.push(...fileObjects);
     }
 
     if (pendingClearanceDocuments.length > 0) {
-      const cleanUrls = pendingClearanceDocuments.map((url) => url.split("?")[0]);
-      normalizedClearanceDocuments.push(...cleanUrls);
+      const fileObjects = pendingClearanceDocuments.map((fileData) => {
+        try {
+          // Parse JSON file object
+          return JSON.parse(fileData);
+        } catch {
+          // Fallback for old-style path strings
+          return fileData.split("?")[0];
+        }
+      });
+      normalizedClearanceDocuments.push(...fileObjects);
     }
 
     const finalData = {
@@ -193,9 +209,41 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     }
   };
 
-  const handleClearanceDocumentOCR = async (filePath: string) => {
+  const handleClearanceDocumentOCR = async (fileData: any) => {
+    // Parse file data (handles objects, JSON strings, and legacy path strings)
+    let filename: string;
+    let objectPath: string;
+    
+    // If it's already an object with filename and path
+    if (typeof fileData === 'object' && fileData !== null && fileData.filename && fileData.path) {
+      filename = fileData.filename;
+      objectPath = fileData.path;
+    } 
+    // If it's a string
+    else if (typeof fileData === 'string') {
+      try {
+        const parsed = JSON.parse(fileData);
+        if (parsed.filename && parsed.path) {
+          // JSON string format
+          filename = parsed.filename;
+          objectPath = parsed.path;
+        } else {
+          console.log('[OCR DEBUG] Invalid JSON file object');
+          return;
+        }
+      } catch {
+        // Legacy format: path string
+        objectPath = fileData;
+        filename = fileData.split('/').pop()?.split('?')[0] || 'file';
+        console.log('[OCR DEBUG] Legacy path format, extracted filename:', filename);
+      }
+    } else {
+      console.log('[OCR DEBUG] Invalid file data type');
+      return;
+    }
+    
     // Only process PDFs or images
-    const fileExtension = filePath.toLowerCase().split('.').pop();
+    const fileExtension = filename.toLowerCase().split('.').pop();
     const supportedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
     
     if (!supportedTypes.includes(fileExtension || '')) {
@@ -214,7 +262,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       const response = await fetch('/api/objects/ocr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ objectPath: filePath }),
+        body: JSON.stringify({ objectPath, filename }),
       });
 
       if (!response.ok) {
@@ -928,6 +976,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             testId="transport-docs-uploader"
                             label="Transport Documents:"
                             dragDropLabel="Drop transport documents here or click to browse"
+                            jobType="Custom Clearances"
+                            jobRef={jobRef?.toString()}
+                            documentType="Transport Documents"
                           />
                           
                           {/* Display shared documents from job_file_groups */}
@@ -998,9 +1049,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             console.log('[OCR DEBUG] Detected new files:', newFiles);
                             
                             // Trigger OCR for each newly uploaded file
-                            newFiles.forEach(filePath => {
-                              console.log('[OCR DEBUG] Triggering OCR for:', filePath);
-                              handleClearanceDocumentOCR(filePath);
+                            newFiles.forEach(fileData => {
+                              console.log('[OCR DEBUG] Triggering OCR for:', fileData);
+                              handleClearanceDocumentOCR(fileData);
                             });
                             
                             setPendingClearanceDocuments(newPendingFiles)
@@ -1009,6 +1060,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                           testId="clearance-docs-uploader"
                           label="Clearance Documents:"
                           dragDropLabel="Drop clearance documents here or click to browse"
+                          jobType="Custom Clearances"
+                          jobRef={jobRef?.toString()}
+                          documentType="Clearance Documents"
                         />
                       </FormControl>
                       <FormMessage />
