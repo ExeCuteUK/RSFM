@@ -389,7 +389,7 @@ export default function JobJournals() {
       supplier: "",
       customer: ref.referenceName,
     })),
-  ].sort((a, b) => b.jobRef - a.jobRef)
+  ].sort((a, b) => a.jobRef - b.jobRef)
 
   const filteredByDate = allJournalEntries.filter(entry => {
     if (entry.jobType === "General") return true
