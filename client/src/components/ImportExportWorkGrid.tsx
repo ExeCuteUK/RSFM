@@ -99,12 +99,13 @@ export function ImportExportWorkGrid() {
     ...importShipments
       .filter(job => {
         const customer = importCustomers.find(c => c.id === job.importCustomerId)
-        const customerName = customer?.companyName?.toLowerCase().trim() || ''
+        const customerName = (customer?.companyName || '').toLowerCase().trim().replace(/\s+/g, ' ')
         
-        // Check if customer matches any excluded name
-        const isExcluded = excludedCustomers.some(excludedName => 
-          customerName.includes(excludedName.toLowerCase().trim())
-        )
+        // Check if customer matches any excluded name (case-insensitive substring match)
+        const isExcluded = excludedCustomers.some(excludedName => {
+          const normalizedExcludedName = excludedName.toLowerCase().trim().replace(/\s+/g, ' ')
+          return customerName.includes(normalizedExcludedName)
+        })
         
         return job.containerShipment !== "Container Shipment" && !isExcluded
       })
@@ -112,12 +113,13 @@ export function ImportExportWorkGrid() {
     ...exportShipments
       .filter(job => {
         const customer = exportCustomers.find(c => c.id === job.destinationCustomerId)
-        const customerName = customer?.companyName?.toLowerCase().trim() || ''
+        const customerName = (customer?.companyName || '').toLowerCase().trim().replace(/\s+/g, ' ')
         
-        // Check if customer matches any excluded name
-        const isExcluded = excludedCustomers.some(excludedName => 
-          customerName.includes(excludedName.toLowerCase().trim())
-        )
+        // Check if customer matches any excluded name (case-insensitive substring match)
+        const isExcluded = excludedCustomers.some(excludedName => {
+          const normalizedExcludedName = excludedName.toLowerCase().trim().replace(/\s+/g, ' ')
+          return customerName.includes(normalizedExcludedName)
+        })
         
         return job.containerShipment !== "Container Shipment" && !isExcluded
       })
