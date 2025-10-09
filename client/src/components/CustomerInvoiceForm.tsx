@@ -573,9 +573,43 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
       onOpenChange(false)
     },
     onError: (error: any) => {
+      let errorTitle = 'Error'
+      let errorDescription = `Failed to ${existingInvoice ? 'update' : 'create'} invoice`
+      
+      if (error.message) {
+        const match = error.message.match(/^(\d+):\s*(.+)$/)
+        if (match) {
+          const [, statusCode, responseBody] = match
+          
+          try {
+            const errorData = JSON.parse(responseBody)
+            if (errorData.error) {
+              errorDescription = errorData.error
+            } else if (errorData.message) {
+              errorDescription = errorData.message
+            }
+            
+            if (statusCode === '400') {
+              errorTitle = 'Validation Error'
+            } else if (statusCode === '404') {
+              errorTitle = 'Not Found'
+            } else if (statusCode === '500') {
+              errorTitle = 'Server Error'
+            }
+          } catch {
+            errorDescription = responseBody || error.message
+          }
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          errorTitle = 'Network Error'
+          errorDescription = 'Unable to connect to the server. Please check your internet connection and try again.'
+        } else {
+          errorDescription = error.message
+        }
+      }
+      
       toast({
-        title: 'Error',
-        description: error.message || `Failed to ${existingInvoice ? 'update' : 'create'} invoice`,
+        title: errorTitle,
+        description: errorDescription,
         variant: 'destructive'
       })
     }
