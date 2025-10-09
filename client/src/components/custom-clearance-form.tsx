@@ -983,16 +983,16 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                       <FormControl>
                         <ObjectStorageUploader
                           value={field.value || []}
-                          onChange={(newFiles) => {
-                            field.onChange(newFiles)
+                          onChange={field.onChange}
+                          pendingFiles={pendingClearanceDocuments}
+                          onPendingFilesChange={(newPendingFiles) => {
                             // Trigger OCR on newly uploaded files
-                            if (newFiles.length > (field.value || []).length) {
-                              const newFile = newFiles[newFiles.length - 1]
+                            if (newPendingFiles.length > pendingClearanceDocuments.length) {
+                              const newFile = newPendingFiles[newPendingFiles.length - 1]
                               handleClearanceDocumentOCR(newFile)
                             }
+                            setPendingClearanceDocuments(newPendingFiles)
                           }}
-                          pendingFiles={pendingClearanceDocuments}
-                          onPendingFilesChange={setPendingClearanceDocuments}
                           maxFiles={10}
                           testId="clearance-docs-uploader"
                           label="Clearance Documents:"
