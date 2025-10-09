@@ -393,10 +393,10 @@ export default function MyAccount() {
 
       {/* Password Change Success Dialog */}
       <AlertDialog open={passwordSuccessOpen} onOpenChange={setPasswordSuccessOpen}>
-        <AlertDialogContent data-testid="dialog-password-success">
+        <AlertDialogContent data-testid="dialog-password-success" aria-describedby="password-success-description">
           <AlertDialogHeader>
             <AlertDialogTitle>Password Changed Successfully</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription id="password-success-description">
               Your password has been changed. Please use your new password for future logins.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -410,10 +410,10 @@ export default function MyAccount() {
 
       {/* Email Change Success Dialog */}
       <AlertDialog open={emailSuccessOpen} onOpenChange={setEmailSuccessOpen}>
-        <AlertDialogContent data-testid="dialog-email-success">
+        <AlertDialogContent data-testid="dialog-email-success" aria-describedby="email-success-description">
           <AlertDialogHeader>
             <AlertDialogTitle>Email Changed Successfully</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription id="email-success-description">
               Your email address has been updated successfully.
             </AlertDialogDescription>
           </AlertDialogHeader>
