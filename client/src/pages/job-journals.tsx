@@ -104,13 +104,25 @@ export default function JobJournals() {
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
   const [showReserveColumns, setShowReserveColumns] = useState(prefs.showReserveColumns || false)
+  const [editingGeneralRef, setEditingGeneralRef] = useState<GeneralReference | null>(null)
+  const [generalRefDialogOpen, setGeneralRefDialogOpen] = useState(false)
   
   const handleJobRefClick = (jobRef: number, jobType: string) => {
-    localStorage.setItem('shipmentSearchJobRef', jobRef.toString())
-    if (jobType === 'import') {
-      setLocation('/import-shipments')
-    } else if (jobType === 'export') {
-      setLocation('/export-shipments')
+    const lowerType = jobType.toLowerCase()
+    
+    if (lowerType === 'general') {
+      // Find the general reference and open edit dialog
+      const genRef = generalReferences.find(ref => ref.jobRef === jobRef)
+      if (genRef) {
+        setEditingGeneralRef(genRef)
+        setGeneralRefDialogOpen(true)
+      }
+    } else if (lowerType === 'import') {
+      setLocation(`/import-shipments?search=#${jobRef}`)
+    } else if (lowerType === 'export') {
+      setLocation(`/export-shipments?search=#${jobRef}`)
+    } else if (lowerType === 'customs') {
+      setLocation(`/custom-clearances?search=#${jobRef}`)
     }
   }
   
@@ -680,12 +692,7 @@ export default function JobJournals() {
                     <td className="p-1 text-center border-r border-border" data-testid={`text-jobref-${entry.jobRef}`}>
                       <button
                         onClick={() => handleJobRefClick(entry.jobRef, entry.jobType)}
-                        className={`hover:underline cursor-pointer ${
-                          entry.jobType.toLowerCase() === 'import' ? 'text-blue-600 dark:text-blue-400' :
-                          entry.jobType.toLowerCase() === 'export' ? 'text-green-600 dark:text-green-400' :
-                          entry.jobType.toLowerCase() === 'customs' ? 'text-purple-600 dark:text-purple-400' :
-                          'text-foreground'
-                        }`}
+                        className="hover:underline cursor-pointer"
                         data-testid={`link-jobref-${entry.jobRef}`}
                       >
                         {entry.jobRef}
@@ -887,6 +894,17 @@ export default function JobJournals() {
         invoice={selectedInvoice}
         open={invoiceDialogOpen}
         onOpenChange={setInvoiceDialogOpen}
+      />
+      
+      <GeneralReferenceDialog
+        reference={editingGeneralRef}
+        open={generalRefDialogOpen}
+        onOpenChange={(open) => {
+          setGeneralRefDialogOpen(open)
+          if (!open) {
+            setEditingGeneralRef(null)
+          }
+        }}
       />
     </div>
   )
