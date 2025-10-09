@@ -293,6 +293,14 @@ export function ClearanceWorkGrid() {
       return "bg-yellow-100 dark:bg-yellow-950"
     }
 
+    // MRN Number column: yellow if empty, green if has value
+    if (fieldName === "mrn") {
+      if (value && value.toString().trim()) {
+        return "bg-green-100 dark:bg-green-950"
+      }
+      return "bg-yellow-100 dark:bg-yellow-950"
+    }
+
     // Other cells green if has value
     if (value && value.toString().trim()) {
       return "bg-green-100 dark:bg-green-950"
