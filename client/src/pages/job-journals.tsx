@@ -98,7 +98,7 @@ export default function JobJournals() {
   const [selectedYear, setSelectedYear] = useState(prefs.selectedYear || currentDate.getFullYear().toString())
   const [startDate, setStartDate] = useState(prefs.startDate || "")
   const [endDate, setEndDate] = useState(prefs.endDate || "")
-  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(prefs.selectedJobTypes || ["Import", "Export", "Customs", "General"])
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(prefs.selectedJobTypes || ["General"])
   const [searchText, setSearchText] = useState(prefs.searchText || "")
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
