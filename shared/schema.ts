@@ -883,6 +883,10 @@ export const invoices = pgTable("invoices", {
   vat: doublePrecision("vat").notNull().default(0),
   total: doublePrecision("total").notNull().default(0),
   
+  // Google Drive PDF storage
+  googleDrivePdfId: text("google_drive_pdf_id"), // File ID in Google Drive
+  googleDrivePdfPath: text("google_drive_pdf_path"), // Object path for retrieval
+  
   // Timestamps
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
