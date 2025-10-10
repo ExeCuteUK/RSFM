@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import worldMapBg from "@assets/generated_images/World_map_with_freight_routes_bcb31009.png";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -51,8 +52,11 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="w-full max-w-md">
+    <div 
+      className="flex items-center justify-center min-h-screen bg-background bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${worldMapBg})` }}
+    >
+      <Card className="w-full max-w-md bg-card/25 backdrop-blur-sm border-card-border/50">
         <CardHeader>
           <CardTitle>Login</CardTitle>
           <CardDescription>Sign in to your R.S International Freight Manager account</CardDescription>
