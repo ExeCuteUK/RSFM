@@ -1255,9 +1255,23 @@ export default function CustomClearances() {
       body += `${clearance.numberOfPieces || ""} ${clearance.packaging || ""}.\n`
       body += `${clearance.goodsDescription || ""}\n`
       
-      // Add weight with "kgs" suffix if weight exists
+      // Format currency with symbol and decimals
+      const formatCurrency = (currency: string | null, value: string | number | null) => {
+        if (!currency || !value) return ""
+        const numValue = typeof value === 'string' ? parseFloat(value) : value
+        if (isNaN(numValue)) return ""
+        const formatted = numValue.toFixed(2)
+        if (currency === "GBP") return `£${formatted}`
+        if (currency === "USD") return `$${formatted}`
+        if (currency === "EUR") return `€${formatted}`
+        return `${currency} ${formatted}`
+      }
+      
+      // Add weight with "kgs" suffix and formatted currency
       const weightText = clearance.weight ? `${clearance.weight} kgs` : ""
-      body += `${weightText}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
+      const currencyText = formatCurrency(clearance.currency, clearance.invoiceValue)
+      const invoiceValueText = currencyText ? `Invoice value ${currencyText}` : ""
+      body += `${weightText}${weightText && invoiceValueText ? ", " : ""}${invoiceValueText}\n`
       
       // Add VAT info for import clearances
       if (clearance.jobType === "import") {
@@ -1286,8 +1300,12 @@ export default function CustomClearances() {
         }
       }
       
-      // Get transport documents
-      const transportDocs = parseAttachments(clearance.transportDocuments || null).map(normalizeFilePath).filter(Boolean)
+      // Get transport documents with original filenames
+      const attachmentObjects = parseAttachments(clearance.transportDocuments || null)
+      const transportDocs = attachmentObjects.map(file => ({
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        name: getFileName(file)
+      })).filter(doc => doc.url)
       
       // Open email composer with auto-populated TO field (or empty if no agent found)
       openEmailComposer({

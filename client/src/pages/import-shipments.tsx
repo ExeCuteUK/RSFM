@@ -1593,13 +1593,30 @@ Hope all is OK.`
       const eta = formatDate(shipment.importDateEtaPort) || "TBA"
       const subject = `Import Clearance / ${customerName} / Our Ref : ${shipment.jobRef} / ${truckContainerFlight} / ETA : ${eta}`
       
+      // Format currency with symbol and decimals
+      const formatCurrency = (currency: string | null, value: string | number | null) => {
+        if (!currency || !value) return ""
+        const numValue = typeof value === 'string' ? parseFloat(value) : value
+        if (isNaN(numValue)) return ""
+        const formatted = numValue.toFixed(2)
+        if (currency === "GBP") return `£${formatted}`
+        if (currency === "USD") return `$${formatted}`
+        if (currency === "EUR") return `€${formatted}`
+        return `${currency} ${formatted}`
+      }
+      
       // Build email body
       let body = `Hi Team,\n\nPlease could you arrange clearance on the below shipment. Our Ref : ${shipment.jobRef}\n\n`
       body += `Consignment will arrive on Trailer : ${shipment.trailerOrContainerNumber || "TBA"} Into ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.importDateEtaPort) || "TBA"}.\n\n`
       body += `${customerName}\n`
       body += `${shipment.numberOfPieces || ""} ${shipment.packaging || ""}.\n`
       body += `${shipment.goodsDescription || ""}\n`
-      body += `${shipment.weight || ""}, Invoice value ${shipment.currency || ""} ${shipment.invoiceValue || ""}\n`
+      
+      // Add weight with "kgs" suffix and formatted currency
+      const weightText = shipment.weight ? `${shipment.weight} kgs` : ""
+      const currencyText = formatCurrency(shipment.currency, shipment.invoiceValue)
+      const invoiceValueText = currencyText ? `Invoice value ${currencyText}` : ""
+      body += `${weightText}${weightText && invoiceValueText ? ", " : ""}${invoiceValueText}\n`
       
       if (shipment.freightCharge) {
         body += `Transport Costs : ${shipment.freightCharge}\n`
@@ -1620,8 +1637,12 @@ Hope all is OK.`
         ? agent.agentImportEmail[0] 
         : ""
       
-      // Get transport documents - ensure it's always an array
-      const transportDocs = parseAttachments(shipment.attachments || null).map(normalizeFilePath).filter(Boolean)
+      // Get transport documents with original filenames
+      const attachmentObjects = parseAttachments(shipment.attachments || null)
+      const transportDocs = attachmentObjects.map(file => ({
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        name: getFileName(file)
+      })).filter(doc => doc.url)
       
       // Open email composer with validated data
       openEmailComposer({

@@ -1,17 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, ExternalLink, Printer, Download, Mail, Check } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { apiRequest } from '@/lib/queryClient'
-import { useToast } from '@/hooks/use-toast'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+import { ChevronLeft, ChevronRight, ExternalLink, Printer, Download, Mail } from 'lucide-react'
+import { useEmail } from '@/contexts/EmailContext'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
@@ -20,54 +11,11 @@ interface PDFViewerProps {
   filename?: string
 }
 
-interface ContactEmail {
-  email: string;
-  name: string;
-  type: string;
-}
-
 export function PDFViewer({ url, filename }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null)
   const [pageNumber, setPageNumber] = useState(1)
   const [scale, setScale] = useState(1.0)
-  const [emailDialogOpen, setEmailDialogOpen] = useState(false)
-  const [emailTo, setEmailTo] = useState('')
-  const [emailSubject, setEmailSubject] = useState(`Document: ${filename || 'PDF'}`)
-  const [emailBody, setEmailBody] = useState('')
-  const [open, setOpen] = useState(false)
-  const [recentEmails, setRecentEmails] = useState<string[]>([])
-  const { toast } = useToast()
-
-  // Fetch contact emails
-  const { data: contactEmails = [] } = useQuery<ContactEmail[]>({
-    queryKey: ['/api/contacts/emails'],
-    staleTime: 5 * 60 * 1000 // Cache for 5 minutes
-  })
-
-  useEffect(() => {
-    if (contactEmails.length > 0) {
-      console.log(`Loaded ${contactEmails.length} contact emails:`, contactEmails.slice(0, 5));
-    }
-  }, [contactEmails])
-
-  // Load recent emails from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('recentEmails')
-    if (stored) {
-      try {
-        setRecentEmails(JSON.parse(stored))
-      } catch (e) {
-        setRecentEmails([])
-      }
-    }
-  }, [])
-
-  // Save email to recent list
-  const addToRecentEmails = (email: string) => {
-    const updated = [email, ...recentEmails.filter(e => e !== email)].slice(0, 10)
-    setRecentEmails(updated)
-    localStorage.setItem('recentEmails', JSON.stringify(updated))
-  }
+  const { openEmailComposer } = useEmail()
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages)
@@ -97,183 +45,27 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
     link.click()
   }
 
-  const sendEmail = useMutation({
-    mutationFn: async () => {
-      return apiRequest('POST', '/api/gmail/send', {
-        to: emailTo,
-        subject: emailSubject,
-        body: emailBody,
-        attachmentUrl: url,
-        attachmentFilename: filename || 'document.pdf'
-      })
-    },
-    onSuccess: () => {
-      addToRecentEmails(emailTo)
-      toast({
-        title: 'Email sent',
-        description: 'Your email has been sent successfully with the PDF attached.'
-      })
-      setEmailDialogOpen(false)
-      setEmailTo('')
-      setEmailBody('')
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Failed to send email',
-        description: error.message || 'Please check your Gmail connection in Settings.',
-        variant: 'destructive'
-      })
-    }
-  })
-
   function handleEmail() {
-    setEmailDialogOpen(true)
+    // Open the DraggableEmailComposer with the PDF attached
+    openEmailComposer({
+      id: `email-${Date.now()}`,
+      to: '',
+      cc: '',
+      bcc: '',
+      subject: `Document: ${filename || 'PDF'}`,
+      body: '',
+      attachments: [{
+        url: url,
+        name: filename || 'document.pdf'
+      }],
+      metadata: {
+        source: 'pdf-viewer'
+      }
+    })
   }
 
   return (
-    <>
-      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-        <DialogContent aria-describedby="email-dialog-description">
-          <DialogHeader>
-            <DialogTitle>Send Email with Attachment</DialogTitle>
-            <DialogDescription id="email-dialog-description">
-              Send this PDF document as an email attachment
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>To</Label>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-start font-normal"
-                    data-testid="button-email-combobox"
-                  >
-                    {emailTo || "Select or type email..."}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="start">
-                  <Command shouldFilter={false}>
-                    <CommandInput
-                      placeholder="Type email address..."
-                      value={emailTo}
-                      onValueChange={setEmailTo}
-                      data-testid="input-email-search"
-                    />
-                    <CommandList>
-                      <CommandEmpty>
-                        {emailTo ? `Press Enter to use: ${emailTo}` : 'No emails found'}
-                      </CommandEmpty>
-                      {recentEmails.length > 0 && (
-                        <CommandGroup heading="Recent">
-                          {recentEmails
-                            .filter(email => !emailTo || email.toLowerCase().includes(emailTo.toLowerCase()))
-                            .map((email) => (
-                            <CommandItem
-                              key={`recent-${email}`}
-                              value={email}
-                              onSelect={(currentValue) => {
-                                setEmailTo(currentValue)
-                                setOpen(false)
-                              }}
-                              data-testid={`email-option-${email}`}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  emailTo === email ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {email}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                      {contactEmails.length > 0 && (
-                        <CommandGroup heading={`Contacts (${contactEmails.length})`}>
-                          {contactEmails
-                            .filter(contact => !emailTo || 
-                              contact.email.toLowerCase().includes(emailTo.toLowerCase()) ||
-                              contact.name.toLowerCase().includes(emailTo.toLowerCase()))
-                            .slice(0, 50)
-                            .map((contact) => (
-                            <CommandItem
-                              key={`contact-${contact.email}`}
-                              value={contact.email}
-                              onSelect={(currentValue) => {
-                                setEmailTo(currentValue)
-                                setOpen(false)
-                              }}
-                              data-testid={`email-option-${contact.email}`}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  emailTo === contact.email ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <div className="flex flex-col">
-                                <span>{contact.email}</span>
-                                {contact.name && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {contact.name} • {contact.type}
-                                  </span>
-                                )}
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email-subject">Subject</Label>
-              <Input
-                id="email-subject"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                data-testid="input-email-subject"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email-body">Message (optional)</Label>
-              <Textarea
-                id="email-body"
-                placeholder="Add a message..."
-                value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                rows={4}
-                data-testid="textarea-email-body"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setEmailDialogOpen(false)}
-              disabled={sendEmail.isPending}
-              data-testid="button-cancel-email"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => sendEmail.mutate()}
-              disabled={!emailTo || sendEmail.isPending}
-              data-testid="button-send-email"
-            >
-              {sendEmail.isPending ? 'Sending...' : 'Send Email'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full">
         <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b">
         <div className="flex items-center gap-2">
           <Button
@@ -381,6 +173,5 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
         </Document>
         </div>
       </div>
-    </>
   )
 }

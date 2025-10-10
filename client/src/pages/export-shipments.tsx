@@ -901,8 +901,12 @@ Hope all is OK.`
       
       body += `Kind Regards`
       
-      // Get attachments (transport documents)
-      const attachments = shipment.attachments || []
+      // Get transport documents with original filenames
+      const attachmentObjects = shipment.attachments || []
+      const transportDocs = (Array.isArray(attachmentObjects) ? attachmentObjects : []).map(file => ({
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        name: getFileName(file)
+      })).filter(doc => doc.url)
       
       openEmailComposer({
         id: `email-${Date.now()}`,
@@ -911,7 +915,7 @@ Hope all is OK.`
         bcc: "",
         subject,
         body,
-        attachments,
+        attachments: transportDocs,
         metadata: {
           source: 'advise-clearance-agent-export',
           shipmentId: shipment.id
