@@ -403,7 +403,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             const charge = parseFloat(importJob.freightRateOut)
             autoLineItems.push({
               description: 'Freight Rate Out',
-              chargeAmount: importJob.freightRateOut,
+              chargeAmount: charge.toFixed(2),
               vatCode: '1',
               vatAmount: '0.00'
             })
@@ -414,7 +414,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             const charge = parseFloat(importJob.exportCustomsClearanceCharge)
             autoLineItems.push({
               description: 'Export Customs Clearance',
-              chargeAmount: importJob.exportCustomsClearanceCharge,
+              chargeAmount: charge.toFixed(2),
               vatCode: '1',
               vatAmount: '0.00'
             })
@@ -425,7 +425,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             const charge = parseFloat(importJob.clearanceCharge)
             autoLineItems.push({
               description: 'Import Customs Clearance',
-              chargeAmount: importJob.clearanceCharge,
+              chargeAmount: charge.toFixed(2),
               vatCode: '1',
               vatAmount: '0.00'
             })
@@ -455,7 +455,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                 const charge = parseFloat(expense.amount)
                 autoLineItems.push({
                   description: expense.description,
-                  chargeAmount: expense.amount,
+                  chargeAmount: charge.toFixed(2),
                   vatCode: '1',
                   vatAmount: '0.00'
                 })
@@ -470,7 +470,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             const charge = parseFloat(exportJob.freightRateOut)
             autoLineItems.push({
               description: 'Freight Rate Out',
-              chargeAmount: exportJob.freightRateOut,
+              chargeAmount: charge.toFixed(2),
               vatCode: '1',
               vatAmount: '0.00'
             })
@@ -481,7 +481,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             const charge = parseFloat(exportJob.clearanceCharge)
             autoLineItems.push({
               description: 'Export Customs Clearance',
-              chargeAmount: exportJob.clearanceCharge,
+              chargeAmount: charge.toFixed(2),
               vatCode: '1',
               vatAmount: '0.00'
             })
@@ -492,7 +492,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             const charge = parseFloat(exportJob.arrivalClearanceCost)
             autoLineItems.push({
               description: 'Destination Clearance Charge Out',
-              chargeAmount: exportJob.arrivalClearanceCost,
+              chargeAmount: charge.toFixed(2),
               vatCode: '1',
               vatAmount: '0.00'
             })
@@ -522,7 +522,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                 const charge = parseFloat(expense.amount)
                 autoLineItems.push({
                   description: expense.description,
-                  chargeAmount: expense.amount,
+                  chargeAmount: charge.toFixed(2),
                   vatCode: '1',
                   vatAmount: '0.00'
                 })
@@ -537,7 +537,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                 const charge = parseFloat(expense.amount)
                 autoLineItems.push({
                   description: expense.description,
-                  chargeAmount: expense.amount,
+                  chargeAmount: charge.toFixed(2),
                   vatCode: '1',
                   vatAmount: '0.00'
                 })
@@ -549,12 +549,13 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           
           // Clearance Charge (labeled based on clearance type)
           if (clearanceJob.clearanceCharge && parseFloat(clearanceJob.clearanceCharge) > 0) {
+            const charge = parseFloat(clearanceJob.clearanceCharge)
             const description = clearanceJob.jobType === 'import' 
               ? 'Import Customs Clearance' 
               : 'Export Customs Clearance'
             autoLineItems.push({
               description,
-              chargeAmount: clearanceJob.clearanceCharge,
+              chargeAmount: charge.toFixed(2),
               vatCode: '1',
               vatAmount: '0.00'
             })
@@ -564,9 +565,10 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           if (clearanceJob.expensesToChargeOut && Array.isArray(clearanceJob.expensesToChargeOut)) {
             clearanceJob.expensesToChargeOut.forEach(expense => {
               if (expense.description && expense.amount && parseFloat(expense.amount) > 0) {
+                const charge = parseFloat(expense.amount)
                 autoLineItems.push({
                   description: expense.description,
-                  chargeAmount: expense.amount,
+                  chargeAmount: charge.toFixed(2),
                   vatCode: '1',
                   vatAmount: '0.00'
                 })
