@@ -244,56 +244,79 @@ function generateInsertSQL(tableName: string, data: any[]): string {
   sql += `-- Generated: ${new Date().toISOString()}\n\n`;
 
   // Define column types for proper array/jsonb handling
+  // IMPORTANT: Keys must be camelCase to match Drizzle property names
   const columnTypes: Record<string, Record<string, string>> = {
     job_file_groups: {
       documents: 'jsonb',
-      rs_invoices: 'jsonb'
+      rsInvoices: 'jsonb'
     },
     import_customers: {
-      contact_name: 'text[]',
+      contactName: 'text[]',
       email: 'text[]',
-      accounts_email: 'text[]',
-      agent_contact_name: 'text[]',
-      agent_email: 'text[]',
-      agent_accounts_email: 'text[]'
+      accountsEmail: 'text[]',
+      agentContactName: 'text[]',
+      agentEmail: 'text[]',
+      agentAccountsEmail: 'text[]'
     },
     export_customers: {
-      contact_name: 'text[]',
+      contactName: 'text[]',
       email: 'text[]',
-      accounts_email: 'text[]',
-      agent_contact_name: 'text[]',
-      agent_email: 'text[]',
-      agent_accounts_email: 'text[]'
+      accountsEmail: 'text[]',
+      agentContactName: 'text[]',
+      agentEmail: 'text[]',
+      agentAccountsEmail: 'text[]'
     },
     export_receivers: {
-      contact_name: 'text[]'
+      contactName: 'text[]'
     },
     hauliers: {
-      import_email: 'text[]',
-      export_email: 'text[]',
-      releases_email: 'text[]',
-      accounting_email: 'text[]',
-      agent_import_email: 'text[]',
-      agent_export_email: 'text[]',
-      agent_releases_email: 'text[]',
-      agent_accounting_email: 'text[]'
+      contacts: 'jsonb',
+      importEmail: 'text[]',
+      exportEmail: 'text[]',
+      releasesEmail: 'text[]',
+      accountingEmail: 'text[]',
+      agentImportEmail: 'text[]',
+      agentExportEmail: 'text[]',
+      agentReleasesEmail: 'text[]',
+      agentAccountingEmail: 'text[]'
     },
     shipping_lines: {
-      contact_name: 'text[]'
+      contactName: 'text[]'
     },
     clearance_agents: {
-      contact_name: 'text[]'
+      contactName: 'text[]'
     },
     messages: {
       attachments: 'jsonb'
+    },
+    import_shipments: {
+      proofOfDelivery: 'jsonb',
+      expensesToChargeOut: 'jsonb',
+      additionalExpensesIn: 'jsonb',
+      attachments: 'jsonb'
+    },
+    export_shipments: {
+      proofOfDelivery: 'jsonb',
+      expensesToChargeOut: 'jsonb',
+      additionalExpensesIn: 'jsonb',
+      attachments: 'jsonb',
+      transportDocuments: 'jsonb',
+      clearanceDocuments: 'jsonb'
+    },
+    custom_clearances: {
+      transportDocuments: 'jsonb',
+      clearanceDocuments: 'jsonb'
+    },
+    invoices: {
+      lineItems: 'jsonb'
     }
   };
 
   for (const row of data) {
     const values = columns.map(col => {
       const value = row[col];
-      const snakeCol = toSnakeCase(col);
-      const colType = columnTypes[tableName]?.[snakeCol];
+      // Use camelCase column name for lookup, then convert to snake_case for SQL
+      const colType = columnTypes[tableName]?.[col];
       
       if (value === null || value === undefined) {
         return "NULL";
