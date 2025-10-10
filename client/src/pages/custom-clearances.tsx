@@ -505,6 +505,7 @@ export default function CustomClearances() {
       // Determine TO field with priority: Agent Accounts Email → Customer Accounts Email → Agent Email → Customer Email
       let toEmail = ""
       let ccEmails = ""
+      let useAgentContact = false
       
       if (customer) {
         const agentAccountsEmail = customer.agentAccountsEmail
@@ -514,28 +515,35 @@ export default function CustomClearances() {
         
         if (agentAccountsEmail) {
           toEmail = agentAccountsEmail
+          useAgentContact = true
         } else if (customerAccountsEmail) {
           toEmail = customerAccountsEmail
+          useAgentContact = false
         } else if (agentEmailArray.length > 0 && agentEmailArray[0]) {
           toEmail = agentEmailArray[0]
+          useAgentContact = true
         } else if (customerEmailArray.length > 0 && customerEmailArray[0]) {
           toEmail = customerEmailArray[0]
+          useAgentContact = false
         }
       }
       
-      // Build subject with customer reference if available
+      // Build subject with customer reference and MRN if available
       const jobRef = clearance.jobRef || "N/A"
       const customerRef = clearance.customerReferenceNumber
-      const yourRefPart = customerRef ? ` / Your Ref : ${customerRef}` : ""
-      const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
+      const mrn = clearance.mrn
+      const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
+      const mrnPart = mrn ? ` / MRN: ${mrn}` : ""
+      const subject = `R.S Import Clearance Invoice / Our Ref: ${jobRef}${yourRefPart}${mrnPart}`
       
-      // Build personalized greeting using customer contact name (first name only)
-      const customerContactNameArray = Array.isArray(customer?.contactName)
-        ? customer.contactName.filter(Boolean)
-        : (customer?.contactName ? customer.contactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+      // Build personalized greeting using agent or customer contact name (first name only)
+      const contactNameField = useAgentContact ? customer?.agentContactName : customer?.contactName
+      const contactNameArray = Array.isArray(contactNameField)
+        ? contactNameField.filter(Boolean)
+        : (contactNameField ? contactNameField.split('/').map(n => n.trim()).filter(Boolean) : [])
       
       // Extract first names only
-      const firstNames = customerContactNameArray.map(name => name.split(' ')[0])
+      const firstNames = contactNameArray.map(name => name.split(' ')[0])
       
       let greeting = "Hi there"
       if (firstNames.length === 1) {
@@ -548,20 +556,8 @@ export default function CustomClearances() {
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
-      // Determine document type text
-      const hasInvoices = clearanceInvoices.some(inv => inv.type === 'invoice')
-      const hasCredits = clearanceInvoices.some(inv => inv.type === 'credit_note')
-      let documentText = hasCredits 
-        ? (clearanceInvoices.length > 1 ? "credit notes" : "credit note")
-        : (clearanceInvoices.length > 1 ? "invoices" : "invoice")
-      
-      // Check if clearance has clearance documents
-      const hasClearanceDocs = clearance.clearanceDocuments && clearance.clearanceDocuments.length > 0
-      const entryText = hasClearanceDocs ? " & entry" : ""
-      
       // Build custom clearance email body
-      const yourRefLine = customerRef ? `\n\nYour Ref ${customerRef}.` : ""
-      const body = `${greeting},\n\nPlease find enclosed our ${documentText}${entryText} for this clearance.${yourRefLine}\n\nAny issues please let me know.`
+      const body = `${greeting},\n\nPlease find attached invoice for this customs clearance.\n\nAny issues please let me know,`
       
       // Get invoice PDF paths with proper filenames
       const invoiceFiles = clearanceInvoices.map(invoice => ({
@@ -570,6 +566,7 @@ export default function CustomClearances() {
       }))
       
       // Add clearance documents if available
+      const hasClearanceDocs = clearance.clearanceDocuments && clearance.clearanceDocuments.length > 0
       const clearanceDocFiles = hasClearanceDocs 
         ? clearance.clearanceDocuments!.map(doc => ({
             url: `/api/file-storage/download?path=${encodeURIComponent(doc.path)}`,
