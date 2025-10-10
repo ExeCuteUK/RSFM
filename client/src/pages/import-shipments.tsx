@@ -307,6 +307,7 @@ export default function ImportShipments() {
       const shipment = allShipments.find(s => s.id === variables.id)
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups/batch"], refetchType: "all" })
       if (shipment?.jobRef) {
         queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups", shipment.jobRef], refetchType: "all" })
       }
