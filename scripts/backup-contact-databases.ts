@@ -243,9 +243,57 @@ function generateInsertSQL(tableName: string, data: any[]): string {
   sql += `-- ${data.length} records\n`;
   sql += `-- Generated: ${new Date().toISOString()}\n\n`;
 
+  // Define column types for proper array/jsonb handling
+  const columnTypes: Record<string, Record<string, string>> = {
+    job_file_groups: {
+      documents: 'jsonb',
+      rs_invoices: 'jsonb'
+    },
+    import_customers: {
+      contact_name: 'text[]',
+      email: 'text[]',
+      accounts_email: 'text[]',
+      agent_contact_name: 'text[]',
+      agent_email: 'text[]',
+      agent_accounts_email: 'text[]'
+    },
+    export_customers: {
+      contact_name: 'text[]',
+      email: 'text[]',
+      accounts_email: 'text[]',
+      agent_contact_name: 'text[]',
+      agent_email: 'text[]',
+      agent_accounts_email: 'text[]'
+    },
+    export_receivers: {
+      contact_name: 'text[]'
+    },
+    hauliers: {
+      import_email: 'text[]',
+      export_email: 'text[]',
+      releases_email: 'text[]',
+      accounting_email: 'text[]',
+      agent_import_email: 'text[]',
+      agent_export_email: 'text[]',
+      agent_releases_email: 'text[]',
+      agent_accounting_email: 'text[]'
+    },
+    shipping_lines: {
+      contact_name: 'text[]'
+    },
+    clearance_agents: {
+      contact_name: 'text[]'
+    },
+    messages: {
+      attachments: 'jsonb'
+    }
+  };
+
   for (const row of data) {
     const values = columns.map(col => {
       const value = row[col];
+      const snakeCol = toSnakeCase(col);
+      const colType = columnTypes[tableName]?.[snakeCol];
       
       if (value === null || value === undefined) {
         return "NULL";
@@ -267,6 +315,18 @@ function generateInsertSQL(tableName: string, data: any[]): string {
       }
       
       if (Array.isArray(value)) {
+        // Check if this is a jsonb column containing an array
+        if (colType === 'jsonb') {
+          const jsonStr = JSON.stringify(value).replace(/'/g, "''");
+          return `'${jsonStr}'::jsonb`;
+        }
+        
+        // It's a PostgreSQL array column (text[], etc.)
+        if (value.length === 0) {
+          // Empty array - need type cast
+          return `ARRAY[]::${colType || 'text[]'}`;
+        }
+        
         const arrayValues = value.map(v => {
           if (typeof v === "string") {
             // Escape single quotes and special characters for PostgreSQL array strings
