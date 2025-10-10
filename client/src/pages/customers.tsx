@@ -375,7 +375,7 @@ export default function Customers() {
 
   const isLoading = isLoadingImport || isLoadingExport || isLoadingReceivers || isLoadingHauliers || isLoadingShippingLines || isLoadingClearanceAgents
 
-  // Filter and sort function for all contact types
+  // Filter function for all contact types (preserves database order)
   const filterContacts = <T extends ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent>(
     contacts: T[]
   ): T[] => {
@@ -411,28 +411,8 @@ export default function Customers() {
       })
     }
     
-    // Sort alphabetically by name
-    return filtered.sort((a, b) => {
-      const nameA = 'companyName' in a 
-        ? a.companyName 
-        : 'haulierName' in a 
-        ? a.haulierName 
-        : 'shippingLineName' in a
-        ? a.shippingLineName
-        : 'agentName' in a
-        ? a.agentName
-        : ''
-      const nameB = 'companyName' in b 
-        ? b.companyName 
-        : 'haulierName' in b 
-        ? b.haulierName 
-        : 'shippingLineName' in b
-        ? b.shippingLineName
-        : 'agentName' in b
-        ? b.agentName
-        : ''
-      return nameA.localeCompare(nameB)
-    })
+    // Return filtered results in database order (newest first by created_at)
+    return filtered
   }
 
   // Reset to page 1 when tab or search changes
@@ -456,8 +436,8 @@ export default function Customers() {
     setCurrentPage(prev => ({ ...prev, [tabType]: newPage }))
   }
 
-  const filteredImportCustomers = filterContacts(importCustomers).reverse()
-  const filteredExportCustomers = filterContacts(exportCustomers).reverse()
+  const filteredImportCustomers = filterContacts(importCustomers)
+  const filteredExportCustomers = filterContacts(exportCustomers)
   const filteredExportReceivers = filterContacts(exportReceivers)
   const filteredHauliers = filterContacts(hauliers)
   const filteredShippingLines = filterContacts(shippingLines)
