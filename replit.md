@@ -35,10 +35,10 @@ Preferred communication style: Simple, everyday language.
 **Database Backups:**
 - All backups are stored in **Google Drive** at: `RS Freight Manager/Backups/`
 - RS Freight Manager folder is at **Google Drive root** (not nested in personal folders)
-- Backup format: ZIP archives containing SQL INSERT statements for all database tables
-- Backup includes: import_customers, export_customers, export_receivers, hauliers, shipping_lines, clearance_agents, import_shipments, export_shipments, custom_clearances, job_file_groups, messages, purchase_invoices, invoices, general_references, settings, users
-- Run backup: `tsx scripts/backup-contact-databases.ts` (creates zip, uploads to Google Drive, cleans up local files)
-- Restore: Download from Google Drive → extract → restore via `scripts/restore-contact-databases.ts`
+- Backup format: ZIP archives containing SQL INSERT statements for all database tables plus email signature assets
+- Backup includes: import_customers, export_customers, export_receivers, hauliers, shipping_lines, clearance_agents, import_shipments, export_shipments, custom_clearances, job_file_groups, messages, purchase_invoices, invoices, general_references, settings, users, **email signature files** (signature-template.html, rs-logo.jpg)
+- Run backup: `tsx scripts/backup-contact-databases.ts` (creates zip with database + signature files, uploads to Google Drive, cleans up local files)
+- Restore: Download from Google Drive → extract → restore via `scripts/restore-contact-databases.ts` (restores both database tables and signature files to attached_assets)
 - Cleanup old backups: `tsx scripts/cleanup-old-backups.ts` (keeps only most recent, deletes older backups)
 - **Column Name Format:** All backups use snake_case column names (e.g., `vat_number`, not `vatNumber`)
 - **Array Syntax:** All backups use properly typed arrays: `'[]'::jsonb` for jsonb columns, `ARRAY[]::text[]` for text array columns
@@ -51,6 +51,11 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 
 The frontend is built with React 18 and TypeScript, using Vite, Wouter for routing, TanStack Query for server state, and React Hook Form with Zod for validation. The UI utilizes Shadcn/ui (New York style, Radix UI primitives) and Tailwind CSS, supporting light/dark themes. The design emphasizes productivity with a professional blue color scheme, Inter font, and consistent spacing. State management uses React Query, React hooks, and localStorage.
+
+**Site Branding:**
+- Page Title: "R.S Freight Manager - Freight Management Suite"
+- Open Graph Metadata: "R.S Freight Manager - Freight Management Suite"
+- Login Page: Features subtle minimalist world map background with 75% transparent login card
 
 ### Backend Architecture
 
