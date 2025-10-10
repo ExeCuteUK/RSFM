@@ -623,6 +623,7 @@ export default function CustomClearances() {
       // Determine TO field with priority: Agent Accounts Email → Customer Accounts Email → Agent Email → Customer Email
       let toEmail = ""
       let ccEmails = ""
+      let useAgentContact = false
       
       if (customer) {
         const agentAccountsEmail = customer.agentAccountsEmail
@@ -632,12 +633,16 @@ export default function CustomClearances() {
         
         if (agentAccountsEmail) {
           toEmail = agentAccountsEmail
+          useAgentContact = true
         } else if (customerAccountsEmail) {
           toEmail = customerAccountsEmail
+          useAgentContact = false
         } else if (agentEmailArray.length > 0 && agentEmailArray[0]) {
           toEmail = agentEmailArray[0]
+          useAgentContact = true
         } else if (customerEmailArray.length > 0 && customerEmailArray[0]) {
           toEmail = customerEmailArray[0]
+          useAgentContact = false
         }
       }
       
@@ -651,13 +656,14 @@ export default function CustomClearances() {
       const mrnPart = mrn ? ` / MRN: ${mrn}` : ""
       const subject = `R.S ${clearanceType} / Our Ref: ${jobRef}${yourRefPart}${mrnPart}`
       
-      // Build personalized greeting using customer contact name (first name only)
-      const customerContactNameArray = Array.isArray(customer?.contactName)
-        ? customer.contactName.filter(Boolean)
-        : (customer?.contactName ? customer.contactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+      // Build personalized greeting using agent or customer contact name (first name only)
+      const contactNameField = useAgentContact ? customer?.agentContactName : customer?.contactName
+      const contactNameArray = Array.isArray(contactNameField)
+        ? contactNameField.filter(Boolean)
+        : (contactNameField ? contactNameField.split('/').map(n => n.trim()).filter(Boolean) : [])
       
       // Extract first names only
-      const firstNames = customerContactNameArray.map(name => name.split(' ')[0])
+      const firstNames = contactNameArray.map(name => name.split(' ')[0])
       
       let greeting = "Hi there"
       if (firstNames.length === 1) {
