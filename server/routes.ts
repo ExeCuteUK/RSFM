@@ -2248,10 +2248,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/custom-clearances/:id/send-haulier-ead-status", async (req, res) => {
     try {
       const { status } = req.body;
-      const clearance = await storage.updateCustomClearance(req.params.id, { 
+      const updateData: any = { 
         sendHaulierEadStatusIndicator: status,
         sendHaulierEadStatusIndicatorTimestamp: new Date().toISOString()
-      });
+      };
+      
+      // If status is set to green (3), update job status to "Awaiting Arrival"
+      if (status === 3) {
+        updateData.status = "Awaiting Arrival";
+      }
+      
+      const clearance = await storage.updateCustomClearance(req.params.id, updateData);
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
@@ -2265,10 +2272,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/custom-clearances/:id/send-customer-gvms-status", async (req, res) => {
     try {
       const { status } = req.body;
-      const clearance = await storage.updateCustomClearance(req.params.id, { 
+      const updateData: any = { 
         sendCustomerGvmsStatusIndicator: status,
         sendCustomerGvmsStatusIndicatorTimestamp: new Date().toISOString()
-      });
+      };
+      
+      // If status is set to green (3), update job status to "Awaiting Arrival"
+      if (status === 3) {
+        updateData.status = "Awaiting Arrival";
+      }
+      
+      const clearance = await storage.updateCustomClearance(req.params.id, updateData);
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
@@ -2282,10 +2296,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/custom-clearances/:id/send-customer-ead-status", async (req, res) => {
     try {
       const { status } = req.body;
-      const clearance = await storage.updateCustomClearance(req.params.id, { 
+      const updateData: any = { 
         sendCustomerEadStatusIndicator: status,
         sendCustomerEadStatusIndicatorTimestamp: new Date().toISOString()
-      });
+      };
+      
+      // If status is set to green (3), update job status to "Awaiting Arrival"
+      if (status === 3) {
+        updateData.status = "Awaiting Arrival";
+      }
+      
+      const clearance = await storage.updateCustomClearance(req.params.id, updateData);
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }

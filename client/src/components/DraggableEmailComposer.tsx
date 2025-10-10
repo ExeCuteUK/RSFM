@@ -124,13 +124,25 @@ export function DraggableEmailComposer() {
             await apiRequest("PATCH", `/api/export-shipments/${shipmentId}/send-pod-to-customer-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] });
           } else if (source === 'send-haulier-ead') {
-            // Update Send Haulier EAD status to Green (3)
-            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-haulier-ead-status`, { status: 3 });
-            queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+            if (emailComposerData.metadata?.jobType === 'clearance') {
+              // Update Send Haulier EAD status to Green (3) and set job status to "Awaiting Arrival" for custom clearances
+              await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/send-haulier-ead-status`, { status: 3 });
+              queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
+            } else {
+              // Update Send Haulier EAD status to Green (3) for import shipments
+              await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-haulier-ead-status`, { status: 3 });
+              queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+            }
           } else if (source === 'send-customer-gvms') {
-            // Update Send Customer GVMS status to Green (3)
-            await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-customer-gvms-status`, { status: 3 });
-            queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+            if (emailComposerData.metadata?.jobType === 'clearance') {
+              // Update Send Customer GVMS status to Green (3) and set job status to "Awaiting Arrival" for custom clearances
+              await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/send-customer-gvms-status`, { status: 3 });
+              queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
+            } else {
+              // Update Send Customer GVMS status to Green (3) for import shipments
+              await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/send-customer-gvms-status`, { status: 3 });
+              queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] });
+            }
           } else if (source === 'send-invoice-customer') {
             // Update Invoice Customer status to Green (3) for import shipments
             await apiRequest("PATCH", `/api/import-shipments/${shipmentId}/invoice-customer-status`, { status: 3 });
@@ -142,6 +154,10 @@ export function DraggableEmailComposer() {
           } else if (source === 'send-invoice-customer-clearance') {
             // Update Invoice Customer status to Green (3) for custom clearances
             await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/invoice-status`, { status: 3 });
+            queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
+          } else if (source === 'send-customer-ead') {
+            // Update Send Customer EAD status to Green (3) and set job status to "Awaiting Arrival" for custom clearances (export only)
+            await apiRequest("PATCH", `/api/custom-clearances/${shipmentId}/send-customer-ead-status`, { status: 3 });
             queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] });
           }
         } catch (error) {

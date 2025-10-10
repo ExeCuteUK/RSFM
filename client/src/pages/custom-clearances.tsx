@@ -372,8 +372,12 @@ export default function CustomClearances() {
       return res.json()
     },
     onSuccess: (_data, variables) => {
+      const clearance = clearances.find(c => c.id === variables.id)
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
+      if (clearance?.jobRef) {
+        queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups", clearance.jobRef], refetchType: "all" })
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"], refetchType: "all" })
       toast({ title: `File '${variables.fileName}' deleted successfully` })
@@ -664,7 +668,8 @@ export default function CustomClearances() {
         attachments: clearanceFiles,
         metadata: {
           source: metadataSource,
-          shipmentId: clearance.id
+          shipmentId: clearance.id,
+          jobType: 'clearance'
         }
       })
     } catch (error) {
@@ -868,6 +873,7 @@ export default function CustomClearances() {
       metadata: {
         source: 'send-haulier-ead',
         shipmentId: clearance.id,
+        jobType: 'clearance',
       },
     })
   }
@@ -1154,7 +1160,8 @@ export default function CustomClearances() {
         attachments: transportDocs || [],
         metadata: {
           source: 'advise-clearance-agent',
-          shipmentId: clearance.id
+          shipmentId: clearance.id,
+          jobType: 'clearance'
         }
       })
       
@@ -1278,7 +1285,8 @@ export default function CustomClearances() {
         attachments: transportDocs || [],
         metadata: {
           source: 'advise-clearance-agent',
-          shipmentId: clearance.id
+          shipmentId: clearance.id,
+          jobType: 'clearance'
         }
       })
     } catch (error) {

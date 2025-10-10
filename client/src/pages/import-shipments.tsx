@@ -308,7 +308,7 @@ export default function ImportShipments() {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       if (shipment?.jobRef) {
-        queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups/batch"], refetchType: "all" })
+        queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups", shipment.jobRef], refetchType: "all" })
       }
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
       toast({ title: `File '${variables.fileName}' deleted successfully` })

@@ -635,7 +635,7 @@ export function ClearanceWorkGrid() {
                   <th className="border px-2 py-1 text-center font-medium">Trailer/Container</th>
                   <th className="border px-2 py-1 text-center font-medium w-40">MRN Number</th>
                   <th className="border px-2 py-1 text-center font-medium w-44">Clearance Agent</th>
-                  <th className="border px-2 py-1 text-center font-medium">Agent Advised</th>
+                  <th className="border px-2 py-1 text-center font-medium">Agent & Haulier Advised</th>
                   <th className="border px-2 py-1 text-center font-medium">Notes</th>
                 </tr>
               </thead>
