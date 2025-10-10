@@ -99,6 +99,11 @@ else
 NODE_ENV=production
 PORT=5000
 
+# Application Base URL (REQUIRED for Gmail OAuth callbacks)
+# Set to your server's URL, e.g., http://192.168.1.100:5000 or https://yourdomain.com
+# Do NOT include trailing slash
+APP_BASE_URL=http://localhost:5000
+
 # Database Configuration (PostgreSQL)
 # Format: postgresql://username:password@localhost:5432/database_name
 DATABASE_URL=postgresql://rsfm_user:CHANGE_ME@localhost:5432/rsfm_db
@@ -194,6 +199,10 @@ echo ""
 echo "1. Configure environment secrets:"
 echo -e "   ${YELLOW}sudo nano $APP_DIR/.env${NC}"
 echo ""
+echo "   IMPORTANT: Update APP_BASE_URL with your server's URL:"
+echo "   - Example: APP_BASE_URL=http://192.168.1.100:5000"
+echo "   - Or with domain: APP_BASE_URL=https://yourdomain.com"
+echo ""
 echo "2. Configure Google Drive Service Account:"
 echo "   - Create service account at: https://console.cloud.google.com/iam-admin/serviceaccounts"
 echo "   - Download JSON key file and extract email + private_key"
@@ -202,6 +211,7 @@ echo ""
 echo "3. Configure Gmail OAuth:"
 echo "   - Create OAuth credentials at: https://console.cloud.google.com/apis/credentials"
 echo "   - Use the OAuth playground to get a refresh token"
+echo "   - Add \${APP_BASE_URL}/api/gmail/callback to Authorized redirect URIs"
 echo "   - See DEPLOYMENT.md for detailed instructions"
 echo ""
 echo "4. (Optional) Configure Terminal49 API for container tracking"
