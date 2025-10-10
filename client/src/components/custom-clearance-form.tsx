@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { insertCustomClearanceSchema, type InsertCustomClearance, type ImportCustomer, type ExportCustomer, type ExportReceiver, type ClearanceAgent } from "@shared/schema"
+import { insertCustomClearanceSchema, type InsertCustomClearance, type ImportCustomer, type ExportCustomer, type ExportReceiver, type ClearanceAgent, type Haulier, type Settings } from "@shared/schema"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon, Plus, X } from "lucide-react"
 import {
   Form,
   FormControl,
@@ -30,7 +30,7 @@ import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
 import { ObjectStorageUploader } from "@/components/ui/object-storage-uploader"
 import { useJobFileGroup } from "@/hooks/use-job-file-group"
-import { FileText, Download, X } from "lucide-react"
+import { FileText, Download } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { ContactCombobox } from "@/components/ContactCombobox"
@@ -112,6 +112,11 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       clearanceCharge: "",
       currency: "",
       additionalCommodityCodes: 1,
+      costPerAdditionalHsCode: "",
+      expensesToChargeOut: [],
+      haulierName: "",
+      haulierContactName: "",
+      haulierEmail: "",
       vatZeroRated: false,
       clearanceType: "",
       customerReferenceNumber: "",
@@ -141,6 +146,14 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     queryKey: ["/api/clearance-agents"],
   })
 
+  const { data: hauliers = [] } = useQuery<Haulier[]>({
+    queryKey: ["/api/hauliers"],
+  })
+
+  const { data: settings } = useQuery<Settings>({
+    queryKey: ["/api/settings"],
+  })
+
   // Fetch shared documents from job_file_groups if this is an existing clearance
   const jobRef = defaultValues?.jobRef
   const { documents: sharedDocuments, isLoading: isLoadingSharedDocs } = useJobFileGroup({ 
@@ -150,6 +163,85 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
   const jobType = form.watch("jobType")
   const containerShipment = form.watch("containerShipment")
+  const importCustomerId = form.watch("importCustomerId")
+  const exportCustomerId = form.watch("exportCustomerId")
+  const additionalCommodityCodes = form.watch("additionalCommodityCodes")
+  const costPerAdditionalHsCode = form.watch("costPerAdditionalHsCode")
+
+  // Set default clearanceCharge from settings
+  useEffect(() => {
+    if (settings?.importClearanceFee && !defaultValues?.clearanceCharge) {
+      form.setValue("clearanceCharge", settings.importClearanceFee)
+    }
+  }, [settings, defaultValues, form])
+
+  // Set default costPerAdditionalHsCode from settings
+  useEffect(() => {
+    if (settings?.additionalCommodityCodeCharge && !defaultValues?.costPerAdditionalHsCode) {
+      form.setValue("costPerAdditionalHsCode", settings.additionalCommodityCodeCharge)
+    }
+  }, [settings, defaultValues, form])
+
+  // Auto-add "Deferment Usage Fee" expense when customer has R.S Deferment
+  useEffect(() => {
+    const currentCustomerId = jobType === "import" ? importCustomerId : exportCustomerId
+    if (!currentCustomerId) return
+
+    const customer = jobType === "import" 
+      ? importCustomers?.find(c => c.id === currentCustomerId)
+      : exportCustomers?.find(c => c.id === currentCustomerId)
+
+    if (!customer) return
+
+    const currentExpenses = (form.getValues("expensesToChargeOut") || []) as Array<{ description: string; amount: string }>
+    const defermentFeeExists = currentExpenses.some((exp) => exp.description === "Deferment Usage Fee")
+
+    if ((customer as any).vatPaymentMethod === "R.S Deferment" && !defermentFeeExists) {
+      form.setValue("expensesToChargeOut", [
+        ...currentExpenses,
+        { description: "Deferment Usage Fee", amount: "" }
+      ])
+    } else if ((customer as any).vatPaymentMethod !== "R.S Deferment" && defermentFeeExists) {
+      form.setValue("expensesToChargeOut", 
+        currentExpenses.filter((exp) => exp.description !== "Deferment Usage Fee")
+      )
+    }
+  }, [jobType, importCustomerId, exportCustomerId, importCustomers, exportCustomers, form])
+
+  // Auto-calculate and add "Additional Commodity Codes" expense
+  useEffect(() => {
+    if (!additionalCommodityCodes || additionalCommodityCodes <= 1) {
+      // Remove the expense if commodity codes is 1 or less
+      const currentExpenses = (form.getValues("expensesToChargeOut") || []) as Array<{ description: string; amount: string }>
+      const filteredExpenses = currentExpenses.filter((exp) => exp.description !== "Additional Commodity Codes used in clearance")
+      if (filteredExpenses.length !== currentExpenses.length) {
+        form.setValue("expensesToChargeOut", filteredExpenses)
+      }
+      return
+    }
+
+    const costPerCode = parseFloat(costPerAdditionalHsCode || "0")
+    if (costPerCode === 0) return
+
+    const additionalCodes = additionalCommodityCodes - 1
+    const calculatedAmount = (additionalCodes * costPerCode).toFixed(2)
+
+    const currentExpenses = (form.getValues("expensesToChargeOut") || []) as Array<{ description: string; amount: string }>
+    const existingIndex = currentExpenses.findIndex((exp) => exp.description === "Additional Commodity Codes used in clearance")
+
+    if (existingIndex >= 0) {
+      // Update existing expense
+      const newExpenses = [...currentExpenses]
+      newExpenses[existingIndex].amount = calculatedAmount
+      form.setValue("expensesToChargeOut", newExpenses)
+    } else {
+      // Add new expense
+      form.setValue("expensesToChargeOut", [
+        ...currentExpenses,
+        { description: "Additional Commodity Codes used in clearance", amount: calculatedAmount }
+      ])
+    }
+  }, [additionalCommodityCodes, costPerAdditionalHsCode, form])
 
   const handleFormSubmit = (data: InsertCustomClearance) => {
     const normalizedTransportDocuments: any[] = [...(data.transportDocuments || [])];
@@ -777,48 +869,6 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     )}
                   />
                 )}
-
-                <FormField
-                  control={form.control}
-                  name="clearanceCharge"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Clearance Charge</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="additionalCommodityCodes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Total Commodity Codes</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))} 
-                        value={field.value?.toString() || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger data-testid="select-commodity-codes">
-                            <SelectValue placeholder="Select number" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              {num}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
             </CardContent>
           </Card>
@@ -925,6 +975,201 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Charges Out</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="clearanceCharge"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Clearance Charge</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="additionalCommodityCodes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Commodity Codes</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(parseInt(value))} 
+                        value={field.value?.toString() || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-commodity-codes">
+                            <SelectValue placeholder="Select number" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                            <SelectItem key={num} value={num.toString()}>
+                              {num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {additionalCommodityCodes && additionalCommodityCodes > 1 && (
+                  <FormField
+                    control={form.control}
+                    name="costPerAdditionalHsCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cost per additional HS Code</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-cost-per-hs-code" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+
+              <FormField
+                control={form.control}
+                name="expensesToChargeOut"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Expenses To Charge Out</FormLabel>
+                    <div className="space-y-2">
+                      {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
+                        <div key={index} className="flex gap-2 items-start">
+                          <Input
+                            value={expense.description}
+                            onChange={(e) => {
+                              const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                              newExpenses[index].description = e.target.value;
+                              field.onChange(newExpenses);
+                            }}
+                            placeholder="Description"
+                            className="flex-1"
+                            data-testid={`input-expense-out-desc-${index}`}
+                          />
+                          <Input
+                            value={expense.amount}
+                            onChange={(e) => {
+                              const newExpenses = [...(field.value || [])] as Array<{ description: string; amount: string }>;
+                              newExpenses[index].amount = e.target.value;
+                              field.onChange(newExpenses);
+                            }}
+                            placeholder="Amount"
+                            className="w-32"
+                            data-testid={`input-expense-out-amount-${index}`}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const newExpenses = (field.value || []).filter((_, i) => i !== index);
+                              field.onChange(newExpenses);
+                            }}
+                            data-testid={`button-remove-expense-out-${index}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          field.onChange([...(field.value || []), { description: "", amount: "" }]);
+                        }}
+                        data-testid="button-add-expense-out"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Expense
+                      </Button>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Haulier</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="haulierName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Haulier</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-haulier">
+                            <SelectValue placeholder="Select haulier" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {hauliers
+                            .slice()
+                            .sort((a, b) => a.haulierName.localeCompare(b.haulierName))
+                            .map((haulier) => (
+                              <SelectItem key={haulier.id} value={haulier.haulierName}>
+                                {haulier.haulierName}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="haulierContactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Haulier Contact Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="haulierEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Haulier Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} type="email" data-testid="input-haulier-email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </CardContent>
           </Card>
 
