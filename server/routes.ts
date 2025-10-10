@@ -1084,8 +1084,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update import shipment
   app.patch("/api/import-shipments/:id", async (req, res) => {
     try {
+      // Get existing shipment to detect deleted files
+      const existingShipment = await storage.getImportShipment(req.params.id);
+      if (!existingShipment) {
+        return res.status(404).json({ error: "Import shipment not found" });
+      }
+
       // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
       const { attachments, proofOfDelivery, ...restBody } = req.body;
+      
+      // Detect and delete removed attachments from Google Drive
+      if (attachments !== undefined) {
+        const existingFiles = existingShipment.attachments || [];
+        const newFiles = attachments || [];
+        const existingPaths = existingFiles.map((f: any) => f?.path || f);
+        const newPaths = newFiles.map((f: any) => f?.path || f);
+        const removedPaths = existingPaths.filter((path: string) => !newPaths.includes(path));
+        
+        for (const path of removedPaths) {
+          if (path && path.startsWith('/objects/')) {
+            try {
+              await driveStorage.deleteFile(path);
+            } catch (error) {
+              console.error('Failed to delete attachment from Google Drive:', error);
+            }
+          }
+        }
+      }
+      
+      // Detect and delete removed POD files from Google Drive
+      if (proofOfDelivery !== undefined) {
+        const existingFiles = existingShipment.proofOfDelivery || [];
+        const newFiles = proofOfDelivery || [];
+        const existingPaths = existingFiles.map((f: any) => f?.path || f);
+        const newPaths = newFiles.map((f: any) => f?.path || f);
+        const removedPaths = existingPaths.filter((path: string) => !newPaths.includes(path));
+        
+        for (const path of removedPaths) {
+          if (path && path.startsWith('/objects/')) {
+            try {
+              await driveStorage.deleteFile(path);
+            } catch (error) {
+              console.error('Failed to delete POD from Google Drive:', error);
+            }
+          }
+        }
+      }
       
       // Merge back file arrays without Zod validation
       const updateData = {
@@ -1421,6 +1465,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Import shipment not found" });
       }
 
+      // Delete from Google Drive if path is in /objects/ format
+      if (filePath.startsWith('/objects/')) {
+        try {
+          await driveStorage.deleteFile(filePath);
+        } catch (error) {
+          console.error('Failed to delete file from Google Drive:', error);
+          // Continue with database cleanup even if Drive deletion fails
+        }
+      }
+
       let updatedFiles;
       if (fileType === "attachment") {
         updatedFiles = (shipment.attachments || []).filter(f => f !== filePath);
@@ -1544,8 +1598,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update export shipment
   app.patch("/api/export-shipments/:id", async (req, res) => {
     try {
+      // Get existing shipment to detect deleted files
+      const existingShipment = await storage.getExportShipment(req.params.id);
+      if (!existingShipment) {
+        return res.status(404).json({ error: "Export shipment not found" });
+      }
+
       // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
       const { transportDocuments, proofOfDelivery, ...restBody } = req.body;
+      
+      // Detect and delete removed files from Google Drive
+      if (transportDocuments !== undefined) {
+        const existingFiles = existingShipment.attachments || [];
+        const newFiles = transportDocuments || [];
+        const existingPaths = existingFiles.map((f: any) => f?.path || f);
+        const newPaths = newFiles.map((f: any) => f?.path || f);
+        const removedPaths = existingPaths.filter((path: string) => !newPaths.includes(path));
+        
+        for (const path of removedPaths) {
+          if (path && path.startsWith('/objects/')) {
+            try {
+              await driveStorage.deleteFile(path);
+            } catch (error) {
+              console.error('Failed to delete file from Google Drive:', error);
+            }
+          }
+        }
+      }
+      
+      if (proofOfDelivery !== undefined) {
+        const existingFiles = existingShipment.proofOfDelivery || [];
+        const newFiles = proofOfDelivery || [];
+        const existingPaths = existingFiles.map((f: any) => f?.path || f);
+        const newPaths = newFiles.map((f: any) => f?.path || f);
+        const removedPaths = existingPaths.filter((path: string) => !newPaths.includes(path));
+        
+        for (const path of removedPaths) {
+          if (path && path.startsWith('/objects/')) {
+            try {
+              await driveStorage.deleteFile(path);
+            } catch (error) {
+              console.error('Failed to delete file from Google Drive:', error);
+            }
+          }
+        }
+      }
       
       // Merge back file arrays without Zod validation
       const updateData = {
@@ -1849,10 +1946,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update custom clearance
   app.patch("/api/custom-clearances/:id", async (req, res) => {
     try {
+      // Get existing clearance to detect deleted files
+      const existingClearance = await storage.getCustomClearance(req.params.id);
+      if (!existingClearance) {
+        return res.status(404).json({ error: "Custom clearance not found" });
+      }
+
       // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
       // Validate everything except file arrays
       const { transportDocuments, clearanceDocuments, ...restBody } = req.body;
       const validatedData = insertCustomClearanceSchema.partial().parse(restBody);
+      
+      // Detect and delete removed transport documents from Google Drive
+      if (transportDocuments !== undefined) {
+        const existingFiles = existingClearance.transportDocuments || [];
+        const newFiles = transportDocuments || [];
+        const existingPaths = existingFiles.map((f: any) => f?.path || f);
+        const newPaths = newFiles.map((f: any) => f?.path || f);
+        const removedPaths = existingPaths.filter((path: string) => !newPaths.includes(path));
+        
+        for (const path of removedPaths) {
+          if (path && path.startsWith('/objects/')) {
+            try {
+              await driveStorage.deleteFile(path);
+            } catch (error) {
+              console.error('Failed to delete transport document from Google Drive:', error);
+            }
+          }
+        }
+      }
+      
+      // Detect and delete removed clearance documents from Google Drive
+      if (clearanceDocuments !== undefined) {
+        const existingFiles = existingClearance.clearanceDocuments || [];
+        const newFiles = clearanceDocuments || [];
+        const existingPaths = existingFiles.map((f: any) => f?.path || f);
+        const newPaths = newFiles.map((f: any) => f?.path || f);
+        const removedPaths = existingPaths.filter((path: string) => !newPaths.includes(path));
+        
+        for (const path of removedPaths) {
+          if (path && path.startsWith('/objects/')) {
+            try {
+              await driveStorage.deleteFile(path);
+            } catch (error) {
+              console.error('Failed to delete clearance document from Google Drive:', error);
+            }
+          }
+        }
+      }
       
       // Add file arrays back without validation (database will handle the type)
       const updateData = {
