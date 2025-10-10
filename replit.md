@@ -33,11 +33,15 @@ Preferred communication style: Simple, everyday language.
 - All imports use ##! delimiter and combine address fields with line breaks for readability
 
 **Database Backups:**
-- Contact databases are backed up in the `backups/` directory
-- Backup includes: import_customers, export_customers, export_receivers, hauliers, shipping_lines, clearance_agents
-- Run backup: `tsx scripts/backup-contact-databases.ts`
-- Run restore: `tsx scripts/restore-contact-databases.ts`
-- Backup files are SQL INSERT statements ready for production rollout
+- All backups are stored in **Google Drive** at: `RS Freight Manager/Backups/`
+- RS Freight Manager folder is at **Google Drive root** (not nested in personal folders)
+- Backup format: ZIP archives containing SQL INSERT statements for all database tables
+- Backup includes: import_customers, export_customers, export_receivers, hauliers, shipping_lines, clearance_agents, import_shipments, export_shipments, custom_clearances, job_file_groups, messages, purchase_invoices, invoices, general_references, settings, users
+- Run backup: `tsx scripts/backup-contact-databases.ts` (creates zip, uploads to Google Drive, cleans up local files)
+- Restore: Download from Google Drive → extract → restore via `scripts/restore-contact-databases.ts`
+- **Column Name Format:** All backups use snake_case column names (e.g., `vat_number`, not `vatNumber`)
+- **Array Syntax:** PostgreSQL arrays use single quotes: `ARRAY['value1','value2']`
+- **Special Characters:** Newlines, tabs, and special characters escaped with PostgreSQL E'' syntax
 - **Restore System:** Handles legacy backups with camelCase column names (auto-maps to snake_case), supports multi-line addresses with embedded semicolons, and properly parses SQL-standard escaped quotes ('')
 - **UI Cards Standardization:** All display cards use consistent `bg-card` styling (white in light mode, grey in dark mode) across contacts and job pages
 

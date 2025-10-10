@@ -17,8 +17,11 @@ import {
   settings,
   users
 } from "../shared/schema";
-import { writeFileSync } from "fs";
-import { mkdirSync } from "fs";
+import { writeFileSync, mkdirSync, rmSync } from "fs";
+import archiver from "archiver";
+import { createWriteStream } from "fs";
+import { GoogleDriveStorageService } from "../server/googleDriveStorage";
+import { readFileSync } from "fs";
 
 async function backupContactDatabases() {
   try {
@@ -177,9 +180,46 @@ async function backupContactDatabases() {
     
     writeFileSync(`${backupDir}/metadata.json`, JSON.stringify(metadata, null, 2));
 
+    console.log("\n✓ All SQL files generated successfully!");
+    
+    // Create zip file
+    const zipFilePath = `${backupDir}.zip`;
+    console.log(`\nCreating zip archive: ${zipFilePath}`);
+    
+    await new Promise<void>((resolve, reject) => {
+      const output = createWriteStream(zipFilePath);
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      
+      output.on('close', () => {
+        console.log(`✓ Zip archive created: ${(archive.pointer() / 1024 / 1024).toFixed(2)} MB`);
+        resolve();
+      });
+      archive.on('error', (err) => reject(err));
+      
+      archive.pipe(output);
+      archive.directory(backupDir, false);
+      archive.finalize();
+    });
+    
+    // Upload to Google Drive
+    console.log("\nUploading backup to Google Drive...");
+    const driveStorage = new GoogleDriveStorageService();
+    const zipBuffer = readFileSync(zipFilePath);
+    const uploadResult = await driveStorage.uploadBackup(`backup_${timestamp}.zip`, zipBuffer);
+    
+    console.log(`✓ Backup uploaded to Google Drive: ${uploadResult.fileName}`);
+    console.log(`  File ID: ${uploadResult.fileId}`);
+    
+    // Clean up local files
+    console.log("\nCleaning up local files...");
+    rmSync(backupDir, { recursive: true, force: true });
+    rmSync(zipFilePath, { force: true });
+    console.log("✓ Local files cleaned up");
+
     console.log("\n✓ All database tables backed up successfully!");
     console.log(`\nBackup name: backup_${timestamp}`);
     console.log(`Total records: ${totalRecords}`);
+    console.log(`Location: Google Drive -> RS Freight Manager/Backups/`);
 
     process.exit(0);
   } catch (error) {

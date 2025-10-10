@@ -71,6 +71,7 @@ export class GoogleDriveStorageService {
   private rootFolderId: string | null = null;
   private publicFolderId: string | null = null;
   private privateFolderId: string | null = null;
+  private backupsFolderId: string | null = null;
 
   constructor() {}
 
@@ -83,9 +84,9 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClient();
     const folderName = 'RS Freight Manager';
 
-    // Search for existing folder
+    // Search for existing folder at root level
     const response = await drive.files.list({
-      q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: 'files(id, name)',
       spaces: 'drive'
     });
@@ -95,10 +96,11 @@ export class GoogleDriveStorageService {
       return this.rootFolderId;
     }
 
-    // Create root folder
+    // Create root folder at Google Drive root
     const folderMetadata = {
       name: folderName,
-      mimeType: 'application/vnd.google-apps.folder'
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: ['root']
     };
 
     const folder = await drive.files.create({
@@ -160,6 +162,17 @@ export class GoogleDriveStorageService {
     const rootId = await this.getRootFolder();
     this.privateFolderId = await this.getOrCreateFolder(rootId, 'private');
     return this.privateFolderId;
+  }
+
+  // Get backups folder ID
+  async getBackupsFolder(): Promise<string> {
+    if (this.backupsFolderId) {
+      return this.backupsFolderId;
+    }
+
+    const rootId = await this.getRootFolder();
+    this.backupsFolderId = await this.getOrCreateFolder(rootId, 'Backups');
+    return this.backupsFolderId;
   }
 
   // Search for a file in public folder
@@ -437,6 +450,81 @@ export class GoogleDriveStorageService {
     }
 
     const fileId = objectPath.replace('/objects/', '');
+    const drive = await getGoogleDriveClient();
+
+    try {
+      await drive.files.delete({ fileId: fileId });
+    } catch (error) {
+      throw new ObjectNotFoundError();
+    }
+  }
+
+  // Upload backup to Google Drive
+  async uploadBackup(backupName: string, buffer: Buffer): Promise<{ fileId: string; fileName: string }> {
+    const drive = await getGoogleDriveClient();
+    const backupsFolderId = await this.getBackupsFolder();
+    
+    const fileMetadata = {
+      name: backupName,
+      mimeType: 'application/zip',
+      parents: [backupsFolderId]
+    };
+
+    const media = {
+      mimeType: 'application/zip',
+      body: Readable.from(buffer)
+    };
+
+    const file = await drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id, name'
+    });
+
+    return { 
+      fileId: file.data.id!,
+      fileName: file.data.name!
+    };
+  }
+
+  // List all backups in Google Drive
+  async listBackups(): Promise<Array<{ fileId: string; name: string; size: string; createdTime: string }>> {
+    const drive = await getGoogleDriveClient();
+    const backupsFolderId = await this.getBackupsFolder();
+
+    const response = await drive.files.list({
+      q: `'${backupsFolderId}' in parents and trashed=false`,
+      fields: 'files(id, name, size, createdTime)',
+      orderBy: 'createdTime desc',
+      spaces: 'drive'
+    });
+
+    return (response.data.files || []).map(file => ({
+      fileId: file.id!,
+      name: file.name!,
+      size: file.size || '0',
+      createdTime: file.createdTime || ''
+    }));
+  }
+
+  // Download backup from Google Drive
+  async downloadBackup(fileId: string): Promise<Buffer> {
+    const drive = await getGoogleDriveClient();
+
+    try {
+      const response = await drive.files.get(
+        { fileId: fileId, alt: 'media' },
+        { responseType: 'arraybuffer' }
+      );
+
+      return Buffer.from(response.data as ArrayBuffer);
+    } catch (error) {
+      throw new ObjectNotFoundError();
+    }
+  }
+
+  // Delete backup from Google Drive
+  async deleteBackup(fileId: string): Promise<void> {
     const drive = await getGoogleDriveClient();
 
     try {

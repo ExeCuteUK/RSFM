@@ -30,11 +30,10 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface Backup {
-  backupName: string;
-  timestamp: string;
-  createdAt: string;
-  totalRecords: number;
-  tables: Array<{ name: string; count: number }>;
+  fileId: string;
+  name: string;
+  size: string;
+  createdTime: string;
 }
 
 export default function BackupsPage() {
@@ -92,8 +91,8 @@ export default function BackupsPage() {
   });
 
   const restoreBackupMutation = useMutation({
-    mutationFn: async ({ backupName, tables }: { backupName: string; tables: string[] }) => {
-      return apiRequest("POST", `/api/backups/restore/${backupName}`, { tables });
+    mutationFn: async ({ fileId, tables }: { fileId: string; tables: string[] }) => {
+      return apiRequest("POST", `/api/backups/restore/${fileId}`, { tables });
     },
     onMutate: () => {
       toast({
@@ -137,8 +136,8 @@ export default function BackupsPage() {
   });
 
   const deleteBackupMutation = useMutation({
-    mutationFn: async (backupName: string) => {
-      return apiRequest("DELETE", `/api/backups/${backupName}`, {});
+    mutationFn: async (fileId: string) => {
+      return apiRequest("DELETE", `/api/backups/${fileId}`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/backups"] });
@@ -160,14 +159,28 @@ export default function BackupsPage() {
     },
   });
 
-  const handleRestore = (backupName: string) => {
-    setSelectedBackup(backupName);
-    // Get table names from the selected backup
-    const backup = backups?.find(b => b.backupName === backupName);
-    if (backup) {
-      // Select all tables by default
-      setSelectedTables(backup.tables.map(t => t.name));
-    }
+  const handleRestore = (fileId: string) => {
+    setSelectedBackup(fileId);
+    // Set all available tables for restore
+    const allTables = [
+      "import_customers",
+      "export_customers", 
+      "export_receivers",
+      "hauliers",
+      "shipping_lines",
+      "clearance_agents",
+      "import_shipments",
+      "export_shipments",
+      "custom_clearances",
+      "job_file_groups",
+      "messages",
+      "purchase_invoices",
+      "invoices",
+      "general_references",
+      "settings",
+      "users"
+    ];
+    setSelectedTables(allTables);
     setShowRestoreWarning(true);
   };
 
@@ -180,23 +193,37 @@ export default function BackupsPage() {
   };
 
   const toggleAllTables = () => {
-    const backup = backups?.find(b => b.backupName === selectedBackup);
-    if (!backup) return;
-    
-    const allTableNames = backup.tables.map(t => t.name);
+    const allTables = [
+      "import_customers",
+      "export_customers", 
+      "export_receivers",
+      "hauliers",
+      "shipping_lines",
+      "clearance_agents",
+      "import_shipments",
+      "export_shipments",
+      "custom_clearances",
+      "job_file_groups",
+      "messages",
+      "purchase_invoices",
+      "invoices",
+      "general_references",
+      "settings",
+      "users"
+    ];
     setSelectedTables(prev => 
-      prev.length === allTableNames.length ? [] : allTableNames
+      prev.length === allTables.length ? [] : allTables
     );
   };
 
-  const handleDelete = (backupName: string) => {
-    setSelectedBackup(backupName);
+  const handleDelete = (fileId: string) => {
+    setSelectedBackup(fileId);
     setShowDeleteWarning(true);
   };
 
   const confirmRestore = () => {
     if (selectedBackup && selectedTables.length > 0) {
-      restoreBackupMutation.mutate({ backupName: selectedBackup, tables: selectedTables });
+      restoreBackupMutation.mutate({ fileId: selectedBackup, tables: selectedTables });
     } else if (selectedTables.length === 0) {
       toast({
         title: "No tables selected",
@@ -265,40 +292,34 @@ export default function BackupsPage() {
                 <TableRow>
                   <TableHead>Backup Name</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead>Total Records</TableHead>
-                  <TableHead>Details</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Location</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {backups.map((backup) => (
-                  <TableRow key={backup.backupName}>
+                  <TableRow key={backup.fileId}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <Database className="h-4 w-4 text-muted-foreground" />
-                        <code className="text-sm">{backup.backupName}</code>
+                        <code className="text-sm">{backup.name}</code>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        {formatDate(backup.timestamp)}
+                        {formatDate(backup.createdTime)}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{backup.totalRecords} records</Badge>
+                      <Badge variant="secondary">{(parseInt(backup.size) / 1024 / 1024).toFixed(2)} MB</Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {backup.tables.map((table) => (
-                          <Badge 
-                            key={table.name} 
-                            variant="outline" 
-                            className="text-xs"
-                          >
-                            {table.name.replace(/_/g, ' ')}: {table.count}
-                          </Badge>
-                        ))}
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <span>Google Drive</span>
+                        <span className="text-muted-foreground/50">→</span>
+                        <span>RS Freight Manager/Backups</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -306,9 +327,9 @@ export default function BackupsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleRestore(backup.backupName)}
+                          onClick={() => handleRestore(backup.fileId)}
                           disabled={restoreBackupMutation.isPending}
-                          data-testid={`button-restore-${backup.backupName}`}
+                          data-testid={`button-restore-${backup.fileId}`}
                         >
                           <Upload className="h-3 w-3 mr-1" />
                           Restore
@@ -316,9 +337,9 @@ export default function BackupsPage() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleDelete(backup.backupName)}
+                          onClick={() => handleDelete(backup.fileId)}
                           disabled={deleteBackupMutation.isPending}
-                          data-testid={`button-delete-${backup.backupName}`}
+                          data-testid={`button-delete-${backup.fileId}`}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Delete
@@ -354,7 +375,7 @@ export default function BackupsPage() {
                 </span>
               ) : (
                 <>
-                  Select which tables to restore from <code className="px-1 py-0.5 bg-muted rounded">{selectedBackup}</code>.
+                  Select which tables to restore from <code className="px-1 py-0.5 bg-muted rounded">{backups?.find(b => b.fileId === selectedBackup)?.name || selectedBackup}</code>.
                   This will permanently delete current data in the selected tables.
                 </>
               )}

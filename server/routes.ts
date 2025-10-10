@@ -2881,35 +2881,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Backup Routes (Admin only) ==========
 
-  // List all backups
+  // List all backups from Google Drive
   app.get("/api/backups", requireAuth, requireAdmin, async (_req, res) => {
     try {
-      const { readdirSync, readFileSync, statSync } = await import("fs");
-      const { join } = await import("path");
-      
-      const backupsDir = "backups";
-      const entries = readdirSync(backupsDir, { withFileTypes: true });
-      const backups = [];
-      
-      for (const entry of entries) {
-        if (entry.isDirectory() && entry.name.startsWith("backup_")) {
-          const metadataPath = join(backupsDir, entry.name, "metadata.json");
-          try {
-            const metadata = JSON.parse(readFileSync(metadataPath, "utf-8"));
-            const stats = statSync(join(backupsDir, entry.name));
-            backups.push({
-              ...metadata,
-              createdAt: stats.birthtime.toISOString(),
-            });
-          } catch (error) {
-            // Skip backups without metadata
-            console.warn(`Skipping backup ${entry.name}: no metadata found`);
-          }
-        }
-      }
-      
-      // Sort by timestamp, newest first
-      backups.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      const driveStorage = new GoogleDriveStorageService();
+      const backups = await driveStorage.listBackups();
       
       res.json(backups);
     } catch (error) {
@@ -2918,7 +2894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create backup of all contact databases
+  // Create backup of all contact databases and upload to Google Drive
   app.post("/api/backups/create", requireAuth, requireAdmin, async (_req, res) => {
     try {
       const { execSync } = await import("child_process");
@@ -2927,21 +2903,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stdio: ["pipe", "pipe", "pipe"],
       });
       
-      // Parse the output to get backup name
+      // Parse the output to get backup name and file ID
       const backupNameMatch = result.match(/Backup name: (backup_[^\n]+)/);
+      const fileIdMatch = result.match(/File ID: ([^\n]+)/);
+      const totalRecordsMatch = result.match(/Total records: (\d+)/);
+      
       const backupName = backupNameMatch ? backupNameMatch[1] : null;
+      const fileId = fileIdMatch ? fileIdMatch[1] : null;
+      const totalRecords = totalRecordsMatch ? parseInt(totalRecordsMatch[1]) : 0;
       
-      if (!backupName) {
-        throw new Error("Failed to extract backup name");
+      if (!backupName || !fileId) {
+        throw new Error("Failed to extract backup details");
       }
-      
-      // Read metadata file
-      const { readFileSync } = await import("fs");
-      const metadata = JSON.parse(readFileSync(`backups/${backupName}/metadata.json`, "utf-8"));
       
       res.json({
         success: true,
-        ...metadata,
+        backupName,
+        fileId,
+        totalRecords,
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.error("Backup error:", error);
@@ -2949,24 +2929,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Restore from specific backup
-  app.post("/api/backups/restore/:backupName", requireAuth, requireAdmin, async (req, res) => {
+  // Restore from specific backup (download from Google Drive first)
+  app.post("/api/backups/restore/:fileId", requireAuth, requireAdmin, async (req, res) => {
     try {
-      const { backupName } = req.params;
+      const { fileId } = req.params;
       const { tables } = req.body;
       const { execSync } = await import("child_process");
+      const { writeFileSync, mkdirSync, rmSync } = await import("fs");
+      const extract = (await import("extract-zip")).default;
       
       // Validate tables array
       if (!tables || !Array.isArray(tables) || tables.length === 0) {
         return res.status(400).json({ error: "tables array is required and must not be empty" });
       }
       
+      // Download backup from Google Drive
+      const driveStorage = new GoogleDriveStorageService();
+      const zipBuffer = await driveStorage.downloadBackup(fileId);
+      
+      // Create temp directory for extraction
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const tempDir = `backups/temp_restore_${timestamp}`;
+      mkdirSync(tempDir, { recursive: true });
+      
+      // Write zip file
+      const zipPath = `${tempDir}/backup.zip`;
+      writeFileSync(zipPath, zipBuffer);
+      
+      // Extract zip file
+      const extractDir = `${tempDir}/extracted`;
+      await extract(zipPath, { dir: process.cwd() + `/${extractDir}` });
+      
+      // Get the backup name (folder inside the zip)
+      const { readdirSync } = await import("fs");
+      const extractedContents = readdirSync(extractDir);
+      const backupName = extractedContents[0]; // Should be the backup folder
+      
       // Pass tables as JSON string argument
       const tablesJson = JSON.stringify(tables);
-      const result = execSync(`tsx scripts/restore-contact-databases.ts ${backupName} '${tablesJson}'`, {
+      const result = execSync(`tsx scripts/restore-contact-databases.ts ${extractDir}/${backupName} '${tablesJson}'`, {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
+        timeout: 300000, // 5 minutes timeout
       });
+      
+      // Clean up temp files
+      rmSync(tempDir, { recursive: true, force: true });
       
       // Parse the output to get restore statistics
       const lines = result.split("\n");
@@ -2987,7 +2995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        backupName,
+        fileId,
         timestamp: new Date().toISOString(),
         tables: restoredTables,
         totalRecords,
@@ -2998,24 +3006,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete specific backup
-  app.delete("/api/backups/:backupName", requireAuth, requireAdmin, async (req, res) => {
+  // Delete specific backup from Google Drive
+  app.delete("/api/backups/:fileId", requireAuth, requireAdmin, async (req, res) => {
     try {
-      const { backupName } = req.params;
-      const { rmSync } = await import("fs");
-      const { join } = await import("path");
+      const { fileId } = req.params;
+      const driveStorage = new GoogleDriveStorageService();
       
-      // Validate backup name to prevent directory traversal
-      if (!backupName.startsWith("backup_") || backupName.includes("..")) {
-        return res.status(400).json({ error: "Invalid backup name" });
-      }
-      
-      const backupPath = join("backups", backupName);
-      rmSync(backupPath, { recursive: true, force: true });
+      await driveStorage.deleteBackup(fileId);
       
       res.json({
         success: true,
-        message: `Backup ${backupName} deleted successfully`,
+        message: `Backup deleted successfully`,
       });
     } catch (error) {
       console.error("Delete backup error:", error);
