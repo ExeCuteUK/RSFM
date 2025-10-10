@@ -61,7 +61,7 @@ export default function CustomClearances() {
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ clearance: CustomClearance; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
-  const [mrnConfirmation, setMrnConfirmation] = useState<{ id: string; filePath: string; mrnNumber: string; clearance: CustomClearance } | null>(null)
+  const [mrnConfirmation, setMrnConfirmation] = useState<{ id: string; fileObject: { filename: string; path: string }; mrnNumber: string; clearance: CustomClearance } | null>(null)
   const { toast } = useToast()
   const [location, setLocation] = useLocation()
   
@@ -303,7 +303,7 @@ export default function CustomClearances() {
           
           if (mrnNumber) {
             // Show confirmation dialog for detected MRN
-            setMrnConfirmation({ id, filePath: objectPath, mrnNumber, clearance })
+            setMrnConfirmation({ id, fileObject, mrnNumber, clearance })
             return { pending: true } // Return to prevent success toast
           } else {
             // Show "No MRN Found" toast
@@ -406,9 +406,18 @@ export default function CustomClearances() {
   const handleMrnConfirmation = async (confirm: boolean) => {
     if (!mrnConfirmation) return
 
-    const { id, filePath, mrnNumber, clearance } = mrnConfirmation
+    const { id, fileObject, mrnNumber, clearance } = mrnConfirmation
     const currentFiles = clearance.clearanceDocuments || []
-    const updatedFiles = [...currentFiles, filePath]
+    
+    // Normalize current files to ensure they're all objects
+    const normalizedCurrentFiles = currentFiles.map((f: any) => {
+      if (typeof f === 'string') {
+        return { filename: f.split('/').pop() || f, path: f };
+      }
+      return f;
+    });
+    
+    const updatedFiles = [...normalizedCurrentFiles, fileObject]
 
     try {
       await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
