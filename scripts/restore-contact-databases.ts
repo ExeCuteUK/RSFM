@@ -178,9 +178,56 @@ async function restoreContactDatabases() {
 
         // Note: Column name mapping is no longer needed since backups now use snake_case column names
         
+        // Fix legacy ARRAY[] syntax from old backups
+        const fixLegacyArraySyntax = (stmt: string, tableName: string): string => {
+          // Define which columns are jsonb (need '[]'::jsonb) vs text[] (need ARRAY[]::text[])
+          const jsonbColumns: Record<string, string[]> = {
+            job_file_groups: ['documents', 'rs_invoices'],
+            hauliers: ['contacts'],
+            messages: ['attachments'],
+            import_shipments: ['proof_of_delivery', 'expenses_to_charge_out', 'additional_expenses_in', 'attachments'],
+            export_shipments: ['proof_of_delivery', 'expenses_to_charge_out', 'additional_expenses_in', 'attachments', 'transport_documents', 'clearance_documents'],
+            custom_clearances: ['transport_documents', 'clearance_documents'],
+            invoices: ['line_items']
+          };
+          
+          const textArrayColumns: Record<string, string[]> = {
+            import_customers: ['contact_name', 'email', 'accounts_email', 'agent_contact_name', 'agent_email', 'agent_accounts_email'],
+            export_customers: ['contact_name', 'email', 'accounts_email', 'agent_contact_name', 'agent_email', 'agent_accounts_email'],
+            export_receivers: ['contact_name'],
+            hauliers: ['import_email', 'export_email', 'releases_email', 'accounting_email', 'agent_import_email', 'agent_export_email', 'agent_releases_email', 'agent_accounting_email'],
+            shipping_lines: ['contact_name'],
+            clearance_agents: ['contact_name']
+          };
+          
+          let fixedStmt = stmt;
+          
+          // Fix broken object serialization: ARRAY[[object Object]] -> '[]'::jsonb
+          fixedStmt = fixedStmt.replace(/ARRAY\[\[object Object\]\]/g, "'[]'::jsonb");
+          
+          // For each jsonb column in this table, replace ARRAY[] with '[]'::jsonb
+          const jsonbCols = jsonbColumns[tableName] || [];
+          for (const col of jsonbCols) {
+            // Match pattern: "column_name", value) or "column_name", value,
+            // Replace ARRAY[] that appears after this column
+            const pattern = new RegExp(`("${col}"[^,]*,\\s*)ARRAY\\[\\]`, 'g');
+            fixedStmt = fixedStmt.replace(pattern, `$1'[]'::jsonb`);
+          }
+          
+          // For each text[] column in this table, replace ARRAY[] with ARRAY[]::text[]
+          const textArrayCols = textArrayColumns[tableName] || [];
+          for (const col of textArrayCols) {
+            const pattern = new RegExp(`("${col}"[^,]*,\\s*)ARRAY\\[\\]`, 'g');
+            fixedStmt = fixedStmt.replace(pattern, `$1ARRAY[]::text[]`);
+          }
+          
+          return fixedStmt;
+        };
+        
         for (const statement of statements) {
           if (statement.trim()) {
-            await db.execute(sql.raw(statement));
+            const fixedStatement = fixLegacyArraySyntax(statement, table.name);
+            await db.execute(sql.raw(fixedStatement));
           }
         }
         
