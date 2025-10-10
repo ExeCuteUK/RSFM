@@ -651,8 +651,9 @@ export default function CustomClearances() {
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
-      // Build simple body
-      const body = `${greeting},\n\nPlease find attached clearance Document for this shipment.\n\nAny issues please let me know.`
+      // Build simple body with conditional text based on clearance type
+      const attachmentText = isExport ? "EAD" : "clearance Document"
+      const body = `${greeting},\n\nPlease find attached ${attachmentText} for this shipment.\n\nAny issues please let me know.`
       
       // Get clearance document paths with proper filenames
       const clearanceFiles = clearance.clearanceDocuments.map(doc => ({

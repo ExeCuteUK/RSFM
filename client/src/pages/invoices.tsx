@@ -39,7 +39,12 @@ export default function Invoices() {
   const [showNewInvoice, setShowNewInvoice] = useState(false)
   const [showInvoices, setShowInvoices] = useState(true)
   const [showCredits, setShowCredits] = useState(true)
+  const [fromDate, setFromDate] = useState("")
+  const [toDate, setToDate] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
   const { toast } = useToast()
+  
+  const itemsPerPage = 200
 
   const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
@@ -74,12 +79,27 @@ export default function Invoices() {
       (showInvoices && invoice.type === 'invoice') ||
       (showCredits && invoice.type === 'credit_note')
     )
-    return matchesSearch && matchesType
+    
+    // Date filtering
+    const invoiceDate = new Date(invoice.invoiceDate)
+    const matchesFromDate = !fromDate || invoiceDate >= new Date(fromDate)
+    const matchesToDate = !toDate || invoiceDate <= new Date(toDate)
+    
+    return matchesSearch && matchesType && matchesFromDate && matchesToDate
   })
 
   const sortedInvoices = [...filteredInvoices].sort((a, b) => {
     return b.invoiceNumber - a.invoiceNumber
   })
+  
+  // Pagination
+  const totalPages = Math.ceil(sortedInvoices.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedInvoices = sortedInvoices.slice(startIndex, endIndex)
+  
+  // Reset to page 1 when filters change
+  const resetPage = () => setCurrentPage(1)
 
   return (
     <div className="p-6 space-y-6">
@@ -96,15 +116,35 @@ export default function Invoices() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by invoice number, customer, or job reference..."
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => { setSearchText(e.target.value); resetPage(); }}
             className="pl-9"
             data-testid="input-search-invoices"
+          />
+        </div>
+        <div className="h-8 w-px bg-border" />
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            placeholder="From Date"
+            value={fromDate}
+            onChange={(e) => { setFromDate(e.target.value); resetPage(); }}
+            className="w-40"
+            data-testid="input-from-date"
+          />
+          <span className="text-muted-foreground">to</span>
+          <Input
+            type="date"
+            placeholder="To Date"
+            value={toDate}
+            onChange={(e) => { setToDate(e.target.value); resetPage(); }}
+            className="w-40"
+            data-testid="input-to-date"
           />
         </div>
         <div className="h-8 w-px bg-border" />
@@ -115,6 +155,7 @@ export default function Invoices() {
             onClick={() => {
               if (!showCredits) return
               setShowInvoices(!showInvoices)
+              resetPage()
             }}
             data-testid="button-filter-invoices"
           >
@@ -126,6 +167,7 @@ export default function Invoices() {
             onClick={() => {
               if (!showInvoices) return
               setShowCredits(!showCredits)
+              resetPage()
             }}
             data-testid="button-filter-credits"
           >
@@ -141,30 +183,31 @@ export default function Invoices() {
       ) : sortedInvoices.length === 0 ? (
         <div className="text-center py-12" data-testid="empty-state">
           <p className="text-lg text-muted-foreground">
-            {searchText ? "No invoices found matching your search" : "No invoices created yet"}
+            {searchText || fromDate || toDate ? "No invoices found matching your filters" : "No invoices created yet"}
           </p>
-          {searchText && (
-            <Button variant="outline" className="mt-4" onClick={() => setSearchText("")}>
-              Clear search
+          {(searchText || fromDate || toDate) && (
+            <Button variant="outline" className="mt-4" onClick={() => { setSearchText(""); setFromDate(""); setToDate(""); resetPage(); }}>
+              Clear filters
             </Button>
           )}
         </div>
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">Invoice #</TableHead>
-                <TableHead className="w-[120px]">Type</TableHead>
-                <TableHead className="w-[120px]">Date</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead className="w-[150px]">Job Reference</TableHead>
-                <TableHead className="w-[150px] text-right">Amount</TableHead>
-                <TableHead className="w-[150px] text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedInvoices.map((invoice) => (
+        <div className="space-y-4">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[120px]">Invoice #</TableHead>
+                  <TableHead className="w-[120px]">Type</TableHead>
+                  <TableHead className="w-[120px]">Date</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead className="w-[150px]">Job Reference</TableHead>
+                  <TableHead className="w-[150px] text-right">Amount</TableHead>
+                  <TableHead className="w-[150px] text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedInvoices.map((invoice) => (
                 <TableRow key={invoice.id} data-testid={`row-invoice-${invoice.id}`}>
                   <TableCell className="font-medium">
                     {invoice.invoiceNumber}
@@ -221,6 +264,39 @@ export default function Invoices() {
               ))}
             </TableBody>
           </Table>
+          </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-2">
+              <div className="text-sm text-muted-foreground">
+                Showing {startIndex + 1} to {Math.min(endIndex, sortedInvoices.length)} of {sortedInvoices.length} results
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  data-testid="button-prev-page"
+                >
+                  Previous
+                </Button>
+                <div className="text-sm">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  data-testid="button-next-page"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
