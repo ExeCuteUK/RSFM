@@ -13,7 +13,9 @@ export function useJobFileGroup({ jobRef, enabled = true }: UseJobFileGroupOptio
     queryKey: ['/api/job-file-groups', jobRef],
     queryFn: async () => {
       if (!jobRef) throw new Error("Job reference is required");
-      const response = await fetch(`/api/job-file-groups/${jobRef}`);
+      const response = await fetch(`/api/job-file-groups/${jobRef}`, {
+        credentials: "include"
+      });
       if (!response.ok) throw new Error("Failed to fetch job file group");
       return response.json();
     },

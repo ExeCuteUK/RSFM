@@ -34,6 +34,7 @@ export function OCRDialog({ filePath, fileName, trigger }: OCRDialogProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ objectPath: filePath, filename: fileName }),
+        credentials: "include"
       });
 
       if (!response.ok) {

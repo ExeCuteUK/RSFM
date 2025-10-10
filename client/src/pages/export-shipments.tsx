@@ -256,7 +256,8 @@ export default function ExportShipments() {
       
       const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
-        body: formData
+        body: formData,
+        credentials: "include"
       })
       
       if (!uploadResponse.ok) {

@@ -63,6 +63,7 @@ export function ObjectStorageUploader({
         const response = await fetch("/api/objects/upload", {
           method: "POST",
           body: formData,
+          credentials: "include"
         });
         
         if (!response.ok) {

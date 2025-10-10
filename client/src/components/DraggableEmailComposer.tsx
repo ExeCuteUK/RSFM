@@ -275,6 +275,7 @@ export function DraggableEmailComposer() {
         const uploadResponse = await fetch('/api/objects/upload', {
           method: 'POST',
           body: formData,
+          credentials: 'include'
         });
 
         if (!uploadResponse.ok) {
@@ -288,6 +289,7 @@ export function DraggableEmailComposer() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ urls: [objectPath] }),
+          credentials: 'include'
         });
 
         const { paths } = await normalizeResponse.json();

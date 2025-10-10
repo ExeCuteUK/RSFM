@@ -7,6 +7,10 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 
 const app = express();
+
+// Trust first proxy - required for secure cookies behind Replit's reverse proxy
+app.set('trust proxy', 1);
+
 // Skip body parsers for multipart/form-data (file uploads)
 app.use((req, res, next) => {
   const contentType = req.headers['content-type'];

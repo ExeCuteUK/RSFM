@@ -125,7 +125,9 @@ export default function CustomClearances() {
       await Promise.all(
         uniqueRefs.map(async (jobRef) => {
           try {
-            const response = await fetch(`/api/job-file-groups/${jobRef}`)
+            const response = await fetch(`/api/job-file-groups/${jobRef}`, {
+              credentials: "include"
+            })
             if (response.ok) {
               const data: JobFileGroup = await response.json()
               map[jobRef] = data.documents || []
@@ -281,7 +283,8 @@ export default function CustomClearances() {
       
       const uploadResponse = await fetch("/api/objects/upload", {
         method: "POST",
-        body: formData
+        body: formData,
+        credentials: "include"
       })
       
       if (!uploadResponse.ok) {
@@ -297,7 +300,8 @@ export default function CustomClearances() {
           const ocrResponse = await fetch("/api/objects/ocr", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ objectPath, filename })
+            body: JSON.stringify({ objectPath, filename }),
+            credentials: "include"
           })
           const { mrnNumber } = await ocrResponse.json()
           

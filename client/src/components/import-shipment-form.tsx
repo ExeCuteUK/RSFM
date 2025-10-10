@@ -392,6 +392,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ urls: pendingProofOfDelivery }),
+          credentials: "include"
         });
         const normalizeData = await normalizeResponse.json();
         normalizedProofOfDelivery.push(...normalizeData.paths);
@@ -412,6 +413,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ urls: pendingAttachments }),
+          credentials: "include"
         });
         const normalizeData = await normalizeResponse.json();
         normalizedAttachments.push(...normalizeData.paths);

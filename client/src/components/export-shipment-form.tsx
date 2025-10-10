@@ -364,6 +364,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ urls: pendingProofOfDelivery }),
+          credentials: "include"
         });
         const normalizeData = await normalizeResponse.json();
         normalizedProofOfDelivery.push(...normalizeData.paths);
@@ -383,6 +384,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ urls: pendingAttachments }),
+          credentials: "include"
         });
         const normalizeData = await normalizeResponse.json();
         normalizedAttachments.push(...normalizeData.paths);

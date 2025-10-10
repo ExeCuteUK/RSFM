@@ -120,6 +120,7 @@ export default function Messages() {
             filename: file.name,
             contentType: file.type,
           }),
+          credentials: "include"
         });
         const data = await response.json();
         
@@ -252,6 +253,7 @@ export default function Messages() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ urls: uploadedFiles }),
+          credentials: "include"
         }).then(res => res.json()).then(data => data.normalizedUrls)
       : [];
 

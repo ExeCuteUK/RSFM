@@ -424,6 +424,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ objectPath, filename }),
+        credentials: 'include'
       });
 
       if (!response.ok) {
