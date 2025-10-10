@@ -39,14 +39,11 @@ Preferred communication style: Simple, everyday language.
 - Backup includes: import_customers, export_customers, export_receivers, hauliers, shipping_lines, clearance_agents, import_shipments, export_shipments, custom_clearances, job_file_groups, messages, purchase_invoices, invoices, general_references, settings, users
 - Run backup: `tsx scripts/backup-contact-databases.ts` (creates zip, uploads to Google Drive, cleans up local files)
 - Restore: Download from Google Drive → extract → restore via `scripts/restore-contact-databases.ts`
+- Cleanup old backups: `tsx scripts/cleanup-old-backups.ts` (keeps only most recent, deletes older backups)
 - **Column Name Format:** All backups use snake_case column names (e.g., `vat_number`, not `vatNumber`)
-- **Array Syntax:** New backups use properly typed arrays: `'[]'::jsonb` for jsonb, `ARRAY[]::text[]` for text arrays
+- **Array Syntax:** All backups use properly typed arrays: `'[]'::jsonb` for jsonb columns, `ARRAY[]::text[]` for text array columns
 - **Special Characters:** Newlines, tabs, and special characters escaped with PostgreSQL E'' syntax
-- **Legacy Backup Support:** Restore system handles old backups with untyped `ARRAY[]` and broken `ARRAY[[object Object]]` serialization by:
-  - Detecting and fixing broken object arrays (`ARRAY[[object Object]]` → `'[]'::jsonb`)
-  - Adding proper type casting based on table schema (jsonb vs text[] columns)
-  - Supporting tables with mixed array types (e.g., hauliers with both jsonb `contacts` and text[] email fields)
-  - Handling SQL-standard escaped quotes ('') and multi-line values
+- **Current Status:** Fresh backup created (2025-10-10) with all 5,603 contact records properly formatted. Old legacy backups removed from Google Drive.
 - **UI Cards Standardization:** All display cards use consistent `bg-card` styling (white in light mode, grey in dark mode) across contacts and job pages
 
 ## System Architecture
