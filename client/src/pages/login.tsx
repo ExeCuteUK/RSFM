@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import worldMapBg from "@assets/generated_images/World_map_with_freight_routes_bcb31009.png";
+import worldMapBg from "@assets/generated_images/Subtle_minimalist_world_map_080d0c3b.png";
 
 export default function Login() {
   const [, setLocation] = useLocation();
