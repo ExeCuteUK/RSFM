@@ -656,6 +656,8 @@ export const customClearances = pgTable("custom_clearances", {
   importCustomerId: varchar("import_customer_id"),
   exportCustomerId: varchar("export_customer_id"),
   receiverId: varchar("receiver_id"),
+  jobContactName: text("job_contact_name").array(),
+  jobContactEmail: text("job_contact_email").array(),
   
   // Shipment Details
   etaPort: text("eta_port"),
