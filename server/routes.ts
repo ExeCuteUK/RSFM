@@ -1188,6 +1188,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (req.body.clearanceType !== undefined) clearanceUpdate.clearanceType = shipment.clearanceType;
         if (req.body.customerReferenceNumber !== undefined) clearanceUpdate.customerReferenceNumber = shipment.customerReferenceNumber;
         if (req.body.supplierName !== undefined) clearanceUpdate.supplierName = shipment.supplierName;
+        if (req.body.haulierName !== undefined) clearanceUpdate.haulierName = shipment.haulierName;
+        if (req.body.haulierContactName !== undefined) clearanceUpdate.haulierContactName = shipment.haulierContactName;
+        if (req.body.haulierEmail !== undefined) clearanceUpdate.haulierEmail = shipment.haulierEmail;
+        if (req.body.haulierReference !== undefined) clearanceUpdate.haulierReference = shipment.haulierReference;
         
         console.log('[SYNC-DEBUG] Clearance update fields:', Object.keys(clearanceUpdate));
         if (Object.keys(clearanceUpdate).length > 0) {
@@ -1700,6 +1704,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (req.body.customerReferenceNumber !== undefined) clearanceUpdate.customerReferenceNumber = shipment.customerReferenceNumber;
         if (req.body.supplier !== undefined) clearanceUpdate.supplierName = shipment.supplier;
         if (req.body.clearanceType !== undefined) clearanceUpdate.clearanceType = shipment.clearanceType;
+        if (req.body.haulierName !== undefined) clearanceUpdate.haulierName = shipment.haulierName;
+        if (req.body.haulierContactName !== undefined) clearanceUpdate.haulierContactName = shipment.haulierContactName;
+        if (req.body.haulierEmail !== undefined) clearanceUpdate.haulierEmail = shipment.haulierEmail;
+        if (req.body.haulierReference !== undefined) clearanceUpdate.haulierReference = shipment.haulierReference;
         
         // Sync attachments to transport documents
         if (req.body.attachments !== undefined) {
@@ -2084,6 +2092,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.clearanceType !== undefined) shipmentUpdate.clearanceType = clearance.clearanceType;
           if (req.body.customerReferenceNumber !== undefined) shipmentUpdate.customerReferenceNumber = clearance.customerReferenceNumber;
           if (req.body.supplierName !== undefined) shipmentUpdate.supplierName = clearance.supplierName;
+          if (req.body.haulierName !== undefined) shipmentUpdate.haulierName = clearance.haulierName;
+          if (req.body.haulierContactName !== undefined) shipmentUpdate.haulierContactName = clearance.haulierContactName;
+          if (req.body.haulierEmail !== undefined) shipmentUpdate.haulierEmail = clearance.haulierEmail;
+          if (req.body.haulierReference !== undefined) shipmentUpdate.haulierReference = clearance.haulierReference;
           
           // If status changed to "Request CC", set clearance status indicator to yellow (1)
           if (req.body.status !== undefined && clearance.status === "Request CC") {
@@ -2125,6 +2137,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (req.body.incoterms !== undefined) shipmentUpdate.incoterms = clearance.incoterms;
           if (req.body.customerReferenceNumber !== undefined) shipmentUpdate.customerReferenceNumber = clearance.customerReferenceNumber;
           if (req.body.supplierName !== undefined) shipmentUpdate.supplier = clearance.supplierName;
+          if (req.body.haulierName !== undefined) shipmentUpdate.haulierName = clearance.haulierName;
+          if (req.body.haulierContactName !== undefined) shipmentUpdate.haulierContactName = clearance.haulierContactName;
+          if (req.body.haulierEmail !== undefined) shipmentUpdate.haulierEmail = clearance.haulierEmail;
+          if (req.body.haulierReference !== undefined) shipmentUpdate.haulierReference = clearance.haulierReference;
           
           // Sync transport documents back to attachments
           if (req.body.transportDocuments !== undefined) {
