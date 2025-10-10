@@ -529,7 +529,7 @@ export default function Customers() {
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedImportCustomers.map((customer) => (
-                <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-blue-50/50 dark:bg-blue-950/20">
+                <Card key={customer.id} data-testid={`card-customer-${customer.id}`}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
@@ -668,7 +668,7 @@ export default function Customers() {
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedExportCustomers.map((customer) => (
-                  <Card key={customer.id} data-testid={`card-customer-${customer.id}`} className="bg-green-50/50 dark:bg-green-950/20">
+                  <Card key={customer.id} data-testid={`card-customer-${customer.id}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -906,7 +906,7 @@ export default function Customers() {
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedHauliers.map((haulier) => (
-                  <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
+                  <Card key={haulier.id} data-testid={`card-haulier-${haulier.id}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -1039,7 +1039,7 @@ export default function Customers() {
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedShippingLines.map((line) => (
-                  <Card key={line.id} data-testid={`card-shipping-line-${line.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
+                  <Card key={line.id} data-testid={`card-shipping-line-${line.id}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -1153,7 +1153,7 @@ export default function Customers() {
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedClearanceAgents.map((agent) => (
-                  <Card key={agent.id} data-testid={`card-clearance-agent-${agent.id}`} className="bg-orange-50/50 dark:bg-orange-950/20">
+                  <Card key={agent.id} data-testid={`card-clearance-agent-${agent.id}`}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">

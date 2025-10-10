@@ -1773,7 +1773,7 @@ Hope all is OK.`
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {shipments.map((shipment) => (
-            <Card key={shipment.id} data-testid={`card-shipment-${shipment.id}`} className="bg-blue-50/50 dark:bg-blue-950/20">
+            <Card key={shipment.id} data-testid={`card-shipment-${shipment.id}`}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">

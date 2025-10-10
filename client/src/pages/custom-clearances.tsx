@@ -1575,7 +1575,7 @@ export default function CustomClearances() {
             const hasNotes = clearance.additionalNotes && clearance.additionalNotes.trim().length > 0
 
             return (
-              <Card key={clearance.id} data-testid={`card-clearance-${clearance.id}`} className="bg-purple-50/50 dark:bg-purple-950/20">
+              <Card key={clearance.id} data-testid={`card-clearance-${clearance.id}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
