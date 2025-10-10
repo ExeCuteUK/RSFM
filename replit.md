@@ -38,6 +38,8 @@ Preferred communication style: Simple, everyday language.
 - Run backup: `tsx scripts/backup-contact-databases.ts`
 - Run restore: `tsx scripts/restore-contact-databases.ts`
 - Backup files are SQL INSERT statements ready for production rollout
+- **Restore System:** Handles legacy backups with camelCase column names (auto-maps to snake_case), supports multi-line addresses with embedded semicolons, and properly parses SQL-standard escaped quotes ('')
+- **UI Cards Standardization:** All display cards use consistent `bg-card` styling (white in light mode, grey in dark mode) across contacts and job pages
 
 ## System Architecture
 

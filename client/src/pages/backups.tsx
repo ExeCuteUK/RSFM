@@ -116,10 +116,11 @@ export default function BackupsPage() {
       setShowRestoreWarning(false);
       setSelectedBackup(null);
     },
-    onError: () => {
+    onError: (error: any) => {
+      const errorMessage = error?.message || error?.error || "Failed to restore backup. Please try again.";
       toast({
-        title: "Error",
-        description: "Failed to restore backup. Please try again.",
+        title: "Restore Failed",
+        description: errorMessage,
         variant: "destructive",
       });
       setShowRestoreWarning(false);

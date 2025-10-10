@@ -114,13 +114,59 @@ async function restoreContactDatabases() {
       try {
         const sqlContent = readFileSync(table.file, "utf-8");
         
-        // Split by lines and filter out comments and empty lines
-        let statements = sqlContent
+        // Filter out comments and empty lines
+        const filteredContent = sqlContent
           .split("\n")
           .filter(line => line.trim() && !line.trim().startsWith("--"))
-          .join("\n")
-          .split(";")
-          .filter(stmt => stmt.trim());
+          .join("\n");
+        
+        // Smart split by semicolons, ignoring semicolons inside string literals
+        // Handles SQL-standard escaped quotes ('') and backslash escapes
+        let statements: string[] = [];
+        let currentStmt = '';
+        let inString = false;
+        
+        for (let i = 0; i < filteredContent.length; i++) {
+          const char = filteredContent[i];
+          const nextChar = i + 1 < filteredContent.length ? filteredContent[i + 1] : null;
+          
+          // Handle single quotes (string delimiters and SQL escaping)
+          if (char === "'") {
+            currentStmt += char;
+            
+            if (inString) {
+              // Check if it's an escaped quote ('') or end of string
+              if (nextChar === "'") {
+                // It's an escaped quote, add both and skip next
+                currentStmt += nextChar;
+                i++;
+              } else {
+                // It's the end of the string
+                inString = false;
+              }
+            } else {
+              // Start of a string
+              inString = true;
+            }
+            continue;
+          }
+          
+          // Split on semicolons only when outside strings
+          if (char === ';' && !inString) {
+            if (currentStmt.trim()) {
+              statements.push(currentStmt.trim());
+            }
+            currentStmt = '';
+            continue;
+          }
+          
+          currentStmt += char;
+        }
+        
+        // Add the last statement if exists
+        if (currentStmt.trim()) {
+          statements.push(currentStmt.trim());
+        }
 
         // Apply column name mapping if needed
         if (columnMapping[table.name]) {
