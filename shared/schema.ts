@@ -681,8 +681,9 @@ export const customClearances = pgTable("custom_clearances", {
   
   // Haulier Information
   haulierName: text("haulier_name"),
-  haulierContactName: text("haulier_contact_name"),
-  haulierEmail: text("haulier_email"),
+  haulierContactName: text("haulier_contact_name").array(),
+  haulierEmail: text("haulier_email").array(),
+  haulierReference: text("haulier_reference"),
   
   // Additional Details (renamed from Customs Details)
   vatZeroRated: boolean("vat_zero_rated").default(false),
