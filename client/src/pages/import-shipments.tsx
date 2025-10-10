@@ -68,7 +68,6 @@ export default function ImportShipments() {
   const [portUpdateDialog, setPortUpdateDialog] = useState<{ show: boolean; newPort: string; shipmentId: string } | null>(null)
   const [dragOver, setDragOver] = useState<{ shipmentId: string; type: "attachment" | "pod" } | null>(null)
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
-  const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [deletingFile, setDeletingFile] = useState<{ id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
@@ -1556,12 +1555,22 @@ Hope all is OK.`
     }
   }
 
-  const handleClearanceAgentSelected = (agent: ClearanceAgent) => {
+  const handleAdviseClearanceToAgent = (shipmentId: string) => {
     try {
-      if (!clearanceAgentDialog) return
-      
-      const shipment = allShipments.find(s => s.id === clearanceAgentDialog.shipmentId)
+      const shipment = allShipments.find(s => s.id === shipmentId)
       if (!shipment) return
+      
+      // Get the clearance agent from the shipment's clearanceAgent field
+      const agent = clearanceAgents.find(a => a.agentName === shipment.clearanceAgent)
+      
+      if (!agent || !shipment.clearanceAgent) {
+        toast({
+          title: "No Clearance Agent",
+          description: "Please select a clearance agent for this shipment first.",
+          variant: "destructive",
+        })
+        return
+      }
       
       const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
       const customerName = customer?.companyName || "N/A"
@@ -1616,8 +1625,6 @@ Hope all is OK.`
           shipmentId: shipment.id
         }
       })
-      
-      setClearanceAgentDialog(null)
     } catch (error) {
       console.error('Error opening email composer:', error)
       toast({
@@ -1625,7 +1632,6 @@ Hope all is OK.`
         description: "Please try again",
         variant: "destructive",
       })
-      setClearanceAgentDialog(null)
     }
   }
 
@@ -1982,7 +1988,7 @@ Hope all is OK.`
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => setClearanceAgentDialog({ show: true, shipmentId: shipment.id })}
+                          onClick={() => handleAdviseClearanceToAgent(shipment.id)}
                           data-testid={`button-advise-clearance-${shipment.id}`}
                           title="Send clearance details to agent"
                           className="p-0 border-0 bg-transparent shrink-0"
@@ -3621,42 +3627,6 @@ Hope all is OK.`
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
             {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Clearance Agent Selection Dialog */}
-      <Dialog open={clearanceAgentDialog?.show || false} onOpenChange={(open) => !open && setClearanceAgentDialog(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Select Clearance Agent</DialogTitle>
-            <DialogDescription>Choose a clearance agent to email about this shipment</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {clearanceAgents.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No clearance agents available</p>
-            ) : (
-              clearanceAgents.map((agent) => (
-                <Card 
-                  key={agent.id} 
-                  className="cursor-pointer hover-elevate transition-all"
-                  onClick={() => handleClearanceAgentSelected(agent)}
-                  data-testid={`clearance-agent-${agent.id}`}
-                >
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg">{agent.agentName}</h3>
-                    {agent.agentImportEmail && agent.agentImportEmail.length > 0 && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {agent.agentImportEmail[0]}
-                      </p>
-                    )}
-                    {agent.agentTelephone && (
-                      <p className="text-sm text-muted-foreground">{agent.agentTelephone}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
-            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -48,7 +48,6 @@ export default function ExportShipments() {
   const { openWindow } = useWindowManager()
   const { openEmailComposer } = useEmail()
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
-  const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; shipmentId: string } | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
   const [selectedShipmentTypes, setSelectedShipmentTypes] = useState<string[]>(["Container Shipment", "Road Shipment", "Air Freight"])
   const [searchText, setSearchText] = useState("")
@@ -852,12 +851,22 @@ Hope all is OK.`
     return "£"
   }
 
-  const handleClearanceAgentSelected = (agent: ClearanceAgent) => {
+  const handleAdviseClearanceToAgent = (shipmentId: string) => {
     try {
-      if (!clearanceAgentDialog) return
-      
-      const shipment = allShipments.find(s => s.id === clearanceAgentDialog.shipmentId)
+      const shipment = allShipments.find(s => s.id === shipmentId)
       if (!shipment) return
+      
+      // Get the clearance agent from the shipment's clearanceAgent field
+      const agent = clearanceAgents.find(a => a.agentName === shipment.clearanceAgent)
+      
+      if (!agent || !shipment.clearanceAgent) {
+        toast({
+          title: "No Clearance Agent",
+          description: "Please select a clearance agent for this shipment first.",
+          variant: "destructive",
+        })
+        return
+      }
       
       // Get customer name
       const customer = exportCustomers.find(c => c.id === shipment.destinationCustomerId)
@@ -898,8 +907,6 @@ Hope all is OK.`
           shipmentId: shipment.id
         }
       })
-      
-      setClearanceAgentDialog(null)
     } catch (error) {
       console.error('Error composing email:', error)
       toast({
@@ -907,7 +914,6 @@ Hope all is OK.`
         description: "Failed to prepare email. Please try again.",
         variant: "destructive"
       })
-      setClearanceAgentDialog(null)
     }
   }
 
@@ -1255,7 +1261,7 @@ Hope all is OK.`
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
                           <button
-                            onClick={() => setClearanceAgentDialog({ show: true, shipmentId: shipment.id })}
+                            onClick={() => handleAdviseClearanceToAgent(shipment.id)}
                             className="hover-elevate rounded p-0 shrink-0"
                             data-testid={`button-advise-clearance-icon-${shipment.id}`}
                           >
@@ -1677,28 +1683,6 @@ Hope all is OK.`
             >
               {updateNotes.isPending ? "Saving..." : "Save/Update"}
             </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!clearanceAgentDialog} onOpenChange={(open) => !open && setClearanceAgentDialog(null)}>
-        <DialogContent className="max-w-md" aria-describedby="clearance-agent-description">
-          <DialogHeader>
-            <DialogTitle>Select Clearance Agent</DialogTitle>
-            <p id="clearance-agent-description" className="sr-only">Choose a clearance agent to send the clearance request</p>
-          </DialogHeader>
-          <div className="space-y-2">
-            {clearanceAgents.map((agent) => (
-              <Button
-                key={agent.id}
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => handleClearanceAgentSelected(agent)}
-                data-testid={`button-agent-${agent.id}`}
-              >
-                {agent.agentName}
-              </Button>
-            ))}
           </div>
         </DialogContent>
       </Dialog>
