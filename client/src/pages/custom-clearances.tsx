@@ -810,31 +810,24 @@ export default function CustomClearances() {
 
   const handleSendHaulierEadEmail = (clearance: CustomClearance) => {
     const isImport = clearance.jobType === 'import'
-    
-    // Get the linked shipment based on clearance type
-    const linkedShipment = isImport
-      ? importShipments.find((s: any) => s.jobRef === clearance.jobRef)
-      : clearance.createdFromId
-        ? exportShipments.find((s: any) => s.id === clearance.createdFromId)
-        : null
 
-    // Get haulier email(s) - support both array and legacy string format
-    const haulierEmailField = linkedShipment?.haulierEmail
+    // Get haulier email(s) from clearance - support both array and legacy string format
+    const haulierEmailField = clearance.haulierEmail
     const haulierEmails = Array.isArray(haulierEmailField)
       ? haulierEmailField.filter(Boolean)
       : typeof haulierEmailField === 'string' && haulierEmailField
         ? haulierEmailField.split(',').map(e => e.trim()).filter(Boolean)
         : []
 
-    // Get haulier contact name(s) - support both array and legacy string format
-    const haulierContactField = linkedShipment?.haulierContactName
+    // Get haulier contact name(s) from clearance - support both array and legacy string format
+    const haulierContactField = clearance.haulierContactName
     const haulierContacts = Array.isArray(haulierContactField)
       ? haulierContactField.filter(Boolean)
       : typeof haulierContactField === 'string' && haulierContactField
         ? haulierContactField.split('/').map(c => c.trim()).filter(Boolean)
         : []
 
-    // Build "Hi" greeting line with proper grammar
+    // Build "Hi" greeting line with proper grammar using haulier contact name
     let greeting = "Hi there"
     if (haulierContacts.length === 1) {
       greeting = `Hi ${haulierContacts[0]}`
@@ -851,33 +844,37 @@ export default function CustomClearances() {
       ? `Import Job Update - Import GVMS Document / Our Ref: ${clearance.jobRef}`
       : `Export Job Update - Export Entry / Our Ref: ${clearance.jobRef}`
     
-    // Add trailer/container/flight number if available with correct label based on shipment type
-    if (linkedShipment?.trailerOrContainerNumber || (linkedShipment as any)?.trailerNo) {
-      const trailerNumber = linkedShipment.trailerOrContainerNumber || (linkedShipment as any)?.trailerNo
+    // Add trailer/container number if available
+    if (clearance.trailerOrContainerNumber) {
       let numberLabel = "Trailer Number"
-      if (linkedShipment.containerShipment === "Air Freight") {
+      if (clearance.containerShipment === "Air Freight") {
         numberLabel = "Flight Number"
-      } else if (linkedShipment.containerShipment === "Container Shipment") {
+      } else if (clearance.containerShipment === "Container Shipment") {
         numberLabel = "Container Number"
       }
-      subject += ` / ${numberLabel}: ${trailerNumber}`
+      subject += ` / ${numberLabel}: ${clearance.trailerOrContainerNumber}`
     }
     
     // Add haulier reference if available
-    if (linkedShipment?.haulierReference) {
-      subject += ` / Your Ref: ${linkedShipment.haulierReference}`
+    if (clearance.haulierReference) {
+      subject += ` / Your Ref ${clearance.haulierReference}`
     }
 
-    // Build email body with conditional attachment text based on clearance type and shipment type
+    // Build email body with conditional attachment text based on clearance type
     let attachmentText = "Export Entry"
     if (isImport) {
       attachmentText = "Import Entry"
-    } else if (linkedShipment?.containerShipment === "Air Freight") {
+    } else if (clearance.containerShipment === "Air Freight") {
       attachmentText = "Airway Bill"
     }
     const body = `${greeting},\n\nPlease find attached ${attachmentText} for this shipment.\n\nHope all is OK.`
 
-    // Open email composer with clearance documents
+    // Combine transport documents and clearance documents for attachments
+    const transportDocs = clearance.transportDocuments || []
+    const clearanceDocs = clearance.clearanceDocuments || []
+    const allAttachments = [...transportDocs, ...clearanceDocs]
+
+    // Open email composer with all documents
     openEmailComposer({
       id: `email-${Date.now()}`,
       to: haulierEmails.join(', '),
@@ -885,7 +882,7 @@ export default function CustomClearances() {
       bcc: '',
       subject,
       body,
-      attachments: clearance.clearanceDocuments || [],
+      attachments: allAttachments,
       metadata: {
         source: 'send-haulier-ead',
         shipmentId: clearance.id,
