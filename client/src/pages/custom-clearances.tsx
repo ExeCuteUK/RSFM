@@ -604,11 +604,6 @@ export default function CustomClearances() {
     try {
       const isImport = clearance.jobType === 'import'
       const isExport = clearance.jobType === 'export'
-      
-      // Get the customer based on clearance type
-      const customer = isImport
-        ? importCustomers.find(c => c.id === clearance.importCustomerId)
-        : exportCustomers.find(c => c.id === clearance.exportCustomerId)
 
       // Check if clearance documents exist
       if (!clearance.clearanceDocuments || clearance.clearanceDocuments.length === 0) {
@@ -620,31 +615,12 @@ export default function CustomClearances() {
         return
       }
 
-      // Determine TO field with priority: Agent Accounts Email → Customer Accounts Email → Agent Email → Customer Email
-      let toEmail = ""
-      let ccEmails = ""
-      let useAgentContact = false
-      
-      if (customer) {
-        const agentAccountsEmail = customer.agentAccountsEmail
-        const customerAccountsEmail = customer.accountsEmail
-        const agentEmailArray = Array.isArray(customer.agentEmail) ? customer.agentEmail : (customer.agentEmail ? [customer.agentEmail] : [])
-        const customerEmailArray = Array.isArray(customer.email) ? customer.email : (customer.email ? customer.email.split(',').map(e => e.trim()) : [])
-        
-        if (agentAccountsEmail) {
-          toEmail = agentAccountsEmail
-          useAgentContact = true
-        } else if (customerAccountsEmail) {
-          toEmail = customerAccountsEmail
-          useAgentContact = false
-        } else if (agentEmailArray.length > 0 && agentEmailArray[0]) {
-          toEmail = agentEmailArray[0]
-          useAgentContact = true
-        } else if (customerEmailArray.length > 0 && customerEmailArray[0]) {
-          toEmail = customerEmailArray[0]
-          useAgentContact = false
-        }
-      }
+      // Build email recipient data from job contact fields (handle both array and legacy string formats)
+      const jobContactEmailArray = Array.isArray(clearance.jobContactEmail) 
+        ? clearance.jobContactEmail 
+        : (clearance.jobContactEmail ? [clearance.jobContactEmail] : [])
+      const toEmail = jobContactEmailArray[0] || ""
+      const ccEmails = jobContactEmailArray.slice(1).join(", ")
       
       // Build subject with conditional parts
       const jobRef = clearance.jobRef || "N/A"
@@ -656,14 +632,13 @@ export default function CustomClearances() {
       const mrnPart = mrn ? ` / MRN: ${mrn}` : ""
       const subject = `R.S ${clearanceType} / Our Ref: ${jobRef}${yourRefPart}${mrnPart}`
       
-      // Build personalized greeting using agent or customer contact name (first name only)
-      const contactNameField = useAgentContact ? customer?.agentContactName : customer?.contactName
-      const contactNameArray = Array.isArray(contactNameField)
-        ? contactNameField.filter(Boolean)
-        : (contactNameField ? contactNameField.split('/').map(n => n.trim()).filter(Boolean) : [])
+      // Build personalized greeting using job contact names
+      const jobContactNameArray = Array.isArray(clearance.jobContactName)
+        ? clearance.jobContactName.filter(Boolean)
+        : (clearance.jobContactName ? clearance.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
       
       // Extract first names only
-      const firstNames = contactNameArray.map(name => name.split(' ')[0])
+      const firstNames = jobContactNameArray.map(name => name.split(' ')[0])
       
       let greeting = "Hi there"
       if (firstNames.length === 1) {
