@@ -102,8 +102,15 @@ async function restoreContactDatabases() {
       export_customers: {
         companyName: 'company_name',
         contactName: 'contact_name',
-        contactPosition: 'contact_position',
+        vatNumber: 'vat_number',
         accountsEmail: 'accounts_email',
+        agentName: 'agent_name',
+        agentContactName: 'agent_contact_name',
+        agentVatNumber: 'agent_vat_number',
+        agentTelephone: 'agent_telephone',
+        agentEmail: 'agent_email',
+        agentAccountsEmail: 'agent_accounts_email',
+        agentAddress: 'agent_address',
         createdBy: 'created_by'
       }
     };
@@ -168,19 +175,8 @@ async function restoreContactDatabases() {
           statements.push(currentStmt.trim());
         }
 
-        // Apply column name mapping if needed
-        if (columnMapping[table.name]) {
-          statements = statements.map(stmt => {
-            let mappedStmt = stmt;
-            Object.entries(columnMapping[table.name]).forEach(([oldName, newName]) => {
-              // Replace column names in INSERT statements
-              const regex = new RegExp(`"${oldName}"`, 'g');
-              mappedStmt = mappedStmt.replace(regex, `"${newName}"`);
-            });
-            return mappedStmt;
-          });
-        }
-
+        // Note: Column name mapping is no longer needed since backups now use snake_case column names
+        
         for (const statement of statements) {
           if (statement.trim()) {
             await db.execute(sql.raw(statement));

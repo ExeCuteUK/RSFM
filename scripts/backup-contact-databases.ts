@@ -188,6 +188,11 @@ async function backupContactDatabases() {
   }
 }
 
+// Convert camelCase to snake_case for database column names
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
 function generateInsertSQL(tableName: string, data: any[]): string {
   if (data.length === 0) {
     return `-- No data to backup for ${tableName}\n`;
@@ -222,9 +227,16 @@ function generateInsertSQL(tableName: string, data: any[]): string {
       }
       
       if (Array.isArray(value)) {
-        const arrayValues = value.map(v => 
-          typeof v === "string" ? `"${v.replace(/"/g, '\\"')}"` : String(v)
-        ).join(",");
+        const arrayValues = value.map(v => {
+          if (typeof v === "string") {
+            // Escape single quotes and special characters for PostgreSQL array strings
+            const escaped = v
+              .replace(/\\/g, '\\\\')
+              .replace(/'/g, "''");
+            return `'${escaped}'`;
+          }
+          return String(v);
+        }).join(",");
         return `ARRAY[${arrayValues}]`;
       }
       
@@ -235,7 +247,7 @@ function generateInsertSQL(tableName: string, data: any[]): string {
       return String(value);
     });
 
-    sql += `INSERT INTO ${tableName} (${columns.map(c => `"${c}"`).join(", ")}) VALUES (${values.join(", ")});\n`;
+    sql += `INSERT INTO ${tableName} (${columns.map(c => `"${toSnakeCase(c)}"`).join(", ")}) VALUES (${values.join(", ")});\n`;
   }
 
   sql += "\n";
