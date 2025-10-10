@@ -476,12 +476,10 @@ export default function CustomClearances() {
     try {
       const isImport = clearance.jobType === 'import'
       
-      // Get the linked shipment based on clearance type
-      const linkedShipment = isImport
-        ? importShipments.find((s: any) => s.jobRef === clearance.jobRef)
-        : clearance.createdFromId
-          ? exportShipments.find((s: any) => s.id === clearance.createdFromId)
-          : null
+      // Get the customer based on clearance type
+      const customer = isImport
+        ? importCustomers.find(c => c.id === clearance.importCustomerId)
+        : exportCustomers.find(c => c.id === clearance.exportCustomerId)
 
       // Get all invoices for this clearance
       const clearanceInvoices = allInvoices.filter(inv => 
@@ -504,72 +502,63 @@ export default function CustomClearances() {
         return
       }
 
-      // Build email recipient data from linked shipment (handle both array and legacy string formats)
-      const jobContactEmailArray = Array.isArray(linkedShipment?.jobContactEmail) 
-        ? linkedShipment.jobContactEmail 
-        : (linkedShipment?.jobContactEmail ? [linkedShipment.jobContactEmail] : [])
-      const jobContactEmail = jobContactEmailArray[0] || ""
-      const ccEmails = jobContactEmailArray.slice(1).join(", ")
+      // Determine TO field with priority: Agent Accounts Email → Customer Accounts Email → Agent Email → Customer Email
+      let toEmail = ""
+      let ccEmails = ""
       
-      // Build subject
+      if (customer) {
+        const agentAccountsEmail = customer.agentAccountsEmail
+        const customerAccountsEmail = customer.accountsEmail
+        const agentEmailArray = Array.isArray(customer.agentEmail) ? customer.agentEmail : (customer.agentEmail ? [customer.agentEmail] : [])
+        const customerEmailArray = Array.isArray(customer.email) ? customer.email : (customer.email ? customer.email.split(',').map(e => e.trim()) : [])
+        
+        if (agentAccountsEmail) {
+          toEmail = agentAccountsEmail
+        } else if (customerAccountsEmail) {
+          toEmail = customerAccountsEmail
+        } else if (agentEmailArray.length > 0 && agentEmailArray[0]) {
+          toEmail = agentEmailArray[0]
+        } else if (customerEmailArray.length > 0 && customerEmailArray[0]) {
+          toEmail = customerEmailArray[0]
+        }
+      }
+      
+      // Build subject with customer reference if available
       const jobRef = clearance.jobRef || "N/A"
-      const customerRef = linkedShipment?.customerReferenceNumber
-      
-      // Conditionally include "Your Ref" only if customerRef exists
-      const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
+      const customerRef = clearance.customerReferenceNumber
+      const yourRefPart = customerRef ? ` / Your Ref : ${customerRef}` : ""
       const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
       
-      // Build personalized greeting
-      const jobContactNameArray = Array.isArray(linkedShipment?.jobContactName)
-        ? linkedShipment.jobContactName.filter(Boolean)
-        : (linkedShipment?.jobContactName ? linkedShipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+      // Build personalized greeting using customer contact name
+      const customerContactNameArray = Array.isArray(customer?.contactName)
+        ? customer.contactName.filter(Boolean)
+        : (customer?.contactName ? customer.contactName.split('/').map(n => n.trim()).filter(Boolean) : [])
       
       let greeting = "Hi there"
-      if (jobContactNameArray.length === 1) {
-        greeting = `Hi ${jobContactNameArray[0]}`
-      } else if (jobContactNameArray.length === 2) {
-        greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
-      } else if (jobContactNameArray.length >= 3) {
-        const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
-        const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+      if (customerContactNameArray.length === 1) {
+        greeting = `Hi ${customerContactNameArray[0]}`
+      } else if (customerContactNameArray.length === 2) {
+        greeting = `Hi ${customerContactNameArray[0]} and ${customerContactNameArray[1]}`
+      } else if (customerContactNameArray.length >= 3) {
+        const lastContact = customerContactNameArray[customerContactNameArray.length - 1]
+        const otherContacts = customerContactNameArray.slice(0, -1).join(', ')
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
       // Determine document type text
       const hasInvoices = clearanceInvoices.some(inv => inv.type === 'invoice')
       const hasCredits = clearanceInvoices.some(inv => inv.type === 'credit_note')
-      let documentText = "Invoice"
+      let documentText = hasCredits 
+        ? (clearanceInvoices.length > 1 ? "credit notes" : "credit note")
+        : (clearanceInvoices.length > 1 ? "invoices" : "invoice")
       
-      if (hasInvoices && hasCredits) {
-        if (clearanceInvoices.filter(inv => inv.type === 'invoice').length > 1 && clearanceInvoices.filter(inv => inv.type === 'credit_note').length > 1) {
-          documentText = "Invoices and Credit Notes"
-        } else if (clearanceInvoices.filter(inv => inv.type === 'invoice').length > 1) {
-          documentText = "Invoices and Credit Note"
-        } else if (clearanceInvoices.filter(inv => inv.type === 'credit_note').length > 1) {
-          documentText = "Invoice and Credit Notes"
-        } else {
-          documentText = "Invoice and Credit Note"
-        }
-      } else if (hasCredits) {
-        documentText = clearanceInvoices.length > 1 ? "Credit Notes" : "Credit Note"
-      } else {
-        documentText = clearanceInvoices.length > 1 ? "Invoices" : "Invoice"
-      }
+      // Check if clearance has clearance documents
+      const hasClearanceDocs = clearance.clearanceDocuments && clearance.clearanceDocuments.length > 0
+      const entryText = hasClearanceDocs ? " & entry" : ""
       
-      // Build body with agent information if present
-      let body = `${greeting},\n\nPlease find attached our ${documentText}.`
-      
-      // Add agent information if present
-      const agentContactNameArray = Array.isArray(linkedShipment?.agentContactName)
-        ? linkedShipment.agentContactName.filter(Boolean)
-        : (linkedShipment?.agentContactName ? linkedShipment.agentContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
-      const agentEmailArray = Array.isArray(linkedShipment?.agentEmail)
-        ? linkedShipment.agentEmail.filter(Boolean)
-        : (linkedShipment?.agentEmail ? linkedShipment.agentEmail.split(',').map(e => e.trim()).filter(Boolean) : [])
-      
-      if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
-        body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
-      }
+      // Build custom clearance email body
+      const yourRefLine = customerRef ? `\n\nYour Ref ${customerRef}.` : ""
+      const body = `${greeting},\n\nPlease find enclosed our ${documentText}${entryText} for this clearance.${yourRefLine}\n\nAny issues please let me know.`
       
       // Get invoice PDF paths with proper filenames
       const invoiceFiles = clearanceInvoices.map(invoice => ({
@@ -577,15 +566,25 @@ export default function CustomClearances() {
         name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
       }))
       
+      // Add clearance documents if available
+      const clearanceDocFiles = hasClearanceDocs 
+        ? clearance.clearanceDocuments!.map(doc => ({
+            url: `/api/file-storage/download?path=${encodeURIComponent(doc.path)}`,
+            name: doc.filename
+          }))
+        : []
+      
+      const allAttachments = [...invoiceFiles, ...clearanceDocFiles]
+      
       // Open email composer
       openEmailComposer({
         id: `email-${Date.now()}`,
-        to: jobContactEmail,
+        to: toEmail,
         cc: ccEmails,
         bcc: "",
         subject: subject,
         body: body,
-        attachments: invoiceFiles,
+        attachments: allAttachments,
         metadata: {
           source: 'send-invoice-customer-clearance',
           shipmentId: clearance.id
