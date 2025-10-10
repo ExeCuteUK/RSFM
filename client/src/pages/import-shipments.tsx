@@ -303,15 +303,15 @@ export default function ImportShipments() {
     mutationFn: async ({ id, filePath, fileType, fileName }: { id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string }) => {
       return apiRequest("DELETE", `/api/import-shipments/${id}/files`, { filePath, fileType })
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: async (_data, variables) => {
       const shipment = allShipments.find(s => s.id === variables.id)
-      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
-      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
-      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups/batch"], refetchType: "all" })
+      await queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
+      await queryClient.refetchQueries({ queryKey: ["/api/job-file-groups/batch"], type: "active" })
+      await queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       if (shipment?.jobRef) {
-        queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups", shipment.jobRef], refetchType: "all" })
+        await queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups", shipment.jobRef], refetchType: "all" })
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
+      await queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
       toast({ title: `File '${variables.fileName}' deleted successfully` })
     },
   })
