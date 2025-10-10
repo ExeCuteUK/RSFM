@@ -1,6 +1,7 @@
 import { db } from "../server/db";
-import { readFileSync } from "fs";
+import { readFileSync, copyFileSync, existsSync } from "fs";
 import { sql } from "drizzle-orm";
+import path from "path";
 
 async function restoreContactDatabases() {
   try {
@@ -188,6 +189,27 @@ async function restoreContactDatabases() {
     for (const table of tables) {
       const result = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table.name}`));
       console.log(`  ${table.name}: ${result.rows[0].count} records`);
+    }
+
+    // Restore email signature files if they exist in backup
+    console.log("\nRestoring email signature files...");
+    const backupSignatureTemplatePath = `${backupDir}/signature-template.html`;
+    const backupSignatureLogoPath = `${backupDir}/rs-logo.jpg`;
+    const targetSignatureTemplatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+    const targetSignatureLogoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
+    
+    if (existsSync(backupSignatureTemplatePath)) {
+      copyFileSync(backupSignatureTemplatePath, targetSignatureTemplatePath);
+      console.log("✓ Email signature template restored");
+    } else {
+      console.log("⚠ Email signature template not found in backup, skipping");
+    }
+    
+    if (existsSync(backupSignatureLogoPath)) {
+      copyFileSync(backupSignatureLogoPath, targetSignatureLogoPath);
+      console.log("✓ Email signature logo restored");
+    } else {
+      console.log("⚠ Email signature logo not found in backup, skipping");
     }
 
     process.exit(0);

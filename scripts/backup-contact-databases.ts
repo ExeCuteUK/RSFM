@@ -17,11 +17,12 @@ import {
   settings,
   users
 } from "../shared/schema";
-import { writeFileSync, mkdirSync, rmSync } from "fs";
+import { writeFileSync, mkdirSync, rmSync, copyFileSync, existsSync } from "fs";
 import archiver from "archiver";
 import { createWriteStream } from "fs";
 import { GoogleDriveStorageService } from "../server/googleDriveStorage";
 import { readFileSync } from "fs";
+import path from "path";
 
 async function backupContactDatabases() {
   try {
@@ -181,6 +182,25 @@ async function backupContactDatabases() {
     writeFileSync(`${backupDir}/metadata.json`, JSON.stringify(metadata, null, 2));
 
     console.log("\n✓ All SQL files generated successfully!");
+    
+    // Backup email signature files
+    console.log("\nBacking up email signature files...");
+    const signatureTemplatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+    const signatureLogoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
+    
+    if (existsSync(signatureTemplatePath)) {
+      copyFileSync(signatureTemplatePath, `${backupDir}/signature-template.html`);
+      console.log("✓ Email signature template backed up");
+    } else {
+      console.log("⚠ Email signature template not found, skipping");
+    }
+    
+    if (existsSync(signatureLogoPath)) {
+      copyFileSync(signatureLogoPath, `${backupDir}/rs-logo.jpg`);
+      console.log("✓ Email signature logo backed up");
+    } else {
+      console.log("⚠ Email signature logo not found, skipping");
+    }
     
     // Create zip file
     const zipFilePath = `${backupDir}.zip`;
