@@ -2929,14 +2929,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Restore from specific backup (download from Google Drive first)
+  // Restore from specific backup (download from Google Drive first) - Admin only
   app.post("/api/backups/restore/:fileId", requireAuth, requireAdmin, async (req, res) => {
     try {
       const { fileId } = req.params;
       const { tables } = req.body;
       const { execSync } = await import("child_process");
-      const { writeFileSync, mkdirSync, rmSync } = await import("fs");
+      const { writeFileSync, mkdirSync, rmSync, readdirSync, statSync } = await import("fs");
       const extract = (await import("extract-zip")).default;
+      const { join } = await import("path");
       
       // Validate tables array
       if (!tables || !Array.isArray(tables) || tables.length === 0) {
@@ -2960,14 +2961,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const extractDir = `${tempDir}/extracted`;
       await extract(zipPath, { dir: process.cwd() + `/${extractDir}` });
       
-      // Get the backup name (folder inside the zip)
-      const { readdirSync } = await import("fs");
+      // Check if the extracted content is a folder or files directly
       const extractedContents = readdirSync(extractDir);
-      const backupName = extractedContents[0]; // Should be the backup folder
+      let backupPath = extractDir;
+      
+      // If there's a single folder, use that as the backup path
+      if (extractedContents.length === 1) {
+        const firstItem = join(extractDir, extractedContents[0]);
+        if (statSync(firstItem).isDirectory()) {
+          backupPath = firstItem;
+        }
+      }
       
       // Pass tables as JSON string argument
       const tablesJson = JSON.stringify(tables);
-      const result = execSync(`tsx scripts/restore-contact-databases.ts ${extractDir}/${backupName} '${tablesJson}'`, {
+      const result = execSync(`tsx scripts/restore-contact-databases.ts ${backupPath} '${tablesJson}'`, {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
         timeout: 300000, // 5 minutes timeout
