@@ -50,24 +50,63 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 // Helper function to get the base URL for OAuth callbacks and absolute URLs
 function getBaseUrl(): string {
   // Priority: APP_BASE_URL (user configured) > REPLIT_DOMAINS (published) > REPLIT_DEV_DOMAIN (dev) > localhost
+  
+  // 1. Check for explicit APP_BASE_URL (recommended for production)
   if (process.env.APP_BASE_URL) {
-    return process.env.APP_BASE_URL.replace(/\/$/, ''); // Remove trailing slash if present
+    let url = process.env.APP_BASE_URL.trim().replace(/\/$/, ''); // Remove trailing slash
+    
+    // Ensure protocol is present
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      console.warn(`APP_BASE_URL missing protocol, defaulting to https://: ${url}`);
+      url = `https://${url}`;
+    }
+    
+    return url;
   }
   
+  // 2. Use REPLIT_DOMAINS (published app domain)
   if (process.env.REPLIT_DOMAINS) {
-    const publishedDomain = process.env.REPLIT_DOMAINS.split(',')[0].trim();
-    return `https://${publishedDomain}`;
+    const domains = process.env.REPLIT_DOMAINS.split(',').map(d => d.trim()).filter(d => d);
+    if (domains.length > 0) {
+      const domain = domains[0];
+      // Add protocol if not present
+      return domain.startsWith('http') ? domain : `https://${domain}`;
+    }
   }
   
+  // 3. Use REPLIT_DEV_DOMAIN (development environment)
   if (process.env.REPLIT_DEV_DOMAIN) {
     return `https://${process.env.REPLIT_DEV_DOMAIN}`;
   }
   
+  // 4. Legacy Replit format
   if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
     return `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
   }
   
+  // 5. Local development fallback
   return 'http://localhost:5000';
+}
+
+// Validate that APP_BASE_URL is configured for Gmail OAuth
+function validateGmailOAuthConfig(): { valid: boolean; error?: string } {
+  if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
+    return { 
+      valid: false, 
+      error: "Gmail OAuth not configured. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET environment variables." 
+    };
+  }
+  
+  // Warn if using dynamic domain (non-production setup)
+  if (!process.env.APP_BASE_URL && process.env.REPLIT_DEV_DOMAIN) {
+    console.warn(
+      "⚠️  Gmail OAuth: APP_BASE_URL not set, using dynamic dev domain. " +
+      "This will cause redirect_uri_mismatch errors when the domain changes. " +
+      `Current redirect URI: ${getBaseUrl()}/api/gmail/callback`
+    );
+  }
+  
+  return { valid: true };
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -3639,6 +3678,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get OAuth URL for Gmail connection
   app.get("/api/gmail/auth-url", requireAuth, async (req, res) => {
     try {
+      // Validate Gmail OAuth configuration
+      const validation = validateGmailOAuthConfig();
+      if (!validation.valid) {
+        return res.status(500).json({ error: validation.error });
+      }
+      
       const { google } = await import("googleapis");
       const baseUrl = getBaseUrl();
       

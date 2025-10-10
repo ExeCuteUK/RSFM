@@ -62,3 +62,36 @@ Key routes include `/` (Dashboard), `/job-journals`, `/import-shipments`, `/expo
 -   **Container Tracking:** Terminal49 API.
 -   **OCR:** Scribe.js (PDFs), Tesseract.js (images).
 -   **Email Signature System:** File-based HTML templates, logo image upload, dynamic placeholders.
+
+## Deployment Configuration
+
+### Replit Deployment
+
+**Required Secrets** (Configure in Replit Secrets 🔒):
+
+1. **APP_BASE_URL** (REQUIRED for Gmail OAuth)
+   - Set to your published Replit domain: `https://your-app.replit.app`
+   - **Critical:** Must match the redirect URI in Google Cloud Console OAuth credentials
+   - **Do NOT** use the dev domain (it changes on restart, causing OAuth errors)
+   - Add `${APP_BASE_URL}/api/gmail/callback` to Google Cloud Console > Credentials > Authorized redirect URIs
+
+2. **GMAIL_CLIENT_ID** - Google OAuth client ID for email sending
+3. **GMAIL_CLIENT_SECRET** - Google OAuth client secret
+4. **GMAIL_REFRESH_TOKEN** - OAuth refresh token (generate via OAuth Playground)
+5. **GOOGLE_SERVICE_ACCOUNT_EMAIL** - Service account email for Drive/Gmail API
+6. **GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY** - Service account private key (include newlines)
+7. **TERMINAL49_API_KEY** - Container tracking API key (optional)
+
+**Gmail OAuth Setup:**
+- Development environment uses dynamic domains which cause `redirect_uri_mismatch` errors
+- **Solution:** Publish app first, then set `APP_BASE_URL` to published domain
+- Configure redirect URI in [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+
+### Ubuntu Server Deployment
+
+Complete setup instructions in `DEPLOYMENT.md`. Key points:
+- Uses `APP_BASE_URL` environment variable in `.env` file
+- Set to server URL: `http://YOUR_SERVER_IP:5000` or `https://yourdomain.com`
+- Behind HTTPS reverse proxy: Use `https://` protocol in `APP_BASE_URL`
+- Automated setup via `setup.sh` script
+- PM2 for process management, PostgreSQL 16 database
