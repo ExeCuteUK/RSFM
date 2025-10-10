@@ -207,7 +207,14 @@ function generateInsertSQL(tableName: string, data: any[]): string {
       }
       
       if (typeof value === "string") {
-        return `'${value.replace(/'/g, "''")}'`;
+        // Escape backslashes first, then other special characters
+        const escaped = value
+          .replace(/\\/g, '\\\\')     // Escape backslashes
+          .replace(/\n/g, '\\n')      // Escape newlines
+          .replace(/\r/g, '\\r')      // Escape carriage returns
+          .replace(/\t/g, '\\t')      // Escape tabs
+          .replace(/'/g, "''");       // Escape single quotes (PostgreSQL standard)
+        return `E'${escaped}'`;       // Use E'' for escape string syntax
       }
       
       if (typeof value === "boolean") {
