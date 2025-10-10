@@ -3741,6 +3741,12 @@ ${messageText}
 
       // Process each attachment
       for (const attachmentUrl of attachmentUrls) {
+        // Skip null or undefined attachment URLs
+        if (!attachmentUrl) {
+          console.warn('Skipping null or undefined attachment URL');
+          continue;
+        }
+
         let fileBuffer: Buffer;
         let filename: string;
         let contentType = 'application/octet-stream';
