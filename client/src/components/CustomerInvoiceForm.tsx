@@ -54,9 +54,21 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   const { toast } = useToast()
   
   // Fetch customer data based on job
-  const importCustomerId = job && jobType === 'import' ? (job as ImportShipment).importCustomerId : null
-  const exportCustomerId = job && jobType === 'export' ? (job as ExportShipment).destinationCustomerId : null
-  const exportReceiverId = job && jobType === 'export' ? (job as ExportShipment).receiverId : null
+  const importCustomerId = job && jobType === 'import' 
+    ? (job as ImportShipment).importCustomerId 
+    : job && jobType === 'clearance' 
+      ? (job as CustomClearance).importCustomerId 
+      : null
+  const exportCustomerId = job && jobType === 'export' 
+    ? (job as ExportShipment).destinationCustomerId 
+    : job && jobType === 'clearance' 
+      ? (job as CustomClearance).exportCustomerId 
+      : null
+  const exportReceiverId = job && jobType === 'export' 
+    ? (job as ExportShipment).receiverId 
+    : job && jobType === 'clearance' 
+      ? (job as CustomClearance).receiverId 
+      : null
   
   const { data: importCustomer } = useQuery<ImportCustomer>({
     queryKey: ['/api/import-customers', importCustomerId],
@@ -319,6 +331,64 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
         setPortDischarge(exportJob.portOfArrival || extractPostcode(exportJob.deliveryAddress || ''))
         setDeliveryTerms(exportJob.incoterms || '')
         setDestination(extractPostcode(exportJob.deliveryAddress || ''))
+      } else if (jobType === 'clearance') {
+        const clearanceJob = job as CustomClearance
+        
+        // Exporters Ref = Customer Reference
+        setExportersRef(clearanceJob.customerReferenceNumber || '')
+        
+        // Invoice To: Use agent if available, otherwise customer (works for both import and export clearances)
+        const customer = importCustomer || exportCustomer
+        if (customer) {
+          if (customer.agentName) {
+            setCustomerCompanyName(customer.agentName)
+            setCustomerAddress(customer.agentAddress || '')
+            setCustomerVatNumber(customer.agentVatNumber || '')
+          } else {
+            setCustomerCompanyName(customer.companyName)
+            setCustomerAddress(customer.address || '')
+            setCustomerVatNumber(customer.vatNumber || '')
+          }
+        }
+        
+        // Shipment details - populate first shipment line from clearance job
+        const firstLine: ShipmentLine = {
+          numberOfPackages: clearanceJob.numberOfPieces || '',
+          packingType: clearanceJob.packaging || '',
+          commodity: clearanceJob.goodsDescription || '',
+          kgs: clearanceJob.weight || '',
+          cbm: clearanceJob.cube || ''
+        }
+        setShipmentLines([firstLine])
+        
+        // Keep legacy fields in sync
+        setNumberOfPackages(clearanceJob.numberOfPieces || '')
+        setPackingType(clearanceJob.packaging || '')
+        setCommodity(clearanceJob.goodsDescription || '')
+        setKgs(clearanceJob.weight || '')
+        setCbm(clearanceJob.cube || '')
+        
+        // Consignor (for clearance = Supplier Name)
+        setConsignorName(clearanceJob.supplierName || '')
+        setConsignorAddress('') // Not available on clearance jobs
+        
+        // Consignee (for clearance = Customer/Receiver based on type)
+        if (clearanceJob.jobType === 'import' && importCustomer) {
+          setConsigneeName(importCustomer.companyName)
+          setConsigneeAddress(importCustomer.address || '')
+        } else if (clearanceJob.jobType === 'export' && exportReceiver) {
+          setConsigneeName(exportReceiver.companyName)
+          setConsigneeAddress(exportReceiver.address || '')
+        }
+        
+        // Shipping info
+        setIdentifier(clearanceJob.trailerOrContainerNumber || '')
+        setVesselName(clearanceJob.vesselName || 'N/A')
+        setDateOfShipment('') // Not available on clearance jobs
+        setPortLoading(clearanceJob.departureFrom || '')
+        setPortDischarge(clearanceJob.portOfArrival || '')
+        setDeliveryTerms(clearanceJob.incoterms || '')
+        setDestination(extractPostcode(clearanceJob.deliveryAddress || ''))
       }
       
       // Auto-populate line items from quotation/rate fields (only for new invoices, not when editing)
@@ -465,6 +535,35 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
             exportJob.additionalExpensesIn.forEach(expense => {
               if (expense.description && expense.amount && parseFloat(expense.amount) > 0) {
                 const charge = parseFloat(expense.amount)
+                autoLineItems.push({
+                  description: expense.description,
+                  chargeAmount: expense.amount,
+                  vatCode: '1',
+                  vatAmount: '0.00'
+                })
+              }
+            })
+          }
+        } else if (jobType === 'clearance') {
+          const clearanceJob = job as CustomClearance
+          
+          // Clearance Charge (labeled based on clearance type)
+          if (clearanceJob.clearanceCharge && parseFloat(clearanceJob.clearanceCharge) > 0) {
+            const description = clearanceJob.jobType === 'import' 
+              ? 'Import Customs Clearance' 
+              : 'Export Customs Clearance'
+            autoLineItems.push({
+              description,
+              chargeAmount: clearanceJob.clearanceCharge,
+              vatCode: '1',
+              vatAmount: '0.00'
+            })
+          }
+          
+          // Expenses To Charge Out (all expenses from the array, including auto-calculated ones)
+          if (clearanceJob.expensesToChargeOut && Array.isArray(clearanceJob.expensesToChargeOut)) {
+            clearanceJob.expensesToChargeOut.forEach(expense => {
+              if (expense.description && expense.amount && parseFloat(expense.amount) > 0) {
                 autoLineItems.push({
                   description: expense.description,
                   chargeAmount: expense.amount,
