@@ -638,72 +638,82 @@ export default function ExportShipments() {
       return
     }
 
-    // Build email recipient data (handle both array and legacy string formats)
-    const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
-      ? shipment.jobContactEmail 
-      : (shipment.jobContactEmail ? [shipment.jobContactEmail] : [])
-    const jobContactEmail = jobContactEmailArray[0] || ""
-    const ccEmails = jobContactEmailArray.slice(1).join(", ")
+    // Get the customer for email priority logic
+    const customer = exportCustomers.find(c => c.id === shipment.destinationCustomerId)
     
-    // Build subject
+    // Determine TO field with priority: Agent Accounts Email → Customer Accounts Email → Agent Email → Customer Email → Job Contact Email
+    let toEmail = ""
+    let ccEmails = ""
+    let useAgentContact = false
+    
+    if (customer) {
+      const agentAccountsEmail = customer.agentAccountsEmail?.[0]
+      const customerAccountsEmail = customer.accountsEmail?.[0]
+      const agentEmailArray = Array.isArray(customer.agentEmail) ? customer.agentEmail : (customer.agentEmail ? [customer.agentEmail] : [])
+      const customerEmailArray = Array.isArray(customer.email) ? customer.email : (customer.email ? customer.email.split(',').map(e => e.trim()) : [])
+      
+      if (agentAccountsEmail) {
+        toEmail = agentAccountsEmail
+        ccEmails = customer.agentAccountsEmail?.slice(1).join(", ") || ""
+        useAgentContact = true
+      } else if (customerAccountsEmail) {
+        toEmail = customerAccountsEmail
+        ccEmails = customer.accountsEmail?.slice(1).join(", ") || ""
+        useAgentContact = false
+      } else if (agentEmailArray.length > 0 && agentEmailArray[0]) {
+        toEmail = agentEmailArray[0]
+        ccEmails = agentEmailArray.slice(1).join(", ")
+        useAgentContact = true
+      } else if (customerEmailArray.length > 0 && customerEmailArray[0]) {
+        toEmail = customerEmailArray[0]
+        ccEmails = customerEmailArray.slice(1).join(", ")
+        useAgentContact = false
+      }
+    }
+    
+    // Fallback to shipment jobContactEmail if no customer email found
+    if (!toEmail) {
+      const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
+        ? shipment.jobContactEmail 
+        : (shipment.jobContactEmail ? [shipment.jobContactEmail] : [])
+      toEmail = jobContactEmailArray[0] || ""
+      ccEmails = jobContactEmailArray.slice(1).join(", ")
+    }
+    
+    // Build subject with conditional parts
     const jobRef = shipment.jobRef || "N/A"
     const customerRef = shipment.customerReferenceNumber
-    
-    // Conditionally include "Your Ref" only if customerRef exists
     const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
     const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
     
-    // Build personalized greeting
-    const jobContactNameArray = Array.isArray(shipment.jobContactName)
-      ? shipment.jobContactName.filter(Boolean)
-      : (shipment.jobContactName ? shipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+    // Build personalized greeting using agent, customer, or job contact name (first name only)
+    let contactNameField = useAgentContact ? customer?.agentContactName : customer?.contactName
+    
+    // If using jobContactEmail as fallback, use jobContactName for greeting
+    if (!customer || !contactNameField) {
+      contactNameField = shipment.jobContactName
+    }
+    
+    const contactNameArray = Array.isArray(contactNameField)
+      ? contactNameField.filter(Boolean)
+      : (contactNameField ? contactNameField.split('/').map(n => n.trim()).filter(Boolean) : [])
+    
+    // Extract first names only
+    const firstNames = contactNameArray.map(name => name.split(' ')[0])
     
     let greeting = "Hi there"
-    if (jobContactNameArray.length === 1) {
-      greeting = `Hi ${jobContactNameArray[0]}`
-    } else if (jobContactNameArray.length === 2) {
-      greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
-    } else if (jobContactNameArray.length >= 3) {
-      const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
-      const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+    if (firstNames.length === 1) {
+      greeting = `Hi ${firstNames[0]}`
+    } else if (firstNames.length === 2) {
+      greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+    } else if (firstNames.length >= 3) {
+      const lastContact = firstNames[firstNames.length - 1]
+      const otherContacts = firstNames.slice(0, -1).join(', ')
       greeting = `Hi ${otherContacts}, and ${lastContact}`
     }
     
-    // Determine document type text
-    const hasInvoices = selectedInvoiceObjects.some(inv => inv.type === 'invoice')
-    const hasCredits = selectedInvoiceObjects.some(inv => inv.type === 'credit_note')
-    let documentText = "Invoice"
-    
-    if (hasInvoices && hasCredits) {
-      if (selectedInvoiceObjects.filter(inv => inv.type === 'invoice').length > 1 && selectedInvoiceObjects.filter(inv => inv.type === 'credit_note').length > 1) {
-        documentText = "Invoices and Credit Notes"
-      } else if (selectedInvoiceObjects.filter(inv => inv.type === 'invoice').length > 1) {
-        documentText = "Invoices and Credit Note"
-      } else if (selectedInvoiceObjects.filter(inv => inv.type === 'credit_note').length > 1) {
-        documentText = "Invoice and Credit Notes"
-      } else {
-        documentText = "Invoice and Credit Note"
-      }
-    } else if (hasCredits) {
-      documentText = selectedInvoiceObjects.length > 1 ? "Credit Notes" : "Credit Note"
-    } else {
-      documentText = selectedInvoiceObjects.length > 1 ? "Invoices" : "Invoice"
-    }
-    
-    // Build body with agent information if present
-    let body = `${greeting},\n\nPlease find attached our ${documentText}.`
-    
-    // Add agent information if present
-    const agentContactNameArray = Array.isArray(shipment.agentContactName)
-      ? shipment.agentContactName.filter(Boolean)
-      : (shipment.agentContactName ? shipment.agentContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
-    const agentEmailArray = Array.isArray(shipment.agentEmail)
-      ? shipment.agentEmail.filter(Boolean)
-      : (shipment.agentEmail ? shipment.agentEmail.split(',').map(e => e.trim()).filter(Boolean) : [])
-    
-    if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
-      body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
-    }
+    // Build simple body matching clearances format
+    const body = `${greeting},\n\nPlease find attached invoice for this customs clearance.\n\nAny issues please let me know,`
     
     // Get invoice PDF paths with proper filenames
     const invoiceFiles = selectedInvoiceObjects.map(invoice => ({
@@ -714,7 +724,7 @@ export default function ExportShipments() {
     // Open email composer
     openEmailComposer({
       id: `email-${Date.now()}`,
-      to: jobContactEmail,
+      to: toEmail,
       cc: ccEmails,
       bcc: "",
       subject: subject,
