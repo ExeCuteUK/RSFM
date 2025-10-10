@@ -2672,7 +2672,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/general-references", async (req, res) => {
     try {
       const validatedData = insertGeneralReferenceSchema.parse(req.body);
-      const reference = await storage.createGeneralReference(validatedData);
+      
+      // Compute date as 1st of selected month for filtering
+      const date = new Date(validatedData.year, validatedData.month - 1, 1);
+      const dateString = date.toISOString();
+      
+      const reference = await storage.createGeneralReference({
+        ...validatedData,
+        date: dateString
+      });
       res.status(201).json(reference);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -2687,7 +2695,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/general-references/:id", async (req, res) => {
     try {
       const validatedData = insertGeneralReferenceSchema.partial().parse(req.body);
-      const reference = await storage.updateGeneralReference(req.params.id, validatedData);
+      
+      // If month or year is being updated, recompute the date
+      let updateData = { ...validatedData };
+      if (validatedData.month !== undefined || validatedData.year !== undefined) {
+        const existingRef = await storage.getGeneralReference(req.params.id);
+        if (!existingRef) {
+          return res.status(404).json({ error: "General reference not found" });
+        }
+        
+        const month = validatedData.month ?? existingRef.month;
+        const year = validatedData.year ?? existingRef.year;
+        const date = new Date(year, month - 1, 1);
+        updateData.date = date.toISOString();
+      }
+      
+      const reference = await storage.updateGeneralReference(req.params.id, updateData);
       if (!reference) {
         return res.status(404).json({ error: "General reference not found" });
       }

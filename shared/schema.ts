@@ -68,6 +68,7 @@ export const generalReferences = pgTable("general_references", {
   jobType: text("job_type").notNull().default('general'),
   month: integer("month").notNull(),
   year: integer("year").notNull(),
+  date: text("date").notNull(), // Date set to 1st of selected month for filtering
   referenceName: text("reference_name").notNull().default('General Reference'),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
@@ -75,6 +76,7 @@ export const generalReferences = pgTable("general_references", {
 export const insertGeneralReferenceSchema = createInsertSchema(generalReferences).omit({
   id: true,
   jobRef: true,
+  date: true, // Date is computed from month/year
   createdAt: true,
 });
 

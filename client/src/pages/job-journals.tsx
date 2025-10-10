@@ -396,7 +396,7 @@ export default function JobJournals() {
       jobType: "General",
       customerName: ref.referenceName,
       destination: "",
-      date: "",
+      date: ref.date || "",
       regContainerFlight: "",
       supplier: "",
       customer: ref.referenceName,
@@ -404,7 +404,6 @@ export default function JobJournals() {
   ].sort((a, b) => a.jobRef - b.jobRef)
 
   const filteredByDate = allJournalEntries.filter(entry => {
-    if (entry.jobType === "General") return true
     return matchesFilter(entry.date)
   })
   
