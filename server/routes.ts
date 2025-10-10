@@ -2581,24 +2581,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: (req.user as User | undefined)?.id
       } as any);
       
-      // Update the invoice customer status indicator for the job
-      const { jobType, jobId } = req.body;
-      if (jobType === "import") {
-        await storage.updateImportShipment(jobId, {
-          invoiceCustomerStatusIndicator: 3,
-          invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
-        });
-      } else if (jobType === "export") {
-        await storage.updateExportShipment(jobId, {
-          invoiceCustomerStatusIndicator: 3,
-          invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
-        });
-      } else if (jobType === "clearance") {
-        await storage.updateCustomClearance(jobId, {
-          invoiceCustomerStatusIndicator: 3,
-          invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
-        });
-      }
+      // Status indicator update removed - status should only change when invoice email is sent
+      // const { jobType, jobId } = req.body;
+      // if (jobType === "import") {
+      //   await storage.updateImportShipment(jobId, {
+      //     invoiceCustomerStatusIndicator: 3,
+      //     invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
+      //   });
+      // } else if (jobType === "export") {
+      //   await storage.updateExportShipment(jobId, {
+      //     invoiceCustomerStatusIndicator: 3,
+      //     invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
+      //   });
+      // } else if (jobType === "clearance") {
+      //   await storage.updateCustomClearance(jobId, {
+      //     invoiceCustomerStatusIndicator: 3,
+      //     invoiceCustomerStatusIndicatorTimestamp: new Date().toISOString()
+      //   });
+      // }
       
       res.status(201).json(invoice);
     } catch (error) {
