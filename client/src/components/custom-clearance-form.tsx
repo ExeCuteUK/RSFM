@@ -10,6 +10,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon, Plus, X } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import {
   Form,
   FormControl,
@@ -87,6 +88,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const [mrnDialogOpen, setMrnDialogOpen] = useState(false)
   const [extractedMRN, setExtractedMRN] = useState("")
   const [isProcessingOCR, setIsProcessingOCR] = useState(false)
+  const [newHaulierContactName, setNewHaulierContactName] = useState("")
+  const [newHaulierEmail, setNewHaulierEmail] = useState("")
   
   const form = useForm<InsertCustomClearance>({
     resolver: zodResolver(customClearanceFormSchema),
@@ -115,8 +118,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       costPerAdditionalHsCode: "",
       expensesToChargeOut: [],
       haulierName: "",
-      haulierContactName: "",
-      haulierEmail: "",
+      haulierContactName: [],
+      haulierEmail: [],
+      haulierReference: "",
       vatZeroRated: false,
       clearanceType: "",
       customerReferenceNumber: "",
@@ -167,6 +171,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const exportCustomerId = form.watch("exportCustomerId")
   const additionalCommodityCodes = form.watch("additionalCommodityCodes")
   const costPerAdditionalHsCode = form.watch("costPerAdditionalHsCode")
+  const haulierContactNames = form.watch("haulierContactName") || []
+  const haulierEmails = form.watch("haulierEmail") || []
 
   // Set default clearanceCharge from settings
   useEffect(() => {
@@ -242,6 +248,35 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       ])
     }
   }, [additionalCommodityCodes, costPerAdditionalHsCode, form])
+
+  // Helper functions for multi-add fields
+  const addHaulierContactName = () => {
+    if (!newHaulierContactName.trim()) return
+    const currentNames = form.getValues("haulierContactName") || []
+    if (!currentNames.includes(newHaulierContactName.trim())) {
+      form.setValue("haulierContactName", [...currentNames, newHaulierContactName.trim()])
+      setNewHaulierContactName("")
+    }
+  }
+
+  const removeHaulierContactName = (name: string) => {
+    const currentNames = form.getValues("haulierContactName") || []
+    form.setValue("haulierContactName", currentNames.filter(n => n !== name))
+  }
+
+  const addHaulierEmail = () => {
+    if (!newHaulierEmail.trim()) return
+    const currentEmails = form.getValues("haulierEmail") || []
+    if (!currentEmails.includes(newHaulierEmail.trim())) {
+      form.setValue("haulierEmail", [...currentEmails, newHaulierEmail.trim()])
+      setNewHaulierEmail("")
+    }
+  }
+
+  const removeHaulierEmail = (email: string) => {
+    const currentEmails = form.getValues("haulierEmail") || []
+    form.setValue("haulierEmail", currentEmails.filter(e => e !== email))
+  }
 
   const handleFormSubmit = (data: InsertCustomClearance) => {
     const normalizedTransportDocuments: any[] = [...(data.transportDocuments || [])];
@@ -1113,14 +1148,26 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               <CardTitle>Haulier</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="haulierName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Haulier</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <Select 
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          const selectedHaulier = hauliers?.find(h => h.haulierName === value);
+                          if (selectedHaulier) {
+                            const contactNames = selectedHaulier.contacts?.map(c => c.contactName) || [];
+                            const contactEmails = selectedHaulier.contacts?.map(c => c.contactEmail) || [];
+                            form.setValue("haulierContactName", contactNames);
+                            form.setValue("haulierEmail", contactEmails);
+                          }
+                        }} 
+                        value={field.value || ""}
+                      >
                         <FormControl>
                           <SelectTrigger data-testid="select-haulier">
                             <SelectValue placeholder="Select haulier" />
@@ -1144,32 +1191,137 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
                 <FormField
                   control={form.control}
-                  name="haulierContactName"
+                  name="haulierReference"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Haulier Contact Name</FormLabel>
+                      <FormLabel>Haulier Reference</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-haulier-contact-name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="haulierEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Haulier Email</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} type="email" data-testid="input-haulier-email" />
+                        <Input {...field} value={field.value || ""} data-testid="input-haulier-reference" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="haulierContactName"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Haulier Contact Name</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter contact name"
+                          value={newHaulierContactName}
+                          onChange={(e) => setNewHaulierContactName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              addHaulierContactName()
+                            }
+                          }}
+                          data-testid="input-new-haulier-contact-name"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addHaulierContactName}
+                          data-testid="button-add-haulier-contact-name"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {haulierContactNames.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-contact-names">
+                          {haulierContactNames.map((name) => (
+                            <Badge
+                              key={name}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-haulier-contact-name-${name}`}
+                            >
+                              {name}
+                              <button
+                                type="button"
+                                onClick={() => removeHaulierContactName(name)}
+                                className="ml-1 hover:text-destructive"
+                                data-testid={`button-remove-haulier-contact-name-${name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="haulierEmail"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Haulier Email</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          type="email"
+                          placeholder="Enter haulier email"
+                          value={newHaulierEmail}
+                          onChange={(e) => setNewHaulierEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              addHaulierEmail()
+                            }
+                          }}
+                          data-testid="input-new-haulier-email"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          onClick={addHaulierEmail}
+                          data-testid="button-add-haulier-email"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {haulierEmails.length > 0 && (
+                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-emails">
+                          {haulierEmails.map((email) => (
+                            <Badge
+                              key={email}
+                              variant="secondary"
+                              className="gap-1"
+                              data-testid={`badge-haulier-email-${email}`}
+                            >
+                              {email}
+                              <button
+                                type="button"
+                                onClick={() => removeHaulierEmail(email)}
+                                className="ml-1 hover:text-destructive"
+                                data-testid={`button-remove-haulier-email-${email}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
