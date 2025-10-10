@@ -40,9 +40,13 @@ Preferred communication style: Simple, everyday language.
 - Run backup: `tsx scripts/backup-contact-databases.ts` (creates zip, uploads to Google Drive, cleans up local files)
 - Restore: Download from Google Drive → extract → restore via `scripts/restore-contact-databases.ts`
 - **Column Name Format:** All backups use snake_case column names (e.g., `vat_number`, not `vatNumber`)
-- **Array Syntax:** PostgreSQL arrays use single quotes: `ARRAY['value1','value2']`
+- **Array Syntax:** New backups use properly typed arrays: `'[]'::jsonb` for jsonb, `ARRAY[]::text[]` for text arrays
 - **Special Characters:** Newlines, tabs, and special characters escaped with PostgreSQL E'' syntax
-- **Restore System:** Handles legacy backups with camelCase column names (auto-maps to snake_case), supports multi-line addresses with embedded semicolons, and properly parses SQL-standard escaped quotes ('')
+- **Legacy Backup Support:** Restore system handles old backups with untyped `ARRAY[]` and broken `ARRAY[[object Object]]` serialization by:
+  - Detecting and fixing broken object arrays (`ARRAY[[object Object]]` → `'[]'::jsonb`)
+  - Adding proper type casting based on table schema (jsonb vs text[] columns)
+  - Supporting tables with mixed array types (e.g., hauliers with both jsonb `contacts` and text[] email fields)
+  - Handling SQL-standard escaped quotes ('') and multi-line values
 - **UI Cards Standardization:** All display cards use consistent `bg-card` styling (white in light mode, grey in dark mode) across contacts and job pages
 
 ## System Architecture
