@@ -676,6 +676,13 @@ export const customClearances = pgTable("custom_clearances", {
   clearanceCharge: text("clearance_charge"),
   currency: text("currency"),
   additionalCommodityCodes: integer("additional_commodity_codes"),
+  costPerAdditionalHsCode: text("cost_per_additional_hs_code"),
+  expensesToChargeOut: jsonb("expenses_to_charge_out").$type<Array<{description: string, amount: string}>>().default([]),
+  
+  // Haulier Information
+  haulierName: text("haulier_name"),
+  haulierContactName: text("haulier_contact_name"),
+  haulierEmail: text("haulier_email"),
   
   // Additional Details (renamed from Customs Details)
   vatZeroRated: boolean("vat_zero_rated").default(false),
