@@ -828,31 +828,67 @@ export default function ImportShipments() {
       // Get customer details
       const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
       
-      // Get customer email(s) - support both array and legacy string format
-      const customerEmailField = customer?.email
-      const customerEmails = Array.isArray(customerEmailField)
-        ? customerEmailField.filter(Boolean)
-        : typeof customerEmailField === 'string' && customerEmailField
-          ? customerEmailField.split(',').map((e: any) => e.trim()).filter(Boolean)
+      if (!customer) {
+        toast({
+          title: "No customer found",
+          description: "Please ensure a customer is selected for this shipment",
+          variant: "destructive",
+        })
+        return
+      }
+      
+      // Determine TO email with priority: Agent Accounts Email → Customer Accounts Email → Agent Email → Customer Email
+      let toEmail = ""
+      let useAgentContact = false
+      
+      const agentAccountsEmail = customer.agentAccountsEmail
+      const customerAccountsEmail = customer.accountsEmail
+      const agentEmailArray = Array.isArray(customer.agentEmail) ? customer.agentEmail : (customer.agentEmail ? [customer.agentEmail] : [])
+      const customerEmailArray = Array.isArray(customer.email) ? customer.email : (customer.email ? customer.email.split(',').map(e => e.trim()) : [])
+      
+      if (agentAccountsEmail) {
+        toEmail = agentAccountsEmail
+        useAgentContact = true
+      } else if (customerAccountsEmail) {
+        toEmail = customerAccountsEmail
+        useAgentContact = false
+      } else if (agentEmailArray.length > 0 && agentEmailArray[0]) {
+        toEmail = agentEmailArray[0]
+        useAgentContact = true
+      } else if (customerEmailArray.length > 0 && customerEmailArray[0]) {
+        toEmail = customerEmailArray[0]
+        useAgentContact = false
+      }
+      
+      if (!toEmail) {
+        toast({
+          title: "No email found",
+          description: "Please add an email address to the customer contact",
+          variant: "destructive",
+        })
+        return
+      }
+      
+      // Get contact name(s) based on which email type was selected
+      const contactNameField = useAgentContact ? customer?.agentContactName : customer?.contactName
+      const contactNames = Array.isArray(contactNameField)
+        ? contactNameField.filter(Boolean)
+        : typeof contactNameField === 'string' && contactNameField
+          ? contactNameField.split('/').map((c: any) => c.trim()).filter(Boolean)
           : []
+      
+      // Extract first names only
+      const firstNames = contactNames.map(name => name.split(' ')[0])
 
-      // Get customer contact name(s) - support both array and legacy string format
-      const customerContactField = customer?.contactName
-      const customerContacts = Array.isArray(customerContactField)
-        ? customerContactField.filter(Boolean)
-        : typeof customerContactField === 'string' && customerContactField
-          ? customerContactField.split('/').map((c: any) => c.trim()).filter(Boolean)
-          : []
-
-      // Build "Hi" greeting line with proper grammar
+      // Build "Hi" greeting line with first names only
       let greeting = "Hi there"
-      if (customerContacts.length === 1) {
-        greeting = `Hi ${customerContacts[0]}`
-      } else if (customerContacts.length === 2) {
-        greeting = `Hi ${customerContacts[0]} and ${customerContacts[1]}`
-      } else if (customerContacts.length > 2) {
-        const lastContact = customerContacts[customerContacts.length - 1]
-        const otherContacts = customerContacts.slice(0, -1).join(', ')
+      if (firstNames.length === 1) {
+        greeting = `Hi ${firstNames[0]}`
+      } else if (firstNames.length === 2) {
+        greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+      } else if (firstNames.length > 2) {
+        const lastContact = firstNames[firstNames.length - 1]
+        const otherContacts = firstNames.slice(0, -1).join(', ')
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
 
@@ -885,7 +921,7 @@ export default function ImportShipments() {
       // Open email composer with clearance documents
       openEmailComposer({
         id: `email-${Date.now()}`,
-        to: customerEmails.join(', '),
+        to: toEmail,
         cc: '',
         bcc: '',
         subject,
