@@ -1305,21 +1305,23 @@ export default function ImportShipments() {
       const yourRefPart = customerRef ? `Your Ref : ${customerRef} / ` : ""
       const subject = `Import Delivery Update / ${yourRefPart}Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
       
-      // Build message body - handle multiple contact names (handle both array and legacy string formats)
+      // Build message body - handle multiple contact names with first names only (handle both array and legacy string formats)
       let greeting = "Hi there"
       const jobContactNameArray = Array.isArray(shipment.jobContactName)
-        ? shipment.jobContactName
-        : (shipment.jobContactName ? [shipment.jobContactName] : [])
+        ? shipment.jobContactName.filter(Boolean)
+        : (shipment.jobContactName ? shipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
       
-      if (jobContactNameArray.length > 0) {
-        if (jobContactNameArray.length === 1) {
-          greeting = `Hi ${jobContactNameArray[0]}`
-        } else if (jobContactNameArray.length === 2) {
-          greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
-        } else if (jobContactNameArray.length > 2) {
-          const allButLast = jobContactNameArray.slice(0, -1).join(', ')
-          greeting = `Hi ${allButLast}, and ${jobContactNameArray[jobContactNameArray.length - 1]}`
-        }
+      // Extract first names only
+      const firstNames = jobContactNameArray.map(name => name.split(' ')[0])
+      
+      if (firstNames.length === 1) {
+        greeting = `Hi ${firstNames[0]}`
+      } else if (firstNames.length === 2) {
+        greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+      } else if (firstNames.length >= 3) {
+        const lastContact = firstNames[firstNames.length - 1]
+        const otherContacts = firstNames.slice(0, -1).join(', ')
+        greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
       // Conditionally include "your ref" only if customerRef exists
