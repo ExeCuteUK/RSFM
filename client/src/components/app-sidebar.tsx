@@ -124,7 +124,7 @@ export function AppSidebar() {
               R.S. Freight Manager
             </h2>
             <p className="text-[11px] text-muted-foreground" data-testid="text-app-version">
-              Version : 4.1.0 alpha
+              Version : 4.1.1 alpha
             </p>
           </div>
         </div>
