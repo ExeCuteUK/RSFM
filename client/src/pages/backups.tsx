@@ -393,14 +393,29 @@ export default function BackupsPage() {
                   onClick={toggleAllTables}
                   data-testid="button-toggle-all-tables"
                 >
-                  {selectedTables.length === backups?.find(b => b.backupName === selectedBackup)?.tables.length
-                    ? "Deselect All"
-                    : "Select All"}
+                  {selectedTables.length === 16 ? "Deselect All" : "Select All"}
                 </Button>
               </div>
             
             <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
-              {backups?.find(b => b.backupName === selectedBackup)?.tables.map((table) => (
+              {[
+                { name: "import_customers", label: "Import Customers" },
+                { name: "export_customers", label: "Export Customers" },
+                { name: "export_receivers", label: "Export Receivers" },
+                { name: "hauliers", label: "Hauliers" },
+                { name: "shipping_lines", label: "Shipping Lines" },
+                { name: "clearance_agents", label: "Clearance Agents" },
+                { name: "import_shipments", label: "Import Shipments" },
+                { name: "export_shipments", label: "Export Shipments" },
+                { name: "custom_clearances", label: "Custom Clearances" },
+                { name: "job_file_groups", label: "Job File Groups" },
+                { name: "messages", label: "Messages" },
+                { name: "purchase_invoices", label: "Purchase Invoices" },
+                { name: "invoices", label: "Invoices" },
+                { name: "general_references", label: "General References" },
+                { name: "settings", label: "Settings" },
+                { name: "users", label: "Users" }
+              ].map((table) => (
                 <div
                   key={table.name}
                   className="flex items-center space-x-3 p-2 hover-elevate rounded-md"
@@ -415,11 +430,8 @@ export default function BackupsPage() {
                     htmlFor={`table-${table.name}`}
                     className="flex-1 text-sm font-medium cursor-pointer"
                   >
-                    {table.name.replace(/_/g, ' ')}
+                    {table.label}
                   </label>
-                  <Badge variant="secondary" className="text-xs">
-                    {table.count} records
-                  </Badge>
                 </div>
               ))}
             </div>
@@ -465,7 +477,7 @@ export default function BackupsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete backup?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the backup <code className="px-1 py-0.5 bg-muted rounded">{selectedBackup}</code>.
+              This will permanently delete the backup <code className="px-1 py-0.5 bg-muted rounded">{backups?.find(b => b.fileId === selectedBackup)?.name || selectedBackup}</code> from Google Drive.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
