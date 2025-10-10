@@ -529,19 +529,22 @@ export default function CustomClearances() {
       const yourRefPart = customerRef ? ` / Your Ref : ${customerRef}` : ""
       const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
       
-      // Build personalized greeting using customer contact name
+      // Build personalized greeting using customer contact name (first name only)
       const customerContactNameArray = Array.isArray(customer?.contactName)
         ? customer.contactName.filter(Boolean)
         : (customer?.contactName ? customer.contactName.split('/').map(n => n.trim()).filter(Boolean) : [])
       
+      // Extract first names only
+      const firstNames = customerContactNameArray.map(name => name.split(' ')[0])
+      
       let greeting = "Hi there"
-      if (customerContactNameArray.length === 1) {
-        greeting = `Hi ${customerContactNameArray[0]}`
-      } else if (customerContactNameArray.length === 2) {
-        greeting = `Hi ${customerContactNameArray[0]} and ${customerContactNameArray[1]}`
-      } else if (customerContactNameArray.length >= 3) {
-        const lastContact = customerContactNameArray[customerContactNameArray.length - 1]
-        const otherContacts = customerContactNameArray.slice(0, -1).join(', ')
+      if (firstNames.length === 1) {
+        greeting = `Hi ${firstNames[0]}`
+      } else if (firstNames.length === 2) {
+        greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+      } else if (firstNames.length >= 3) {
+        const lastContact = firstNames[firstNames.length - 1]
+        const otherContacts = firstNames.slice(0, -1).join(', ')
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
@@ -647,23 +650,26 @@ export default function CustomClearances() {
       const mrn = clearance.mrn
       
       const clearanceType = isImport ? "Import Clearance" : "Export Clearance"
-      const yourRefPart = customerRef ? ` / Your Ref ${customerRef}` : ""
+      const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
       const mrnPart = mrn ? ` / MRN: ${mrn}` : ""
       const subject = `R.S ${clearanceType} / Our Ref: ${jobRef}${yourRefPart}${mrnPart}`
       
-      // Build personalized greeting using customer contact name
+      // Build personalized greeting using customer contact name (first name only)
       const customerContactNameArray = Array.isArray(customer?.contactName)
         ? customer.contactName.filter(Boolean)
         : (customer?.contactName ? customer.contactName.split('/').map(n => n.trim()).filter(Boolean) : [])
       
+      // Extract first names only
+      const firstNames = customerContactNameArray.map(name => name.split(' ')[0])
+      
       let greeting = "Hi there"
-      if (customerContactNameArray.length === 1) {
-        greeting = `Hi ${customerContactNameArray[0]}`
-      } else if (customerContactNameArray.length === 2) {
-        greeting = `Hi ${customerContactNameArray[0]} and ${customerContactNameArray[1]}`
-      } else if (customerContactNameArray.length >= 3) {
-        const lastContact = customerContactNameArray[customerContactNameArray.length - 1]
-        const otherContacts = customerContactNameArray.slice(0, -1).join(', ')
+      if (firstNames.length === 1) {
+        greeting = `Hi ${firstNames[0]}`
+      } else if (firstNames.length === 2) {
+        greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+      } else if (firstNames.length >= 3) {
+        const lastContact = firstNames[firstNames.length - 1]
+        const otherContacts = firstNames.slice(0, -1).join(', ')
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
@@ -742,19 +748,22 @@ export default function CustomClearances() {
     const yourRefPart = customerRef ? ` / Your Ref: ${customerRef}` : ""
     const subject = `R.S Invoice / Our Ref: ${jobRef}${yourRefPart}`
     
-    // Build personalized greeting
+    // Build personalized greeting (first name only)
     const jobContactNameArray = Array.isArray(linkedShipment?.jobContactName)
       ? linkedShipment.jobContactName.filter(Boolean)
       : (linkedShipment?.jobContactName ? linkedShipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
     
+    // Extract first names only
+    const firstNames = jobContactNameArray.map(name => name.split(' ')[0])
+    
     let greeting = "Hi there"
-    if (jobContactNameArray.length === 1) {
-      greeting = `Hi ${jobContactNameArray[0]}`
-    } else if (jobContactNameArray.length === 2) {
-      greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
-    } else if (jobContactNameArray.length >= 3) {
-      const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
-      const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+    if (firstNames.length === 1) {
+      greeting = `Hi ${firstNames[0]}`
+    } else if (firstNames.length === 2) {
+      greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+    } else if (firstNames.length >= 3) {
+      const lastContact = firstNames[firstNames.length - 1]
+      const otherContacts = firstNames.slice(0, -1).join(', ')
       greeting = `Hi ${otherContacts}, and ${lastContact}`
     }
     
@@ -839,15 +848,18 @@ export default function CustomClearances() {
         ? haulierContactField.split('/').map(c => c.trim()).filter(Boolean)
         : []
 
-    // Build "Hi" greeting line with proper grammar using haulier contact name
+    // Extract first names only from contact names
+    const firstNames = haulierContacts.map(name => name.split(' ')[0])
+
+    // Build "Hi" greeting line with proper grammar using first names only
     let greeting = "Hi there"
-    if (haulierContacts.length === 1) {
-      greeting = `Hi ${haulierContacts[0]}`
-    } else if (haulierContacts.length === 2) {
-      greeting = `Hi ${haulierContacts[0]} and ${haulierContacts[1]}`
-    } else if (haulierContacts.length > 2) {
-      const lastContact = haulierContacts[haulierContacts.length - 1]
-      const otherContacts = haulierContacts.slice(0, -1).join(', ')
+    if (firstNames.length === 1) {
+      greeting = `Hi ${firstNames[0]}`
+    } else if (firstNames.length === 2) {
+      greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+    } else if (firstNames.length > 2) {
+      const lastContact = firstNames[firstNames.length - 1]
+      const otherContacts = firstNames.slice(0, -1).join(', ')
       greeting = `Hi ${otherContacts}, and ${lastContact}`
     }
 
@@ -869,7 +881,7 @@ export default function CustomClearances() {
     
     // Add haulier reference if available
     if (clearance.haulierReference) {
-      subject += ` / Your Ref ${clearance.haulierReference}`
+      subject += ` / Your Ref: ${clearance.haulierReference}`
     }
 
     // Build email body with conditional attachment text based on clearance type
