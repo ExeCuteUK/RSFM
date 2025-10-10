@@ -85,6 +85,7 @@ export type GeneralReference = typeof generalReferences.$inferSelect;
 export const importCustomers = pgTable("import_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   createdBy: varchar("created_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   
   // Contact Information
   companyName: text("company_name").notNull(),
@@ -117,6 +118,7 @@ export const importCustomers = pgTable("import_customers", {
 export const insertImportCustomerSchema = createInsertSchema(importCustomers).omit({
   id: true,
   createdBy: true,
+  createdAt: true,
 });
 
 export type InsertImportCustomer = z.infer<typeof insertImportCustomerSchema>;
@@ -126,6 +128,7 @@ export type ImportCustomer = typeof importCustomers.$inferSelect;
 export const exportCustomers = pgTable("export_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   createdBy: varchar("created_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   
   // Contact Information
   companyName: text("company_name").notNull(),
@@ -149,6 +152,7 @@ export const exportCustomers = pgTable("export_customers", {
 export const insertExportCustomerSchema = createInsertSchema(exportCustomers).omit({
   id: true,
   createdBy: true,
+  createdAt: true,
 });
 
 export type InsertExportCustomer = z.infer<typeof insertExportCustomerSchema>;
@@ -158,6 +162,7 @@ export type ExportCustomer = typeof exportCustomers.$inferSelect;
 export const exportReceivers = pgTable("export_receivers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   createdBy: varchar("created_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   
   // Contact Information
   companyName: text("company_name").notNull(),
@@ -168,6 +173,7 @@ export const exportReceivers = pgTable("export_receivers", {
 export const insertExportReceiverSchema = createInsertSchema(exportReceivers).omit({
   id: true,
   createdBy: true,
+  createdAt: true,
 });
 
 export type InsertExportReceiver = z.infer<typeof insertExportReceiverSchema>;
@@ -186,6 +192,7 @@ export type HaulierContact = z.infer<typeof haulierContactSchema>;
 export const hauliers = pgTable("hauliers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   createdBy: varchar("created_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   
   // Contact Information
   haulierName: text("haulier_name").notNull(),
@@ -198,6 +205,7 @@ export const hauliers = pgTable("hauliers", {
 export const insertHaulierSchema = createInsertSchema(hauliers).omit({
   id: true,
   createdBy: true,
+  createdAt: true,
 }).extend({
   contacts: z.array(haulierContactSchema).default([]),
 });
@@ -209,6 +217,7 @@ export type Haulier = typeof hauliers.$inferSelect;
 export const shippingLines = pgTable("shipping_lines", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   createdBy: varchar("created_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   
   // Contact Information
   shippingLineName: text("shipping_line_name").notNull(),
@@ -223,6 +232,7 @@ export const shippingLines = pgTable("shipping_lines", {
 export const insertShippingLineSchema = createInsertSchema(shippingLines).omit({
   id: true,
   createdBy: true,
+  createdAt: true,
 });
 
 export type InsertShippingLine = z.infer<typeof insertShippingLineSchema>;
@@ -232,6 +242,7 @@ export type ShippingLine = typeof shippingLines.$inferSelect;
 export const clearanceAgents = pgTable("clearance_agents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   createdBy: varchar("created_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   
   // Agent Information
   agentName: text("agent_name").notNull(),
@@ -244,6 +255,7 @@ export const clearanceAgents = pgTable("clearance_agents", {
 export const insertClearanceAgentSchema = createInsertSchema(clearanceAgents).omit({
   id: true,
   createdBy: true,
+  createdAt: true,
 });
 
 export type InsertClearanceAgent = z.infer<typeof insertClearanceAgentSchema>;

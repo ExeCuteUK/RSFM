@@ -1262,7 +1262,7 @@ export class DatabaseStorage implements IStorage {
 
   // Import Customer methods
   async getAllImportCustomers(): Promise<ImportCustomer[]> {
-    return await db.select().from(importCustomers);
+    return await db.select().from(importCustomers).orderBy(desc(importCustomers.createdAt));
   }
 
   async getImportCustomer(id: string): Promise<ImportCustomer | undefined> {
@@ -1307,7 +1307,7 @@ export class DatabaseStorage implements IStorage {
 
   // Export Customer methods
   async getAllExportCustomers(): Promise<ExportCustomer[]> {
-    return await db.select().from(exportCustomers);
+    return await db.select().from(exportCustomers).orderBy(desc(exportCustomers.createdAt));
   }
 
   async getExportCustomer(id: string): Promise<ExportCustomer | undefined> {
@@ -1352,7 +1352,7 @@ export class DatabaseStorage implements IStorage {
 
   // Export Receiver methods
   async getAllExportReceivers(): Promise<ExportReceiver[]> {
-    return await db.select().from(exportReceivers);
+    return await db.select().from(exportReceivers).orderBy(desc(exportReceivers.createdAt));
   }
 
   async getExportReceiver(id: string): Promise<ExportReceiver | undefined> {
@@ -1392,7 +1392,7 @@ export class DatabaseStorage implements IStorage {
 
   // Haulier methods
   async getAllHauliers(): Promise<Haulier[]> {
-    return await db.select().from(hauliers);
+    return await db.select().from(hauliers).orderBy(desc(hauliers.createdAt));
   }
 
   async getHaulier(id: string): Promise<Haulier | undefined> {
@@ -1417,7 +1417,7 @@ export class DatabaseStorage implements IStorage {
 
   // Shipping Line methods
   async getAllShippingLines(): Promise<ShippingLine[]> {
-    return await db.select().from(shippingLines);
+    return await db.select().from(shippingLines).orderBy(desc(shippingLines.createdAt));
   }
 
   async getShippingLine(id: string): Promise<ShippingLine | undefined> {
@@ -1442,7 +1442,7 @@ export class DatabaseStorage implements IStorage {
 
   // Clearance Agent methods
   async getAllClearanceAgents(): Promise<ClearanceAgent[]> {
-    return await db.select().from(clearanceAgents);
+    return await db.select().from(clearanceAgents).orderBy(desc(clearanceAgents.createdAt));
   }
 
   async getClearanceAgent(id: string): Promise<ClearanceAgent | undefined> {
