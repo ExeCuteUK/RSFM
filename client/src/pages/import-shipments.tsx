@@ -947,9 +947,11 @@ export default function ImportShipments() {
 
   const handleBookDeliveryCustomerEmail = (shipment: ImportShipment) => {
     try {
-      // Get customer and agent email
-      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
-      const agentEmail = customer?.agentEmail && customer.agentEmail.length > 0 ? customer.agentEmail[0] : ""
+      // Get job contact email (handle both array and legacy string formats)
+      const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
+        ? shipment.jobContactEmail 
+        : (shipment.jobContactEmail ? [shipment.jobContactEmail] : [])
+      const toEmail = jobContactEmailArray[0] || ""
       
       // Build subject
       const customerRef = shipment.customerReferenceNumber
@@ -970,8 +972,27 @@ export default function ImportShipments() {
         ? `Import Delivery Booking / Your Ref : ${customerRef} / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
         : `Import Delivery Booking / Our Ref : ${jobRef} / ${truckContainerFlight} / ETA : ${eta}`
       
-      // Build message body
-      let body = `Hi,\n\nPlease find below details of an import job due to be delivered to yourselves. If you can advise on the below that would be great.\n\n`
+      // Build personalized greeting using job contact names (first names only)
+      const jobContactNameArray = Array.isArray(shipment.jobContactName)
+        ? shipment.jobContactName.filter(Boolean)
+        : (shipment.jobContactName ? shipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+      
+      // Extract first names only
+      const firstNames = jobContactNameArray.map(name => name.split(' ')[0])
+      
+      let greeting = "Hi"
+      if (firstNames.length === 1) {
+        greeting = `Hi ${firstNames[0]}`
+      } else if (firstNames.length === 2) {
+        greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+      } else if (firstNames.length >= 3) {
+        const lastContact = firstNames[firstNames.length - 1]
+        const otherContacts = firstNames.slice(0, -1).join(', ')
+        greeting = `Hi ${otherContacts}, and ${lastContact}`
+      }
+      
+      // Build message body with personalized greeting
+      let body = `${greeting},\n\nPlease find below details of an import job due to be delivered to yourselves. If you can advise on the below that would be great.\n\n`
       
       // Container/Truck/Flight info
       if (shipment.containerShipment === "Container Shipment") {
@@ -1009,7 +1030,7 @@ export default function ImportShipments() {
       // Open email composer
       openEmailComposer({
         id: `email-${Date.now()}`,
-        to: agentEmail || "",
+        to: toEmail,
         cc: "",
         bcc: "",
         subject: subject,

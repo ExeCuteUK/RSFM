@@ -559,22 +559,11 @@ export default function CustomClearances() {
       // Build custom clearance email body
       const body = `${greeting},\n\nPlease find attached invoice for this customs clearance.\n\nAny issues please let me know,`
       
-      // Get invoice PDF paths with proper filenames
+      // Get invoice PDF paths with proper filenames (invoices/credits only, no clearance documents)
       const invoiceFiles = clearanceInvoices.map(invoice => ({
         url: `/api/invoices/${invoice.id}/pdf`,
         name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
       }))
-      
-      // Add clearance documents if available
-      const hasClearanceDocs = clearance.clearanceDocuments && clearance.clearanceDocuments.length > 0
-      const clearanceDocFiles = hasClearanceDocs 
-        ? clearance.clearanceDocuments!.map(doc => ({
-            url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
-            name: getFileName(doc)
-          }))
-        : []
-      
-      const allAttachments = [...invoiceFiles, ...clearanceDocFiles]
       
       // Open email composer
       openEmailComposer({
@@ -584,7 +573,7 @@ export default function CustomClearances() {
         bcc: "",
         subject: subject,
         body: body,
-        attachments: allAttachments,
+        attachments: invoiceFiles,
         metadata: {
           source: 'send-invoice-customer-clearance',
           shipmentId: clearance.id
@@ -771,20 +760,11 @@ export default function CustomClearances() {
     // Build simple body
     const body = `${greeting},\n\nPlease find attached invoice for this customs clearance.\n\nAny issues please let me know,`
     
-    // Get invoice PDF paths with proper filenames
+    // Get invoice PDF paths with proper filenames (invoices/credits only, no clearance documents)
     const invoiceFiles = selectedInvoiceObjects.map(invoice => ({
       url: `/api/invoices/${invoice.id}/pdf`,
       name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
     }))
-    
-    // Get clearance document paths with proper filenames (if any)
-    const clearanceFiles = clearance.clearanceDocuments?.map(doc => ({
-      url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
-      name: getFileName(doc)
-    })) || []
-    
-    // Combine invoice PDFs and clearance documents
-    const allAttachments = [...invoiceFiles, ...clearanceFiles]
     
     // Open email composer
     openEmailComposer({
@@ -794,7 +774,7 @@ export default function CustomClearances() {
       bcc: "",
       subject: subject,
       body: body,
-      attachments: allAttachments,
+      attachments: invoiceFiles,
       metadata: {
         source: 'send-invoice-customer-clearance',
         shipmentId: clearance.id

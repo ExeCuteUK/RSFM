@@ -22,6 +22,16 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Check } from "lucide-react";
 
 export function DraggableEmailComposer() {
@@ -55,6 +65,8 @@ export function DraggableEmailComposer() {
   const [ccPopoverOpen, setCcPopoverOpen] = useState(false);
   const [bccPopoverOpen, setBccPopoverOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showPlaceholderDateWarning, setShowPlaceholderDateWarning] = useState(false);
+  const [showNoAttachmentWarning, setShowNoAttachmentWarning] = useState(false);
   const composerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -209,6 +221,25 @@ export function DraggableEmailComposer() {
       });
       setIsDragging(true);
     }
+  };
+
+  const handleSend = () => {
+    const source = data.metadata?.source;
+    
+    // Check 1: For "Book Delivery with Customer" emails, check for DD/MM/YY placeholder
+    if (source === 'book-delivery-customer' && data.body.includes('DD/MM/YY')) {
+      setShowPlaceholderDateWarning(true);
+      return;
+    }
+    
+    // Check 2: For all other email sources (except book-delivery-customer), check for attachments
+    if (source !== 'book-delivery-customer' && (!data.attachments || data.attachments.length === 0)) {
+      setShowNoAttachmentWarning(true);
+      return;
+    }
+    
+    // All checks passed, send the email
+    sendEmailMutation.mutate(data);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -720,13 +751,56 @@ export function DraggableEmailComposer() {
           Cancel
         </Button>
         <Button
-          onClick={() => sendEmailMutation.mutate(data)}
+          onClick={handleSend}
           disabled={sendEmailMutation.isPending}
           data-testid="button-send-email"
         >
           {sendEmailMutation.isPending ? 'Sending...' : 'Send Email'}
         </Button>
       </div>
+
+      {/* Placeholder Date Warning Dialog */}
+      <AlertDialog open={showPlaceholderDateWarning} onOpenChange={setShowPlaceholderDateWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Placeholder Date Detected</AlertDialogTitle>
+            <AlertDialogDescription>
+              The email body contains "DD/MM/YY" which appears to be a placeholder date. 
+              Are you sure you want to send this email without setting an actual delivery date?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Go Back</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowPlaceholderDateWarning(false);
+              sendEmailMutation.mutate(data);
+            }}>
+              Send Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* No Attachment Warning Dialog */}
+      <AlertDialog open={showNoAttachmentWarning} onOpenChange={setShowNoAttachmentWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>No Attachments</AlertDialogTitle>
+            <AlertDialogDescription>
+              This email has no attachments. Are you sure you want to send it without any files attached?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Go Back</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowNoAttachmentWarning(false);
+              sendEmailMutation.mutate(data);
+            }}>
+              Send Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
