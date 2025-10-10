@@ -116,9 +116,11 @@ export function AppSidebar() {
     <Sidebar data-testid="sidebar-app">
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground font-bold text-sm">
-            RS
-          </div>
+          <img 
+            src="/favicon-32x32.png" 
+            alt="RS Freight Manager" 
+            className="w-8 h-8"
+          />
           <div className="flex-1">
             <h2 className="text-sm font-semibold leading-tight" data-testid="text-app-title">
               R.S. Freight Manager

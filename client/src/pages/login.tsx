@@ -24,12 +24,12 @@ export default function Login() {
     queryKey: ["/api/auth/registration-allowed"],
   });
 
-  // Redirect if already logged in
+  // Redirect if already logged in (but not while showing splash)
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && !showSplash) {
       setLocation("/");
     }
-  }, [user, authLoading, setLocation]);
+  }, [user, authLoading, showSplash, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,11 +67,11 @@ export default function Login() {
     >
       <Card className="w-full max-w-md bg-card/25 backdrop-blur-sm border-card-border/50 relative overflow-hidden">
         {showSplash ? (
-          <div className="flex items-center justify-center p-16 animate-in fade-in duration-500">
+          <div className="flex items-center justify-center animate-in fade-in duration-500">
             <img 
               src={rsSplash} 
               alt="R.S International Freight Ltd" 
-              className="w-full h-auto"
+              className="w-full h-full object-cover"
             />
           </div>
         ) : (
