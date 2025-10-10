@@ -123,13 +123,13 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         });
       }
 
-      // VAT Number in Invoice To box
-      if (invoice.customerVatNumber) {
-        doc.fontSize(8)
-           .font('Helvetica')
-           .text(`VAT No.`, 50, 303)
-           .text(invoice.customerVatNumber, 80, 303);
-      }
+      // VAT Number in Invoice To box - Hidden per user request (VAT No. GB 656 7314 17 still shown at bottom)
+      // if (invoice.customerVatNumber) {
+      //   doc.fontSize(8)
+      //      .font('Helvetica')
+      //      .text(`VAT No.`, 50, 303)
+      //      .text(invoice.customerVatNumber, 80, 303);
+      // }
 
       // Shipment Details Table (No Packages, Commodity, KGS, CBM) - No border - reduced gap
       const shipmentTableY = 278;
