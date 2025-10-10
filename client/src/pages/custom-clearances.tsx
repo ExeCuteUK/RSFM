@@ -357,7 +357,7 @@ export default function CustomClearances() {
   })
 
   const deleteFile = useMutation({
-    mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "transport" | "clearance" }) => {
+    mutationFn: async ({ id, filePath, fileType, fileName }: { id: string; filePath: string; fileType: "transport" | "clearance"; fileName: string }) => {
       const clearance = clearances.find(c => c.id === id)
       if (!clearance) throw new Error("Clearance not found")
       
@@ -371,12 +371,12 @@ export default function CustomClearances() {
       })
       return res.json()
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"], refetchType: "all" })
-      toast({ title: "File deleted successfully" })
+      toast({ title: `File '${variables.fileName}' deleted successfully` })
     },
     onError: () => {
       toast({ title: "File deletion failed", variant: "destructive" })
@@ -1012,8 +1012,7 @@ export default function CustomClearances() {
     updateNotes.mutate({ id: notesClearanceId, notes: notesValue })
   }
 
-  const handleDeleteFile = (id: string, filePath: string, fileType: "transport" | "clearance") => {
-    const fileName = filePath.split('/').pop() || filePath
+  const handleDeleteFile = (id: string, filePath: string, fileType: "transport" | "clearance", fileName: string) => {
     setDeletingFile({ id, filePath, fileType, fileName })
   }
 
@@ -1022,7 +1021,8 @@ export default function CustomClearances() {
       deleteFile.mutate({ 
         id: deletingFile.id, 
         filePath: deletingFile.filePath, 
-        fileType: deletingFile.fileType 
+        fileType: deletingFile.fileType,
+        fileName: deletingFile.fileName
       })
       setDeletingFile(null)
     }
@@ -1992,7 +1992,7 @@ export default function CustomClearances() {
                                         {fileName}
                                       </a>
                                       <button
-                                        onClick={() => handleDeleteFile(clearance.id, filePath, "transport")}
+                                        onClick={() => handleDeleteFile(clearance.id, filePath, "transport", fileName)}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-delete-transport-${clearance.id}-${idx}`}
                                       >
@@ -2040,7 +2040,7 @@ export default function CustomClearances() {
                                         {fileName}
                                       </a>
                                       <button
-                                        onClick={() => handleDeleteFile(clearance.id, filePath, "clearance")}
+                                        onClick={() => handleDeleteFile(clearance.id, filePath, "clearance", fileName)}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                                         data-testid={`button-delete-clearance-${clearance.id}-${idx}`}
                                       >
@@ -2290,7 +2290,7 @@ export default function CustomClearances() {
             <p id="clearance-pdf-description" className="sr-only">PDF document viewer</p>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
-            {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
+            {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} onClose={() => setViewingPdf(null)} />}
           </div>
         </DialogContent>
       </Dialog>

@@ -297,7 +297,7 @@ export default function ExportShipments() {
   })
 
   const deleteFile = useMutation({
-    mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
+    mutationFn: async ({ id, filePath, fileType, fileName }: { id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string }) => {
       const shipment = allShipments.find(s => s.id === id)
       if (!shipment) throw new Error("Shipment not found")
       
@@ -309,11 +309,11 @@ export default function ExportShipments() {
         [fileType === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
       })
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
-      toast({ title: "File deleted successfully" })
+      toast({ title: `File '${variables.fileName}' deleted successfully` })
     },
   })
 
@@ -386,8 +386,7 @@ export default function ExportShipments() {
     setDeletingShipmentId(null)
   }
 
-  const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
-    const fileName = filePath.split('/').pop() || filePath
+  const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod", fileName: string) => {
     setDeletingFile({ id, filePath, fileType, fileName })
   }
 
@@ -396,7 +395,8 @@ export default function ExportShipments() {
       deleteFile.mutate({ 
         id: deletingFile.id, 
         filePath: deletingFile.filePath, 
-        fileType: deletingFile.fileType 
+        fileType: deletingFile.fileType,
+        fileName: deletingFile.fileName
       })
       setDeletingFile(null)
     }
@@ -1437,7 +1437,7 @@ Hope all is OK.`
                                           {fileName}
                                         </a>
                                         <button
-                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment", fileName)}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
                                           data-testid={`button-delete-attachment-${idx}`}
                                           title="Delete file"
@@ -1490,7 +1490,7 @@ Hope all is OK.`
                                           {fileName}
                                         </a>
                                         <button
-                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod", fileName)}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
                                           data-testid={`button-delete-pod-${idx}`}
                                           title="Delete file"

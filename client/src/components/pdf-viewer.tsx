@@ -9,9 +9,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 interface PDFViewerProps {
   url: string
   filename?: string
+  onClose?: () => void
 }
 
-export function PDFViewer({ url, filename }: PDFViewerProps) {
+export function PDFViewer({ url, filename, onClose }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null)
   const [pageNumber, setPageNumber] = useState(1)
   const [scale, setScale] = useState(1.0)
@@ -62,6 +63,10 @@ export function PDFViewer({ url, filename }: PDFViewerProps) {
         source: 'pdf-viewer'
       }
     })
+    // Close the PDF viewer after opening email composer
+    if (onClose) {
+      onClose()
+    }
   }
 
   return (

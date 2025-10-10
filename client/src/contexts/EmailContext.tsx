@@ -9,10 +9,10 @@ interface EmailComposerData {
   bcc: string
   subject: string
   body: string
-  attachments: string[]
+  attachments: (string | { url: string; name: string })[]
   isMinimized: boolean
   metadata?: {
-    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export' | 'send-pod-customer' | 'send-pod-customer-export' | 'send-haulier-ead' | 'send-customer-gvms' | 'send-invoice-customer' | 'send-invoice-customer-export' | 'send-invoice-customer-clearance'
+    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export' | 'send-pod-customer' | 'send-pod-customer-export' | 'send-haulier-ead' | 'send-customer-gvms' | 'send-customer-ead' | 'send-invoice-customer' | 'send-invoice-customer-export' | 'send-invoice-customer-clearance' | 'pdf-viewer'
     shipmentId?: string
   }
 }
@@ -23,9 +23,9 @@ interface EmailDraft {
   bcc: string
   subject: string
   body: string
-  attachments: string[]
+  attachments: (string | { url: string; name: string })[]
   metadata?: {
-    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export' | 'send-pod-customer' | 'send-pod-customer-export' | 'send-haulier-ead' | 'send-customer-gvms' | 'send-invoice-customer' | 'send-invoice-customer-export' | 'send-invoice-customer-clearance'
+    source?: 'book-delivery-customer' | 'advise-clearance-agent-import' | 'advise-clearance-agent' | 'advise-clearance-agent-export' | 'send-pod-customer' | 'send-pod-customer-export' | 'send-haulier-ead' | 'send-customer-gvms' | 'send-customer-ead' | 'send-invoice-customer' | 'send-invoice-customer-export' | 'send-invoice-customer-clearance' | 'pdf-viewer'
     shipmentId?: string
   }
 }

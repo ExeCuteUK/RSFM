@@ -300,14 +300,14 @@ export default function ImportShipments() {
   })
 
   const deleteFile = useMutation({
-    mutationFn: async ({ id, filePath, fileType }: { id: string; filePath: string; fileType: "attachment" | "pod" }) => {
+    mutationFn: async ({ id, filePath, fileType, fileName }: { id: string; filePath: string; fileType: "attachment" | "pod"; fileName: string }) => {
       return apiRequest("DELETE", `/api/import-shipments/${id}/files`, { filePath, fileType })
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
-      toast({ title: "File deleted successfully" })
+      toast({ title: `File '${variables.fileName}' deleted successfully` })
     },
   })
 
@@ -1359,8 +1359,7 @@ Hope all is OK.`
     }
   }
 
-  const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod") => {
-    const fileName = filePath.split('/').pop() || filePath
+  const handleDeleteFile = (id: string, filePath: string, fileType: "attachment" | "pod", fileName: string) => {
     setDeletingFile({ id, filePath, fileType, fileName })
   }
 
@@ -1369,7 +1368,8 @@ Hope all is OK.`
       deleteFile.mutate({ 
         id: deletingFile.id, 
         filePath: deletingFile.filePath, 
-        fileType: deletingFile.fileType 
+        fileType: deletingFile.fileType,
+        fileName: deletingFile.fileName
       })
       setDeletingFile(null)
     }
@@ -2386,7 +2386,7 @@ Hope all is OK.`
                                         {/* OCR hidden - backend system remains available for future use */}
                                         {/* <OCRDialog filePath={filePath} fileName={fileName} /> */}
                                         <button
-                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment")}
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "attachment", fileName)}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
                                           data-testid={`button-delete-attachment-${idx}`}
                                           title="Delete file"
@@ -2442,7 +2442,7 @@ Hope all is OK.`
                                         {/* OCR hidden - backend system remains available for future use */}
                                         {/* <OCRDialog filePath={filePath} fileName={fileName} /> */}
                                         <button
-                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod")}
+                                          onClick={() => handleDeleteFile(shipment.id, filePath, "pod", fileName)}
                                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-destructive/10 rounded"
                                           data-testid={`button-delete-pod-${idx}`}
                                           title="Delete file"
@@ -3659,7 +3659,7 @@ Hope all is OK.`
             <p id="pdf-viewer-description" className="sr-only">PDF document viewer</p>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6 overflow-hidden">
-            {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} />}
+            {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} onClose={() => setViewingPdf(null)} />}
           </div>
         </DialogContent>
       </Dialog>
