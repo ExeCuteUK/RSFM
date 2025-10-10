@@ -90,6 +90,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const [isProcessingOCR, setIsProcessingOCR] = useState(false)
   const [newHaulierContactName, setNewHaulierContactName] = useState("")
   const [newHaulierEmail, setNewHaulierEmail] = useState("")
+  const [newJobContactName, setNewJobContactName] = useState("")
+  const [newJobContactEmail, setNewJobContactEmail] = useState("")
   
   const form = useForm<InsertCustomClearance>({
     resolver: zodResolver(customClearanceFormSchema),
@@ -117,6 +119,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       additionalCommodityCodes: 1,
       costPerAdditionalHsCode: "",
       expensesToChargeOut: [],
+      jobContactName: [],
+      jobContactEmail: [],
       haulierName: "",
       haulierContactName: [],
       haulierEmail: [],
@@ -173,6 +177,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const costPerAdditionalHsCode = form.watch("costPerAdditionalHsCode")
   const haulierContactNames = form.watch("haulierContactName") || []
   const haulierEmails = form.watch("haulierEmail") || []
+  const jobContactNames = form.watch("jobContactName") || []
+  const jobContactEmails = form.watch("jobContactEmail") || []
 
   // Set default clearanceCharge from settings
   useEffect(() => {
@@ -276,6 +282,34 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const removeHaulierEmail = (email: string) => {
     const currentEmails = form.getValues("haulierEmail") || []
     form.setValue("haulierEmail", currentEmails.filter(e => e !== email))
+  }
+
+  const addJobContactName = () => {
+    if (!newJobContactName.trim()) return
+    const currentNames = form.getValues("jobContactName") || []
+    if (!currentNames.includes(newJobContactName.trim())) {
+      form.setValue("jobContactName", [...currentNames, newJobContactName.trim()])
+      setNewJobContactName("")
+    }
+  }
+
+  const removeJobContactName = (name: string) => {
+    const currentNames = form.getValues("jobContactName") || []
+    form.setValue("jobContactName", currentNames.filter(n => n !== name))
+  }
+
+  const addJobContactEmail = () => {
+    if (!newJobContactEmail.trim()) return
+    const currentEmails = form.getValues("jobContactEmail") || []
+    if (!currentEmails.includes(newJobContactEmail.trim())) {
+      form.setValue("jobContactEmail", [...currentEmails, newJobContactEmail.trim()])
+      setNewJobContactEmail("")
+    }
+  }
+
+  const removeJobContactEmail = (email: string) => {
+    const currentEmails = form.getValues("jobContactEmail") || []
+    form.setValue("jobContactEmail", currentEmails.filter(e => e !== email))
   }
 
   const handleFormSubmit = (data: InsertCustomClearance) => {
@@ -559,6 +593,118 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   />
                 </>
               )}
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="jobContactName"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Job Contact Name(s)</FormLabel>
+                      <FormControl>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Input
+                              value={newJobContactName}
+                              onChange={(e) => setNewJobContactName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addJobContactName()
+                                }
+                              }}
+                              placeholder="Add job contact name"
+                              data-testid="input-new-job-contact-name"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={addJobContactName}
+                              data-testid="button-add-job-contact-name"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {jobContactNames.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {jobContactNames.map((name) => (
+                                <Badge key={name} variant="secondary" className="gap-1">
+                                  {name}
+                                  <button
+                                    type="button"
+                                    onClick={() => removeJobContactName(name)}
+                                    className="hover-elevate active-elevate-2 rounded-full"
+                                    data-testid={`button-remove-job-contact-name-${name}`}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="jobContactEmail"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Job Contact Email(s)</FormLabel>
+                      <FormControl>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Input
+                              value={newJobContactEmail}
+                              onChange={(e) => setNewJobContactEmail(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addJobContactEmail()
+                                }
+                              }}
+                              placeholder="Add job contact email"
+                              data-testid="input-new-job-contact-email"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={addJobContactEmail}
+                              data-testid="button-add-job-contact-email"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {jobContactEmails.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {jobContactEmails.map((email) => (
+                                <Badge key={email} variant="secondary" className="gap-1">
+                                  {email}
+                                  <button
+                                    type="button"
+                                    onClick={() => removeJobContactEmail(email)}
+                                    className="hover-elevate active-elevate-2 rounded-full"
+                                    data-testid={`button-remove-job-contact-email-${email}`}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {jobType === "import" && (
                 <FormField
