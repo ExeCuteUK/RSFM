@@ -1180,8 +1180,12 @@ export default function CustomClearances() {
         ? (agent.agentImportEmail && agent.agentImportEmail.length > 0 ? agent.agentImportEmail[0] : "")
         : (agent.agentExportEmail && agent.agentExportEmail.length > 0 ? agent.agentExportEmail[0] : "")
       
-      // Get transport documents
-      const transportDocs = parseAttachments(clearance.transportDocuments || null).map(normalizeFilePath).filter(Boolean)
+      // Get transport documents with original filenames - work directly with file objects
+      const transportDocObjects = clearance.transportDocuments || []
+      const transportDocs = transportDocObjects.map(file => ({
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        name: getFileName(file)
+      })).filter(doc => doc.url)
       
       // Open email composer
       openEmailComposer({
@@ -1300,8 +1304,8 @@ export default function CustomClearances() {
         }
       }
       
-      // Get transport documents with original filenames
-      const attachmentObjects = parseAttachments(clearance.transportDocuments || null)
+      // Get transport documents with original filenames - work directly with file objects
+      const attachmentObjects = clearance.transportDocuments || []
       const transportDocs = attachmentObjects.map(file => ({
         url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
         name: getFileName(file)

@@ -813,7 +813,12 @@ Hope all is OK.`
         if (path.startsWith("objects/")) return `/${path}`
         return path
       }
-      const podFiles = parseAttachments(shipment.proofOfDelivery).map(normalizeFilePath).filter(Boolean)
+      // Get POD files with original filenames - work directly with file objects
+      const podFileObjects = shipment.proofOfDelivery || []
+      const podFiles = podFileObjects.map(file => ({
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        name: getFileName(file)
+      })).filter(doc => doc.url)
       
       // Open email composer
       openEmailComposer({

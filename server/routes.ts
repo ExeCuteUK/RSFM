@@ -48,6 +48,9 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize Google Drive storage service for file operations
+  const driveStorage = new GoogleDriveStorageService();
+  
   // ========== Auth Routes ==========
   
   // Check auth status - returns 200 with user:null when not authenticated to avoid redirect loops

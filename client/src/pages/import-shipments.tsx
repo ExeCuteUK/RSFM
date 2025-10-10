@@ -1332,8 +1332,12 @@ Please find enclosed Proof Of Delivery attached for this shipment${yourRefText}.
 
 Hope all is OK.`
       
-      // Get POD file paths and normalize them
-      const podFiles = parseAttachments(shipment.proofOfDelivery).map(normalizeFilePath).filter(Boolean)
+      // Get POD files with original filenames - work directly with file objects
+      const podFileObjects = shipment.proofOfDelivery || []
+      const podFiles = podFileObjects.map(file => ({
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        name: getFileName(file)
+      })).filter(doc => doc.url)
       
       // Open email composer
       openEmailComposer({
@@ -1637,8 +1641,8 @@ Hope all is OK.`
         ? agent.agentImportEmail[0] 
         : ""
       
-      // Get transport documents with original filenames
-      const attachmentObjects = parseAttachments(shipment.attachments || null)
+      // Get transport documents with original filenames - work directly with file objects
+      const attachmentObjects = shipment.attachments || []
       const transportDocs = attachmentObjects.map(file => ({
         url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
         name: getFileName(file)
