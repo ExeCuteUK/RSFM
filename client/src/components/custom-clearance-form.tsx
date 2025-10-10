@@ -985,13 +985,27 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                           {jobRef && sharedDocuments && sharedDocuments.length > 0 && (
                             <div className="space-y-2">
                               <p className="text-sm text-muted-foreground">Shared Transport Documents:</p>
-                              {sharedDocuments.map((path: string, index: number) => {
-                                const downloadPath = path.startsWith('/') ? path : `/objects/${path}`;
+                              {sharedDocuments.map((fileData: any, index: number) => {
+                                // Handle both file objects and legacy path strings
+                                let filename: string;
+                                let downloadPath: string;
+                                
+                                if (typeof fileData === 'object' && fileData !== null && fileData.filename && fileData.path) {
+                                  filename = fileData.filename;
+                                  downloadPath = fileData.path.startsWith('/') ? fileData.path : `/objects/${fileData.path}`;
+                                } else if (typeof fileData === 'string') {
+                                  filename = fileData.split('/').pop() || 'File';
+                                  downloadPath = fileData.startsWith('/') ? fileData : `/objects/${fileData}`;
+                                } else {
+                                  filename = 'File';
+                                  downloadPath = '';
+                                }
+                                
                                 return (
                                   <div key={`shared-${index}`} className="flex items-center justify-between p-2 border rounded-md bg-blue-50 dark:bg-blue-950">
                                     <div className="flex items-center gap-2">
                                       <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                      <span className="text-sm">{path.split('/').pop() || 'File'}</span>
+                                      <span className="text-sm">{filename}</span>
                                     </div>
                                     <a href={downloadPath} target="_blank" rel="noopener noreferrer">
                                       <Button

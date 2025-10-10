@@ -1852,6 +1852,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
       // Validate everything except file arrays
       const { transportDocuments, clearanceDocuments, ...restBody } = req.body;
+      
+      // Debug logging for file arrays
+      if (clearanceDocuments) {
+        console.log('[FILE DEBUG] clearanceDocuments received:', JSON.stringify(clearanceDocuments, null, 2));
+      }
+      if (transportDocuments) {
+        console.log('[FILE DEBUG] transportDocuments received:', JSON.stringify(transportDocuments, null, 2));
+      }
+      
       const validatedData = insertCustomClearanceSchema.partial().parse(restBody);
       
       // Add file arrays back without validation (database will handle the type)
