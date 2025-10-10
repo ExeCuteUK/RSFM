@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { Database, Download, Upload, AlertCircle, CheckCircle2, Trash2, Clock } from "lucide-react";
+import { Database, Download, Upload, AlertCircle, CheckCircle2, Trash2, Clock, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
@@ -95,6 +95,12 @@ export default function BackupsPage() {
     mutationFn: async ({ backupName, tables }: { backupName: string; tables: string[] }) => {
       return apiRequest("POST", `/api/backups/restore/${backupName}`, { tables });
     },
+    onMutate: () => {
+      toast({
+        title: "Restoring backup...",
+        description: "This may take a moment. Please wait.",
+      });
+    },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/backups"] });
       // Invalidate all data queries
@@ -115,6 +121,7 @@ export default function BackupsPage() {
       });
       setShowRestoreWarning(false);
       setSelectedBackup(null);
+      setSelectedTables([]);
     },
     onError: (error: any) => {
       const errorMessage = error?.message || error?.error || "Failed to restore backup. Please try again.";
@@ -125,6 +132,7 @@ export default function BackupsPage() {
       });
       setShowRestoreWarning(false);
       setSelectedBackup(null);
+      setSelectedTables([]);
     },
   });
 
@@ -335,28 +343,40 @@ export default function BackupsPage() {
       <AlertDialog open={showRestoreWarning} onOpenChange={setShowRestoreWarning}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Restore from backup?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {restoreBackupMutation.isPending ? "Restoring backup..." : "Restore from backup?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Select which tables to restore from <code className="px-1 py-0.5 bg-muted rounded">{selectedBackup}</code>.
-              This will permanently delete current data in the selected tables.
+              {restoreBackupMutation.isPending ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Please wait while the backup is being restored. This may take up to a minute.
+                </span>
+              ) : (
+                <>
+                  Select which tables to restore from <code className="px-1 py-0.5 bg-muted rounded">{selectedBackup}</code>.
+                  This will permanently delete current data in the selected tables.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           
-          <div className="py-4">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold">Select Tables to Restore</h4>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={toggleAllTables}
-                data-testid="button-toggle-all-tables"
-              >
-                {selectedTables.length === backups?.find(b => b.backupName === selectedBackup)?.tables.length
-                  ? "Deselect All"
-                  : "Select All"}
-              </Button>
-            </div>
+          {!restoreBackupMutation.isPending && (
+            <div className="py-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold">Select Tables to Restore</h4>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleAllTables}
+                  data-testid="button-toggle-all-tables"
+                >
+                  {selectedTables.length === backups?.find(b => b.backupName === selectedBackup)?.tables.length
+                    ? "Deselect All"
+                    : "Select All"}
+                </Button>
+              </div>
             
             <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
               {backups?.find(b => b.backupName === selectedBackup)?.tables.map((table) => (
@@ -392,16 +412,28 @@ export default function BackupsPage() {
               </Alert>
             )}
           </div>
+          )}
 
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-restore">Cancel</AlertDialogCancel>
+            <AlertDialogCancel data-testid="button-cancel-restore">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmRestore}
-              disabled={selectedTables.length === 0}
+              disabled={selectedTables.length === 0 || restoreBackupMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               data-testid="button-confirm-restore"
             >
-              Restore {selectedTables.length} {selectedTables.length === 1 ? 'Table' : 'Tables'}
+              {restoreBackupMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Restoring...
+                </>
+              ) : (
+                <>
+                  Restore {selectedTables.length} {selectedTables.length === 1 ? 'Table' : 'Tables'}
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
