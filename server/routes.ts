@@ -47,6 +47,29 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
   res.status(403).json({ error: "Admin access required" });
 }
 
+// Helper function to get the base URL for OAuth callbacks and absolute URLs
+function getBaseUrl(): string {
+  // Priority: APP_BASE_URL (user configured) > REPLIT_DOMAINS (published) > REPLIT_DEV_DOMAIN (dev) > localhost
+  if (process.env.APP_BASE_URL) {
+    return process.env.APP_BASE_URL.replace(/\/$/, ''); // Remove trailing slash if present
+  }
+  
+  if (process.env.REPLIT_DOMAINS) {
+    const publishedDomain = process.env.REPLIT_DOMAINS.split(',')[0].trim();
+    return `https://${publishedDomain}`;
+  }
+  
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  }
+  
+  if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+    return `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+  }
+  
+  return 'http://localhost:5000';
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Google Drive storage service for file operations
   const driveStorage = new GoogleDriveStorageService();
@@ -3617,12 +3640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/gmail/auth-url", requireAuth, async (req, res) => {
     try {
       const { google } = await import("googleapis");
-      // Use REPLIT_DEV_DOMAIN for dev, or construct production URL
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : process.env.REPL_SLUG 
-          ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-          : 'http://localhost:5000';
+      const baseUrl = getBaseUrl();
       
       const oauth2Client = new google.auth.OAuth2(
         process.env.GMAIL_CLIENT_ID,
@@ -3659,12 +3677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { google } = await import("googleapis");
-      // Use REPLIT_DEV_DOMAIN for dev, or construct production URL
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : process.env.REPL_SLUG 
-          ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-          : 'http://localhost:5000';
+      const baseUrl = getBaseUrl();
       
       const oauth2Client = new google.auth.OAuth2(
         process.env.GMAIL_CLIENT_ID,
@@ -3778,11 +3791,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert relative URL to absolute if needed
       let fullAttachmentUrl = attachmentUrl;
       if (attachmentUrl.startsWith('/')) {
-        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-          : process.env.REPL_SLUG 
-            ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-            : 'http://localhost:5000';
+        const baseUrl = getBaseUrl();
         fullAttachmentUrl = `${baseUrl}${attachmentUrl}`;
       }
 
@@ -4061,11 +4070,7 @@ ${messageText}
           // Regular file attachment - fetch via HTTP
           let fullAttachmentUrl = attachmentUrl;
           if (attachmentUrl.startsWith('/')) {
-            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-              ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-              : process.env.REPL_SLUG 
-                ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-                : 'http://localhost:5000';
+            const baseUrl = getBaseUrl();
             fullAttachmentUrl = `${baseUrl}${attachmentUrl}`;
           }
 
