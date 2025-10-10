@@ -14,7 +14,8 @@ async function restoreContactDatabases() {
       process.exit(1);
     }
 
-    const backupDir = `backups/${backupName}`;
+    // Use the backupName as-is (it might already include the full path)
+    const backupDir = backupName.startsWith('backups/') ? backupName : `backups/${backupName}`;
     
     // Parse selected tables if provided
     let selectedTables: string[] = [];
