@@ -231,19 +231,17 @@ export default function BackupsPage() {
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Database Backups</h1>
           <p className="text-muted-foreground">
-            {isAdmin ? "Manage backups for your contact databases" : "View available database backups"}
+            {isAdmin ? "Manage backups for your contact databases" : "View and create database backups"}
           </p>
         </div>
-        {isAdmin && (
-          <Button
-            onClick={() => createBackupMutation.mutate()}
-            disabled={createBackupMutation.isPending}
-            data-testid="button-create-backup"
-          >
-            <Database className="h-4 w-4 mr-2" />
-            {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
-          </Button>
-        )}
+        <Button
+          onClick={() => createBackupMutation.mutate()}
+          disabled={createBackupMutation.isPending}
+          data-testid="button-create-backup"
+        >
+          <Database className="h-4 w-4 mr-2" />
+          {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
+        </Button>
       </div>
 
       <Alert>

@@ -2881,8 +2881,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Backup Routes (Admin only) ==========
 
-  // List all backups from Google Drive
-  app.get("/api/backups", requireAuth, requireAdmin, async (_req, res) => {
+  // List all backups from Google Drive (all authenticated users)
+  app.get("/api/backups", requireAuth, async (_req, res) => {
     try {
       const driveStorage = new GoogleDriveStorageService();
       const backups = await driveStorage.listBackups();
@@ -2894,8 +2894,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create backup of all contact databases and upload to Google Drive
-  app.post("/api/backups/create", requireAuth, requireAdmin, async (_req, res) => {
+  // Create backup of all contact databases and upload to Google Drive (all authenticated users)
+  app.post("/api/backups/create", requireAuth, async (_req, res) => {
     try {
       const { execSync } = await import("child_process");
       const result = execSync("tsx scripts/backup-contact-databases.ts", {
