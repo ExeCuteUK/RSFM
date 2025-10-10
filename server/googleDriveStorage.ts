@@ -5,7 +5,35 @@ import { Readable } from 'stream';
 
 let connectionSettings: any;
 
-async function getAccessToken() {
+// Get Google Drive client using Service Account (for Ubuntu) or Replit Connector (fallback)
+async function getGoogleDriveClient() {
+  // Method 1: Try Service Account (works on Ubuntu and Replit)
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY) {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/drive'],
+    });
+
+    const authClient = await auth.getClient();
+    return google.drive({ version: 'v3', auth: authClient });
+  }
+
+  // Method 2: Fallback to Replit Connector (only works on Replit)
+  const accessToken = await getReplitAccessToken();
+
+  const oauth2Client = new google.auth.OAuth2();
+  oauth2Client.setCredentials({
+    access_token: accessToken
+  });
+
+  return google.drive({ version: 'v3', auth: oauth2Client });
+}
+
+// Get access token from Replit Connector (legacy method for Replit deployments)
+async function getReplitAccessToken() {
   if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
     return connectionSettings.settings.access_token;
   }
@@ -18,7 +46,7 @@ async function getAccessToken() {
     : null;
 
   if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+    throw new Error('Google Drive not configured. Please set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY environment variables, or use Replit connector.');
   }
 
   connectionSettings = await fetch(
@@ -31,25 +59,12 @@ async function getAccessToken() {
     }
   ).then(res => res.json()).then(data => data.items?.[0]);
 
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
+  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
 
   if (!connectionSettings || !accessToken) {
     throw new Error('Google Drive not connected');
   }
   return accessToken;
-}
-
-// WARNING: Never cache this client.
-// Access tokens expire, so a new client must be created each time.
-async function getGoogleDriveClient() {
-  const accessToken = await getAccessToken();
-
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: accessToken
-  });
-
-  return google.drive({ version: 'v3', auth: oauth2Client });
 }
 
 export class ObjectNotFoundError extends Error {

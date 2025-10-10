@@ -2,7 +2,38 @@ import { google } from 'googleapis';
 
 let connectionSettings: any;
 
-async function getAccessToken() {
+// WARNING: Never cache this client.
+// Access tokens expire, so a new client must be created each time.
+// Always call this function again to get a fresh client.
+export async function getUncachableGmailClient() {
+  // Method 1: Try OAuth with Client ID/Secret/Refresh Token (works on Ubuntu and Replit)
+  if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GMAIL_CLIENT_ID,
+      process.env.GMAIL_CLIENT_SECRET,
+      'http://localhost' // Redirect URI (not used for refresh token flow)
+    );
+
+    oauth2Client.setCredentials({
+      refresh_token: process.env.GMAIL_REFRESH_TOKEN
+    });
+
+    return google.gmail({ version: 'v1', auth: oauth2Client });
+  }
+
+  // Method 2: Fallback to Replit Connector (only works on Replit)
+  const accessToken = await getReplitAccessToken();
+
+  const oauth2Client = new google.auth.OAuth2();
+  oauth2Client.setCredentials({
+    access_token: accessToken
+  });
+
+  return google.gmail({ version: 'v1', auth: oauth2Client });
+}
+
+// Get access token from Replit Connector (legacy method for Replit deployments)
+async function getReplitAccessToken() {
   if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
     return connectionSettings.settings.access_token;
   }
@@ -15,7 +46,7 @@ async function getAccessToken() {
     : null;
 
   if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+    throw new Error('Gmail not configured. Please set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN environment variables, or use Replit connector.');
   }
 
   connectionSettings = await fetch(
@@ -28,7 +59,7 @@ async function getAccessToken() {
     }
   ).then(res => res.json()).then(data => data.items?.[0]);
 
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
+  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
 
   if (!connectionSettings || !accessToken) {
     throw new Error('Gmail not connected');
@@ -36,22 +67,23 @@ async function getAccessToken() {
   return accessToken;
 }
 
-// WARNING: Never cache this client.
-// Access tokens expire, so a new client must be created each time.
-// Always call this function again to get a fresh client.
-export async function getUncachableGmailClient() {
-  const accessToken = await getAccessToken();
-
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: accessToken
-  });
-
-  return google.gmail({ version: 'v1', auth: oauth2Client });
-}
-
 export async function getGmailConnectionStatus() {
   try {
+    // Try OAuth credentials first (works on Ubuntu and Replit)
+    if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
+      try {
+        const gmail = await getUncachableGmailClient();
+        const profile = await gmail.users.getProfile({ userId: 'me' });
+        return { 
+          connected: true, 
+          email: profile.data.emailAddress || null 
+        };
+      } catch (error) {
+        return { connected: false, email: null };
+      }
+    }
+
+    // Fallback to Replit connector
     const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
     const xReplitToken = process.env.REPL_IDENTITY 
       ? 'repl ' + process.env.REPL_IDENTITY 
