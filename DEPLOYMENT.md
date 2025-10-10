@@ -151,9 +151,21 @@ You'll need:
 2. Click **"Publish App"** to move to production
 3. Note: This may require app verification if you have more than 100 users
 
-### 3. Test Gmail Configuration
+### 3. Configure Server Redirect URI (After Deployment)
 
-After deploying the application, you can test Gmail integration from the Settings page. If configured correctly, you'll see:
+After deploying the application and setting `APP_BASE_URL` in your `.env` file, you need to add the server redirect URI to your OAuth credentials:
+
+1. Go to [Google Cloud Console > Credentials](https://console.cloud.google.com/apis/credentials)
+2. Click on your **OAuth 2.0 Client ID** (RSFM Gmail OAuth)
+3. Under **Authorized redirect URIs**, add:
+   - `${APP_BASE_URL}/api/gmail/callback` (e.g., `http://192.168.1.100:5000/api/gmail/callback` or `https://yourdomain.com/api/gmail/callback`)
+4. Click **Save**
+
+💡 **Note:** You can keep the OAuth Playground redirect URI (`https://developers.google.com/oauthplayground`) - it's still needed if you ever regenerate the refresh token.
+
+### 4. Test Gmail Configuration
+
+After deploying the application and configuring the redirect URI, you can test Gmail integration from the Settings page. If configured correctly, you'll see:
 - ✅ Gmail connected
 - Connected email address displayed
 
@@ -219,6 +231,9 @@ sudo nano /var/www/rsfm/.env
 Update these values:
 
 ```bash
+# Application Base URL (REQUIRED for Gmail OAuth)
+APP_BASE_URL=http://YOUR_SERVER_IP:5000
+
 # Google Drive Service Account
 GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
 GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
@@ -233,6 +248,8 @@ TERMINAL49_API_KEY=your-terminal49-api-key
 ```
 
 ⚠️ **Important Notes:**
+- **`APP_BASE_URL`** is required for Gmail OAuth callbacks. Set to your server's URL (e.g., `http://192.168.1.100:5000` or `https://yourdomain.com`). Do NOT include a trailing slash.
+- Add `${APP_BASE_URL}/api/gmail/callback` to **Authorized redirect URIs** in your [Google Cloud Console OAuth credentials](https://console.cloud.google.com/apis/credentials)
 - The `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` must include the `\n` newline characters
 - Wrap the private key in quotes if it contains special characters
 - The `DATABASE_URL` and `SESSION_SECRET` are auto-generated - don't change them
