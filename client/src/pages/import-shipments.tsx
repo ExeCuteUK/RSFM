@@ -305,9 +305,9 @@ export default function ImportShipments() {
       return apiRequest("DELETE", `/api/import-shipments/${id}/files`, { filePath, fileType })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
       toast({ title: "File deleted successfully" })
     },
   })

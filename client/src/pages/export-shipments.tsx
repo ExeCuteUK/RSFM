@@ -311,9 +311,9 @@ export default function ExportShipments() {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"], refetchType: "all" })
       queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"], refetchType: "all" })
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"], refetchType: "all" })
       toast({ title: "File deleted successfully" })
     },
   })
