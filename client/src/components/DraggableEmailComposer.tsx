@@ -148,25 +148,8 @@ export function DraggableEmailComposer() {
       });
     },
   });
-  
-  // Now we can conditionally return
-  if (!emailComposerData || emailComposerData.isMinimized) return null;
-  
-  const data = emailComposerData;
 
-  // Helper function to update email data - PRESERVES metadata from window payload
-  const handleDataChange = (updatedData: typeof data) => {
-    const { isMinimized: _, ...draftData } = updatedData;
-    
-    // CRITICAL: Preserve metadata from the active window's payload if it exists
-    const existingMetadata = activeWindow?.payload?.metadata;
-    const finalDraftData = existingMetadata 
-      ? { ...draftData, metadata: existingMetadata }
-      : draftData;
-    
-    updateEmailDraft(data.id, finalDraftData);
-  };
-
+  // Mouse drag handling effect - MUST be before conditional return
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
@@ -198,6 +181,24 @@ export function DraggableEmailComposer() {
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging, dragStart]);
+  
+  // Now we can conditionally return - all hooks are called before this point
+  if (!emailComposerData || emailComposerData.isMinimized) return null;
+  
+  const data = emailComposerData;
+
+  // Helper function to update email data - PRESERVES metadata from window payload
+  const handleDataChange = (updatedData: typeof data) => {
+    const { isMinimized: _, ...draftData } = updatedData;
+    
+    // CRITICAL: Preserve metadata from the active window's payload if it exists
+    const existingMetadata = activeWindow?.payload?.metadata;
+    const finalDraftData = existingMetadata 
+      ? { ...draftData, metadata: existingMetadata }
+      : draftData;
+    
+    updateEmailDraft(data.id, finalDraftData);
+  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (composerRef.current) {
