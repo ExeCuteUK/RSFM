@@ -44,26 +44,7 @@ export default function BackupsPage() {
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
 
-  // Check if user is admin
-  if (!user?.isAdmin) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              Administrator access is required to manage backups
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              You don't have permission to view this page. Please contact your administrator.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const isAdmin = user?.isAdmin || false;
 
   // Fetch all backups
   const { data: backups, isLoading } = useQuery<Backup[]>({
@@ -250,17 +231,19 @@ export default function BackupsPage() {
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Database Backups</h1>
           <p className="text-muted-foreground">
-            Manage backups for your contact databases
+            {isAdmin ? "Manage backups for your contact databases" : "View available database backups"}
           </p>
         </div>
-        <Button
-          onClick={() => createBackupMutation.mutate()}
-          disabled={createBackupMutation.isPending}
-          data-testid="button-create-backup"
-        >
-          <Database className="h-4 w-4 mr-2" />
-          {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
-        </Button>
+        {isAdmin && (
+          <Button
+            onClick={() => createBackupMutation.mutate()}
+            disabled={createBackupMutation.isPending}
+            data-testid="button-create-backup"
+          >
+            <Database className="h-4 w-4 mr-2" />
+            {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
+          </Button>
+        )}
       </div>
 
       <Alert>
@@ -323,28 +306,32 @@ export default function BackupsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleRestore(backup.fileId)}
-                          disabled={restoreBackupMutation.isPending}
-                          data-testid={`button-restore-${backup.fileId}`}
-                        >
-                          <Upload className="h-3 w-3 mr-1" />
-                          Restore
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(backup.fileId)}
-                          disabled={deleteBackupMutation.isPending}
-                          data-testid={`button-delete-${backup.fileId}`}
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
-                        </Button>
-                      </div>
+                      {isAdmin ? (
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRestore(backup.fileId)}
+                            disabled={restoreBackupMutation.isPending}
+                            data-testid={`button-restore-${backup.fileId}`}
+                          >
+                            <Upload className="h-3 w-3 mr-1" />
+                            Restore
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(backup.fileId)}
+                            disabled={deleteBackupMutation.isPending}
+                            data-testid={`button-delete-${backup.fileId}`}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">View only</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
