@@ -569,8 +569,8 @@ export default function CustomClearances() {
       const hasClearanceDocs = clearance.clearanceDocuments && clearance.clearanceDocuments.length > 0
       const clearanceDocFiles = hasClearanceDocs 
         ? clearance.clearanceDocuments!.map(doc => ({
-            url: `/api/file-storage/download?path=${encodeURIComponent(doc.path)}`,
-            name: doc.filename
+            url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
+            name: getFileName(doc)
           }))
         : []
       
@@ -681,7 +681,7 @@ export default function CustomClearances() {
       
       // Get clearance document paths with proper filenames
       const clearanceFiles = clearance.clearanceDocuments.map(doc => ({
-        url: getFilePath(doc),
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
         name: getFileName(doc)
       }))
       
@@ -803,7 +803,7 @@ export default function CustomClearances() {
     
     // Get clearance document paths with proper filenames (if any)
     const clearanceFiles = clearance.clearanceDocuments?.map(doc => ({
-      url: getFilePath(doc),
+      url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
       name: getFileName(doc)
     })) || []
     
@@ -894,12 +894,13 @@ export default function CustomClearances() {
     }
     const body = `${greeting},\n\nPlease find attached ${attachmentText} for this shipment.\n\nHope all is OK.`
 
-    // Combine transport documents and clearance documents for attachments
-    const transportDocs = clearance.transportDocuments || []
-    const clearanceDocs = clearance.clearanceDocuments || []
-    const allAttachments = [...transportDocs, ...clearanceDocs]
+    // Only attach clearance documents (exclude transport docs), formatted with url and name properties
+    const clearanceFiles = clearance.clearanceDocuments?.map(doc => ({
+      url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
+      name: getFileName(doc)
+    })) || []
 
-    // Open email composer with all documents
+    // Open email composer with clearance documents only
     openEmailComposer({
       id: `email-${Date.now()}`,
       to: haulierEmails.join(', '),
@@ -907,7 +908,7 @@ export default function CustomClearances() {
       bcc: '',
       subject,
       body,
-      attachments: allAttachments,
+      attachments: clearanceFiles,
       metadata: {
         source: 'send-haulier-ead',
         shipmentId: clearance.id,
