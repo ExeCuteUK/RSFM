@@ -77,6 +77,37 @@ async function restoreContactDatabases() {
       console.log(`✓ Cleared ${table.name}`);
     }
 
+    // Column name mapping for schema changes (camelCase -> snake_case)
+    const columnMapping: Record<string, Record<string, string>> = {
+      export_receivers: {
+        companyName: 'company_name',
+        createdBy: 'created_by'
+      },
+      import_customers: {
+        companyName: 'company_name',
+        contactName: 'contact_name',
+        contactPosition: 'contact_position',
+        accountsEmail: 'accounts_email',
+        agentName: 'agent_name',
+        agentContactName: 'agent_contact_name',
+        agentContactPosition: 'agent_contact_position',
+        agentEmail: 'agent_email',
+        agentTelephone: 'agent_telephone',
+        vatPaymentMethod: 'vat_payment_method',
+        defermentDetails: 'deferment_details',
+        defermentNumber: 'deferment_number',
+        defermentApprovalNumber: 'deferment_approval_number',
+        createdBy: 'created_by'
+      },
+      export_customers: {
+        companyName: 'company_name',
+        contactName: 'contact_name',
+        contactPosition: 'contact_position',
+        accountsEmail: 'accounts_email',
+        createdBy: 'created_by'
+      }
+    };
+
     // Restore each table
     console.log("\nRestoring data...");
     for (const table of tables) {
@@ -84,12 +115,25 @@ async function restoreContactDatabases() {
         const sqlContent = readFileSync(table.file, "utf-8");
         
         // Split by lines and filter out comments and empty lines
-        const statements = sqlContent
+        let statements = sqlContent
           .split("\n")
           .filter(line => line.trim() && !line.trim().startsWith("--"))
           .join("\n")
           .split(";")
           .filter(stmt => stmt.trim());
+
+        // Apply column name mapping if needed
+        if (columnMapping[table.name]) {
+          statements = statements.map(stmt => {
+            let mappedStmt = stmt;
+            Object.entries(columnMapping[table.name]).forEach(([oldName, newName]) => {
+              // Replace column names in INSERT statements
+              const regex = new RegExp(`"${oldName}"`, 'g');
+              mappedStmt = mappedStmt.replace(regex, `"${newName}"`);
+            });
+            return mappedStmt;
+          });
+        }
 
         for (const statement of statements) {
           if (statement.trim()) {
