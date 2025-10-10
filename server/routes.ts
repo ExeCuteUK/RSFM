@@ -1687,6 +1687,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Map export shipment fields to custom clearance fields
         if (req.body.destinationCustomerId !== undefined) clearanceUpdate.exportCustomerId = shipment.destinationCustomerId;
         if (req.body.receiverId !== undefined) clearanceUpdate.receiverId = shipment.receiverId;
+        if (req.body.jobContactName !== undefined) clearanceUpdate.jobContactName = shipment.jobContactName;
+        if (req.body.jobContactEmail !== undefined) clearanceUpdate.jobContactEmail = shipment.jobContactEmail;
         if (req.body.bookingDate !== undefined) clearanceUpdate.etaPort = shipment.bookingDate;
         if (req.body.portOfArrival !== undefined) clearanceUpdate.portOfArrival = shipment.portOfArrival;
         if (req.body.trailerNo !== undefined) clearanceUpdate.trailerOrContainerNumber = shipment.trailerNo;
