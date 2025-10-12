@@ -103,7 +103,7 @@ You'll need:
 
 ## Gmail OAuth Setup
 
-The application sends emails via Gmail API using OAuth2 credentials. This setup requires obtaining a refresh token.
+The application sends and receives emails via Gmail API using OAuth2 credentials. This setup requires obtaining a refresh token.
 
 ### 1. Create OAuth Credentials
 
@@ -116,8 +116,10 @@ The application sends emails via Gmail API using OAuth2 credentials. This setup 
    - **App name:** R.S Freight Manager
    - **User support email:** Your email
    - **Developer contact:** Your email
-   - **Scopes:** Add `https://www.googleapis.com/auth/gmail.send` and `https://www.googleapis.com/auth/calendar`
-   - **Test users:** Add the Gmail account that will send emails
+   - **Scopes:** Click "Add or Remove Scopes" and add:
+     - `https://mail.google.com/` (Full Gmail access - send & receive emails)
+     - `https://www.googleapis.com/auth/calendar` (Google Calendar - manage team events)
+   - **Test users:** Add the Gmail account that will send/receive emails
 6. Return to **"Create OAuth client ID"**:
    - **Application type:** Web application
    - **Name:** RSFM Gmail OAuth
@@ -133,10 +135,10 @@ The application sends emails via Gmail API using OAuth2 credentials. This setup 
 4. Enter your **Client ID** and **Client Secret**
 5. Close settings
 6. In **Step 1** (Select & authorize APIs):
-   - Find **Gmail API v1** and select `https://www.googleapis.com/auth/gmail.send`
+   - Find **Gmail API v1** and select `https://mail.google.com/` (full Gmail access)
    - Find **Google Calendar API v3** and select `https://www.googleapis.com/auth/calendar`
    - Click **"Authorize APIs"**
-7. Sign in with the Gmail account you want to use for sending emails
+7. Sign in with the Gmail account you want to use for sending/receiving emails
 8. Click **"Allow"** to grant permissions
 9. In **Step 2** (Exchange authorization code for tokens):
    - Click **"Exchange authorization code for tokens"**
