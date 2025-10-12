@@ -589,7 +589,7 @@ export default function TeamCalendar() {
                         key={dayIndex}
                         className={`min-h-20 p-1 border-r last:border-r-0 cursor-pointer hover-elevate ${
                           !isCurrentMonth ? "bg-muted/20" : ""
-                        } ${isSelected ? "bg-primary/30 border-2 border-primary" : ""}`}
+                        } ${isSelected ? "bg-primary/30 ring-2 ring-inset ring-primary" : ""}`}
                         onClick={() => setSelectedDate(day)}
                         data-testid={`calendar-day-${format(day, "yyyy-MM-dd")}`}
                       >
