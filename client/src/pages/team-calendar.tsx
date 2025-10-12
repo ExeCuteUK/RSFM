@@ -60,11 +60,7 @@ export default function TeamCalendar() {
 
   const createMutation = useMutation({
     mutationFn: async (event: Omit<CalendarEvent, "id">) => {
-      return await apiRequest("/api/calendar/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(event),
-      });
+      return await apiRequest("POST", "/api/calendar/events", event);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
@@ -88,9 +84,7 @@ export default function TeamCalendar() {
 
   const deleteMutation = useMutation({
     mutationFn: async (eventId: string) => {
-      return await apiRequest(`/api/calendar/events/${eventId}`, {
-        method: "DELETE",
-      });
+      return await apiRequest("DELETE", `/api/calendar/events/${eventId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });

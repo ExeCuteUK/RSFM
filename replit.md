@@ -4,7 +4,7 @@
 
 R.S International Freight Manager is a web-based enterprise solution for logistics operations, designed to manage import/export shipments, customs clearances, customer records, invoicing, and freight rate calculations. It replaces a legacy VB6 application, offering unified job referencing across Import Shipments, Export Shipments, and Custom Clearances. A key feature is the automatic generation of Custom Clearance jobs for Import Shipments marked "R.S To Clear", sharing the same job reference. The system supports multi-currency financial fields, maintains separate databases for different customer types, and uses distinct color themes for each job type for visual clarity.
 
-The application includes comprehensive file upload functionality integrated with Google Drive, featuring a shared document storage system that automatically syncs files between linked jobs (import/export shipments and their custom clearances) via their shared `jobRef`, ensuring seamless access to documents and invoices. Key capabilities include a dual-engine OCR system for text extraction, a multi-user internal messaging system with real-time notifications, job history display on customer contact cards, quick user access with real-time presence tracking, and a draggable, minimizable email composer with multi-draft support. The dashboard features a tabbed interface for container management, Nisbets, import/export work, and clearance management.
+The application includes comprehensive file upload functionality integrated with Google Drive, featuring a shared document storage system that automatically syncs files between linked jobs (import/export shipments and their custom clearances) via their shared `jobRef`, ensuring seamless access to documents and invoices. Key capabilities include a dual-engine OCR system for text extraction, a multi-user internal messaging system with real-time notifications, job history display on customer contact cards, quick user access with real-time presence tracking, a draggable, minimizable email composer with multi-draft support, and a team calendar powered by Google Calendar API for managing holidays and annual leave. The dashboard features a tabbed interface for container management, Nisbets, import/export work, and clearance management.
 
 ## User Preferences
 
@@ -51,7 +51,7 @@ The API provides RESTful endpoints for managing contacts (customers, hauliers, s
 
 ### Navigation Routes
 
-Key routes include `/` (Dashboard), `/job-journals`, `/import-shipments`, `/export-shipments`, `/custom-clearances`, `/contacts`, `/invoices`, and `/settings`.
+Key routes include `/` (Dashboard), `/job-journals`, `/import-shipments`, `/export-shipments`, `/custom-clearances`, `/contacts`, `/invoices`, `/team-calendar`, `/messages`, `/backups`, and `/settings`.
 
 ## External Dependencies
 
@@ -61,6 +61,7 @@ Key routes include `/` (Dashboard), `/job-journals`, `/import-shipments`, `/expo
 -   **File Upload & Storage:** Google Drive API (googleapis), Multer.
 -   **Container Tracking:** Terminal49 API.
 -   **OCR:** Scribe.js (PDFs), Tesseract.js (images).
+-   **Email & Calendar:** Gmail API, Google Calendar API (shared OAuth credentials).
 -   **Email Signature System:** File-based HTML templates, logo image upload, dynamic placeholders.
 
 ## Deployment Configuration
