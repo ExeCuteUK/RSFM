@@ -698,13 +698,15 @@ export default function Emails() {
                 </div>
 
                 <div className="space-y-1 text-sm">
-                  <div className="flex gap-2">
-                    <span className="text-muted-foreground font-medium">From:</span>
-                    <span data-testid="email-from">{selectedEmail.from}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="text-muted-foreground font-medium">To:</span>
-                    <span data-testid="email-to">{selectedEmail.to.join(', ')}</span>
+                  <div className="flex gap-4">
+                    <div className="flex gap-2">
+                      <span className="text-muted-foreground font-medium">From:</span>
+                      <span data-testid="email-from">{selectedEmail.from}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="text-muted-foreground font-medium">To:</span>
+                      <span data-testid="email-to">{selectedEmail.to.join(', ')}</span>
+                    </div>
                   </div>
                   {selectedEmail.cc && selectedEmail.cc.length > 0 && (
                     <div className="flex gap-2">
