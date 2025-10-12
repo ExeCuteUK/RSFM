@@ -4502,7 +4502,8 @@ ${messageText}
       const signature = template
         .replace(/{{fullName}}/g, user.fullName || '')
         .replace(/{{gmailEmail}}/g, user.gmailEmail || '')
-        .replace(/{{username}}/g, user.username || '');
+        .replace(/{{username}}/g, user.username || '')
+        .replace(/{{USER_NAME}}/g, user.fullName || user.username || '');
       
       res.json({ signature });
     } catch (error) {
