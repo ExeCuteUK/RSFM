@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Calendar as CalendarIcon, Flag } from "lucide-react";
+import { Plus, Trash2, Calendar as CalendarIcon, Flag, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { format, startOfMonth, endOfMonth, parseISO, isSameDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -38,11 +39,16 @@ export default function TeamCalendar() {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [newEvent, setNewEvent] = useState({
     summary: "",
     description: "",
     startDate: format(new Date(), "yyyy-MM-dd"),
     endDate: format(new Date(), "yyyy-MM-dd"),
+    startTime: "09:00",
+    endTime: "17:00",
+    isAllDay: true,
   });
 
   // Fetch events for the current month
@@ -69,17 +75,32 @@ export default function TeamCalendar() {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
       toast({ title: "Success", description: "Event added to team calendar" });
       setIsAddDialogOpen(false);
-      setNewEvent({
-        summary: "",
-        description: "",
-        startDate: format(new Date(), "yyyy-MM-dd"),
-        endDate: format(new Date(), "yyyy-MM-dd"),
-      });
+      resetForm();
     },
     onError: (error: Error) => {
       toast({ 
         title: "Error", 
         description: error.message || "Failed to create event",
+        variant: "destructive" 
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ eventId, event }: { eventId: string; event: Partial<CalendarEvent> }) => {
+      return await apiRequest("PATCH", `/api/calendar/events/${eventId}`, event);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
+      toast({ title: "Success", description: "Event updated successfully" });
+      setIsEditDialogOpen(false);
+      setEditingEvent(null);
+      resetForm();
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to update event",
         variant: "destructive" 
       });
     },
@@ -103,18 +124,77 @@ export default function TeamCalendar() {
   });
 
   const handleCreateEvent = () => {
-    createMutation.mutate({
+    const eventData: Omit<CalendarEvent, "id"> = {
       summary: newEvent.summary,
       description: newEvent.description,
-      start: { date: newEvent.startDate },
-      end: { date: newEvent.endDate },
+      start: newEvent.isAllDay 
+        ? { date: newEvent.startDate }
+        : { dateTime: `${newEvent.startDate}T${newEvent.startTime}:00` },
+      end: newEvent.isAllDay
+        ? { date: newEvent.endDate }
+        : { dateTime: `${newEvent.endDate}T${newEvent.endTime}:00` },
+    };
+    
+    createMutation.mutate(eventData);
+  };
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    setEditingEvent(event);
+    
+    // Extract date and time from event
+    const startDate = event.start.date || event.start.dateTime?.split('T')[0] || format(new Date(), "yyyy-MM-dd");
+    const endDate = event.end.date || event.end.dateTime?.split('T')[0] || format(new Date(), "yyyy-MM-dd");
+    const startTime = event.start.dateTime?.split('T')[1]?.substring(0, 5) || "09:00";
+    const endTime = event.end.dateTime?.split('T')[1]?.substring(0, 5) || "17:00";
+    const isAllDay = !!event.start.date;
+    
+    setNewEvent({
+      summary: event.summary,
+      description: event.description || "",
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+      isAllDay,
     });
+    
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateEvent = () => {
+    if (!editingEvent?.id) return;
+    
+    const eventData: Partial<CalendarEvent> = {
+      summary: newEvent.summary,
+      description: newEvent.description,
+      start: newEvent.isAllDay 
+        ? { date: newEvent.startDate }
+        : { dateTime: `${newEvent.startDate}T${newEvent.startTime}:00` },
+      end: newEvent.isAllDay
+        ? { date: newEvent.endDate }
+        : { dateTime: `${newEvent.endDate}T${newEvent.endTime}:00` },
+    };
+    
+    updateMutation.mutate({ eventId: editingEvent.id, event: eventData });
   };
 
   const handleDeleteEvent = (eventId: string) => {
     if (confirm("Are you sure you want to delete this event?")) {
       deleteMutation.mutate(eventId);
     }
+  };
+
+  const resetForm = () => {
+    setNewEvent({
+      summary: "",
+      description: "",
+      startDate: format(new Date(), "yyyy-MM-dd"),
+      endDate: format(new Date(), "yyyy-MM-dd"),
+      startTime: "09:00",
+      endTime: "17:00",
+      isAllDay: true,
+    });
+    setEditingEvent(null);
   };
 
   // Get events for selected date
@@ -138,7 +218,10 @@ export default function TeamCalendar() {
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Team Calendar</h1>
           <p className="text-muted-foreground">Manage team holidays, annual leave, and view UK public holidays</p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+          setIsAddDialogOpen(open);
+          if (!open) resetForm();
+        }}>
           <DialogTrigger asChild>
             <Button data-testid="button-add-event">
               <Plus className="mr-2 h-4 w-4" />
@@ -170,6 +253,20 @@ export default function TeamCalendar() {
                   onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                 />
               </div>
+              
+              <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/50">
+                <div className="space-y-0.5">
+                  <Label htmlFor="all-day">All Day Event</Label>
+                  <p className="text-sm text-muted-foreground">Event lasts the entire day</p>
+                </div>
+                <Switch
+                  id="all-day"
+                  checked={newEvent.isAllDay}
+                  onCheckedChange={(checked) => setNewEvent({ ...newEvent, isAllDay: checked })}
+                  data-testid="switch-all-day"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="startDate">Start Date *</Label>
@@ -192,11 +289,39 @@ export default function TeamCalendar() {
                   />
                 </div>
               </div>
+
+              {!newEvent.isAllDay && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startTime">Start Time *</Label>
+                    <Input
+                      id="startTime"
+                      type="time"
+                      data-testid="input-start-time"
+                      value={newEvent.startTime}
+                      onChange={(e) => setNewEvent({ ...newEvent, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endTime">End Time *</Label>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      data-testid="input-end-time"
+                      value={newEvent.endTime}
+                      onChange={(e) => setNewEvent({ ...newEvent, endTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button 
                 variant="outline" 
-                onClick={() => setIsAddDialogOpen(false)}
+                onClick={() => {
+                  setIsAddDialogOpen(false);
+                  resetForm();
+                }}
                 data-testid="button-cancel"
               >
                 Cancel
@@ -207,6 +332,120 @@ export default function TeamCalendar() {
                 data-testid="button-save-event"
               >
                 {createMutation.isPending ? "Adding..." : "Add Event"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Event Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+          setIsEditDialogOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogContent data-testid="dialog-edit-event">
+            <DialogHeader>
+              <DialogTitle>Edit Calendar Event</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-summary">Event Title *</Label>
+                <Input
+                  id="edit-summary"
+                  data-testid="input-edit-event-title"
+                  placeholder="e.g., John Smith - Annual Leave"
+                  value={newEvent.summary}
+                  onChange={(e) => setNewEvent({ ...newEvent, summary: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  data-testid="input-edit-event-description"
+                  placeholder="Additional details..."
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/50">
+                <div className="space-y-0.5">
+                  <Label htmlFor="edit-all-day">All Day Event</Label>
+                  <p className="text-sm text-muted-foreground">Event lasts the entire day</p>
+                </div>
+                <Switch
+                  id="edit-all-day"
+                  checked={newEvent.isAllDay}
+                  onCheckedChange={(checked) => setNewEvent({ ...newEvent, isAllDay: checked })}
+                  data-testid="switch-edit-all-day"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-startDate">Start Date *</Label>
+                  <Input
+                    id="edit-startDate"
+                    type="date"
+                    data-testid="input-edit-start-date"
+                    value={newEvent.startDate}
+                    onChange={(e) => setNewEvent({ ...newEvent, startDate: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-endDate">End Date *</Label>
+                  <Input
+                    id="edit-endDate"
+                    type="date"
+                    data-testid="input-edit-end-date"
+                    value={newEvent.endDate}
+                    onChange={(e) => setNewEvent({ ...newEvent, endDate: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {!newEvent.isAllDay && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-startTime">Start Time *</Label>
+                    <Input
+                      id="edit-startTime"
+                      type="time"
+                      data-testid="input-edit-start-time"
+                      value={newEvent.startTime}
+                      onChange={(e) => setNewEvent({ ...newEvent, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-endTime">End Time *</Label>
+                    <Input
+                      id="edit-endTime"
+                      type="time"
+                      data-testid="input-edit-end-time"
+                      value={newEvent.endTime}
+                      onChange={(e) => setNewEvent({ ...newEvent, endTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  resetForm();
+                }}
+                data-testid="button-edit-cancel"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateEvent}
+                disabled={!newEvent.summary || !newEvent.startDate || !newEvent.endDate || updateMutation.isPending}
+                data-testid="button-update-event"
+              >
+                {updateMutation.isPending ? "Updating..." : "Update Event"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -305,15 +544,25 @@ export default function TeamCalendar() {
                           )}
                         </div>
                         {!event.isHoliday && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => event.id && handleDeleteEvent(event.id)}
-                            disabled={deleteMutation.isPending}
-                            data-testid="button-delete-event"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditEvent(event)}
+                              data-testid="button-edit-event"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => event.id && handleDeleteEvent(event.id)}
+                              disabled={deleteMutation.isPending}
+                              data-testid="button-delete-event"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </CardContent>
