@@ -814,9 +814,9 @@ export default function Emails() {
         </div>
 
         {/* Reading Pane - Bottom 60% */}
-        <div className="h-[60%] flex flex-col overflow-hidden bg-white dark:bg-white">
+        <div className="h-[60%] flex flex-col overflow-hidden">
           {!selectedEmail ? (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground dark:text-gray-500">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Select an email to read</p>
@@ -825,7 +825,7 @@ export default function Emails() {
           ) : (
             <>
               {/* Email Header */}
-              <div className="py-0.5 px-4 border-b space-y-0.5 text-black dark:text-black">
+              <div className="py-0.5 px-4 border-b space-y-0.5">
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-base font-semibold flex-1" data-testid="email-subject">
                     {selectedEmail.subject || '(no subject)'}
@@ -935,7 +935,7 @@ export default function Emails() {
               </div>
 
               {/* Email Body */}
-              <ScrollArea className="flex-1 p-4 bg-white dark:bg-white">
+              <ScrollArea className="flex-1 p-4">
                 {isLoadingFullEmail ? (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -974,7 +974,7 @@ export default function Emails() {
                 })()}
 
                 <div 
-                  className="prose prose-sm max-w-none text-black dark:text-black"
+                  className="prose prose-sm max-w-none dark:prose-invert"
                   data-testid="email-body"
                 >
                   {selectedEmail.bodyHtml ? (
