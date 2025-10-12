@@ -75,17 +75,24 @@ export default function Emails() {
   const [composerMode, setComposerMode] = useState<'compose' | 'reply' | 'replyAll' | 'forward'>('compose');
   const [originalEmail, setOriginalEmail] = useState<ParsedEmail | null>(null);
 
-  const { data: emailsData, isLoading: isLoadingEmails } = useQuery<{
+  const { data: emailsData, isLoading: isLoadingEmails, error } = useQuery<{
     emails: ParsedEmail[];
     nextPageToken?: string;
   }>({
     queryKey: ['/api/emails', activeFolder, sortBy, sortOrder],
     queryFn: async () => {
-      return await apiRequest("GET", `/api/emails/${activeFolder}?sortBy=${sortBy}&sortOrder=${sortOrder}`);
+      console.log(`Fetching emails for folder: ${activeFolder}`);
+      const result = await apiRequest("GET", `/api/emails/${activeFolder}?sortBy=${sortBy}&sortOrder=${sortOrder}`);
+      console.log(`Received ${result.emails?.length || 0} emails for ${activeFolder}:`, result);
+      return result;
     },
   });
 
   const selectedEmail = emailsData?.emails?.find(e => e.id === selectedEmailId);
+  
+  if (error) {
+    console.error('Email fetch error:', error);
+  }
 
   const markReadMutation = useMutation({
     mutationFn: async ({ id, isRead }: { id: string; isRead: boolean }) => {
