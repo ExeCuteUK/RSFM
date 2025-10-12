@@ -513,6 +513,19 @@ export async function moveToSpam(messageId: string): Promise<void> {
   });
 }
 
+export async function modifyEmailLabels(messageId: string, addLabels: string[] = [], removeLabels: string[] = []): Promise<void> {
+  const gmail = await getUncachableGmailClient();
+  
+  await gmail.users.messages.modify({
+    userId: 'me',
+    id: messageId,
+    requestBody: {
+      addLabelIds: addLabels.length > 0 ? addLabels : undefined,
+      removeLabelIds: removeLabels.length > 0 ? removeLabels : undefined,
+    },
+  });
+}
+
 // ========== Draft Management ==========
 
 export async function createDraft(options: {

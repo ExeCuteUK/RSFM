@@ -4237,6 +4237,22 @@ ${messageText}
     }
   });
   
+  // Add/remove label from email
+  app.post("/api/emails/:id/label", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { label, add } = req.body;
+      
+      const { modifyEmailLabels } = await import("./gmail");
+      await modifyEmailLabels(id, add ? [label] : [], add ? [] : [label]);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Label email error:", error);
+      res.status(500).json({ error: "Failed to modify label" });
+    }
+  });
+  
   // Delete email (move to trash)
   app.delete("/api/emails/:id", requireAuth, async (req, res) => {
     try {
@@ -4471,10 +4487,6 @@ ${messageText}
     }
   });
 
-  const httpServer = createServer(app);
-
-  return httpServer;
-}
   // Get email signature HTML for composer
   app.get("/api/settings/email-signature", requireAuth, async (req, res) => {
     try {
@@ -4498,3 +4510,8 @@ ${messageText}
       res.json({ signature: '' });
     }
   });
+
+  const httpServer = createServer(app);
+
+  return httpServer;
+}

@@ -79,25 +79,29 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
   useEffect(() => {
     if (originalEmail) {
       const quotedContent = originalEmail.bodyHtml || textToHtml(originalEmail.bodyText || '');
+      const signature = signatureData?.signature || '';
       
       if (mode === 'reply') {
         setTo(originalEmail.from);
         setSubject(originalEmail.subject.startsWith('Re:') ? originalEmail.subject : `Re: ${originalEmail.subject}`);
-        const quotedBody = `<p><br></p><p><br></p><hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
+        const quotedBody = `<p><br></p><p><br></p>${signature}<hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
       } else if (mode === 'replyAll') {
         setTo(originalEmail.from);
         setCc(originalEmail.cc?.join(', ') || '');
         setSubject(originalEmail.subject.startsWith('Re:') ? originalEmail.subject : `Re: ${originalEmail.subject}`);
-        const quotedBody = `<p><br></p><p><br></p><hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
+        const quotedBody = `<p><br></p><p><br></p>${signature}<hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
       } else if (mode === 'forward') {
         setSubject(originalEmail.subject.startsWith('Fwd:') ? originalEmail.subject : `Fwd: ${originalEmail.subject}`);
-        const quotedBody = `<p><br></p><p><br></p><hr><p><em>Forwarded message from ${originalEmail.from} on ${new Date(originalEmail.date).toLocaleString()}:</em></p><blockquote>${quotedContent}</blockquote>`;
+        const quotedBody = `<p><br></p><p><br></p>${signature}<hr><p><em>Forwarded message from ${originalEmail.from} on ${new Date(originalEmail.date).toLocaleString()}:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
       }
+    } else if (mode === 'compose' && !body && signatureData?.signature) {
+      // For new emails, add signature at the end
+      setBody(`<p><br></p><p><br></p>${signatureData.signature}`);
     }
-  }, [originalEmail, mode]);
+  }, [originalEmail, mode, signatureData]);
 
   // Auto-save draft every 3 seconds
   useEffect(() => {

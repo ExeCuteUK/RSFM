@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,9 @@ export default function Emails() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerMode, setComposerMode] = useState<'compose' | 'reply' | 'replyAll' | 'forward'>('compose');
   const [originalEmail, setOriginalEmail] = useState<ParsedEmail | null>(null);
+  const [filterUnread, setFilterUnread] = useState(false);
+  const [filterImportant, setFilterImportant] = useState(false);
+  const [filterAttachments, setFilterAttachments] = useState(false);
 
   const { data: emailsData, isLoading: isLoadingEmails, error } = useQuery<{
     emails: ParsedEmail[];
@@ -200,20 +203,97 @@ export default function Emails() {
   };
 
   const filteredEmails = emailsData?.emails?.filter(email => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      email.from.toLowerCase().includes(query) ||
-      email.subject.toLowerCase().includes(query) ||
-      email.snippet.toLowerCase().includes(query)
-    );
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (
+        email.from.toLowerCase().includes(query) ||
+        email.subject.toLowerCase().includes(query) ||
+        email.snippet.toLowerCase().includes(query)
+      );
+      if (!matchesSearch) return false;
+    }
+    
+    // Unread filter
+    if (filterUnread && !email.isUnread) return false;
+    
+    // Important label filter
+    if (filterImportant && !email.labels.includes('IMPORTANT')) return false;
+    
+    // Attachments filter
+    if (filterAttachments && email.attachments.length === 0) return false;
+    
+    return true;
   }) || [];
+  
+  const handleCheckMail = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
+    toast({
+      title: "Checking for new mail...",
+    });
+  };
+
+  const labelMutation = useMutation({
+    mutationFn: async ({ id, label, add }: { id: string; label: string; add: boolean }) => {
+      return await apiRequest("POST", `/api/emails/${id}/label`, { label, add });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
+    },
+  });
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      if (e.key === '1' && selectedEmailId) {
+        const email = filteredEmails.find(e => e.id === selectedEmailId);
+        if (email) {
+          const hasImportant = email.labels.includes('IMPORTANT');
+          labelMutation.mutate({ 
+            id: selectedEmailId, 
+            label: 'IMPORTANT', 
+            add: !hasImportant 
+          });
+          toast({
+            title: hasImportant ? "Removed Important label" : "Added Important label",
+          });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [selectedEmailId, filteredEmails]);
+
+  const downloadAttachment = async (emailId: string, attachmentId: string, filename: string) => {
+    try {
+      const response = await fetch(`/api/emails/${emailId}/attachments/${attachmentId}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      toast({
+        title: "Failed to download attachment",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="h-screen flex" data-testid="page-emails">
       {/* Left Sidebar - Folders */}
       <div className="w-[20%] border-r flex flex-col bg-muted/10">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b space-y-2">
           <Button 
             onClick={handleCompose} 
             className="w-full" 
@@ -221,6 +301,15 @@ export default function Emails() {
           >
             <Edit3 className="mr-2 h-4 w-4" />
             Compose
+          </Button>
+          <Button 
+            onClick={handleCheckMail} 
+            variant="outline"
+            className="w-full" 
+            data-testid="button-check-mail"
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Check Mail
           </Button>
         </div>
 
@@ -258,19 +347,49 @@ export default function Emails() {
 
       {/* Right Section - Email List (Top) and Reading Pane (Bottom) */}
       <div className="flex-1 flex flex-col">
-        {/* Email List - Top 40% */}
-        <div className="h-[40%] border-b flex flex-col">
+        {/* Email List - Top 20% */}
+        <div className="h-[20%] border-b flex flex-col">
           {/* Toolbar */}
           <div className="p-3 border-b space-y-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search emails..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-                data-testid="input-search"
-              />
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search emails..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                  data-testid="input-search"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={filterUnread ? "default" : "outline"}
+                  onClick={() => setFilterUnread(!filterUnread)}
+                  data-testid="filter-unread"
+                >
+                  Unread
+                </Button>
+                <div className="h-6 w-px bg-border" />
+                <Button
+                  size="sm"
+                  variant={filterImportant ? "default" : "outline"}
+                  onClick={() => setFilterImportant(!filterImportant)}
+                  data-testid="filter-tags"
+                >
+                  Tags
+                </Button>
+                <div className="h-6 w-px bg-border" />
+                <Button
+                  size="sm"
+                  variant={filterAttachments ? "default" : "outline"}
+                  onClick={() => setFilterAttachments(!filterAttachments)}
+                  data-testid="filter-attachments"
+                >
+                  Attachments
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -324,7 +443,7 @@ export default function Emails() {
                 {filteredEmails.map((email) => (
                   <div
                     key={email.id}
-                    className={`px-3 py-3 grid grid-cols-12 gap-2 cursor-pointer hover-elevate ${
+                    className={`px-3 py-1 grid grid-cols-12 gap-2 cursor-pointer hover-elevate ${
                       selectedEmailId === email.id ? 'bg-muted' : ''
                     } ${email.isUnread ? 'font-semibold' : ''}`}
                     onClick={() => handleEmailClick(email)}
@@ -362,8 +481,8 @@ export default function Emails() {
           </ScrollArea>
         </div>
 
-        {/* Reading Pane - Bottom 60% */}
-        <div className="h-[60%] flex flex-col">
+        {/* Reading Pane - Bottom 80% */}
+        <div className="h-[80%] flex flex-col">
           {!selectedEmail ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
@@ -374,9 +493,9 @@ export default function Emails() {
           ) : (
             <>
               {/* Email Header */}
-              <div className="p-4 border-b space-y-3">
+              <div className="p-4 border-b space-y-1">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-xl font-semibold flex-1" data-testid="email-subject">
+                  <h2 className="text-base font-semibold flex-1" data-testid="email-subject">
                     {selectedEmail.subject || '(no subject)'}
                   </h2>
                 </div>
@@ -477,9 +596,14 @@ export default function Emails() {
                     </div>
                     <div className="space-y-1">
                       {selectedEmail.attachments.map((attachment, index) => (
-                        <div key={index} className="text-sm text-muted-foreground">
+                        <button
+                          key={index}
+                          onClick={() => downloadAttachment(selectedEmail.id, attachment.attachmentId, attachment.filename)}
+                          className="text-sm text-primary hover:underline cursor-pointer block text-left"
+                          data-testid={`attachment-${index}`}
+                        >
                           {attachment.filename} ({Math.round(attachment.size / 1024)} KB)
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -490,7 +614,12 @@ export default function Emails() {
                   data-testid="email-body"
                 >
                   {selectedEmail.bodyHtml ? (
-                    <div dangerouslySetInnerHTML={{ __html: selectedEmail.bodyHtml }} />
+                    <iframe
+                      srcDoc={selectedEmail.bodyHtml.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')}
+                      className="w-full min-h-[400px] border-0"
+                      sandbox="allow-same-origin allow-popups"
+                      title="Email content"
+                    />
                   ) : (
                     <pre className="whitespace-pre-wrap font-sans">
                       {selectedEmail.bodyText || selectedEmail.snippet}
