@@ -596,18 +596,18 @@ export default function TeamCalendar() {
                         data-testid={`calendar-day-${format(day, "yyyy-MM-dd")}`}
                       >
                         {isSelected && (
-                          <div className="absolute inset-0 bg-primary/30 border-2 border-primary pointer-events-none" />
+                          <div className="absolute inset-0 bg-primary/30 outline outline-2 outline-primary pointer-events-none" />
                         )}
                         <div className={`relative text-xs font-medium mb-0.5 ${
                           !isCurrentMonth ? "text-muted-foreground" : ""
                         } ${isTodayDate ? "bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-[10px]" : ""}`}>
                           {format(day, "d")}
                         </div>
-                        <div className="space-y-0.5">
+                        <div className="relative space-y-0.5 overflow-hidden">
                           {dayEvents.slice(0, 3).map((event) => (
                             <div
                               key={event.id}
-                              className={`text-[10px] px-1 py-0.5 rounded truncate cursor-pointer ${
+                              className={`text-[10px] px-1 py-0.5 rounded cursor-pointer overflow-hidden ${
                                 event.isHoliday
                                   ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
                                   : "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30"
@@ -622,7 +622,9 @@ export default function TeamCalendar() {
                                 }
                               }}
                             >
-                              {event.start.dateTime && format(parseISO(event.start.dateTime), "HH:mm")} {event.summary}
+                              <div className="truncate">
+                                {event.start.dateTime && format(parseISO(event.start.dateTime), "HH:mm")} {event.summary}
+                              </div>
                             </div>
                           ))}
                           {dayEvents.length > 3 && (
