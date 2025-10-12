@@ -89,23 +89,34 @@ export default function Emails() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['/api/emails', activeFolder, sortBy, sortOrder],
+    queryKey: ['/api/emails', activeFolder],
     queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams({
-        sortBy,
-        sortOrder,
         ...(pageParam && { pageToken: pageParam }),
       });
       const response = await apiRequest("GET", `/api/emails/${activeFolder}?${params}`);
       const result = await response.json();
       return result;
     },
-    getNextPageParam: (lastPage) => lastPage.nextPageToken,
-    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextPageToken ?? undefined,
+    initialPageParam: undefined as string | undefined,
   });
 
+  // Client-side sorting to avoid re-fetching
   const allEmails = emailsData?.pages.flatMap(page => page.emails) || [];
-  const selectedEmail = allEmails.find(e => e.id === selectedEmailId);
+  const sortedEmails = [...allEmails].sort((a, b) => {
+    let comparison = 0;
+    if (sortBy === 'date') {
+      comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+    } else if (sortBy === 'sender') {
+      comparison = a.from.localeCompare(b.from);
+    } else if (sortBy === 'subject') {
+      comparison = a.subject.localeCompare(b.subject);
+    }
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+  
+  const selectedEmail = sortedEmails.find(e => e.id === selectedEmailId);
   
   if (error) {
     console.error('Email fetch error:', error);
@@ -120,11 +131,11 @@ export default function Emails() {
       await queryClient.cancelQueries({ queryKey: ['/api/emails'] });
 
       // Snapshot the previous value
-      const previousEmails = queryClient.getQueryData(['/api/emails', activeFolder, sortBy, sortOrder]);
+      const previousEmails = queryClient.getQueryData(['/api/emails', activeFolder]);
 
       // Optimistically update the cache for infinite query
       queryClient.setQueryData(
-        ['/api/emails', activeFolder, sortBy, sortOrder],
+        ['/api/emails', activeFolder],
         (old: any) => {
           if (!old?.pages) return old;
           return {
@@ -144,7 +155,7 @@ export default function Emails() {
     onError: (_err, _variables, context) => {
       // Rollback on error
       if (context?.previousEmails) {
-        queryClient.setQueryData(['/api/emails', activeFolder, sortBy, sortOrder], context.previousEmails);
+        queryClient.setQueryData(['/api/emails', activeFolder], context.previousEmails);
       }
     },
     onSettled: () => {
@@ -250,7 +261,7 @@ export default function Emails() {
     }
   };
 
-  const filteredEmails = allEmails.filter(email => {
+  const filteredEmails = sortedEmails.filter(email => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -293,24 +304,27 @@ export default function Emails() {
       await queryClient.cancelQueries({ queryKey: ['/api/emails'] });
 
       // Snapshot the previous value
-      const previousEmails = queryClient.getQueryData(['/api/emails', activeFolder, sortBy, sortOrder]);
+      const previousEmails = queryClient.getQueryData(['/api/emails', activeFolder]);
 
-      // Optimistically update the cache
+      // Optimistically update the cache for infinite query
       queryClient.setQueryData(
-        ['/api/emails', activeFolder, sortBy, sortOrder],
+        ['/api/emails', activeFolder],
         (old: any) => {
-          if (!old) return old;
+          if (!old?.pages) return old;
           return {
             ...old,
-            emails: old.emails.map((email: ParsedEmail) => {
-              if (email.id === id) {
-                const updatedLabels = add
-                  ? [...email.labels, label]
-                  : email.labels.filter(l => l !== label);
-                return { ...email, labels: updatedLabels };
-              }
-              return email;
-            }),
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              emails: page.emails.map((email: ParsedEmail) => {
+                if (email.id === id) {
+                  const updatedLabels = add
+                    ? [...email.labels, label]
+                    : email.labels.filter(l => l !== label);
+                  return { ...email, labels: updatedLabels };
+                }
+                return email;
+              }),
+            })),
           };
         }
       );
@@ -320,7 +334,7 @@ export default function Emails() {
     onError: (_err, _variables, context) => {
       // Rollback on error
       if (context?.previousEmails) {
-        queryClient.setQueryData(['/api/emails', activeFolder, sortBy, sortOrder], context.previousEmails);
+        queryClient.setQueryData(['/api/emails', activeFolder], context.previousEmails);
       }
     },
     onSettled: () => {
@@ -443,7 +457,7 @@ export default function Emails() {
   }, [selectedEmail]);
 
   return (
-    <div className="h-screen flex" data-testid="page-emails">
+    <div className="h-full flex" data-testid="page-emails">
       {/* Left Sidebar - Folders */}
       <div className="w-[20%] border-r flex flex-col bg-muted/10">
         <div className="p-4 border-b space-y-2">

@@ -57,6 +57,7 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
   const [draftId, setDraftId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [signatureAdded, setSignatureAdded] = useState(false);
   
   const [toSuggestions, setToSuggestions] = useState<EmailContact[]>([]);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
@@ -86,22 +87,39 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
         setSubject(originalEmail.subject.startsWith('Re:') ? originalEmail.subject : `Re: ${originalEmail.subject}`);
         const quotedBody = `<p><br></p><p><br></p>${signature}<hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
+        setSignatureAdded(true);
       } else if (mode === 'replyAll') {
         setTo(originalEmail.from);
         setCc(originalEmail.cc?.join(', ') || '');
         setSubject(originalEmail.subject.startsWith('Re:') ? originalEmail.subject : `Re: ${originalEmail.subject}`);
         const quotedBody = `<p><br></p><p><br></p>${signature}<hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
+        setSignatureAdded(true);
       } else if (mode === 'forward') {
         setSubject(originalEmail.subject.startsWith('Fwd:') ? originalEmail.subject : `Fwd: ${originalEmail.subject}`);
         const quotedBody = `<p><br></p><p><br></p>${signature}<hr><p><em>Forwarded message from ${originalEmail.from} on ${new Date(originalEmail.date).toLocaleString()}:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
+        setSignatureAdded(true);
       }
-    } else if (mode === 'compose' && !body && signatureData?.signature) {
-      // For new emails, add signature at the end
+    } else if (mode === 'compose' && !signatureAdded && signatureData?.signature) {
+      // For new emails, add signature at the end (only once)
       setBody(`<p><br></p><p><br></p>${signatureData.signature}`);
+      setSignatureAdded(true);
     }
-  }, [originalEmail, mode, signatureData]);
+  }, [originalEmail, mode, signatureData, signatureAdded]);
+
+  // Reset state when composer closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSignatureAdded(false);
+      setTo("");
+      setCc("");
+      setBcc("");
+      setSubject("");
+      setBody("");
+      setDraftId(null);
+    }
+  }, [isOpen]);
 
   // Auto-save draft every 3 seconds
   useEffect(() => {
@@ -414,6 +432,16 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
                   ['clean']
                 ]
               }}
+              formats={[
+                'header',
+                'bold', 'italic', 'underline', 'strike',
+                'list', 'bullet', 'indent',
+                'align',
+                'link', 'image',
+                'color', 'background',
+                'blockquote',
+                'table', 'td', 'tr', 'th', 'tbody', 'thead'
+              ]}
             />
           </div>
         </div>
