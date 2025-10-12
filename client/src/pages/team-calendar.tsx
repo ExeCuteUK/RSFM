@@ -515,7 +515,7 @@ export default function TeamCalendar() {
 
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               <Button
                 variant="outline"
@@ -525,14 +525,9 @@ export default function TeamCalendar() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                onClick={goToToday}
-                data-testid="button-today"
-                className="h-9"
-              >
-                Today
-              </Button>
+              <div className="w-16 h-9 flex items-center justify-center border rounded-md bg-background text-sm font-medium" data-testid="text-selected-date">
+                {format(selectedDate, "do")}
+              </div>
               <Button
                 variant="outline"
                 size="icon"
@@ -545,6 +540,14 @@ export default function TeamCalendar() {
             <CardTitle className="text-xl">
               {format(currentMonth, "MMMM yyyy")}
             </CardTitle>
+            <Button
+              variant="outline"
+              onClick={goToToday}
+              data-testid="button-today"
+              className="h-9"
+            >
+              Today
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="pt-2">
@@ -555,8 +558,8 @@ export default function TeamCalendar() {
           ) : (
             <div className="border rounded-md overflow-hidden">
               {/* Calendar Header */}
-              <div className="grid grid-cols-8 bg-muted/50">
-                <div className="p-1 text-center text-xs font-medium border-r">Week</div>
+              <div className="grid bg-muted/50" style={{ gridTemplateColumns: '40px repeat(7, 1fr)' }}>
+                <div className="p-1 text-center text-xs font-medium border-r">Wk</div>
                 <div className="p-1 text-center text-xs font-medium border-r">Mon</div>
                 <div className="p-1 text-center text-xs font-medium border-r">Tue</div>
                 <div className="p-1 text-center text-xs font-medium border-r">Wed</div>
@@ -568,7 +571,7 @@ export default function TeamCalendar() {
 
               {/* Calendar Grid */}
               {weeks.map((week, weekIndex) => (
-                <div key={weekIndex} className="grid grid-cols-8 border-t">
+                <div key={weekIndex} className="grid border-t" style={{ gridTemplateColumns: '40px repeat(7, 1fr)' }}>
                   {/* Week Number */}
                   <div className="p-1 text-center text-xs font-medium bg-muted/30 border-r flex items-center justify-center">
                     {getWeek(week[0])}
@@ -586,7 +589,7 @@ export default function TeamCalendar() {
                         key={dayIndex}
                         className={`min-h-20 p-1 border-r last:border-r-0 cursor-pointer hover-elevate ${
                           !isCurrentMonth ? "bg-muted/20" : ""
-                        } ${isSelected ? "bg-primary/10" : ""}`}
+                        } ${isSelected ? "bg-primary/30 border-2 border-primary" : ""}`}
                         onClick={() => setSelectedDate(day)}
                         data-testid={`calendar-day-${format(day, "yyyy-MM-dd")}`}
                       >
