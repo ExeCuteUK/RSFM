@@ -395,7 +395,7 @@ export async function fetchEmails(options: FetchEmailsOptions = {}): Promise<{
   nextPageToken?: string;
 }> {
   const gmail = await getUncachableGmailClient();
-  const { folder = 'inbox', maxResults = 50, pageToken, sortBy = 'date' } = options;
+  const { folder = 'inbox', maxResults = 100, pageToken, sortBy = 'date' } = options;
   
   let labelIds: string[] | undefined;
   let q: string | undefined;
