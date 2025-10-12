@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Calendar as CalendarIcon, Flag, Edit } from "lucide-react";
+import { Plus, Trash2, Calendar as CalendarIcon, Flag, Edit, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { format, startOfMonth, endOfMonth, parseISO, isSameDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, parseISO, isSameDay, startOfWeek, endOfWeek, addDays, addMonths, subMonths, getWeek, isSameMonth, isToday } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,6 +37,7 @@ interface CalendarEvent {
 export default function TeamCalendar() {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -51,9 +51,14 @@ export default function TeamCalendar() {
     isAllDay: true,
   });
 
-  // Fetch events for the current month
-  const startDate = format(startOfMonth(selectedDate), "yyyy-MM-dd");
-  const endDate = format(endOfMonth(selectedDate), "yyyy-MM-dd");
+  // Fetch events for the current month (including adjacent days for week view)
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  
+  const startDate = format(calendarStart, "yyyy-MM-dd");
+  const endDate = format(calendarEnd, "yyyy-MM-dd");
 
   const { data: events = [], isLoading, error } = useQuery<CalendarEvent[]>({
     queryKey: ["/api/calendar/events", startDate, endDate],
@@ -197,19 +202,40 @@ export default function TeamCalendar() {
     setEditingEvent(null);
   };
 
-  // Get events for selected date
-  const selectedDateEvents = events.filter((event) => {
-    const eventDate = event.start.date ? parseISO(event.start.date) : event.start.dateTime ? parseISO(event.start.dateTime) : null;
-    return eventDate && isSameDay(eventDate, selectedDate);
-  });
+  // Get events for a specific date
+  const getEventsForDate = (date: Date) => {
+    return events.filter((event) => {
+      const eventDate = event.start.date ? parseISO(event.start.date) : event.start.dateTime ? parseISO(event.start.dateTime) : null;
+      return eventDate && isSameDay(eventDate, date);
+    });
+  };
 
-  // Get all event dates for calendar highlighting
-  const eventDates = events
-    .map((event) => {
-      const dateStr = event.start.date || event.start.dateTime;
-      return dateStr ? parseISO(dateStr) : null;
-    })
-    .filter((date): date is Date => date !== null);
+  // Generate calendar days
+  const generateCalendarDays = () => {
+    const days: Date[] = [];
+    let currentDay = calendarStart;
+    
+    while (currentDay <= calendarEnd) {
+      days.push(currentDay);
+      currentDay = addDays(currentDay, 1);
+    }
+    
+    return days;
+  };
+
+  const calendarDays = generateCalendarDays();
+  const weeks: Date[][] = [];
+  for (let i = 0; i < calendarDays.length; i += 7) {
+    weeks.push(calendarDays.slice(i, i + 7));
+  }
+
+  // Navigation functions
+  const goToPreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const goToToday = () => {
+    setCurrentMonth(new Date());
+    setSelectedDate(new Date());
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -460,119 +486,197 @@ export default function TeamCalendar() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>
-              {format(selectedDate, "MMMM yyyy")}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToPreviousMonth}
+                data-testid="button-previous-month"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={goToToday}
+                data-testid="button-today"
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToNextMonth}
+                data-testid="button-next-month"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <CardTitle className="text-2xl">
+              {format(currentMonth, "MMMM yyyy")}
             </CardTitle>
-            <CardDescription>
-              {eventDates.length} event{eventDates.length !== 1 ? "s" : ""} this month
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <p className="text-muted-foreground">Loading calendar...</p>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-96">
+              <p className="text-muted-foreground">Loading calendar...</p>
+            </div>
+          ) : (
+            <div className="border rounded-md overflow-hidden">
+              {/* Calendar Header */}
+              <div className="grid grid-cols-8 bg-muted/50">
+                <div className="p-2 text-center text-sm font-medium border-r">Week</div>
+                <div className="p-2 text-center text-sm font-medium border-r">Mon</div>
+                <div className="p-2 text-center text-sm font-medium border-r">Tue</div>
+                <div className="p-2 text-center text-sm font-medium border-r">Wed</div>
+                <div className="p-2 text-center text-sm font-medium border-r">Thu</div>
+                <div className="p-2 text-center text-sm font-medium border-r">Fri</div>
+                <div className="p-2 text-center text-sm font-medium border-r">Sat</div>
+                <div className="p-2 text-center text-sm font-medium">Sun</div>
               </div>
-            ) : (
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                month={selectedDate}
-                onMonthChange={setSelectedDate}
-                modifiers={{
-                  event: eventDates,
-                }}
-                modifiersStyles={{
-                  event: {
-                    backgroundColor: "hsl(var(--primary))",
-                    color: "hsl(var(--primary-foreground))",
-                    fontWeight: "bold",
-                  },
-                }}
-                className="rounded-md border"
-                data-testid="calendar-view"
-              />
-            )}
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
-              {format(selectedDate, "MMMM d, yyyy")}
-            </CardTitle>
-            <CardDescription>
-              {selectedDateEvents.length} event{selectedDateEvents.length !== 1 ? "s" : ""} on this day
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {selectedDateEvents.length === 0 ? (
-              <p className="text-sm text-muted-foreground" data-testid="text-no-events">
-                No events scheduled for this day
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {selectedDateEvents.map((event) => (
-                  <Card key={event.id} data-testid={`event-${event.id}`} className={event.isHoliday ? "border-primary/50 bg-primary/5" : ""}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold" data-testid="text-event-title">
-                              {event.summary}
-                            </h4>
-                            {event.isHoliday && (
-                              <Badge variant="outline" className="text-xs" data-testid="badge-holiday">
-                                <Flag className="h-3 w-3 mr-1" />
-                                UK Holiday
-                              </Badge>
-                            )}
-                          </div>
-                          {event.description && (
-                            <p className="text-sm text-muted-foreground mt-1" data-testid="text-event-description">
-                              {event.description}
-                            </p>
-                          )}
-                          {event.creator?.displayName && !event.isHoliday && (
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Created by: {event.creator.displayName}
-                            </p>
+              {/* Calendar Grid */}
+              {weeks.map((week, weekIndex) => (
+                <div key={weekIndex} className="grid grid-cols-8 border-t">
+                  {/* Week Number */}
+                  <div className="p-2 text-center text-sm font-medium bg-muted/30 border-r flex items-center justify-center">
+                    {getWeek(week[0])}
+                  </div>
+                  
+                  {/* Days */}
+                  {week.map((day, dayIndex) => {
+                    const dayEvents = getEventsForDate(day);
+                    const isCurrentMonth = isSameMonth(day, currentMonth);
+                    const isTodayDate = isToday(day);
+                    const isSelected = isSameDay(day, selectedDate);
+
+                    return (
+                      <div
+                        key={dayIndex}
+                        className={`min-h-24 p-1 border-r last:border-r-0 cursor-pointer hover-elevate ${
+                          !isCurrentMonth ? "bg-muted/20" : ""
+                        } ${isSelected ? "bg-primary/10" : ""}`}
+                        onClick={() => setSelectedDate(day)}
+                        data-testid={`calendar-day-${format(day, "yyyy-MM-dd")}`}
+                      >
+                        <div className={`text-sm font-medium mb-1 ${
+                          !isCurrentMonth ? "text-muted-foreground" : ""
+                        } ${isTodayDate ? "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center" : ""}`}>
+                          {format(day, "d")}
+                        </div>
+                        <div className="space-y-0.5">
+                          {dayEvents.slice(0, 3).map((event) => (
+                            <div
+                              key={event.id}
+                              className={`text-xs px-1 py-0.5 rounded truncate ${
+                                event.isHoliday
+                                  ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                                  : "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30"
+                              }`}
+                              data-testid={`calendar-event-${event.id}`}
+                              title={event.summary}
+                            >
+                              {event.start.dateTime && format(parseISO(event.start.dateTime), "HH:mm")} {event.summary}
+                            </div>
+                          ))}
+                          {dayEvents.length > 3 && (
+                            <div className="text-xs text-muted-foreground pl-1">
+                              +{dayEvents.length - 3} more
+                            </div>
                           )}
                         </div>
-                        {!event.isHoliday && (
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditEvent(event)}
-                              data-testid="button-edit-event"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => event.id && handleDeleteEvent(event.id)}
-                              disabled={deleteMutation.isPending}
-                              data-testid="button-delete-event"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Event Details Sidebar */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5" />
+            {format(selectedDate, "EEEE, MMMM d, yyyy")}
+          </CardTitle>
+          <CardDescription>
+            {getEventsForDate(selectedDate).length} event{getEventsForDate(selectedDate).length !== 1 ? "s" : ""} on this day
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {getEventsForDate(selectedDate).length === 0 ? (
+            <p className="text-sm text-muted-foreground" data-testid="text-no-events">
+              No events scheduled for this day
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {getEventsForDate(selectedDate).map((event) => (
+                <Card key={event.id} data-testid={`event-detail-${event.id}`} className={event.isHoliday ? "border-amber-500/50 bg-amber-500/5" : "border-blue-500/50 bg-blue-500/5"}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold" data-testid="text-event-title">
+                            {event.summary}
+                          </h4>
+                          {event.isHoliday && (
+                            <Badge variant="outline" className="text-xs border-amber-500/50" data-testid="badge-holiday">
+                              <Flag className="h-3 w-3 mr-1" />
+                              UK Holiday
+                            </Badge>
+                          )}
+                        </div>
+                        {event.start.dateTime && (
+                          <p className="text-sm text-muted-foreground">
+                            {format(parseISO(event.start.dateTime), "h:mm a")} - {format(parseISO(event.end.dateTime!), "h:mm a")}
+                          </p>
+                        )}
+                        {event.description && (
+                          <p className="text-sm text-muted-foreground mt-1" data-testid="text-event-description">
+                            {event.description}
+                          </p>
+                        )}
+                        {event.creator?.displayName && !event.isHoliday && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Created by: {event.creator.displayName}
+                          </p>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                      {!event.isHoliday && (
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditEvent(event)}
+                            data-testid="button-edit-event"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => event.id && handleDeleteEvent(event.id)}
+                            disabled={deleteMutation.isPending}
+                            data-testid="button-delete-event"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
