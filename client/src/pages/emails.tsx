@@ -220,8 +220,12 @@ export default function Emails() {
     // Unread filter
     if (filterUnread && !email.isUnread) return false;
     
-    // Important label filter
-    if (filterImportant && !email.labels.includes('IMPORTANT')) return false;
+    // Important/Tags label filter - check for Gmail IMPORTANT or Thunderbird labels
+    if (filterImportant) {
+      const possibleImportantLabels = ['IMPORTANT', 'Label_1', 'Important', '$label1'];
+      const hasImportantLabel = possibleImportantLabels.some(label => email.labels.includes(label));
+      if (!hasImportantLabel) return false;
+    }
     
     // Attachments filter
     if (filterAttachments && email.attachments.length === 0) return false;
@@ -255,14 +259,21 @@ export default function Emails() {
       if (e.key === '1' && selectedEmailId) {
         const email = filteredEmails.find(e => e.id === selectedEmailId);
         if (email) {
-          const hasImportant = email.labels.includes('IMPORTANT');
+          // Log labels for debugging
+          console.log('Email labels:', email.labels);
+          
+          // Try IMPORTANT first, but also check for common Thunderbird labels
+          const possibleLabels = ['IMPORTANT', 'Label_1', 'Important'];
+          const currentLabel = possibleLabels.find(label => email.labels.includes(label)) || 'IMPORTANT';
+          const hasLabel = email.labels.includes(currentLabel);
+          
           labelMutation.mutate({ 
             id: selectedEmailId, 
-            label: 'IMPORTANT', 
-            add: !hasImportant 
+            label: currentLabel, 
+            add: !hasLabel 
           });
           toast({
-            title: hasImportant ? "Removed Important label" : "Added Important label",
+            title: hasLabel ? `Removed ${currentLabel} label` : `Added ${currentLabel} label`,
           });
         }
       }
