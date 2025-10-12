@@ -81,9 +81,8 @@ export default function Emails() {
   }>({
     queryKey: ['/api/emails', activeFolder, sortBy, sortOrder],
     queryFn: async () => {
-      console.log(`Fetching emails for folder: ${activeFolder}`);
-      const result = await apiRequest("GET", `/api/emails/${activeFolder}?sortBy=${sortBy}&sortOrder=${sortOrder}`);
-      console.log(`Received ${result.emails?.length || 0} emails for ${activeFolder}:`, result);
+      const response = await apiRequest("GET", `/api/emails/${activeFolder}?sortBy=${sortBy}&sortOrder=${sortOrder}`);
+      const result = await response.json();
       return result;
     },
   });
