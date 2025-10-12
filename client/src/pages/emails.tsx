@@ -366,6 +366,27 @@ export default function Emails() {
           });
         }
       }
+      
+      // Up/Down arrow navigation
+      if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && filteredEmails.length > 0) {
+        e.preventDefault();
+        const currentIndex = filteredEmails.findIndex(email => email.id === selectedEmailId);
+        
+        if (e.key === 'ArrowDown') {
+          if (currentIndex === -1) {
+            // No email selected, select first one
+            handleEmailClick(filteredEmails[0]);
+          } else if (currentIndex < filteredEmails.length - 1) {
+            // Select next email
+            handleEmailClick(filteredEmails[currentIndex + 1]);
+          }
+        } else if (e.key === 'ArrowUp') {
+          if (currentIndex > 0) {
+            // Select previous email
+            handleEmailClick(filteredEmails[currentIndex - 1]);
+          }
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyPress);
