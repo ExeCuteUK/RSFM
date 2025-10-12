@@ -4205,6 +4205,22 @@ ${messageText}
     }
   });
   
+  // Get email attachment
+  app.get("/api/emails/:id/attachments/:attachmentId", requireAuth, async (req, res) => {
+    try {
+      const { id, attachmentId } = req.params;
+      const { getAttachment } = await import("./gmail");
+      const attachmentData = await getAttachment(id, attachmentId);
+      
+      // Set appropriate content type (you might want to store mimeType and use it here)
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.send(attachmentData);
+    } catch (error) {
+      console.error("Get attachment error:", error);
+      res.status(500).json({ error: "Failed to get attachment" });
+    }
+  });
+  
   // Mark email as read/unread
   app.post("/api/emails/:id/mark-read", requireAuth, async (req, res) => {
     try {

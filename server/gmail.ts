@@ -862,3 +862,23 @@ export async function getUnreadCount(): Promise<number> {
   
   return response.data.messagesUnread || 0;
 }
+
+export async function getAttachment(messageId: string, attachmentId: string): Promise<Buffer> {
+  const gmail = await getUncachableGmailClient();
+  
+  const response = await gmail.users.messages.attachments.get({
+    userId: 'me',
+    messageId,
+    id: attachmentId,
+  });
+  
+  // The data is base64url encoded
+  const data = response.data.data;
+  if (!data) {
+    throw new Error('No attachment data found');
+  }
+  
+  // Convert base64url to base64
+  const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
+  return Buffer.from(base64, 'base64');
+}
