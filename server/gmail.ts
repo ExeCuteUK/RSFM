@@ -522,15 +522,78 @@ export async function moveToSpam(messageId: string): Promise<void> {
   });
 }
 
+// Cache for label ID lookups
+let labelIdCache: Map<string, string> = new Map();
+
+export async function getLabelIdByName(labelName: string): Promise<string | null> {
+  // Check cache first
+  if (labelIdCache.has(labelName)) {
+    return labelIdCache.get(labelName)!;
+  }
+  
+  const gmail = await getUncachableGmailClient();
+  
+  try {
+    const response = await gmail.users.labels.list({
+      userId: 'me',
+    });
+    
+    const labels = response.data.labels || [];
+    const label = labels.find(l => l.name === labelName);
+    
+    if (label && label.id) {
+      // Cache the result
+      labelIdCache.set(labelName, label.id);
+      return label.id;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching Gmail labels:', error);
+    return null;
+  }
+}
+
 export async function modifyEmailLabels(messageId: string, addLabels: string[] = [], removeLabels: string[] = []): Promise<void> {
   const gmail = await getUncachableGmailClient();
+  
+  // Convert label names to IDs for custom labels
+  const addLabelIds = await Promise.all(
+    addLabels.map(async (label) => {
+      // System labels (all uppercase) can be used directly
+      if (label === label.toUpperCase() && ['INBOX', 'SENT', 'DRAFT', 'TRASH', 'SPAM', 'STARRED', 'IMPORTANT', 'UNREAD'].includes(label)) {
+        return label;
+      }
+      // Custom labels need to be converted to IDs
+      const labelId = await getLabelIdByName(label);
+      if (!labelId) {
+        throw new Error(`Label not found: ${label}`);
+      }
+      return labelId;
+    })
+  );
+  
+  const removeLabelIds = await Promise.all(
+    removeLabels.map(async (label) => {
+      // System labels can be used directly
+      if (label === label.toUpperCase() && ['INBOX', 'SENT', 'DRAFT', 'TRASH', 'SPAM', 'STARRED', 'IMPORTANT', 'UNREAD'].includes(label)) {
+        return label;
+      }
+      // Custom labels need to be converted to IDs
+      const labelId = await getLabelIdByName(label);
+      if (!labelId) {
+        throw new Error(`Label not found: ${label}`);
+      }
+      return labelId;
+    })
+  );
   
   await gmail.users.messages.modify({
     userId: 'me',
     id: messageId,
     requestBody: {
-      addLabelIds: addLabels.length > 0 ? addLabels : undefined,
-      removeLabelIds: removeLabels.length > 0 ? removeLabels : undefined,
+      addLabelIds: addLabelIds.length > 0 ? addLabelIds : undefined,
+      removeLabelIds: removeLabelIds.length > 0 ? removeLabelIds : undefined,
     },
   });
 }
