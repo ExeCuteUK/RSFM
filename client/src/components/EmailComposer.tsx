@@ -64,6 +64,11 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
   
   const saveTimerRef = useRef<NodeJS.Timeout>();
 
+  // Fetch current user's Gmail email
+  const { data: userData } = useQuery({
+    queryKey: ['/api/auth/me'],
+  });
+
   // Pre-fill for replies and forwards
   useEffect(() => {
     if (originalEmail) {
@@ -298,11 +303,11 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
         {/* Email Fields */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="p-3 space-y-2 flex-shrink-0">
-            {/* From field - TODO: Pull from settings */}
+            {/* From field */}
             <div className="flex items-center gap-3">
               <Label className="w-16 text-right text-sm">From:</Label>
               <Input
-                value="your.email@example.com"
+                value={userData?.user?.gmailEmail || 'Loading...'}
                 disabled
                 className="flex-1 h-8 text-sm"
                 data-testid="input-from"
