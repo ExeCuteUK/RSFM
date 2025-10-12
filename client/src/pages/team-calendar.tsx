@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, Trash2, Calendar as CalendarIcon, Flag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { format, startOfMonth, endOfMonth, parseISO, isSameDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -29,6 +30,8 @@ interface CalendarEvent {
     email?: string;
     displayName?: string;
   };
+  calendarId?: string;
+  isHoliday?: boolean;
 }
 
 export default function TeamCalendar() {
@@ -133,7 +136,7 @@ export default function TeamCalendar() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Team Calendar</h1>
-          <p className="text-muted-foreground">Manage team holidays and annual leave</p>
+          <p className="text-muted-foreground">Manage team holidays, annual leave, and view UK public holidays</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
@@ -275,33 +278,43 @@ export default function TeamCalendar() {
             ) : (
               <div className="space-y-3">
                 {selectedDateEvents.map((event) => (
-                  <Card key={event.id} data-testid={`event-${event.id}`}>
+                  <Card key={event.id} data-testid={`event-${event.id}`} className={event.isHoliday ? "border-primary/50 bg-primary/5" : ""}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <h4 className="font-semibold" data-testid="text-event-title">
-                            {event.summary}
-                          </h4>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold" data-testid="text-event-title">
+                              {event.summary}
+                            </h4>
+                            {event.isHoliday && (
+                              <Badge variant="outline" className="text-xs" data-testid="badge-holiday">
+                                <Flag className="h-3 w-3 mr-1" />
+                                UK Holiday
+                              </Badge>
+                            )}
+                          </div>
                           {event.description && (
                             <p className="text-sm text-muted-foreground mt-1" data-testid="text-event-description">
                               {event.description}
                             </p>
                           )}
-                          {event.creator?.displayName && (
+                          {event.creator?.displayName && !event.isHoliday && (
                             <p className="text-xs text-muted-foreground mt-2">
                               Created by: {event.creator.displayName}
                             </p>
                           )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => event.id && handleDeleteEvent(event.id)}
-                          disabled={deleteMutation.isPending}
-                          data-testid="button-delete-event"
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        {!event.isHoliday && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => event.id && handleDeleteEvent(event.id)}
+                            disabled={deleteMutation.isPending}
+                            data-testid="button-delete-event"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
