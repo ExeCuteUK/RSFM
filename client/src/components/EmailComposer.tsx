@@ -220,11 +220,6 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
     onClose();
   };
 
-  const handleMinimize = () => {
-    // TODO: Implement minimize functionality
-    console.log("Minimize not yet implemented");
-  };
-
   if (!isOpen) return null;
 
   const title = mode === 'compose' ? 'New Email' :
@@ -239,7 +234,6 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
       width={900}
       height={650}
       onClose={handleClose}
-      onMinimize={handleMinimize}
     >
       <div className="flex flex-col h-full">
         {/* Top Action Toolbar */}
