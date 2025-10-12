@@ -69,7 +69,7 @@ const menuItems = [
 
 const secondaryItems = [
   {
-    title: "Team Calendar",
+    title: "R.S Calendar",
     url: "/team-calendar",
     icon: Calendar,
   },
@@ -205,15 +205,6 @@ export function AppSidebar() {
           <SidebarGroupLabel>Beta Testing</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={handleSendEmail}
-                  data-testid="button-send-email"
-                >
-                  <Mail />
-                  <span>Send Email</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               {betaTestingItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 

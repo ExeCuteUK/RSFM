@@ -270,7 +270,7 @@ export default function TeamCalendar() {
   return (
     <div className="container mx-auto p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold" data-testid="text-page-title">Team Calendar</h1>
+        <h1 className="text-2xl font-bold" data-testid="text-page-title">R.S Calendar</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
           setIsAddDialogOpen(open);
           if (!open) resetForm();
