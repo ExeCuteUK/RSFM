@@ -122,6 +122,10 @@ GMAIL_CLIENT_ID=your-gmail-client-id.apps.googleusercontent.com
 GMAIL_CLIENT_SECRET=your-gmail-client-secret
 GMAIL_REFRESH_TOKEN=your-gmail-refresh-token
 
+# Google Calendar (for team holidays/annual leave)
+# Get calendar ID from Google Calendar settings > "Integrate calendar" section
+GOOGLE_CALENDAR_ID=your-calendar-id@group.calendar.google.com
+
 # Terminal49 API (for container tracking - optional)
 TERMINAL49_API_KEY=your-terminal49-api-key
 EOF

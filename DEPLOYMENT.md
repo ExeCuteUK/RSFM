@@ -49,6 +49,7 @@ The application uses Google Drive for file storage and database backups. Follow 
 2. Search for and enable:
    - **Google Drive API**
    - **Gmail API** (for email sending)
+   - **Google Calendar API** (for team calendar)
 
 ### 3. Create Service Account
 
@@ -115,7 +116,7 @@ The application sends emails via Gmail API using OAuth2 credentials. This setup 
    - **App name:** R.S Freight Manager
    - **User support email:** Your email
    - **Developer contact:** Your email
-   - **Scopes:** Add `https://www.googleapis.com/auth/gmail.send`
+   - **Scopes:** Add `https://www.googleapis.com/auth/gmail.send` and `https://www.googleapis.com/auth/calendar`
    - **Test users:** Add the Gmail account that will send emails
 6. Return to **"Create OAuth client ID"**:
    - **Application type:** Web application
@@ -132,8 +133,8 @@ The application sends emails via Gmail API using OAuth2 credentials. This setup 
 4. Enter your **Client ID** and **Client Secret**
 5. Close settings
 6. In **Step 1** (Select & authorize APIs):
-   - Find **Gmail API v1**
-   - Select `https://www.googleapis.com/auth/gmail.send`
+   - Find **Gmail API v1** and select `https://www.googleapis.com/auth/gmail.send`
+   - Find **Google Calendar API v3** and select `https://www.googleapis.com/auth/calendar`
    - Click **"Authorize APIs"**
 7. Sign in with the Gmail account you want to use for sending emails
 8. Click **"Allow"** to grant permissions
@@ -242,6 +243,9 @@ GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END P
 GMAIL_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GMAIL_CLIENT_SECRET=your-client-secret
 GMAIL_REFRESH_TOKEN=your-refresh-token
+
+# Google Calendar (for team holidays/annual leave)
+GOOGLE_CALENDAR_ID=your-calendar-id@group.calendar.google.com
 
 # Terminal49 API (optional)
 TERMINAL49_API_KEY=your-terminal49-api-key
