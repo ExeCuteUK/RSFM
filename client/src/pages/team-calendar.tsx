@@ -645,13 +645,15 @@ export default function TeamCalendar() {
       {/* Event Details Sidebar */}
       <Card className="mt-3">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <CalendarIcon className="h-4 w-4" />
-            {format(selectedDate, "EEEE, MMMM d, yyyy")}
-          </CardTitle>
-          <CardDescription className="text-xs">
-            {getEventsForDate(selectedDate).length} event{getEventsForDate(selectedDate).length !== 1 ? "s" : ""} on this day
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CalendarIcon className="h-4 w-4" />
+              {format(selectedDate, "EEEE, MMMM d, yyyy")}
+            </CardTitle>
+            <CardDescription className="text-xs">
+              {getEventsForDate(selectedDate).length} event{getEventsForDate(selectedDate).length !== 1 ? "s" : ""} on this day
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="pt-2">
           {getEventsForDate(selectedDate).length === 0 ? (
@@ -659,14 +661,14 @@ export default function TeamCalendar() {
               No events scheduled for this day
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {getEventsForDate(selectedDate).map((event) => (
                 <Card key={event.id} data-testid={`event-detail-${event.id}`} className={event.isHoliday ? "border-amber-500/50 bg-amber-500/5" : "border-blue-500/50 bg-blue-500/5"}>
-                  <CardContent className="p-4">
+                  <CardContent className="p-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold" data-testid="text-event-title">
+                          <h4 className="font-semibold text-sm" data-testid="text-event-title">
                             {event.summary}
                           </h4>
                           {event.isHoliday && (
@@ -677,17 +679,17 @@ export default function TeamCalendar() {
                           )}
                         </div>
                         {event.start.dateTime && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {format(parseISO(event.start.dateTime), "h:mm a")} - {format(parseISO(event.end.dateTime!), "h:mm a")}
                           </p>
                         )}
                         {event.description && (
-                          <p className="text-sm text-muted-foreground mt-1" data-testid="text-event-description">
+                          <p className="text-xs text-muted-foreground mt-1" data-testid="text-event-description">
                             {event.description}
                           </p>
                         )}
                         {event.creator?.displayName && !event.isHoliday && (
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="text-xs text-muted-foreground mt-1">
                             Created by: {event.creator.displayName}
                           </p>
                         )}
