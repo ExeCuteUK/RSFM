@@ -1,4 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { persistQueryClient } from '@tanstack/react-query-persist-client';
+import { get, set, del } from 'idb-keyval';
+import type { PersistedClient, Persister } from '@tanstack/react-query-persist-client';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -41,6 +44,21 @@ export const getQueryFn: <T>(options: {
     return await res.json();
   };
 
+// Create IndexedDB persister for query cache
+function createIDBPersister(): Persister {
+  return {
+    persistClient: async (client: PersistedClient) => {
+      await set('rs-freight-manager-query-cache', client);
+    },
+    restoreClient: async () => {
+      return await get<PersistedClient>('rs-freight-manager-query-cache');
+    },
+    removeClient: async () => {
+      await del('rs-freight-manager-query-cache');
+    },
+  };
+}
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -49,9 +67,17 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: Infinity,
       retry: false,
+      gcTime: 1000 * 60 * 60, // 1 hour - keeps data in memory
     },
     mutations: {
       retry: false,
     },
   },
+});
+
+// Initialize IndexedDB persistence
+persistQueryClient({
+  queryClient,
+  persister: createIDBPersister(),
+  maxAge: 1000 * 60 * 60, // 1 hour - keeps data in IndexedDB
 });
