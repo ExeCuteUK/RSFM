@@ -103,7 +103,37 @@ export default function Emails() {
     mutationFn: async ({ id, isRead }: { id: string; isRead: boolean }) => {
       return await apiRequest("POST", `/api/emails/${id}/mark-read`, { isRead });
     },
-    onSuccess: () => {
+    onMutate: async ({ id, isRead }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/emails'] });
+
+      // Snapshot the previous value
+      const previousEmails = queryClient.getQueryData(['/api/emails', activeFolder, sortBy, sortOrder]);
+
+      // Optimistically update the cache
+      queryClient.setQueryData(
+        ['/api/emails', activeFolder, sortBy, sortOrder],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            emails: old.emails.map((email: ParsedEmail) =>
+              email.id === id ? { ...email, isUnread: !isRead } : email
+            ),
+          };
+        }
+      );
+
+      return { previousEmails };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback on error
+      if (context?.previousEmails) {
+        queryClient.setQueryData(['/api/emails', activeFolder, sortBy, sortOrder], context.previousEmails);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
     },
   });
@@ -243,7 +273,43 @@ export default function Emails() {
     mutationFn: async ({ id, label, add }: { id: string; label: string; add: boolean }) => {
       return await apiRequest("POST", `/api/emails/${id}/label`, { label, add });
     },
-    onSuccess: () => {
+    onMutate: async ({ id, label, add }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/emails'] });
+
+      // Snapshot the previous value
+      const previousEmails = queryClient.getQueryData(['/api/emails', activeFolder, sortBy, sortOrder]);
+
+      // Optimistically update the cache
+      queryClient.setQueryData(
+        ['/api/emails', activeFolder, sortBy, sortOrder],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            emails: old.emails.map((email: ParsedEmail) => {
+              if (email.id === id) {
+                const updatedLabels = add
+                  ? [...email.labels, label]
+                  : email.labels.filter(l => l !== label);
+                return { ...email, labels: updatedLabels };
+              }
+              return email;
+            }),
+          };
+        }
+      );
+
+      return { previousEmails };
+    },
+    onError: (_err, _variables, context) => {
+      // Rollback on error
+      if (context?.previousEmails) {
+        queryClient.setQueryData(['/api/emails', activeFolder, sortBy, sortOrder], context.previousEmails);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
     },
   });
