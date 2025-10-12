@@ -117,7 +117,15 @@ export default function Emails() {
     return sortOrder === 'asc' ? comparison : -comparison;
   });
   
-  const selectedEmail = sortedEmails.find(e => e.id === selectedEmailId);
+  // Fetch full email content when an email is selected
+  const { data: fullEmailData, isLoading: isLoadingFullEmail } = useQuery({
+    queryKey: ['/api/emails/message', selectedEmailId],
+    enabled: !!selectedEmailId,
+  });
+  
+  // Use the list email for basic info, but full email for body/attachments
+  const listEmail = sortedEmails.find(e => e.id === selectedEmailId);
+  const selectedEmail = fullEmailData || listEmail;
   
   if (error) {
     console.error('Email fetch error:', error);

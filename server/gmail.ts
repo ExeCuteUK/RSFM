@@ -293,7 +293,8 @@ async function batchGetEmails(gmail: any, messageIds: string[]): Promise<ParsedE
       const response = await gmail.users.messages.get({
         userId: 'me',
         id,
-        format: 'full',
+        format: 'metadata',
+        metadataHeaders: ['From', 'To', 'Cc', 'Subject', 'Date'],
       });
       
       return parseEmailFromResponse(response.data);
@@ -400,10 +401,18 @@ export async function fetchEmails(options: FetchEmailsOptions = {}): Promise<{
   let labelIds: string[] | undefined;
   let q: string | undefined;
   
+  // Calculate date 31 days ago
+  const thirtyOneDaysAgo = new Date();
+  thirtyOneDaysAgo.setDate(thirtyOneDaysAgo.getDate() - 31);
+  const dateFilter = `${thirtyOneDaysAgo.getFullYear()}/${String(thirtyOneDaysAgo.getMonth() + 1).padStart(2, '0')}/${String(thirtyOneDaysAgo.getDate()).padStart(2, '0')}`;
+  
   if (folder === 'archive') {
-    q = '-in:inbox -in:sent -in:trash -in:spam -in:draft';
+    q = `-in:inbox -in:sent -in:trash -in:spam -in:draft after:${dateFilter}`;
   } else if (folder !== 'all') {
     labelIds = [getLabelIdForFolder(folder)];
+    q = `after:${dateFilter}`;
+  } else {
+    q = `after:${dateFilter}`;
   }
   
   const response = await gmail.users.messages.list({
