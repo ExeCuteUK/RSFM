@@ -419,6 +419,10 @@ export async function getEmail(messageId: string): Promise<ParsedEmail> {
   
   const labels = message.labelIds || [];
   
+  // Log subject and labels for debugging Thunderbird tags
+  const subject = getHeader('subject');
+  console.log(`Email: "${subject}" | Labels: ${JSON.stringify(labels)}`);
+  
   return {
     id: message.id || '',
     threadId: message.threadId || '',
@@ -426,7 +430,7 @@ export async function getEmail(messageId: string): Promise<ParsedEmail> {
     to: parseAddresses(getHeader('to')),
     cc: parseAddresses(getHeader('cc')),
     bcc: parseAddresses(getHeader('bcc')),
-    subject: getHeader('subject'),
+    subject,
     date: getHeader('date'),
     snippet: message.snippet || '',
     bodyText,
