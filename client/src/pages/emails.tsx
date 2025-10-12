@@ -220,11 +220,10 @@ export default function Emails() {
     // Unread filter
     if (filterUnread && !email.isUnread) return false;
     
-    // Important/Tags label filter - check for Gmail IMPORTANT or Thunderbird labels
+    // Tags label filter - check for RS-TAG label
     if (filterImportant) {
-      const possibleImportantLabels = ['IMPORTANT', 'Label_1', 'Important', '$label1'];
-      const hasImportantLabel = possibleImportantLabels.some(label => email.labels.includes(label));
-      if (!hasImportantLabel) return false;
+      const hasRsTag = email.labels.includes('RS-TAG');
+      if (!hasRsTag) return false;
     }
     
     // Attachments filter
@@ -259,21 +258,15 @@ export default function Emails() {
       if (e.key === '1' && selectedEmailId) {
         const email = filteredEmails.find(e => e.id === selectedEmailId);
         if (email) {
-          // Log labels for debugging
-          console.log('Email labels:', email.labels);
-          
-          // Try IMPORTANT first, but also check for common Thunderbird labels
-          const possibleLabels = ['IMPORTANT', 'Label_1', 'Important'];
-          const currentLabel = possibleLabels.find(label => email.labels.includes(label)) || 'IMPORTANT';
-          const hasLabel = email.labels.includes(currentLabel);
+          const hasRsTag = email.labels.includes('RS-TAG');
           
           labelMutation.mutate({ 
             id: selectedEmailId, 
-            label: currentLabel, 
-            add: !hasLabel 
+            label: 'RS-TAG', 
+            add: !hasRsTag 
           });
           toast({
-            title: hasLabel ? `Removed ${currentLabel} label` : `Added ${currentLabel} label`,
+            title: hasRsTag ? 'Removed RS-TAG' : 'Added RS-TAG',
           });
         }
       }
@@ -495,12 +488,16 @@ export default function Emails() {
               </div>
             ) : (
               <div className="divide-y">
-                {filteredEmails.map((email) => (
+                {filteredEmails.map((email) => {
+                  const hasRsTag = email.labels.includes('RS-TAG');
+                  return (
                   <div
                     key={email.id}
                     className={`px-3 py-1 grid grid-cols-12 gap-2 cursor-pointer hover-elevate ${
                       selectedEmailId === email.id ? 'bg-muted' : ''
-                    } ${email.isUnread ? 'font-semibold' : ''}`}
+                    } ${email.isUnread ? 'font-semibold' : ''} ${
+                      hasRsTag ? 'bg-red-50 dark:bg-red-950/20' : ''
+                    }`}
                     onClick={() => handleEmailClick(email)}
                     data-testid={`email-row-${email.id}`}
                   >
@@ -530,7 +527,8 @@ export default function Emails() {
                       {new Date(email.date).toLocaleDateString()}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </ScrollArea>
