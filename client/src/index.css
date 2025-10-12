@@ -610,3 +610,30 @@
 .animate-glow-yellow {
   animation: glow-yellow 2s ease-in-out infinite;
 }
+/* Make React Quill fill available height in flex containers */
+.react-quill-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.react-quill-wrapper .quill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.react-quill-wrapper .ql-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.react-quill-wrapper .ql-editor {
+  flex: 1;
+  min-height: 100%;
+}

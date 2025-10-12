@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { DraggableWindow } from "./DraggableWindow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { X, Send, Loader2, Paperclip } from "lucide-react";
@@ -32,6 +33,20 @@ interface EmailComposerProps {
   };
 }
 
+// Helper function to convert plain text to safe HTML
+const textToHtml = (text: string): string => {
+  if (!text) return '';
+  // Escape HTML special characters
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  // Convert newlines to <br> tags
+  return escaped.replace(/\n/g, '<br>');
+};
+
 export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail }: EmailComposerProps) {
   const { toast } = useToast();
   const [to, setTo] = useState("");
@@ -52,20 +67,22 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
   // Pre-fill for replies and forwards
   useEffect(() => {
     if (originalEmail) {
+      const quotedContent = originalEmail.bodyHtml || textToHtml(originalEmail.bodyText || '');
+      
       if (mode === 'reply') {
         setTo(originalEmail.from);
         setSubject(originalEmail.subject.startsWith('Re:') ? originalEmail.subject : `Re: ${originalEmail.subject}`);
-        const quotedBody = `\n\n---\nOn ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:\n${originalEmail.bodyText || originalEmail.bodyHtml || ''}`;
+        const quotedBody = `<p><br></p><p><br></p><hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
       } else if (mode === 'replyAll') {
         setTo(originalEmail.from);
         setCc(originalEmail.cc?.join(', ') || '');
         setSubject(originalEmail.subject.startsWith('Re:') ? originalEmail.subject : `Re: ${originalEmail.subject}`);
-        const quotedBody = `\n\n---\nOn ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:\n${originalEmail.bodyText || originalEmail.bodyHtml || ''}`;
+        const quotedBody = `<p><br></p><p><br></p><hr><p><em>On ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
       } else if (mode === 'forward') {
         setSubject(originalEmail.subject.startsWith('Fwd:') ? originalEmail.subject : `Fwd: ${originalEmail.subject}`);
-        const quotedBody = `\n\n---\nForwarded message from ${originalEmail.from} on ${new Date(originalEmail.date).toLocaleString()}:\n${originalEmail.bodyText || originalEmail.bodyHtml || ''}`;
+        const quotedBody = `<p><br></p><p><br></p><hr><p><em>Forwarded message from ${originalEmail.from} on ${new Date(originalEmail.date).toLocaleString()}:</em></p><blockquote>${quotedContent}</blockquote>`;
         setBody(quotedBody);
       }
     }
@@ -279,8 +296,8 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
         </div>
 
         {/* Email Fields */}
-        <div className="flex-1 overflow-auto">
-          <div className="p-3 space-y-2">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-3 space-y-2 flex-shrink-0">
             {/* From field - TODO: Pull from settings */}
             <div className="flex items-center gap-3">
               <Label className="w-16 text-right text-sm">From:</Label>
@@ -361,20 +378,25 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
             </div>
           </div>
 
-          {/* Formatting Toolbar - TODO: Add React Quill */}
-          <div className="px-3 py-2 border-y bg-muted/20">
-            <div className="text-xs text-muted-foreground">Formatting toolbar (React Quill - to be added)</div>
-          </div>
-
-          {/* Message Body */}
-          <div className="p-3">
-            <Textarea
-              id="body"
-              data-testid="textarea-body"
+          {/* Message Body with Rich Text Editor */}
+          <div className="flex-1 react-quill-wrapper">
+            <ReactQuill
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={setBody}
               placeholder="Write your message..."
-              className="min-h-[300px] border-0 focus-visible:ring-0 text-sm"
+              theme="snow"
+              modules={{
+                toolbar: [
+                  [{ 'header': [1, 2, 3, false] }],
+                  ['bold', 'italic', 'underline', 'strike'],
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  [{ 'indent': '-1'}, { 'indent': '+1' }],
+                  [{ 'align': [] }],
+                  ['link'],
+                  [{ 'color': [] }, { 'background': [] }],
+                  ['clean']
+                ]
+              }}
             />
           </div>
         </div>
