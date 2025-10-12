@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DraggableWindow } from "./DraggableWindow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { X, Send, Loader2 } from "lucide-react";
+import { X, Send, Loader2, Paperclip } from "lucide-react";
 
 interface EmailContact {
   id: string;
@@ -39,8 +39,6 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
   const [bcc, setBcc] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [showCc, setShowCc] = useState(false);
-  const [showBcc, setShowBcc] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -62,7 +60,6 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
       } else if (mode === 'replyAll') {
         setTo(originalEmail.from);
         setCc(originalEmail.cc?.join(', ') || '');
-        setShowCc(true);
         setSubject(originalEmail.subject.startsWith('Re:') ? originalEmail.subject : `Re: ${originalEmail.subject}`);
         const quotedBody = `\n\n---\nOn ${new Date(originalEmail.date).toLocaleString()}, ${originalEmail.from} wrote:\n${originalEmail.bodyText || originalEmail.bodyHtml || ''}`;
         setBody(quotedBody);
@@ -212,8 +209,6 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
     setSubject("");
     setBody("");
     setDraftId(null);
-    setShowCc(false);
-    setShowBcc(false);
     setLastSaved(null);
     setToInputValue("");
   };
@@ -223,127 +218,58 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
     onClose();
   };
 
+  const handleMinimize = () => {
+    // TODO: Implement minimize functionality
+    console.log("Minimize not yet implemented");
+  };
+
+  if (!isOpen) return null;
+
+  const title = mode === 'compose' ? 'New Email' :
+    mode === 'reply' ? 'Reply' :
+    mode === 'replyAll' ? 'Reply All' :
+    'Forward';
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl h-[80vh] flex flex-col" data-testid="dialog-email-composer">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === 'compose' && 'New Email'}
-            {mode === 'reply' && 'Reply'}
-            {mode === 'replyAll' && 'Reply All'}
-            {mode === 'forward' && 'Forward'}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-auto space-y-4">
-          <div>
-            <Label htmlFor="to">To</Label>
-            <div className="relative">
-              <Input
-                id="to"
-                data-testid="input-to"
-                value={toInputValue || to}
-                onChange={(e) => {
-                  setTo(e.target.value);
-                  handleToInputChange(e.target.value);
-                }}
-                placeholder="recipient@example.com"
-                className="w-full"
-              />
-              {showToSuggestions && toSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-auto">
-                  {toSuggestions.map((contact) => (
-                    <div
-                      key={contact.id}
-                      data-testid={`suggestion-${contact.email}`}
-                      className="px-3 py-2 hover-elevate cursor-pointer"
-                      onClick={() => selectSuggestion(contact)}
-                    >
-                      <div className="font-medium">{contact.email}</div>
-                      {contact.name && <div className="text-sm text-muted-foreground">{contact.name}</div>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2 mt-2">
-              {!showCc && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowCc(true)}
-                  data-testid="button-show-cc"
-                >
-                  Cc
-                </Button>
-              )}
-              {!showBcc && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBcc(true)}
-                  data-testid="button-show-bcc"
-                >
-                  Bcc
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {showCc && (
-            <div>
-              <Label htmlFor="cc">Cc</Label>
-              <Input
-                id="cc"
-                data-testid="input-cc"
-                value={cc}
-                onChange={(e) => setCc(e.target.value)}
-                placeholder="cc@example.com"
-              />
-            </div>
-          )}
-
-          {showBcc && (
-            <div>
-              <Label htmlFor="bcc">Bcc</Label>
-              <Input
-                id="bcc"
-                data-testid="input-bcc"
-                value={bcc}
-                onChange={(e) => setBcc(e.target.value)}
-                placeholder="bcc@example.com"
-              />
-            </div>
-          )}
-
-          <div>
-            <Label htmlFor="subject">Subject</Label>
-            <Input
-              id="subject"
-              data-testid="input-subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Email subject"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="body">Message</Label>
-            <Textarea
-              id="body"
-              data-testid="textarea-body"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Write your message..."
-              className="min-h-[300px]"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <DraggableWindow
+      id="email-composer"
+      title={title}
+      width={900}
+      height={650}
+      onClose={handleClose}
+      onMinimize={handleMinimize}
+    >
+      <div className="flex flex-col h-full">
+        {/* Top Action Toolbar */}
+        <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/20">
+          <Button
+            size="sm"
+            onClick={() => sendMutation.mutate()}
+            disabled={!to || !subject || sendMutation.isPending}
+            data-testid="button-send"
+          >
+            {sendMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Send
+              </>
+            )}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            data-testid="button-attach"
+          >
+            <Paperclip className="mr-2 h-4 w-4" />
+            Attach
+          </Button>
+          
+          <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
             {isSaving && (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -354,36 +280,109 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
               <span>Saved {lastSaved.toLocaleTimeString()}</span>
             )}
           </div>
+        </div>
 
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              data-testid="button-cancel"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => sendMutation.mutate()}
-              disabled={!to || !subject || sendMutation.isPending}
-              data-testid="button-send"
-            >
-              {sendMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Send
-                </>
-              )}
-            </Button>
+        {/* Email Fields */}
+        <div className="flex-1 overflow-auto">
+          <div className="p-3 space-y-2">
+            {/* From field - TODO: Pull from settings */}
+            <div className="flex items-center gap-3">
+              <Label className="w-16 text-right text-sm">From:</Label>
+              <Input
+                value="your.email@example.com"
+                disabled
+                className="flex-1 h-8 text-sm"
+                data-testid="input-from"
+              />
+            </div>
+
+            {/* To field */}
+            <div className="flex items-center gap-3">
+              <Label htmlFor="to" className="w-16 text-right text-sm">To:</Label>
+              <div className="flex-1 relative">
+                <Input
+                  id="to"
+                  data-testid="input-to"
+                  value={toInputValue || to}
+                  onChange={(e) => {
+                    setTo(e.target.value);
+                    handleToInputChange(e.target.value);
+                  }}
+                  placeholder="recipient@example.com"
+                  className="w-full h-8 text-sm"
+                />
+                {showToSuggestions && toSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-auto">
+                    {toSuggestions.map((contact) => (
+                      <div
+                        key={contact.id}
+                        data-testid={`suggestion-${contact.email}`}
+                        className="px-3 py-2 hover-elevate cursor-pointer"
+                        onClick={() => selectSuggestion(contact)}
+                      >
+                        <div className="font-medium">{contact.email}</div>
+                        {contact.name && <div className="text-sm text-muted-foreground">{contact.name}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cc and Bcc fields - Always visible, side by side */}
+            <div className="flex items-center gap-3">
+              <Label htmlFor="cc" className="w-16 text-right text-sm">Cc:</Label>
+              <Input
+                id="cc"
+                data-testid="input-cc"
+                value={cc}
+                onChange={(e) => setCc(e.target.value)}
+                placeholder="cc@example.com"
+                className="flex-1 h-8 text-sm"
+              />
+              <Label htmlFor="bcc" className="w-16 text-right text-sm">Bcc:</Label>
+              <Input
+                id="bcc"
+                data-testid="input-bcc"
+                value={bcc}
+                onChange={(e) => setBcc(e.target.value)}
+                placeholder="bcc@example.com"
+                className="flex-1 h-8 text-sm"
+              />
+            </div>
+
+            {/* Subject field */}
+            <div className="flex items-center gap-3">
+              <Label htmlFor="subject" className="w-16 text-right text-sm">Subject:</Label>
+              <Input
+                id="subject"
+                data-testid="input-subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Email subject"
+                className="flex-1 h-8 text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Formatting Toolbar - TODO: Add React Quill */}
+          <div className="px-3 py-2 border-y bg-muted/20">
+            <div className="text-xs text-muted-foreground">Formatting toolbar (React Quill - to be added)</div>
+          </div>
+
+          {/* Message Body */}
+          <div className="p-3">
+            <Textarea
+              id="body"
+              data-testid="textarea-body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Write your message..."
+              className="min-h-[300px] border-0 focus-visible:ring-0 text-sm"
+            />
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </DraggableWindow>
   );
 }
