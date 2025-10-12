@@ -390,11 +390,16 @@ export async function getEmail(messageId: string): Promise<ParsedEmail> {
       }
       
       if (part.filename && part.body?.attachmentId) {
+        // Extract contentId from headers if present (for inline images)
+        const contentIdHeader = part.headers?.find((h: any) => h.name.toLowerCase() === 'content-id');
+        const contentId = contentIdHeader?.value;
+        
         attachments.push({
           filename: part.filename,
           mimeType: part.mimeType || '',
           size: part.body.size || 0,
           attachmentId: part.body.attachmentId,
+          ...(contentId && { contentId }),
         });
       }
     }

@@ -45,6 +45,7 @@ interface ParsedEmail {
     mimeType: string;
     size: number;
     attachmentId: string;
+    contentId?: string;
   }>;
   labels: string[];
   isUnread: boolean;
@@ -77,6 +78,8 @@ export default function Emails() {
   const [filterUnread, setFilterUnread] = useState(false);
   const [filterImportant, setFilterImportant] = useState(false);
   const [filterAttachments, setFilterAttachments] = useState(false);
+  const [attachmentsExpanded, setAttachmentsExpanded] = useState(true);
+  const [processedEmailHtml, setProcessedEmailHtml] = useState<string>('');
 
   const { data: emailsData, isLoading: isLoadingEmails, error } = useQuery<{
     emails: ParsedEmail[];
@@ -289,6 +292,47 @@ export default function Emails() {
     }
   };
 
+  // Process inline images when email changes
+  useEffect(() => {
+    const processInlineImages = async () => {
+      if (!selectedEmail?.bodyHtml) {
+        setProcessedEmailHtml('');
+        return;
+      }
+
+      const inlineImages = selectedEmail.attachments.filter(att => att.contentId);
+      
+      if (inlineImages.length === 0) {
+        setProcessedEmailHtml(selectedEmail.bodyHtml);
+        return;
+      }
+
+      let processedHtml = selectedEmail.bodyHtml;
+
+      for (const image of inlineImages) {
+        try {
+          const response = await fetch(`/api/emails/${selectedEmail.id}/attachments/${image.attachmentId}`);
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+
+          // Replace cid: references with data URL
+          const cidPattern = new RegExp(`cid:${image.contentId?.replace(/[<>]/g, '')}`, 'gi');
+          processedHtml = processedHtml.replace(cidPattern, base64);
+        } catch (error) {
+          console.error('Failed to load inline image:', image.filename, error);
+        }
+      }
+
+      setProcessedEmailHtml(processedHtml);
+    };
+
+    processInlineImages();
+  }, [selectedEmail]);
+
   return (
     <div className="h-screen flex" data-testid="page-emails">
       {/* Left Sidebar - Folders */}
@@ -346,9 +390,9 @@ export default function Emails() {
       </div>
 
       {/* Right Section - Email List (Top) and Reading Pane (Bottom) */}
-      <div className="flex-1 flex flex-col">
-        {/* Email List - Top 20% */}
-        <div className="h-[20%] border-b flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Email List - Top 40% */}
+        <div className="h-[40%] border-b flex flex-col overflow-hidden">
           {/* Toolbar */}
           <div className="p-3 border-b space-y-2">
             <div className="flex items-center gap-2">
@@ -481,8 +525,8 @@ export default function Emails() {
           </ScrollArea>
         </div>
 
-        {/* Reading Pane - Bottom 80% */}
-        <div className="h-[80%] flex flex-col">
+        {/* Reading Pane - Bottom 60% */}
+        <div className="h-[60%] flex flex-col overflow-hidden">
           {!selectedEmail ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
@@ -493,7 +537,7 @@ export default function Emails() {
           ) : (
             <>
               {/* Email Header */}
-              <div className="p-4 border-b space-y-1">
+              <div className="py-1 px-4 border-b space-y-1">
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-base font-semibold flex-1" data-testid="email-subject">
                     {selectedEmail.subject || '(no subject)'}
@@ -589,25 +633,36 @@ export default function Emails() {
 
               {/* Email Body */}
               <ScrollArea className="flex-1 p-4">
-                {selectedEmail.attachments && selectedEmail.attachments.length > 0 && (
-                  <div className="mb-4 p-3 border rounded-md bg-muted/30">
-                    <div className="text-sm font-medium mb-2">
-                      Attachments ({selectedEmail.attachments.length})
+                {(() => {
+                  const fileAttachments = selectedEmail.attachments.filter(att => !att.contentId);
+                  return fileAttachments.length > 0 && (
+                    <div className="mb-4 p-2 border rounded-md bg-muted/30">
+                      <div 
+                        className="flex items-center gap-2 cursor-pointer hover-elevate rounded px-2 py-1"
+                        onClick={() => setAttachmentsExpanded(!attachmentsExpanded)}
+                      >
+                        <div className="text-sm font-medium">
+                          Attachments ({fileAttachments.length})
+                        </div>
+                        {attachmentsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </div>
+                      {attachmentsExpanded && (
+                        <div className="flex flex-wrap gap-2 mt-2 px-2">
+                          {fileAttachments.map((attachment, index) => (
+                            <button
+                              key={index}
+                              onClick={() => downloadAttachment(selectedEmail.id, attachment.attachmentId, attachment.filename)}
+                              className="text-sm text-primary hover:underline cursor-pointer px-2 py-1 border rounded bg-background"
+                              data-testid={`attachment-${index}`}
+                            >
+                              {attachment.filename} ({Math.round(attachment.size / 1024)} KB)
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-1">
-                      {selectedEmail.attachments.map((attachment, index) => (
-                        <button
-                          key={index}
-                          onClick={() => downloadAttachment(selectedEmail.id, attachment.attachmentId, attachment.filename)}
-                          className="text-sm text-primary hover:underline cursor-pointer block text-left"
-                          data-testid={`attachment-${index}`}
-                        >
-                          {attachment.filename} ({Math.round(attachment.size / 1024)} KB)
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 <div 
                   className="prose prose-sm max-w-none dark:prose-invert"
@@ -615,7 +670,7 @@ export default function Emails() {
                 >
                   {selectedEmail.bodyHtml ? (
                     <iframe
-                      srcDoc={selectedEmail.bodyHtml.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')}
+                      srcDoc={(processedEmailHtml || selectedEmail.bodyHtml).replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')}
                       className="w-full min-h-[400px] border-0"
                       sandbox="allow-same-origin allow-popups"
                       title="Email content"
