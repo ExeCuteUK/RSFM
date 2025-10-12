@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -120,6 +120,15 @@ export default function Emails() {
   // Fetch full email content when an email is selected
   const { data: fullEmailData, isLoading: isLoadingFullEmail } = useQuery({
     queryKey: ['/api/emails/message', selectedEmailId],
+    queryFn: async () => {
+      const response = await fetch(`/api/emails/message/${selectedEmailId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch email');
+      }
+      return response.json();
+    },
     enabled: !!selectedEmailId,
   });
   
@@ -927,8 +936,14 @@ export default function Emails() {
 
               {/* Email Body */}
               <ScrollArea className="flex-1 p-4 bg-white dark:bg-white">
+                {isLoadingFullEmail ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                <>
                 {(() => {
-                  const fileAttachments = selectedEmail.attachments.filter(att => !att.contentId);
+                  const fileAttachments = selectedEmail.attachments?.filter(att => !att.contentId) || [];
                   return fileAttachments.length > 0 && (
                     <div className="mb-4 p-2 border rounded-md bg-muted/30">
                       <div 
@@ -975,6 +990,8 @@ export default function Emails() {
                     </pre>
                   )}
                 </div>
+                </>
+                )}
               </ScrollArea>
             </>
           )}
