@@ -715,7 +715,14 @@ export default function Emails() {
                   <div className="flex gap-2">
                     <span className="text-muted-foreground font-medium">Date:</span>
                     <span data-testid="email-date">
-                      {new Date(selectedEmail.date).toLocaleString()}
+                      {new Date(selectedEmail.date).toLocaleString('en-GB', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: false 
+                      })}
                     </span>
                   </div>
                 </div>
