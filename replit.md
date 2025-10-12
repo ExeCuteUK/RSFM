@@ -37,6 +37,8 @@ The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for r
 - **Smart Email Cache:** Check Mail appends new emails while preserving pagination; mutations instantly update cache without refetch
 - **Optimized Infinite Scroll:** 60% threshold (reduced from 80%) with Gmail API batch size of 100 for smoother loading
 - **Inline Image Support:** GET endpoint for Gmail attachments enables inline image rendering in received emails
+- **Two-Stage Email Loading:** Email list uses metadata format (headers only) for fast initial load; full email content (body + attachments) loads on demand when user selects an email
+- **31-Day Email Window:** Initial email fetch loads last 31 days of emails for optimal performance and relevance
 
 ### Backend Architecture
 
@@ -57,7 +59,7 @@ The API provides RESTful endpoints for managing contacts (customers, hauliers, s
 
 ### Navigation Routes
 
-Key routes include `/` (Dashboard), `/job-journals`, `/import-shipments`, `/export-shipments`, `/custom-clearances`, `/contacts`, `/invoices`, `/team-calendar`, `/messages`, `/backups`, and `/settings`.
+Key routes include `/` (Dashboard), `/job-journals`, `/import-shipments`, `/export-shipments`, `/custom-clearances`, `/contacts`, `/invoices`, `/team-calendar` (renamed to "R.S Calendar" in UI), `/messages`, `/backups`, and `/settings`.
 
 ## External Dependencies
 
