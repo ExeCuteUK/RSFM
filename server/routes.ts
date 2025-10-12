@@ -4503,7 +4503,8 @@ ${messageText}
         .replace(/{{fullName}}/g, user.fullName || '')
         .replace(/{{gmailEmail}}/g, user.gmailEmail || '')
         .replace(/{{username}}/g, user.username || '')
-        .replace(/{{USER_NAME}}/g, user.fullName || user.username || '');
+        .replace(/{{USER_NAME}}/g, user.fullName || user.username || '')
+        .replace(/{{LOGO_URL}}/g, 'cid:signature-logo');
       
       res.json({ signature });
     } catch (error) {

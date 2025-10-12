@@ -705,27 +705,105 @@ export async function createDraft(options: {
   draftId?: string;
 }): Promise<{ id: string; message: { id: string } }> {
   const gmail = await getUncachableGmailClient();
+  const fs = await import('fs/promises');
+  const path = await import('path');
   
-  const messageParts = [
-    `To: ${options.to}`,
-  ];
+  // Check if body contains signature logo reference
+  const hasSignatureLogo = options.body.includes('cid:signature-logo');
   
-  if (options.cc) {
-    messageParts.push(`Cc: ${options.cc}`);
+  let message: string;
+  
+  if (hasSignatureLogo) {
+    try {
+      // Read logo file and convert to base64
+      const logoPath = path.join(process.cwd(), 'attached_assets', 'rs-logo.jpg');
+      const logoBuffer = await fs.readFile(logoPath);
+      const logoBase64 = logoBuffer.toString('base64');
+    
+    // Create multipart/related email with inline image
+    const boundary = '----boundary_main';
+    const boundaryAlt = '----boundary_alt';
+    
+    const messageParts = [
+      `To: ${options.to}`,
+    ];
+    
+    if (options.cc) {
+      messageParts.push(`Cc: ${options.cc}`);
+    }
+    if (options.bcc) {
+      messageParts.push(`Bcc: ${options.bcc}`);
+    }
+    
+    messageParts.push(
+      'MIME-Version: 1.0',
+      `Subject: ${options.subject}`,
+      `Content-Type: multipart/related; boundary="${boundary}"`,
+      '',
+      `--${boundary}`,
+      'Content-Type: text/html; charset="UTF-8"',
+      '',
+      options.body,
+      '',
+      `--${boundary}`,
+      'Content-Type: image/jpeg',
+      'Content-Transfer-Encoding: base64',
+      'Content-ID: <signature-logo>',
+      '',
+      logoBase64,
+      `--${boundary}--`
+    );
+    
+      message = messageParts.join('\r\n');
+    } catch (error) {
+      // If logo file is missing, fall back to simple HTML email
+      console.warn('Signature logo not found, falling back to simple HTML email:', error);
+      
+      const messageParts = [
+        `To: ${options.to}`,
+      ];
+      
+      if (options.cc) {
+        messageParts.push(`Cc: ${options.cc}`);
+      }
+      if (options.bcc) {
+        messageParts.push(`Bcc: ${options.bcc}`);
+      }
+      
+      messageParts.push(
+        'MIME-Version: 1.0',
+        `Subject: ${options.subject}`,
+        'Content-Type: text/html; charset="UTF-8"',
+        '',
+        options.body.replace(/cid:signature-logo/g, '')  // Remove broken CID reference
+      );
+      
+      message = messageParts.join('\r\n');
+    }
+  } else {
+    // Simple HTML email without inline images
+    const messageParts = [
+      `To: ${options.to}`,
+    ];
+    
+    if (options.cc) {
+      messageParts.push(`Cc: ${options.cc}`);
+    }
+    if (options.bcc) {
+      messageParts.push(`Bcc: ${options.bcc}`);
+    }
+    
+    messageParts.push(
+      'MIME-Version: 1.0',
+      `Subject: ${options.subject}`,
+      'Content-Type: text/html; charset="UTF-8"',
+      '',
+      options.body
+    );
+    
+    message = messageParts.join('\r\n');
   }
-  if (options.bcc) {
-    messageParts.push(`Bcc: ${options.bcc}`);
-  }
   
-  messageParts.push(
-    'MIME-Version: 1.0',
-    `Subject: ${options.subject}`,
-    'Content-Type: text/html; charset="UTF-8"',
-    '',
-    options.body
-  );
-  
-  const message = messageParts.join('\r\n');
   const encodedMessage = Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   
   if (options.draftId) {
