@@ -93,7 +93,7 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
   }, [to, cc, bcc, subject, body, isOpen]);
 
   const saveDraft = async () => {
-    if (!to || !subject) return;
+    if (!to || !subject) return null;
 
     setIsSaving(true);
     try {
@@ -111,8 +111,10 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
       }
       
       setLastSaved(new Date());
+      return result.id;
     } catch (error) {
       console.error("Failed to save draft:", error);
+      return null;
     } finally {
       setIsSaving(false);
     }
@@ -134,9 +136,9 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
       if (draftId) {
         return await apiRequest("POST", `/api/emails/drafts/${draftId}/send`, { recipients });
       } else {
-        await saveDraft();
-        if (draftId) {
-          return await apiRequest("POST", `/api/emails/drafts/${draftId}/send`, { recipients });
+        const newDraftId = await saveDraft();
+        if (newDraftId) {
+          return await apiRequest("POST", `/api/emails/drafts/${newDraftId}/send`, { recipients });
         }
         throw new Error("Failed to create draft");
       }
