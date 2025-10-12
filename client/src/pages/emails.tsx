@@ -583,7 +583,7 @@ export default function Emails() {
           </div>
 
           {/* Column Headers */}
-          <div className="px-3 py-2 border-b bg-muted/30 grid grid-cols-12 gap-2 text-sm font-medium">
+          <div className="px-3 py-1 border-b bg-muted/30 grid grid-cols-12 gap-2 text-sm font-medium">
             <div className="col-span-1"></div>
             <button
               className="col-span-4 flex items-center gap-1 hover-elevate px-2 py-1 rounded-md text-left"
@@ -671,7 +671,7 @@ export default function Emails() {
                     <div className="col-span-5 truncate text-sm">
                       {email.subject || '(no subject)'}
                     </div>
-                    <div className="col-span-2 text-sm text-muted-foreground text-right">
+                    <div className="col-span-2 text-sm text-muted-foreground text-left">
                       {new Date(email.date).toLocaleString('en-GB', { 
                         year: 'numeric', 
                         month: '2-digit', 
