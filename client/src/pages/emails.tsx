@@ -490,7 +490,7 @@ export default function Emails() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [selectedEmailId, filteredEmails]);
 
-  // Infinite scroll - load more at 80% scroll
+  // Infinite scroll - load more at 60% scroll
   const observerTarget = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -500,7 +500,7 @@ export default function Emails() {
           fetchNextPage();
         }
       },
-      { threshold: 0.8 }
+      { threshold: 0.6 }
     );
 
     if (observerTarget.current) {
