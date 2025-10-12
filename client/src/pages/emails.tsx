@@ -79,7 +79,7 @@ export default function Emails() {
   const [filterUnread, setFilterUnread] = useState(false);
   const [filterImportant, setFilterImportant] = useState(false);
   const [filterAttachments, setFilterAttachments] = useState(false);
-  const [attachmentsExpanded, setAttachmentsExpanded] = useState(true);
+  const [attachmentsExpanded, setAttachmentsExpanded] = useState(false);
   const [processedEmailHtml, setProcessedEmailHtml] = useState<string>('');
 
   const { 
@@ -690,7 +690,7 @@ export default function Emails() {
           ) : (
             <>
               {/* Email Header */}
-              <div className="py-1 px-4 border-b space-y-1">
+              <div className="py-0.5 px-4 border-b space-y-0.5">
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-base font-semibold flex-1" data-testid="email-subject">
                     {selectedEmail.subject || '(no subject)'}
