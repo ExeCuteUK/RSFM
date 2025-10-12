@@ -4475,3 +4475,26 @@ ${messageText}
 
   return httpServer;
 }
+  // Get email signature HTML for composer
+  app.get("/api/settings/email-signature", requireAuth, async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user?.useSignature) {
+        return res.json({ signature: '' });
+      }
+
+      const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
+      const template = await fs.readFile(templatePath, 'utf-8');
+      
+      // Replace placeholders with user data
+      const signature = template
+        .replace(/{{fullName}}/g, user.fullName || '')
+        .replace(/{{gmailEmail}}/g, user.gmailEmail || '')
+        .replace(/{{username}}/g, user.username || '');
+      
+      res.json({ signature });
+    } catch (error) {
+      console.error("Error fetching signature:", error);
+      res.json({ signature: '' });
+    }
+  });

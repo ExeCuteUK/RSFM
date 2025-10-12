@@ -64,9 +64,15 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
   
   const saveTimerRef = useRef<NodeJS.Timeout>();
 
-  // Fetch current user's Gmail email
+  // Fetch current user's Gmail email and signature
   const { data: userData } = useQuery({
     queryKey: ['/api/auth/me'],
+  });
+
+  // Fetch email signature
+  const { data: signatureData } = useQuery({
+    queryKey: ['/api/settings/email-signature'],
+    enabled: !!userData?.user?.useSignature,
   });
 
   // Pre-fill for replies and forwards
@@ -119,7 +125,7 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
 
     setIsSaving(true);
     try {
-      const result = await apiRequest("POST", "/api/emails/drafts", {
+      const response = await apiRequest("POST", "/api/emails/drafts", {
         to,
         cc: cc || undefined,
         bcc: bcc || undefined,
@@ -127,6 +133,8 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
         body,
         draftId,
       });
+      
+      const result = await response.json();
       
       if (result.id && !draftId) {
         setDraftId(result.id);
