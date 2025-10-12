@@ -175,11 +175,28 @@ export default function Emails() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, folder }: { id: string; folder: string }) => {
       return await apiRequest("DELETE", `/api/emails/${id}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
+    onSuccess: (_data, { id, folder }) => {
+      // Instantly remove from cache of the folder where action occurred
+      const currentData = queryClient.getQueryData(['/api/emails', folder]) as any;
+      
+      if (currentData?.pages) {
+        const updatedPages = currentData.pages.map((page: any) => ({
+          ...page,
+          emails: page.emails?.filter((email: any) => email.id !== id) || [],
+        }));
+        
+        queryClient.setQueryData(['/api/emails', folder], {
+          ...currentData,
+          pages: updatedPages,
+        });
+      }
+      
+      // Invalidate trash folder to show the moved email (targeted invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/emails', 'trash'] });
+      
       setSelectedEmailId(null);
       toast({
         title: "Email deleted",
@@ -189,11 +206,28 @@ export default function Emails() {
   });
 
   const archiveMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, folder }: { id: string; folder: string }) => {
       return await apiRequest("POST", `/api/emails/${id}/archive`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
+    onSuccess: (_data, { id, folder }) => {
+      // Instantly remove from cache of the folder where action occurred
+      const currentData = queryClient.getQueryData(['/api/emails', folder]) as any;
+      
+      if (currentData?.pages) {
+        const updatedPages = currentData.pages.map((page: any) => ({
+          ...page,
+          emails: page.emails?.filter((email: any) => email.id !== id) || [],
+        }));
+        
+        queryClient.setQueryData(['/api/emails', folder], {
+          ...currentData,
+          pages: updatedPages,
+        });
+      }
+      
+      // Invalidate archive folder to show the moved email (targeted invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/emails', 'archive'] });
+      
       setSelectedEmailId(null);
       toast({
         title: "Email archived",
@@ -203,11 +237,28 @@ export default function Emails() {
   });
 
   const spamMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, folder }: { id: string; folder: string }) => {
       return await apiRequest("POST", `/api/emails/${id}/spam`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
+    onSuccess: (_data, { id, folder }) => {
+      // Instantly remove from cache of the folder where action occurred
+      const currentData = queryClient.getQueryData(['/api/emails', folder]) as any;
+      
+      if (currentData?.pages) {
+        const updatedPages = currentData.pages.map((page: any) => ({
+          ...page,
+          emails: page.emails?.filter((email: any) => email.id !== id) || [],
+        }));
+        
+        queryClient.setQueryData(['/api/emails', folder], {
+          ...currentData,
+          pages: updatedPages,
+        });
+      }
+      
+      // Invalidate spam folder to show the moved email (targeted invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/emails', 'spam'] });
+      
       setSelectedEmailId(null);
       toast({
         title: "Moved to junk",
@@ -289,11 +340,57 @@ export default function Emails() {
     return true;
   });
   
-  const handleCheckMail = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
-    toast({
-      title: "Checking for new mail...",
-    });
+  const handleCheckMail = async () => {
+    try {
+      // Fetch the first page to check for new emails
+      const response = await apiRequest("GET", `/api/emails/${activeFolder}`);
+      const newData = await response.json();
+      
+      // Get current cache data
+      const currentData = queryClient.getQueryData(['/api/emails', activeFolder]) as any;
+      
+      if (!currentData || !currentData.pages || !currentData.pages[0]) {
+        // No cache, just invalidate
+        queryClient.invalidateQueries({ queryKey: ['/api/emails', activeFolder] });
+        toast({ title: "Checking for new mail..." });
+        return;
+      }
+      
+      const currentFirstPage = currentData.pages[0];
+      const currentEmailIds = new Set(currentFirstPage.emails?.map((e: any) => e.id) || []);
+      
+      // Find new emails (those not in current cache)
+      const newEmails = newData.emails?.filter((email: any) => !currentEmailIds.has(email.id)) || [];
+      
+      if (newEmails.length > 0) {
+        // Prepend new emails to the first page and update pagination metadata
+        const updatedFirstPage = {
+          ...currentFirstPage,
+          emails: [...newEmails, ...(currentFirstPage.emails || [])],
+          nextPageToken: newData.nextPageToken, // Update pagination token from fresh response
+        };
+        
+        const updatedData = {
+          ...currentData,
+          pages: [updatedFirstPage, ...currentData.pages.slice(1)],
+        };
+        
+        queryClient.setQueryData(['/api/emails', activeFolder], updatedData);
+        toast({
+          title: `${newEmails.length} new email${newEmails.length > 1 ? 's' : ''}`,
+        });
+      } else {
+        toast({
+          title: "No new mail",
+        });
+      }
+    } catch (error) {
+      console.error('Check mail error:', error);
+      toast({
+        title: "Failed to check mail",
+        variant: "destructive",
+      });
+    }
   };
 
   const labelMutation = useMutation({
@@ -787,7 +884,7 @@ export default function Emails() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => archiveMutation.mutate(selectedEmail.id)}
+                    onClick={() => archiveMutation.mutate({ id: selectedEmail.id, folder: activeFolder })}
                     disabled={archiveMutation.isPending}
                     className="h-7 text-xs px-2"
                     data-testid="button-archive"
@@ -798,7 +895,7 @@ export default function Emails() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => spamMutation.mutate(selectedEmail.id)}
+                    onClick={() => spamMutation.mutate({ id: selectedEmail.id, folder: activeFolder })}
                     disabled={spamMutation.isPending}
                     className="h-7 text-xs px-2"
                     data-testid="button-spam"
@@ -809,7 +906,7 @@ export default function Emails() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => deleteMutation.mutate(selectedEmail.id)}
+                    onClick={() => deleteMutation.mutate({ id: selectedEmail.id, folder: activeFolder })}
                     disabled={deleteMutation.isPending}
                     className="h-7 text-xs px-2"
                     data-testid="button-delete"
