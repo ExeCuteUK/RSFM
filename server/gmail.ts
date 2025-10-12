@@ -287,6 +287,109 @@ function getLabelIdForFolder(folder: string): string {
   return labelMap[folder] || 'INBOX';
 }
 
+async function batchGetEmails(gmail: any, messageIds: string[]): Promise<ParsedEmail[]> {
+  const emailPromises = messageIds.map(async (id) => {
+    try {
+      const response = await gmail.users.messages.get({
+        userId: 'me',
+        id,
+        format: 'full',
+      });
+      
+      return parseEmailFromResponse(response.data);
+    } catch (error) {
+      console.error(`Failed to fetch email ${id}:`, error);
+      return null;
+    }
+  });
+  
+  const emails = await Promise.all(emailPromises);
+  return emails.filter((email): email is ParsedEmail => email !== null);
+}
+
+function parseEmailFromResponse(message: any): ParsedEmail {
+  const headers = message.payload?.headers || [];
+  
+  const getHeader = (name: string) => {
+    const header = headers.find((h: any) => h.name?.toLowerCase() === name.toLowerCase());
+    return header?.value || '';
+  };
+  
+  const parseAddresses = (headerValue: string): string[] => {
+    if (!headerValue) return [];
+    return headerValue.split(',').map(addr => addr.trim());
+  };
+  
+  let bodyText = '';
+  let bodyHtml = '';
+  const attachments: ParsedEmail['attachments'] = [];
+  
+  const extractBody = (parts: any[], parentMimeType?: string) => {
+    if (!parts) return;
+    
+    for (const part of parts) {
+      const mimeType = part.mimeType || '';
+      
+      if (part.parts) {
+        extractBody(part.parts, mimeType);
+      } else if (part.body?.data) {
+        const data = Buffer.from(part.body.data, 'base64').toString('utf-8');
+        
+        if (mimeType === 'text/plain') {
+          bodyText = data;
+        } else if (mimeType === 'text/html') {
+          bodyHtml = data;
+        }
+      }
+      
+      if (part.filename && part.body?.attachmentId) {
+        const contentIdHeader = part.headers?.find((h: any) => h.name.toLowerCase() === 'content-id');
+        attachments.push({
+          filename: part.filename,
+          mimeType: part.mimeType || 'application/octet-stream',
+          size: part.body.size || 0,
+          attachmentId: part.body.attachmentId,
+          contentId: contentIdHeader?.value?.replace(/[<>]/g, '') || undefined,
+        });
+      }
+    }
+  };
+  
+  if (message.payload?.parts) {
+    extractBody(message.payload.parts);
+  } else if (message.payload?.body?.data) {
+    const data = Buffer.from(message.payload.body.data, 'base64').toString('utf-8');
+    const mimeType = message.payload.mimeType || '';
+    
+    if (mimeType === 'text/plain') {
+      bodyText = data;
+    } else if (mimeType === 'text/html') {
+      bodyHtml = data;
+    }
+  }
+  
+  const snippet = message.snippet || '';
+  const labelIds = message.labelIds || [];
+  
+  return {
+    id: message.id,
+    threadId: message.threadId || '',
+    from: getHeader('From'),
+    to: parseAddresses(getHeader('To')),
+    cc: parseAddresses(getHeader('Cc')),
+    bcc: parseAddresses(getHeader('Bcc')),
+    subject: getHeader('Subject'),
+    date: getHeader('Date'),
+    snippet,
+    bodyText,
+    bodyHtml,
+    attachments,
+    labels: labelIds,
+    isUnread: labelIds.includes('UNREAD'),
+    isStarred: labelIds.includes('STARRED'),
+  };
+}
+
 export async function fetchEmails(options: FetchEmailsOptions = {}): Promise<{
   emails: ParsedEmail[];
   nextPageToken?: string;
@@ -298,7 +401,6 @@ export async function fetchEmails(options: FetchEmailsOptions = {}): Promise<{
   let q: string | undefined;
   
   if (folder === 'archive') {
-    // Archive: messages not in inbox, sent, trash, spam, or drafts
     q = '-in:inbox -in:sent -in:trash -in:spam -in:draft';
   } else if (folder !== 'all') {
     labelIds = [getLabelIdForFolder(folder)];
@@ -313,20 +415,14 @@ export async function fetchEmails(options: FetchEmailsOptions = {}): Promise<{
   });
   
   const messages = response.data.messages || [];
-  const emails: ParsedEmail[] = [];
+  const messageIds = messages.map(m => m.id).filter(Boolean) as string[];
   
-  for (const message of messages) {
-    if (message.id) {
-      try {
-        const email = await getEmail(message.id);
-        emails.push(email);
-      } catch (error) {
-        console.error(`Failed to fetch email ${message.id}:`, error);
-      }
-    }
+  let emails: ParsedEmail[] = [];
+  
+  if (messageIds.length > 0) {
+    emails = await batchGetEmails(gmail, messageIds);
   }
   
-  // Sort emails
   emails.sort((a, b) => {
     let comparison = 0;
     if (sortBy === 'date') {

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -81,19 +81,31 @@ export default function Emails() {
   const [attachmentsExpanded, setAttachmentsExpanded] = useState(true);
   const [processedEmailHtml, setProcessedEmailHtml] = useState<string>('');
 
-  const { data: emailsData, isLoading: isLoadingEmails, error } = useQuery<{
-    emails: ParsedEmail[];
-    nextPageToken?: string;
-  }>({
+  const { 
+    data: emailsData, 
+    isLoading: isLoadingEmails, 
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ['/api/emails', activeFolder, sortBy, sortOrder],
-    queryFn: async () => {
-      const response = await apiRequest("GET", `/api/emails/${activeFolder}?sortBy=${sortBy}&sortOrder=${sortOrder}`);
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({
+        sortBy,
+        sortOrder,
+        ...(pageParam && { pageToken: pageParam }),
+      });
+      const response = await apiRequest("GET", `/api/emails/${activeFolder}?${params}`);
       const result = await response.json();
       return result;
     },
+    getNextPageParam: (lastPage) => lastPage.nextPageToken,
+    initialPageParam: undefined,
   });
 
-  const selectedEmail = emailsData?.emails?.find(e => e.id === selectedEmailId);
+  const allEmails = emailsData?.pages.flatMap(page => page.emails) || [];
+  const selectedEmail = allEmails.find(e => e.id === selectedEmailId);
   
   if (error) {
     console.error('Email fetch error:', error);
@@ -110,16 +122,19 @@ export default function Emails() {
       // Snapshot the previous value
       const previousEmails = queryClient.getQueryData(['/api/emails', activeFolder, sortBy, sortOrder]);
 
-      // Optimistically update the cache
+      // Optimistically update the cache for infinite query
       queryClient.setQueryData(
         ['/api/emails', activeFolder, sortBy, sortOrder],
         (old: any) => {
-          if (!old) return old;
+          if (!old?.pages) return old;
           return {
             ...old,
-            emails: old.emails.map((email: ParsedEmail) =>
-              email.id === id ? { ...email, isUnread: !isRead } : email
-            ),
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              emails: page.emails.map((email: ParsedEmail) =>
+                email.id === id ? { ...email, isUnread: !isRead } : email
+              ),
+            })),
           };
         }
       );
@@ -235,7 +250,7 @@ export default function Emails() {
     }
   };
 
-  const filteredEmails = emailsData?.emails?.filter(email => {
+  const filteredEmails = allEmails.filter(email => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -260,7 +275,7 @@ export default function Emails() {
     if (filterAttachments && email.attachments.length === 0) return false;
     
     return true;
-  }) || [];
+  });
   
   const handleCheckMail = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
@@ -341,6 +356,30 @@ export default function Emails() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [selectedEmailId, filteredEmails]);
+
+  // Infinite scroll - load more at 80% scroll
+  const observerTarget = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.8 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const downloadAttachment = async (emailId: string, attachmentId: string, filename: string) => {
     try {
@@ -595,6 +634,16 @@ export default function Emails() {
                   </div>
                   );
                 })}
+                
+                {/* Infinite scroll observer */}
+                <div ref={observerTarget} className="h-4" />
+                
+                {/* Loading indicator for next page */}
+                {isFetchingNextPage && (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>
