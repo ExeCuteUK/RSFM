@@ -79,11 +79,6 @@ const secondaryItems = [
     icon: MessageSquare,
   },
   {
-    title: "Emails",
-    url: "/emails",
-    icon: Mail,
-  },
-  {
     title: "Backups",
     url: "/backups",
     icon: Database,
@@ -92,6 +87,14 @@ const secondaryItems = [
     title: "Settings",
     url: "/settings", 
     icon: Settings,
+  },
+]
+
+const betaTestingItems = [
+  {
+    title: "Emails",
+    url: "/emails",
+    icon: Mail,
   },
 ]
 
@@ -170,15 +173,6 @@ export function AppSidebar() {
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={handleSendEmail}
-                  data-testid="button-send-email"
-                >
-                  <Mail />
-                  <span>Send Email</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
@@ -199,6 +193,38 @@ export function AppSidebar() {
                           {unreadCount}
                         </Badge>
                       )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Beta Testing</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={handleSendEmail}
+                  data-testid="button-send-email"
+                >
+                  <Mail />
+                  <span>Send Email</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {betaTestingItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    data-active={location === item.url}
+                    className={location === item.url ? "bg-sidebar-accent" : ""}
+                  >
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
