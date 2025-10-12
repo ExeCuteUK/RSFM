@@ -240,3 +240,366 @@ export async function sendEmailWithMultipleAttachments(options: {
   
   return result.data;
 }
+
+// ========== Email Reading Functions ==========
+
+interface FetchEmailsOptions {
+  folder?: 'inbox' | 'sent' | 'drafts' | 'starred' | 'spam' | 'trash' | 'archive' | 'all';
+  maxResults?: number;
+  pageToken?: string;
+  sortBy?: 'date' | 'sender' | 'subject';
+  sortOrder?: 'asc' | 'desc';
+}
+
+interface ParsedEmail {
+  id: string;
+  threadId: string;
+  from: string;
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  subject: string;
+  date: string;
+  snippet: string;
+  bodyText?: string;
+  bodyHtml?: string;
+  attachments: Array<{
+    filename: string;
+    mimeType: string;
+    size: number;
+    attachmentId: string;
+  }>;
+  labels: string[];
+  isUnread: boolean;
+  isStarred: boolean;
+}
+
+function getLabelIdForFolder(folder: string): string {
+  const labelMap: Record<string, string> = {
+    inbox: 'INBOX',
+    sent: 'SENT',
+    drafts: 'DRAFT',
+    starred: 'STARRED',
+    spam: 'SPAM',
+    trash: 'TRASH',
+    all: '',
+  };
+  return labelMap[folder] || 'INBOX';
+}
+
+export async function fetchEmails(options: FetchEmailsOptions = {}): Promise<{
+  emails: ParsedEmail[];
+  nextPageToken?: string;
+}> {
+  const gmail = await getUncachableGmailClient();
+  const { folder = 'inbox', maxResults = 50, pageToken, sortBy = 'date' } = options;
+  
+  let labelIds: string[] | undefined;
+  let q: string | undefined;
+  
+  if (folder === 'archive') {
+    // Archive: messages not in inbox, sent, trash, spam, or drafts
+    q = '-in:inbox -in:sent -in:trash -in:spam -in:draft';
+  } else if (folder !== 'all') {
+    labelIds = [getLabelIdForFolder(folder)];
+  }
+  
+  const response = await gmail.users.messages.list({
+    userId: 'me',
+    labelIds,
+    q,
+    maxResults,
+    pageToken,
+  });
+  
+  const messages = response.data.messages || [];
+  const emails: ParsedEmail[] = [];
+  
+  for (const message of messages) {
+    if (message.id) {
+      try {
+        const email = await getEmail(message.id);
+        emails.push(email);
+      } catch (error) {
+        console.error(`Failed to fetch email ${message.id}:`, error);
+      }
+    }
+  }
+  
+  // Sort emails
+  emails.sort((a, b) => {
+    let comparison = 0;
+    if (sortBy === 'date') {
+      comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+    } else if (sortBy === 'sender') {
+      comparison = a.from.localeCompare(b.from);
+    } else if (sortBy === 'subject') {
+      comparison = a.subject.localeCompare(b.subject);
+    }
+    return options.sortOrder === 'asc' ? comparison : -comparison;
+  });
+  
+  return {
+    emails,
+    nextPageToken: response.data.nextPageToken,
+  };
+}
+
+export async function getEmail(messageId: string): Promise<ParsedEmail> {
+  const gmail = await getUncachableGmailClient();
+  
+  const response = await gmail.users.messages.get({
+    userId: 'me',
+    id: messageId,
+    format: 'full',
+  });
+  
+  const message = response.data;
+  const headers = message.payload?.headers || [];
+  
+  const getHeader = (name: string) => {
+    const header = headers.find(h => h.name?.toLowerCase() === name.toLowerCase());
+    return header?.value || '';
+  };
+  
+  const parseAddresses = (headerValue: string): string[] => {
+    if (!headerValue) return [];
+    return headerValue.split(',').map(addr => addr.trim());
+  };
+  
+  let bodyText = '';
+  let bodyHtml = '';
+  const attachments: ParsedEmail['attachments'] = [];
+  
+  const extractBody = (parts: any[], parentMimeType?: string) => {
+    if (!parts) return;
+    
+    for (const part of parts) {
+      const mimeType = part.mimeType || '';
+      
+      if (part.parts) {
+        extractBody(part.parts, mimeType);
+      } else if (part.body?.data) {
+        const data = Buffer.from(part.body.data, 'base64').toString('utf-8');
+        
+        if (mimeType === 'text/plain') {
+          bodyText = data;
+        } else if (mimeType === 'text/html') {
+          bodyHtml = data;
+        }
+      }
+      
+      if (part.filename && part.body?.attachmentId) {
+        attachments.push({
+          filename: part.filename,
+          mimeType: part.mimeType || '',
+          size: part.body.size || 0,
+          attachmentId: part.body.attachmentId,
+        });
+      }
+    }
+  };
+  
+  if (message.payload?.parts) {
+    extractBody(message.payload.parts);
+  } else if (message.payload?.body?.data) {
+    const data = Buffer.from(message.payload.body.data, 'base64').toString('utf-8');
+    const mimeType = message.payload.mimeType || '';
+    if (mimeType === 'text/plain') {
+      bodyText = data;
+    } else if (mimeType === 'text/html') {
+      bodyHtml = data;
+    }
+  }
+  
+  const labels = message.labelIds || [];
+  
+  return {
+    id: message.id || '',
+    threadId: message.threadId || '',
+    from: getHeader('from'),
+    to: parseAddresses(getHeader('to')),
+    cc: parseAddresses(getHeader('cc')),
+    bcc: parseAddresses(getHeader('bcc')),
+    subject: getHeader('subject'),
+    date: getHeader('date'),
+    snippet: message.snippet || '',
+    bodyText,
+    bodyHtml,
+    attachments,
+    labels,
+    isUnread: labels.includes('UNREAD'),
+    isStarred: labels.includes('STARRED'),
+  };
+}
+
+// ========== Email Actions ==========
+
+export async function markEmailAsRead(messageId: string, isRead: boolean = true): Promise<void> {
+  const gmail = await getUncachableGmailClient();
+  
+  if (isRead) {
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        removeLabelIds: ['UNREAD'],
+      },
+    });
+  } else {
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        addLabelIds: ['UNREAD'],
+      },
+    });
+  }
+}
+
+export async function starEmail(messageId: string, isStarred: boolean = true): Promise<void> {
+  const gmail = await getUncachableGmailClient();
+  
+  if (isStarred) {
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        addLabelIds: ['STARRED'],
+      },
+    });
+  } else {
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        removeLabelIds: ['STARRED'],
+      },
+    });
+  }
+}
+
+export async function deleteEmail(messageId: string): Promise<void> {
+  const gmail = await getUncachableGmailClient();
+  
+  await gmail.users.messages.trash({
+    userId: 'me',
+    id: messageId,
+  });
+}
+
+export async function archiveEmail(messageId: string): Promise<void> {
+  const gmail = await getUncachableGmailClient();
+  
+  await gmail.users.messages.modify({
+    userId: 'me',
+    id: messageId,
+    requestBody: {
+      removeLabelIds: ['INBOX'],
+    },
+  });
+}
+
+export async function moveToSpam(messageId: string): Promise<void> {
+  const gmail = await getUncachableGmailClient();
+  
+  await gmail.users.messages.modify({
+    userId: 'me',
+    id: messageId,
+    requestBody: {
+      addLabelIds: ['SPAM'],
+      removeLabelIds: ['INBOX'],
+    },
+  });
+}
+
+// ========== Draft Management ==========
+
+export async function createDraft(options: {
+  to: string;
+  cc?: string;
+  bcc?: string;
+  subject: string;
+  body: string;
+  draftId?: string;
+}): Promise<{ id: string; message: { id: string } }> {
+  const gmail = await getUncachableGmailClient();
+  
+  const messageParts = [
+    `To: ${options.to}`,
+  ];
+  
+  if (options.cc) {
+    messageParts.push(`Cc: ${options.cc}`);
+  }
+  if (options.bcc) {
+    messageParts.push(`Bcc: ${options.bcc}`);
+  }
+  
+  messageParts.push(
+    'MIME-Version: 1.0',
+    `Subject: ${options.subject}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    '',
+    options.body
+  );
+  
+  const message = messageParts.join('\r\n');
+  const encodedMessage = Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  
+  if (options.draftId) {
+    const result = await gmail.users.drafts.update({
+      userId: 'me',
+      id: options.draftId,
+      requestBody: {
+        message: {
+          raw: encodedMessage,
+        },
+      },
+    });
+    return result.data as { id: string; message: { id: string } };
+  } else {
+    const result = await gmail.users.drafts.create({
+      userId: 'me',
+      requestBody: {
+        message: {
+          raw: encodedMessage,
+        },
+      },
+    });
+    return result.data as { id: string; message: { id: string } };
+  }
+}
+
+export async function deleteDraft(draftId: string): Promise<void> {
+  const gmail = await getUncachableGmailClient();
+  
+  await gmail.users.drafts.delete({
+    userId: 'me',
+    id: draftId,
+  });
+}
+
+export async function sendDraft(draftId: string): Promise<any> {
+  const gmail = await getUncachableGmailClient();
+  
+  const result = await gmail.users.drafts.send({
+    userId: 'me',
+    requestBody: {
+      id: draftId,
+    },
+  });
+  
+  return result.data;
+}
+
+export async function getUnreadCount(): Promise<number> {
+  const gmail = await getUncachableGmailClient();
+  
+  const response = await gmail.users.labels.get({
+    userId: 'me',
+    id: 'INBOX',
+  });
+  
+  return response.data.messagesUnread || 0;
+}

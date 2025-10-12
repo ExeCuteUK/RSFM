@@ -45,6 +45,7 @@ import BackupsPage from "@/pages/backups";
 import Messages from "@/pages/messages";
 import MyAccount from "@/pages/my-account";
 import TeamCalendar from "@/pages/team-calendar";
+import Emails from "@/pages/emails";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import NotFound from "@/pages/not-found";
@@ -128,6 +129,13 @@ function Router() {
         {() => (
           <ProtectedRoute>
             <Messages />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/emails">
+        {() => (
+          <ProtectedRoute>
+            <Emails />
           </ProtectedRoute>
         )}
       </Route>

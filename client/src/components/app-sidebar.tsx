@@ -79,6 +79,11 @@ const secondaryItems = [
     icon: MessageSquare,
   },
   {
+    title: "Emails",
+    url: "/emails",
+    icon: Mail,
+  },
+  {
     title: "Backups",
     url: "/backups",
     icon: Database,

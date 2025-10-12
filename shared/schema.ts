@@ -61,6 +61,25 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 
+// Email Contacts Database (for email autocomplete and address book)
+export const emailContacts = pgTable("email_contacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name"),
+  email: text("email").notNull().unique(),
+  frequency: integer("frequency").default(1).notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertEmailContactSchema = createInsertSchema(emailContacts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertEmailContact = z.infer<typeof insertEmailContactSchema>;
+export type EmailContact = typeof emailContacts.$inferSelect;
+
 // General References Database (for miscellaneous charges)
 export const generalReferences = pgTable("general_references", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

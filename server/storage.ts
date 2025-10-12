@@ -4,6 +4,8 @@ import {
   type UpdateUser,
   type Message,
   type InsertMessage,
+  type EmailContact,
+  type InsertEmailContact,
   type ImportCustomer,
   type InsertImportCustomer,
   type ExportCustomer,
@@ -45,6 +47,7 @@ import {
   invoices,
   users,
   messages,
+  emailContacts,
   generalReferences,
   type GeneralReference,
   type InsertGeneralReference
@@ -79,6 +82,14 @@ export interface IStorage {
   markMessageAsRead(id: string): Promise<Message | undefined>;
   deleteMessage(id: string): Promise<boolean>;
   getUnreadCount(userId: string): Promise<number>;
+
+  // Email Contacts methods
+  getAllEmailContacts(): Promise<EmailContact[]>;
+  searchEmailContacts(query: string, limit?: number): Promise<EmailContact[]>;
+  getEmailContactByEmail(email: string): Promise<EmailContact | undefined>;
+  createEmailContact(contact: InsertEmailContact): Promise<EmailContact>;
+  updateEmailContact(email: string, contact: Partial<InsertEmailContact>): Promise<EmailContact | undefined>;
+  incrementEmailContactFrequency(email: string): Promise<void>;
 
   // Import Customer methods
   getAllImportCustomers(): Promise<ImportCustomer[]>;
@@ -1262,6 +1273,63 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .where(sql`${messages.recipientId} = ${userId} AND ${messages.isRead} = false`);
     return result.count;
+  }
+
+  // Email Contacts methods
+  async getAllEmailContacts(): Promise<EmailContact[]> {
+    return await db.select().from(emailContacts).orderBy(desc(emailContacts.frequency));
+  }
+
+  async searchEmailContacts(query: string, limit: number = 10): Promise<EmailContact[]> {
+    if (!query || query.trim() === '') {
+      return await db.select().from(emailContacts)
+        .orderBy(desc(emailContacts.frequency))
+        .limit(limit);
+    }
+    
+    const searchPattern = `%${query}%`;
+    return await db.select().from(emailContacts)
+      .where(
+        or(
+          ilike(emailContacts.email, searchPattern),
+          ilike(emailContacts.name, searchPattern)
+        )
+      )
+      .orderBy(desc(emailContacts.frequency))
+      .limit(limit);
+  }
+
+  async getEmailContactByEmail(email: string): Promise<EmailContact | undefined> {
+    const [contact] = await db.select().from(emailContacts).where(eq(emailContacts.email, email));
+    return contact;
+  }
+
+  async createEmailContact(contact: InsertEmailContact): Promise<EmailContact> {
+    const [created] = await db.insert(emailContacts).values(contact).returning();
+    return created;
+  }
+
+  async updateEmailContact(email: string, contact: Partial<InsertEmailContact>): Promise<EmailContact | undefined> {
+    const [updated] = await db.update(emailContacts)
+      .set({ ...contact, updatedAt: new Date().toISOString() })
+      .where(eq(emailContacts.email, email))
+      .returning();
+    return updated;
+  }
+
+  async incrementEmailContactFrequency(email: string): Promise<void> {
+    const existing = await this.getEmailContactByEmail(email);
+    
+    if (existing) {
+      await db.update(emailContacts)
+        .set({ 
+          frequency: sql`${emailContacts.frequency} + 1`,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(emailContacts.email, email));
+    } else {
+      await this.createEmailContact({ email, frequency: 1 });
+    }
   }
 
   // Import Customer methods

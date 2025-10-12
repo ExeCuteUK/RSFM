@@ -4168,6 +4168,222 @@ ${messageText}
     }
   });
 
+  // ========== Email Management Routes ==========
+  
+  // Fetch emails from a specific folder
+  app.get("/api/emails/:folder", requireAuth, async (req, res) => {
+    try {
+      const { folder } = req.params;
+      const { maxResults, pageToken, sortBy, sortOrder } = req.query;
+      
+      const { fetchEmails } = await import("./gmail");
+      const result = await fetchEmails({
+        folder: folder as any,
+        maxResults: maxResults ? parseInt(maxResults as string) : 50,
+        pageToken: pageToken as string | undefined,
+        sortBy: (sortBy as any) || 'date',
+        sortOrder: (sortOrder as 'asc' | 'desc') || 'desc',
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Fetch emails error:", error);
+      res.status(500).json({ error: "Failed to fetch emails" });
+    }
+  });
+  
+  // Get a specific email
+  app.get("/api/emails/message/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { getEmail } = await import("./gmail");
+      const email = await getEmail(id);
+      res.json(email);
+    } catch (error) {
+      console.error("Get email error:", error);
+      res.status(500).json({ error: "Failed to get email" });
+    }
+  });
+  
+  // Mark email as read/unread
+  app.post("/api/emails/:id/mark-read", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isRead } = req.body;
+      
+      const { markEmailAsRead } = await import("./gmail");
+      await markEmailAsRead(id, isRead);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Mark read error:", error);
+      res.status(500).json({ error: "Failed to mark email as read" });
+    }
+  });
+  
+  // Star/unstar email
+  app.post("/api/emails/:id/star", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isStarred } = req.body;
+      
+      const { starEmail } = await import("./gmail");
+      await starEmail(id, isStarred);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Star email error:", error);
+      res.status(500).json({ error: "Failed to star email" });
+    }
+  });
+  
+  // Delete email (move to trash)
+  app.delete("/api/emails/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { deleteEmail } = await import("./gmail");
+      await deleteEmail(id);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete email error:", error);
+      res.status(500).json({ error: "Failed to delete email" });
+    }
+  });
+  
+  // Archive email
+  app.post("/api/emails/:id/archive", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { archiveEmail } = await import("./gmail");
+      await archiveEmail(id);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Archive email error:", error);
+      res.status(500).json({ error: "Failed to archive email" });
+    }
+  });
+  
+  // Move email to spam
+  app.post("/api/emails/:id/spam", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { moveToSpam } = await import("./gmail");
+      await moveToSpam(id);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Move to spam error:", error);
+      res.status(500).json({ error: "Failed to move email to spam" });
+    }
+  });
+  
+  // Create or update draft
+  app.post("/api/emails/drafts", requireAuth, async (req, res) => {
+    try {
+      const { to, cc, bcc, subject, body, draftId } = req.body;
+      
+      if (!to || !subject) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      const { createDraft } = await import("./gmail");
+      const draft = await createDraft({ to, cc, bcc, subject, body, draftId });
+      
+      res.json(draft);
+    } catch (error) {
+      console.error("Create draft error:", error);
+      res.status(500).json({ error: "Failed to create draft" });
+    }
+  });
+  
+  // Delete draft
+  app.delete("/api/emails/drafts/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const { deleteDraft } = await import("./gmail");
+      await deleteDraft(id);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete draft error:", error);
+      res.status(500).json({ error: "Failed to delete draft" });
+    }
+  });
+  
+  // Send draft
+  app.post("/api/emails/drafts/:id/send", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { recipients } = req.body;
+      
+      const { sendDraft } = await import("./gmail");
+      const result = await sendDraft(id);
+      
+      // Add recipients to email contacts
+      if (recipients && Array.isArray(recipients)) {
+        for (const email of recipients) {
+          try {
+            await storage.incrementEmailContactFrequency(email);
+          } catch (error) {
+            console.error(`Failed to add contact ${email}:`, error);
+          }
+        }
+      }
+      
+      res.json({ success: true, messageId: result.id });
+    } catch (error) {
+      console.error("Send draft error:", error);
+      res.status(500).json({ error: "Failed to send draft" });
+    }
+  });
+  
+  // ========== Email Contacts Routes ==========
+  
+  // Get email contacts for autocomplete
+  app.get("/api/email-contacts", requireAuth, async (req, res) => {
+    try {
+      const { query, limit } = req.query;
+      const contacts = await storage.searchEmailContacts(
+        query as string || '',
+        limit ? parseInt(limit as string) : 10
+      );
+      res.json(contacts);
+    } catch (error) {
+      console.error("Search email contacts error:", error);
+      res.status(500).json({ error: "Failed to search email contacts" });
+    }
+  });
+  
+  // Add email contact manually
+  app.post("/api/email-contacts", requireAuth, async (req, res) => {
+    try {
+      const { email, name } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      
+      const existing = await storage.getEmailContactByEmail(email);
+      if (existing) {
+        await storage.incrementEmailContactFrequency(email);
+        const updated = await storage.getEmailContactByEmail(email);
+        return res.json(updated);
+      }
+      
+      const contact = await storage.createEmailContact({ email, name, frequency: 1 });
+      res.json(contact);
+    } catch (error) {
+      console.error("Create email contact error:", error);
+      res.status(500).json({ error: "Failed to create email contact" });
+    }
+  });
+
   // ========== Calendar Routes ==========
   
   // Get calendar events
