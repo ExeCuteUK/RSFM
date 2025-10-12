@@ -3699,6 +3699,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'https://www.googleapis.com/auth/gmail.send',
           'https://www.googleapis.com/auth/gmail.compose',
           'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/calendar', // Calendar access
         ],
         state: (req.user as User).id, // Pass user ID as state
         prompt: 'consent', // Force consent to get refresh token
@@ -4164,6 +4165,93 @@ ${messageText}
     } catch (error) {
       console.error("Gmail send with attachments error:", error);
       res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
+  // ========== Calendar Routes ==========
+  
+  // Get calendar events
+  app.get("/api/calendar/events", requireAuth, async (req, res) => {
+    try {
+      const { listCalendarEvents } = await import("./calendar");
+      const { startDate, endDate } = req.query;
+      
+      const events = await listCalendarEvents(
+        startDate as string | undefined, 
+        endDate as string | undefined
+      );
+      
+      res.json(events);
+    } catch (error: any) {
+      console.error("Calendar list events error:", error);
+      
+      // Provide helpful error message if calendar ID is not configured
+      if (error.message?.includes('GOOGLE_CALENDAR_ID')) {
+        return res.status(500).json({ 
+          error: "Calendar not configured. Please set GOOGLE_CALENDAR_ID environment variable." 
+        });
+      }
+      
+      res.status(500).json({ error: "Failed to fetch calendar events" });
+    }
+  });
+  
+  // Create calendar event
+  app.post("/api/calendar/events", requireAuth, async (req, res) => {
+    try {
+      const { createCalendarEvent } = await import("./calendar");
+      const event = await createCalendarEvent(req.body);
+      res.json(event);
+    } catch (error: any) {
+      console.error("Calendar create event error:", error);
+      
+      if (error.message?.includes('GOOGLE_CALENDAR_ID')) {
+        return res.status(500).json({ 
+          error: "Calendar not configured. Please set GOOGLE_CALENDAR_ID environment variable." 
+        });
+      }
+      
+      res.status(500).json({ error: "Failed to create calendar event" });
+    }
+  });
+  
+  // Update calendar event
+  app.patch("/api/calendar/events/:eventId", requireAuth, async (req, res) => {
+    try {
+      const { updateCalendarEvent } = await import("./calendar");
+      const { eventId } = req.params;
+      const event = await updateCalendarEvent(eventId, req.body);
+      res.json(event);
+    } catch (error: any) {
+      console.error("Calendar update event error:", error);
+      
+      if (error.message?.includes('GOOGLE_CALENDAR_ID')) {
+        return res.status(500).json({ 
+          error: "Calendar not configured. Please set GOOGLE_CALENDAR_ID environment variable." 
+        });
+      }
+      
+      res.status(500).json({ error: "Failed to update calendar event" });
+    }
+  });
+  
+  // Delete calendar event
+  app.delete("/api/calendar/events/:eventId", requireAuth, async (req, res) => {
+    try {
+      const { deleteCalendarEvent } = await import("./calendar");
+      const { eventId } = req.params;
+      await deleteCalendarEvent(eventId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Calendar delete event error:", error);
+      
+      if (error.message?.includes('GOOGLE_CALENDAR_ID')) {
+        return res.status(500).json({ 
+          error: "Calendar not configured. Please set GOOGLE_CALENDAR_ID environment variable." 
+        });
+      }
+      
+      res.status(500).json({ error: "Failed to delete calendar event" });
     }
   });
 
