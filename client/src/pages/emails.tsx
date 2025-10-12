@@ -732,32 +732,35 @@ export default function Emails() {
                 <Separator />
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-1 flex-wrap">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleReply}
+                    className="h-7 text-xs px-2"
                     data-testid="button-reply"
                   >
-                    <Reply className="mr-2 h-4 w-4" />
+                    <Reply className="mr-1 h-3 w-3" />
                     Reply
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleReplyAll}
+                    className="h-7 text-xs px-2"
                     data-testid="button-reply-all"
                   >
-                    <ReplyAll className="mr-2 h-4 w-4" />
+                    <ReplyAll className="mr-1 h-3 w-3" />
                     Reply All
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleForward}
+                    className="h-7 text-xs px-2"
                     data-testid="button-forward"
                   >
-                    <Forward className="mr-2 h-4 w-4" />
+                    <Forward className="mr-1 h-3 w-3" />
                     Forward
                   </Button>
                   <Button
@@ -765,9 +768,10 @@ export default function Emails() {
                     variant="outline"
                     onClick={() => archiveMutation.mutate(selectedEmail.id)}
                     disabled={archiveMutation.isPending}
+                    className="h-7 text-xs px-2"
                     data-testid="button-archive"
                   >
-                    <Archive className="mr-2 h-4 w-4" />
+                    <Archive className="mr-1 h-3 w-3" />
                     Archive
                   </Button>
                   <Button
@@ -775,9 +779,10 @@ export default function Emails() {
                     variant="outline"
                     onClick={() => spamMutation.mutate(selectedEmail.id)}
                     disabled={spamMutation.isPending}
+                    className="h-7 text-xs px-2"
                     data-testid="button-spam"
                   >
-                    <Mail className="mr-2 h-4 w-4" />
+                    <Mail className="mr-1 h-3 w-3" />
                     Junk
                   </Button>
                   <Button
@@ -785,9 +790,10 @@ export default function Emails() {
                     variant="outline"
                     onClick={() => deleteMutation.mutate(selectedEmail.id)}
                     disabled={deleteMutation.isPending}
+                    className="h-7 text-xs px-2"
                     data-testid="button-delete"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="mr-1 h-3 w-3" />
                     Delete
                   </Button>
                 </div>
