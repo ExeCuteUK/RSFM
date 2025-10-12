@@ -9,7 +9,8 @@ import {
   BookOpen,
   Database,
   MessageSquare,
-  Mail
+  Mail,
+  Calendar
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 import { useQuery } from "@tanstack/react-query"
@@ -67,6 +68,11 @@ const menuItems = [
 ]
 
 const secondaryItems = [
+  {
+    title: "Team Calendar",
+    url: "/team-calendar",
+    icon: Calendar,
+  },
   {
     title: "Internal Messages",
     url: "/messages",
