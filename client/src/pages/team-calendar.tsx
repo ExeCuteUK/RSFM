@@ -542,12 +542,11 @@ export default function TeamCalendar() {
                 Selected Date : {format(selectedDate, "dd/MM/yy")}
               </span>
               <Button
-                variant="outline"
                 onClick={goToToday}
                 data-testid="button-today"
                 className="h-9"
               >
-                Today
+                Go To Today
               </Button>
             </div>
           </div>
@@ -589,7 +588,7 @@ export default function TeamCalendar() {
                     return (
                       <div
                         key={dayIndex}
-                        className={`relative min-h-20 p-1 border-r last:border-r-0 cursor-pointer hover-elevate ${
+                        className={`relative min-w-0 min-h-20 p-1 border-r last:border-r-0 cursor-pointer hover-elevate ${
                           !isCurrentMonth ? "bg-muted/20" : ""
                         }`}
                         onClick={() => setSelectedDate(day)}
@@ -603,11 +602,11 @@ export default function TeamCalendar() {
                         } ${isTodayDate ? "bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-[10px]" : ""}`}>
                           {format(day, "d")}
                         </div>
-                        <div className="relative space-y-0.5 overflow-hidden">
+                        <div className="relative min-w-0 space-y-0.5">
                           {dayEvents.slice(0, 3).map((event) => (
                             <div
                               key={event.id}
-                              className={`text-[10px] px-1 py-0.5 rounded cursor-pointer overflow-hidden ${
+                              className={`min-w-0 text-[10px] px-1 py-0.5 rounded cursor-pointer ${
                                 event.isHoliday
                                   ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
                                   : "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30"
