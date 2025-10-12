@@ -30,7 +30,13 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for routing, TanStack Query for server state, and React Hook Form with Zod for validation. The UI employs Shadcn/ui (New York style, Radix UI primitives) and Tailwind CSS, supporting light/dark themes. The design prioritizes productivity with a professional blue color scheme, Inter font, and consistent spacing. State management leverages React Query, React hooks, and localStorage. The site branding includes "R.S Freight Manager - Freight Management Suite" for page title and Open Graph metadata, with a subtle minimalist world map background on the login page.
+The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for routing, TanStack Query for server state, and React Hook Form with Zod for validation. The UI employs Shadcn/ui (New York style, Radix UI primitives) and Tailwind CSS, supporting light/dark themes. The design prioritizes productivity with a professional blue color scheme, Inter font, and consistent spacing. State management leverages React Query with IndexedDB persistence (1-hour cache via idb-keyval), React hooks, and localStorage. The site branding includes "R.S Freight Manager - Freight Management Suite" for page title and Open Graph metadata, with a subtle minimalist world map background on the login page.
+
+**Performance Optimizations:**
+- **IndexedDB Persistence:** TanStack Query cache persisted to IndexedDB (1-hour retention) for instant page loads on return visits
+- **Smart Email Cache:** Check Mail appends new emails while preserving pagination; mutations instantly update cache without refetch
+- **Optimized Infinite Scroll:** 60% threshold (reduced from 80%) with Gmail API batch size of 100 for smoother loading
+- **Inline Image Support:** GET endpoint for Gmail attachments enables inline image rendering in received emails
 
 ### Backend Architecture
 
