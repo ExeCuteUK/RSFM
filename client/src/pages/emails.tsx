@@ -13,6 +13,7 @@ import {
   Send,
   FileText,
   Star,
+  Tag,
   Trash2,
   Archive,
   Mail,
@@ -361,7 +362,7 @@ export default function Emails() {
             add: !hasRsTag 
           });
           toast({
-            title: hasRsTag ? 'Removed RS-TAG' : 'Added RS-TAG',
+            title: hasRsTag ? 'Removed Tag' : 'Tagged Email',
           });
         }
       }
@@ -624,13 +625,21 @@ export default function Emails() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          starMutation.mutate({ id: email.id, isStarred: !email.isStarred });
+                          const hasRsTag = email.labels.includes('RS-TAG');
+                          labelMutation.mutate({ 
+                            id: email.id, 
+                            label: 'RS-TAG', 
+                            add: !hasRsTag 
+                          });
+                          toast({
+                            title: hasRsTag ? 'Removed Tag' : 'Tagged Email',
+                          });
                         }}
-                        data-testid={`star-${email.id}`}
+                        data-testid={`tag-${email.id}`}
                       >
-                        <Star
+                        <Tag
                           className={`h-4 w-4 ${
-                            email.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
+                            email.labels.includes('RS-TAG') ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
                           }`}
                         />
                       </button>
@@ -640,10 +649,16 @@ export default function Emails() {
                     </div>
                     <div className="col-span-5 truncate text-sm">
                       {email.subject || '(no subject)'}
-                      <span className="text-muted-foreground ml-2">- {email.snippet}</span>
                     </div>
                     <div className="col-span-2 text-sm text-muted-foreground text-right">
-                      {new Date(email.date).toLocaleDateString()}
+                      {new Date(email.date).toLocaleString('en-GB', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: false 
+                      })}
                     </div>
                   </div>
                   );
