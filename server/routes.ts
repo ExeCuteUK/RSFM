@@ -4514,13 +4514,24 @@ ${messageText}
       const templatePath = path.join(process.cwd(), "attached_assets", "signature-template.html");
       const template = await fs.readFile(templatePath, 'utf-8');
       
+      // Try to load logo and convert to base64 data URL for composer preview
+      let logoUrl = '';
+      try {
+        const logoPath = path.join(process.cwd(), "attached_assets", "rs-logo.jpg");
+        const logoBuffer = await fs.readFile(logoPath);
+        const logoBase64 = logoBuffer.toString('base64');
+        logoUrl = `data:image/jpeg;base64,${logoBase64}`;
+      } catch (logoError) {
+        console.warn('Signature logo not found, signature will be displayed without logo:', logoError);
+      }
+      
       // Replace placeholders with user data
       const signature = template
         .replace(/{{fullName}}/g, user.fullName || '')
         .replace(/{{gmailEmail}}/g, user.gmailEmail || '')
         .replace(/{{username}}/g, user.username || '')
         .replace(/{{USER_NAME}}/g, user.fullName || user.username || '')
-        .replace(/{{LOGO_URL}}/g, 'cid:signature-logo');
+        .replace(/{{LOGO_URL}}/g, logoUrl);
       
       res.json({ signature });
     } catch (error) {
