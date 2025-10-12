@@ -256,248 +256,251 @@ export default function Emails() {
         </ScrollArea>
       </div>
 
-      {/* Middle Pane - Email List */}
-      <div className="w-[40%] border-r flex flex-col">
-        {/* Toolbar */}
-        <div className="p-3 border-b space-y-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search emails..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              data-testid="input-search"
-            />
-          </div>
-        </div>
-
-        {/* Column Headers */}
-        <div className="px-3 py-2 border-b bg-muted/30 grid grid-cols-12 gap-2 text-sm font-medium">
-          <div className="col-span-1"></div>
-          <button
-            className="col-span-4 flex items-center gap-1 hover-elevate px-2 py-1 rounded-md text-left"
-            onClick={() => handleSort('sender')}
-            data-testid="sort-sender"
-          >
-            From
-            {sortBy === 'sender' && (
-              sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-            )}
-          </button>
-          <button
-            className="col-span-5 flex items-center gap-1 hover-elevate px-2 py-1 rounded-md text-left"
-            onClick={() => handleSort('subject')}
-            data-testid="sort-subject"
-          >
-            Subject
-            {sortBy === 'subject' && (
-              sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-            )}
-          </button>
-          <button
-            className="col-span-2 flex items-center gap-1 hover-elevate px-2 py-1 rounded-md text-left"
-            onClick={() => handleSort('date')}
-            data-testid="sort-date"
-          >
-            Date
-            {sortBy === 'date' && (
-              sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-            )}
-          </button>
-        </div>
-
-        {/* Email List */}
-        <ScrollArea className="flex-1">
-          {isLoadingEmails ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      {/* Right Section - Email List (Top) and Reading Pane (Bottom) */}
+      <div className="flex-1 flex flex-col">
+        {/* Email List - Top 40% */}
+        <div className="h-[40%] border-b flex flex-col">
+          {/* Toolbar */}
+          <div className="p-3 border-b space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search emails..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                data-testid="input-search"
+              />
             </div>
-          ) : filteredEmails.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              No emails in this folder
+          </div>
+
+          {/* Column Headers */}
+          <div className="px-3 py-2 border-b bg-muted/30 grid grid-cols-12 gap-2 text-sm font-medium">
+            <div className="col-span-1"></div>
+            <button
+              className="col-span-4 flex items-center gap-1 hover-elevate px-2 py-1 rounded-md text-left"
+              onClick={() => handleSort('sender')}
+              data-testid="sort-sender"
+            >
+              From
+              {sortBy === 'sender' && (
+                sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+              )}
+            </button>
+            <button
+              className="col-span-5 flex items-center gap-1 hover-elevate px-2 py-1 rounded-md text-left"
+              onClick={() => handleSort('subject')}
+              data-testid="sort-subject"
+            >
+              Subject
+              {sortBy === 'subject' && (
+                sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+              )}
+            </button>
+            <button
+              className="col-span-2 flex items-center gap-1 hover-elevate px-2 py-1 rounded-md text-left"
+              onClick={() => handleSort('date')}
+              data-testid="sort-date"
+            >
+              Date
+              {sortBy === 'date' && (
+                sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+              )}
+            </button>
+          </div>
+
+          {/* Email List */}
+          <ScrollArea className="flex-1">
+            {isLoadingEmails ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredEmails.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                No emails in this folder
+              </div>
+            ) : (
+              <div className="divide-y">
+                {filteredEmails.map((email) => (
+                  <div
+                    key={email.id}
+                    className={`px-3 py-3 grid grid-cols-12 gap-2 cursor-pointer hover-elevate ${
+                      selectedEmailId === email.id ? 'bg-muted' : ''
+                    } ${email.isUnread ? 'font-semibold' : ''}`}
+                    onClick={() => handleEmailClick(email)}
+                    data-testid={`email-row-${email.id}`}
+                  >
+                    <div className="col-span-1 flex items-start gap-2 pt-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          starMutation.mutate({ id: email.id, isStarred: !email.isStarred });
+                        }}
+                        data-testid={`star-${email.id}`}
+                      >
+                        <Star
+                          className={`h-4 w-4 ${
+                            email.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    <div className="col-span-4 truncate text-sm">
+                      {email.from}
+                    </div>
+                    <div className="col-span-5 truncate text-sm">
+                      {email.subject || '(no subject)'}
+                      <span className="text-muted-foreground ml-2">- {email.snippet}</span>
+                    </div>
+                    <div className="col-span-2 text-sm text-muted-foreground text-right">
+                      {new Date(email.date).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+
+        {/* Reading Pane - Bottom 60% */}
+        <div className="h-[60%] flex flex-col">
+          {!selectedEmail ? (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Select an email to read</p>
+              </div>
             </div>
           ) : (
-            <div className="divide-y">
-              {filteredEmails.map((email) => (
-                <div
-                  key={email.id}
-                  className={`px-3 py-3 grid grid-cols-12 gap-2 cursor-pointer hover-elevate ${
-                    selectedEmailId === email.id ? 'bg-muted' : ''
-                  } ${email.isUnread ? 'font-semibold' : ''}`}
-                  onClick={() => handleEmailClick(email)}
-                  data-testid={`email-row-${email.id}`}
-                >
-                  <div className="col-span-1 flex items-start gap-2 pt-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        starMutation.mutate({ id: email.id, isStarred: !email.isStarred });
-                      }}
-                      data-testid={`star-${email.id}`}
-                    >
-                      <Star
-                        className={`h-4 w-4 ${
-                          email.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                  <div className="col-span-4 truncate text-sm">
-                    {email.from}
-                  </div>
-                  <div className="col-span-5 truncate text-sm">
-                    {email.subject || '(no subject)'}
-                    <span className="text-muted-foreground ml-2">- {email.snippet}</span>
-                  </div>
-                  <div className="col-span-2 text-sm text-muted-foreground text-right">
-                    {new Date(email.date).toLocaleDateString()}
-                  </div>
+            <>
+              {/* Email Header */}
+              <div className="p-4 border-b space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="text-xl font-semibold flex-1" data-testid="email-subject">
+                    {selectedEmail.subject || '(no subject)'}
+                  </h2>
                 </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </div>
 
-      {/* Right Pane - Reading Pane */}
-      <div className="w-[40%] flex flex-col">
-        {!selectedEmail ? (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Select an email to read</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Email Header */}
-            <div className="p-4 border-b space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <h2 className="text-xl font-semibold flex-1" data-testid="email-subject">
-                  {selectedEmail.subject || '(no subject)'}
-                </h2>
-              </div>
-
-              <div className="space-y-1 text-sm">
-                <div className="flex gap-2">
-                  <span className="text-muted-foreground font-medium">From:</span>
-                  <span data-testid="email-from">{selectedEmail.from}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="text-muted-foreground font-medium">To:</span>
-                  <span data-testid="email-to">{selectedEmail.to.join(', ')}</span>
-                </div>
-                {selectedEmail.cc && selectedEmail.cc.length > 0 && (
+                <div className="space-y-1 text-sm">
                   <div className="flex gap-2">
-                    <span className="text-muted-foreground font-medium">Cc:</span>
-                    <span>{selectedEmail.cc.join(', ')}</span>
+                    <span className="text-muted-foreground font-medium">From:</span>
+                    <span data-testid="email-from">{selectedEmail.from}</span>
                   </div>
-                )}
-                <div className="flex gap-2">
-                  <span className="text-muted-foreground font-medium">Date:</span>
-                  <span data-testid="email-date">
-                    {new Date(selectedEmail.date).toLocaleString()}
-                  </span>
+                  <div className="flex gap-2">
+                    <span className="text-muted-foreground font-medium">To:</span>
+                    <span data-testid="email-to">{selectedEmail.to.join(', ')}</span>
+                  </div>
+                  {selectedEmail.cc && selectedEmail.cc.length > 0 && (
+                    <div className="flex gap-2">
+                      <span className="text-muted-foreground font-medium">Cc:</span>
+                      <span>{selectedEmail.cc.join(', ')}</span>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <span className="text-muted-foreground font-medium">Date:</span>
+                    <span data-testid="email-date">
+                      {new Date(selectedEmail.date).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleReply}
+                    data-testid="button-reply"
+                  >
+                    <Reply className="mr-2 h-4 w-4" />
+                    Reply
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleReplyAll}
+                    data-testid="button-reply-all"
+                  >
+                    <ReplyAll className="mr-2 h-4 w-4" />
+                    Reply All
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleForward}
+                    data-testid="button-forward"
+                  >
+                    <Forward className="mr-2 h-4 w-4" />
+                    Forward
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => archiveMutation.mutate(selectedEmail.id)}
+                    disabled={archiveMutation.isPending}
+                    data-testid="button-archive"
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    Archive
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => spamMutation.mutate(selectedEmail.id)}
+                    disabled={spamMutation.isPending}
+                    data-testid="button-spam"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    Junk
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => deleteMutation.mutate(selectedEmail.id)}
+                    disabled={deleteMutation.isPending}
+                    data-testid="button-delete"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
                 </div>
               </div>
 
-              <Separator />
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleReply}
-                  data-testid="button-reply"
-                >
-                  <Reply className="mr-2 h-4 w-4" />
-                  Reply
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleReplyAll}
-                  data-testid="button-reply-all"
-                >
-                  <ReplyAll className="mr-2 h-4 w-4" />
-                  Reply All
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleForward}
-                  data-testid="button-forward"
-                >
-                  <Forward className="mr-2 h-4 w-4" />
-                  Forward
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => archiveMutation.mutate(selectedEmail.id)}
-                  disabled={archiveMutation.isPending}
-                  data-testid="button-archive"
-                >
-                  <Archive className="mr-2 h-4 w-4" />
-                  Archive
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => spamMutation.mutate(selectedEmail.id)}
-                  disabled={spamMutation.isPending}
-                  data-testid="button-spam"
-                >
-                  <Mail className="mr-2 h-4 w-4" />
-                  Junk
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => deleteMutation.mutate(selectedEmail.id)}
-                  disabled={deleteMutation.isPending}
-                  data-testid="button-delete"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
-            </div>
-
-            {/* Email Body */}
-            <ScrollArea className="flex-1 p-4">
-              {selectedEmail.attachments && selectedEmail.attachments.length > 0 && (
-                <div className="mb-4 p-3 border rounded-md bg-muted/30">
-                  <div className="text-sm font-medium mb-2">
-                    Attachments ({selectedEmail.attachments.length})
+              {/* Email Body */}
+              <ScrollArea className="flex-1 p-4">
+                {selectedEmail.attachments && selectedEmail.attachments.length > 0 && (
+                  <div className="mb-4 p-3 border rounded-md bg-muted/30">
+                    <div className="text-sm font-medium mb-2">
+                      Attachments ({selectedEmail.attachments.length})
+                    </div>
+                    <div className="space-y-1">
+                      {selectedEmail.attachments.map((attachment, index) => (
+                        <div key={index} className="text-sm text-muted-foreground">
+                          {attachment.filename} ({Math.round(attachment.size / 1024)} KB)
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    {selectedEmail.attachments.map((attachment, index) => (
-                      <div key={index} className="text-sm text-muted-foreground">
-                        {attachment.filename} ({Math.round(attachment.size / 1024)} KB)
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div 
-                className="prose prose-sm max-w-none dark:prose-invert"
-                data-testid="email-body"
-              >
-                {selectedEmail.bodyHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: selectedEmail.bodyHtml }} />
-                ) : (
-                  <pre className="whitespace-pre-wrap font-sans">
-                    {selectedEmail.bodyText || selectedEmail.snippet}
-                  </pre>
                 )}
-              </div>
-            </ScrollArea>
-          </>
-        )}
+
+                <div 
+                  className="prose prose-sm max-w-none dark:prose-invert"
+                  data-testid="email-body"
+                >
+                  {selectedEmail.bodyHtml ? (
+                    <div dangerouslySetInnerHTML={{ __html: selectedEmail.bodyHtml }} />
+                  ) : (
+                    <pre className="whitespace-pre-wrap font-sans">
+                      {selectedEmail.bodyText || selectedEmail.snippet}
+                    </pre>
+                  )}
+                </div>
+              </ScrollArea>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Email Composer Dialog */}
