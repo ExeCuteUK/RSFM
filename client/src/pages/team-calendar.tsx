@@ -202,11 +202,41 @@ export default function TeamCalendar() {
     setEditingEvent(null);
   };
 
-  // Get events for a specific date
+  // Get events for a specific date (including multi-day events)
   const getEventsForDate = (date: Date) => {
     return events.filter((event) => {
-      const eventDate = event.start.date ? parseISO(event.start.date) : event.start.dateTime ? parseISO(event.start.dateTime) : null;
-      return eventDate && isSameDay(eventDate, date);
+      const startDate = event.start.date ? parseISO(event.start.date) : event.start.dateTime ? parseISO(event.start.dateTime) : null;
+      const endDate = event.end.date ? parseISO(event.end.date) : event.end.dateTime ? parseISO(event.end.dateTime) : null;
+      
+      if (!startDate) return false;
+      
+      // For all-day events, end date is exclusive (next day), so we check if date is before end
+      if (event.start.date && event.end.date && endDate) {
+        return date >= startDate && date < endDate;
+      }
+      
+      // For timed events, check if the date falls within the event range
+      if (event.start.dateTime && event.end.dateTime && endDate) {
+        // Get start of day for comparison
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+        const eventStart = new Date(startDate);
+        eventStart.setHours(0, 0, 0, 0);
+        const eventEnd = new Date(endDate);
+        const eventEndMidnight = new Date(endDate);
+        eventEndMidnight.setHours(0, 0, 0, 0);
+        
+        // If event ends at midnight, treat it as exclusive (don't include that day)
+        if (endDate.getHours() === 0 && endDate.getMinutes() === 0 && endDate.getSeconds() === 0) {
+          return checkDate >= eventStart && checkDate < eventEndMidnight;
+        }
+        
+        // Otherwise include the end day if the event extends past midnight
+        return checkDate >= eventStart && checkDate <= eventEndMidnight;
+      }
+      
+      // Fallback: check if within the same day
+      return isSameDay(startDate, date);
     });
   };
 
@@ -238,12 +268,9 @@ export default function TeamCalendar() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Team Calendar</h1>
-          <p className="text-muted-foreground">Manage team holidays, annual leave, and view UK public holidays</p>
-        </div>
+        <h1 className="text-2xl font-bold" data-testid="text-page-title">Team Calendar</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
           setIsAddDialogOpen(open);
           if (!open) resetForm();
@@ -487,9 +514,9 @@ export default function TeamCalendar() {
       )}
 
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="icon"
@@ -502,6 +529,7 @@ export default function TeamCalendar() {
                 variant="outline"
                 onClick={goToToday}
                 data-testid="button-today"
+                className="h-9"
               >
                 Today
               </Button>
@@ -514,12 +542,12 @@ export default function TeamCalendar() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <CardTitle className="text-2xl">
+            <CardTitle className="text-xl">
               {format(currentMonth, "MMMM yyyy")}
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2">
           {isLoading ? (
             <div className="flex items-center justify-center h-96">
               <p className="text-muted-foreground">Loading calendar...</p>
@@ -528,21 +556,21 @@ export default function TeamCalendar() {
             <div className="border rounded-md overflow-hidden">
               {/* Calendar Header */}
               <div className="grid grid-cols-8 bg-muted/50">
-                <div className="p-2 text-center text-sm font-medium border-r">Week</div>
-                <div className="p-2 text-center text-sm font-medium border-r">Mon</div>
-                <div className="p-2 text-center text-sm font-medium border-r">Tue</div>
-                <div className="p-2 text-center text-sm font-medium border-r">Wed</div>
-                <div className="p-2 text-center text-sm font-medium border-r">Thu</div>
-                <div className="p-2 text-center text-sm font-medium border-r">Fri</div>
-                <div className="p-2 text-center text-sm font-medium border-r">Sat</div>
-                <div className="p-2 text-center text-sm font-medium">Sun</div>
+                <div className="p-1 text-center text-xs font-medium border-r">Week</div>
+                <div className="p-1 text-center text-xs font-medium border-r">Mon</div>
+                <div className="p-1 text-center text-xs font-medium border-r">Tue</div>
+                <div className="p-1 text-center text-xs font-medium border-r">Wed</div>
+                <div className="p-1 text-center text-xs font-medium border-r">Thu</div>
+                <div className="p-1 text-center text-xs font-medium border-r">Fri</div>
+                <div className="p-1 text-center text-xs font-medium border-r">Sat</div>
+                <div className="p-1 text-center text-xs font-medium">Sun</div>
               </div>
 
               {/* Calendar Grid */}
               {weeks.map((week, weekIndex) => (
                 <div key={weekIndex} className="grid grid-cols-8 border-t">
                   {/* Week Number */}
-                  <div className="p-2 text-center text-sm font-medium bg-muted/30 border-r flex items-center justify-center">
+                  <div className="p-1 text-center text-xs font-medium bg-muted/30 border-r flex items-center justify-center">
                     {getWeek(week[0])}
                   </div>
                   
@@ -556,34 +584,41 @@ export default function TeamCalendar() {
                     return (
                       <div
                         key={dayIndex}
-                        className={`min-h-24 p-1 border-r last:border-r-0 cursor-pointer hover-elevate ${
+                        className={`min-h-20 p-1 border-r last:border-r-0 cursor-pointer hover-elevate ${
                           !isCurrentMonth ? "bg-muted/20" : ""
                         } ${isSelected ? "bg-primary/10" : ""}`}
                         onClick={() => setSelectedDate(day)}
                         data-testid={`calendar-day-${format(day, "yyyy-MM-dd")}`}
                       >
-                        <div className={`text-sm font-medium mb-1 ${
+                        <div className={`text-xs font-medium mb-0.5 ${
                           !isCurrentMonth ? "text-muted-foreground" : ""
-                        } ${isTodayDate ? "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center" : ""}`}>
+                        } ${isTodayDate ? "bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-[10px]" : ""}`}>
                           {format(day, "d")}
                         </div>
                         <div className="space-y-0.5">
                           {dayEvents.slice(0, 3).map((event) => (
                             <div
                               key={event.id}
-                              className={`text-xs px-1 py-0.5 rounded truncate ${
+                              className={`text-[10px] px-1 py-0.5 rounded truncate cursor-pointer ${
                                 event.isHoliday
                                   ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
                                   : "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30"
                               }`}
                               data-testid={`calendar-event-${event.id}`}
                               title={event.summary}
+                              onClick={(e) => e.stopPropagation()}
+                              onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                if (!event.isHoliday) {
+                                  handleEditEvent(event);
+                                }
+                              }}
                             >
                               {event.start.dateTime && format(parseISO(event.start.dateTime), "HH:mm")} {event.summary}
                             </div>
                           ))}
                           {dayEvents.length > 3 && (
-                            <div className="text-xs text-muted-foreground pl-1">
+                            <div className="text-[10px] text-muted-foreground pl-1">
                               +{dayEvents.length - 3} more
                             </div>
                           )}
@@ -599,17 +634,17 @@ export default function TeamCalendar() {
       </Card>
 
       {/* Event Details Sidebar */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5" />
+      <Card className="mt-3">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <CalendarIcon className="h-4 w-4" />
             {format(selectedDate, "EEEE, MMMM d, yyyy")}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs">
             {getEventsForDate(selectedDate).length} event{getEventsForDate(selectedDate).length !== 1 ? "s" : ""} on this day
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2">
           {getEventsForDate(selectedDate).length === 0 ? (
             <p className="text-sm text-muted-foreground" data-testid="text-no-events">
               No events scheduled for this day
