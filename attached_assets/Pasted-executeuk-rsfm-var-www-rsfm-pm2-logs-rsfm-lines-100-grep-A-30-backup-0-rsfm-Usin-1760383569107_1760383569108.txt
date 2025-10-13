@@ -1,0 +1,146 @@
+executeuk@rsfm:/var/www/rsfm$ pm2 logs rsfm --lines 100 | grep -A 30 "backup"
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | 7:07:14 PM [express] POST /api/presence/heartbeat 200 in 6ms :: {"success":true}
+0|rsfm     | 7:07:14 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | ✓ Found folder in Shared Drive: RS Freight Manager (1eHUAaeTEj06e-XL3QhG545RPySBqWsQy)
+0|rsfm     | ✓ Found folder: Backups (1e7_o6MHToOGHfCEBdCfrdB-DtkBwIW9a)
+0|rsfm     | 7:07:15 PM [express] GET /api/backups 304 in 1852ms :: []
+0|rsfm     | 7:07:17 PM [express] POST /api/auth/logout 200 in 5ms :: {"success":true}
+0|rsfm     | 7:07:17 PM [express] GET /api/auth/me 200 in 4ms :: {"user":null}
+0|rsfm     | 7:07:18 PM [express] POST /api/auth/login 200 in 121ms :: {"user":{"id":"11156abf-3677-4ecb-b8e6-561…
+0|rsfm     | 7:07:19 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | ✓ Found folder in Shared Drive: RS Freight Manager (1eHUAaeTEj06e-XL3QhG545RPySBqWsQy)
+0|rsfm     | ✓ Found folder: Backups (1e7_o6MHToOGHfCEBdCfrdB-DtkBwIW9a)
+0|rsfm     | 7:07:22 PM [express] GET /api/backups 304 in 1022ms :: []
+0|rsfm     | DATABASE_URL exists in process.env: true
+0|rsfm     | 7:07:28 PM [express] POST /api/backups/create 500 in 4422ms :: {"error":"Failed to create backup"}
+0|rsfm     | 7:07:39 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 7:07:48 PM [express] GET /api/messages/unread-count 304 in 4ms :: {"count":"0"}
+0|rsfm     | 7:07:49 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:07:49 PM [express] GET /api/presence/online-users 304 in 3ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 7:07:59 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 7:08:09 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 7:08:19 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 7:08:49 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 7:09:19 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 7:09:49 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:10:54 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 7:11:41 PM [express] 🚀 Starting R.S Freight Manager server...
+0|rsfm     | 7:11:41 PM [express] Environment: production
+0|rsfm     | 7:11:41 PM [express] Initializing session store...
+0|rsfm     | 7:11:41 PM [express] ✅ Server successfully started on port 5000
+0|rsfm     | 7:11:41 PM [express] 🌐 Access the application at http://0.0.0.0:5000
+0|rsfm     | 7:11:51 PM [express] POST /api/presence/heartbeat 200 in 7ms :: {"success":true}
+0|rsfm     | 7:11:51 PM [express] GET /api/messages/unread-count 304 in 5ms :: {"count":"0"}
+0|rsfm     | 7:11:51 PM [express] GET /api/presence/online-users 304 in 3ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 7:11:53 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"11156abf-3677-4ecb-b8e6-5616d7266…
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | 7:11:53 PM [express] POST /api/presence/heartbeat 200 in 8ms :: {"success":true}
+0|rsfm     | 7:11:53 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | ✓ Found folder in Shared Drive: RS Freight Manager (1eHUAaeTEj06e-XL3QhG545RPySBqWsQy)
+0|rsfm     | ✓ Found folder: Backups (1e7_o6MHToOGHfCEBdCfrdB-DtkBwIW9a)
+0|rsfm     | 7:11:54 PM [express] GET /api/backups 304 in 1073ms :: []
+0|rsfm     | DATABASE_URL exists in process.env: true
+0|rsfm     | 7:12:00 PM [express] POST /api/backups/create 500 in 4542ms :: {"error":"Failed to create backup"}
+0|rsfm     | 7:12:24 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 7:12:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:13:24 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:13:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 7:14:24 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:14:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:15:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:16:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 7:17:19 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | DATABASE_URL exists in process.env: true
+0|rsfm     | 7:17:25 PM [express] POST /api/backups/create 500 in 4522ms :: {"error":"Failed to create backup"}
+0|rsfm     | 7:17:25 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 7:17:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:18:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 7:19:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:20:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 7:21:54 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 7:22:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 7:23:21 PM [express] 🚀 Starting R.S Freight Manager server...
+0|rsfm     | 7:23:21 PM [express] Environment: production
+0|rsfm     | 7:23:21 PM [express] Initializing session store...
+0|rsfm     | 7:23:21 PM [express] ✅ Server successfully started on port 5000
+0|rsfm     | 7:23:21 PM [express] 🌐 Access the application at http://0.0.0.0:5000
+0|rsfm     | 7:23:35 PM [express] POST /api/presence/heartbeat 200 in 8ms :: {"success":true}
+0|rsfm     | 7:23:38 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"11156abf-3677-4ecb-b8e6-5616d7266…
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | ✓ Using Shared Drive ID: 0AEwAL9Ms5tl7Uk9PVA
+0|rsfm     | 7:23:39 PM [express] POST /api/presence/heartbeat 200 in 13ms :: {"success":true}
+0|rsfm     | 7:23:39 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | ✓ Found root folder: RS Freight Manager (1eHUAaeTEj06e-XL3QhG545RPySBqWsQy)
+0|rsfm     | ✓ Found folder: Backups (1e7_o6MHToOGHfCEBdCfrdB-DtkBwIW9a)
+0|rsfm     | DATABASE_URL exists in process.env: true
+0|rsfm     | 7:23:45 PM [express] POST /api/backups/create 500 in 5161ms :: {"error":"Failed to create backup"}
+0|rsfm     | 7:23:45 PM [express] GET /api/backups 304 in 6841ms :: []
+0|rsfm     | 7:23:49 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 7:24:10 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+
+0|rsfm  | 7:24:40 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm  | 7:25:09 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+^C
+executeuk@rsfm:/var/www/rsfm$ pm2 logs rsfm --err --lines 200 | grep -B 5 -A 30 "Service Account"
+0|rsfm     |     '✅ Uploading to Shared Drive: 0AEwAL9Ms5tl7Uk9PVA\n',
+0|rsfm     |   stderr: 'The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm     |     'The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm     |     'The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm     |     'The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm     |     'Error backing up databases: GaxiosError: Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.\n' +
+0|rsfm     |     '    at Gaxios._request (/var/www/rsfm/node_modules/googleapis-common/node_modules/gaxios/src/gaxios.ts:211:15)\n' +
+0|rsfm     |     '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+0|rsfm     |     '    at async JWT.requestAsync (/var/www/rsfm/node_modules/googleapis-common/node_modules/google-auth-library/build/src/auth/oauth2client.js:463:20)\n' +
+0|rsfm     |     '    at async createAPIRequestAsync (/var/www/rsfm/node_modules/googleapis-common/build/src/apirequest.js:308:25)\n' +
+0|rsfm     |     '    at async GoogleDriveStorageService.uploadBackup (/var/www/rsfm/server/googleDriveStorage.ts:671:18)\n' +
+0|rsfm     |     '    at async backupContactDatabases (/var/www/rsfm/scripts/backup-contact-databases.ts:242:26) {\n' +
+0|rsfm     |     '  config: {\n' +
+0|rsfm     |     '    url: URL {\n' +
+0|rsfm     |     "      href: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&driveId=0AEwAL9Ms5tl7Uk9PVA&uploadType=multipart',\n" +
+0|rsfm     |     "      origin: 'https://www.googleapis.com',\n" +
+0|rsfm     |     "      protocol: 'https:',\n" +
+0|rsfm     |     "      username: '',\n" +
+0|rsfm     |     "      password: '',\n" +
+0|rsfm     |     "      host: 'www.googleapis.com',\n" +
+0|rsfm     |     "      hostname: 'www.googleapis.com',\n" +
+0|rsfm     |     "      port: '',\n" +
+0|rsfm     |     "      pathname: '/upload/drive/v3/files',\n" +
+0|rsfm     |     "      search: '?fields=id%2C%20name&supportsAllDrives=true&driveId=0AEwAL9Ms5tl7Uk9PVA&uploadType=multipart',\n" +
+0|rsfm     |     '      searchParams: URLSearchParams {\n' +
+0|rsfm     |     "        'fields' => 'id, name',\n" +
+0|rsfm     |     "        'supportsAllDrives' => 'true',\n" +
+0|rsfm     |     "        'driveId' => '0AEwAL9Ms5tl7Uk9PVA',\n" +
+0|rsfm     |     "        'uploadType' => 'multipart' },\n" +
+0|rsfm     |     "      hash: ''\n" +
+0|rsfm     |     '    },\n' +
+0|rsfm     |     "    method: 'POST',\n" +
+0|rsfm     |     "    apiVersion: '',\n" +
+0|rsfm     |     '    userAgentDirectives: [ [Object] ],\n' +
+0|rsfm     |     '    paramsSerializer: [Function (anonymous)],\n' +
+0|rsfm     |     '    data: PassThrough {\n' +
+--
+0|rsfm     |     '  code: 403,\n' +
+0|rsfm     |     '  status: 403,\n' +
+0|rsfm     |     '  error: undefined,\n' +
+0|rsfm     |     "  [Symbol(gaxios-gaxios-error)]: '7.1.2',\n" +
+0|rsfm     |     '  [cause]: {\n' +
+0|rsfm     |     "    message: 'Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.',\n" +
+0|rsfm     |     '    code: 403,\n' +
+0|rsfm     |     "    status: 'Forbidden',\n" +
+0|rsfm     |     '    errors: [ [Object] ]\n' +
+0|rsfm     |     '  }\n' +
+0|rsfm     |     '}\n'
+0|rsfm     | }

@@ -653,6 +653,7 @@ export class GoogleDriveStorageService {
     };
 
     // Prepare create options with Shared Drive support
+    // NOTE: No need to pass driveId to files.create - it's determined by the parent folder
     const createOptions: any = {
       requestBody: fileMetadata,
       media: media,
@@ -660,10 +661,8 @@ export class GoogleDriveStorageService {
       supportsAllDrives: true
     };
 
-    // Use the cached driveId if available (set during getRootFolderForBackups)
     if (this.sharedDriveId) {
-      createOptions.driveId = this.sharedDriveId;
-      console.log(`✅ Uploading to Shared Drive: ${this.sharedDriveId}`);
+      console.log(`✅ Uploading to Shared Drive (parent folder is in drive: ${this.sharedDriveId})`);
     } else {
       console.log(`📁 Uploading to personal Drive (no Shared Drive detected)`);
     }
