@@ -331,7 +331,8 @@ export class GoogleDriveStorageService {
     const file = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
-      fields: 'id'
+      fields: 'id',
+      supportsAllDrives: true
     });
 
     const fileId = file.data.id!;
@@ -379,7 +380,8 @@ export class GoogleDriveStorageService {
     const file = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
-      fields: 'id'
+      fields: 'id',
+      supportsAllDrives: true
     });
 
     const fileId = file.data.id!;
