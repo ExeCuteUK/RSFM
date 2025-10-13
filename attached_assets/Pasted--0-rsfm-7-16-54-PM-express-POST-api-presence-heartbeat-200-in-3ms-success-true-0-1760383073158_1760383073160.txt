@@ -1,0 +1,548 @@
+
+0|rsfm     | 7:16:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+
+0|rsfm  | 7:17:19 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm  | DATABASE_URL exists in process.env: true
+0|rsfm  | Backup error: Error: Command failed: tsx scripts/backup-contact-databases.ts
+0|rsfm  | The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+0|rsfm  | The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+0|rsfm  | The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+0|rsfm  | The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+0|rsfm  | Error backing up databases: GaxiosError: Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.
+0|rsfm  |     at Gaxios._request (/var/www/rsfm/node_modules/googleapis-common/node_modules/gaxios/src/gaxios.ts:211:15)
+0|rsfm  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|rsfm  |     at async JWT.requestAsync (/var/www/rsfm/node_modules/googleapis-common/node_modules/google-auth-library/build/src/auth/oauth2client.js:463:20)
+0|rsfm  |     at async createAPIRequestAsync (/var/www/rsfm/node_modules/googleapis-common/build/src/apirequest.js:308:25)
+0|rsfm  |     at async GoogleDriveStorageService.uploadBackup (/var/www/rsfm/server/googleDriveStorage.ts:673:18)
+0|rsfm  |     at async backupContactDatabases (/var/www/rsfm/scripts/backup-contact-databases.ts:242:26) {
+0|rsfm  |   config: {
+0|rsfm  |     url: URL {
+0|rsfm  |       href: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',
+0|rsfm  |       origin: 'https://www.googleapis.com',
+0|rsfm  |       protocol: 'https:',
+0|rsfm  |       username: '',
+0|rsfm  |       password: '',
+0|rsfm  |       host: 'www.googleapis.com',
+0|rsfm  |       hostname: 'www.googleapis.com',
+0|rsfm  |       port: '',
+0|rsfm  |       pathname: '/upload/drive/v3/files',
+0|rsfm  |       search: '?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',
+0|rsfm  |       searchParams: URLSearchParams {
+0|rsfm  |         'fields' => 'id, name',
+0|rsfm  |         'supportsAllDrives' => 'true',
+0|rsfm  |         'uploadType' => 'multipart' },
+0|rsfm  |       hash: ''
+0|rsfm  |     },
+0|rsfm  |     method: 'POST',
+0|rsfm  |     apiVersion: '',
+0|rsfm  |     userAgentDirectives: [ [Object] ],
+0|rsfm  |     paramsSerializer: [Function (anonymous)],
+0|rsfm  |     data: PassThrough {
+0|rsfm  |       _events: [Object],
+0|rsfm  |       _readableState: [ReadableState],
+0|rsfm  |       _writableState: [WritableState],
+0|rsfm  |       allowHalfOpen: true,
+0|rsfm  |       _maxListeners: undefined,
+0|rsfm  |       _flush: [Function: flush],
+0|rsfm  |       _eventsCount: 5,
+0|rsfm  |       [Symbol(shapeMode)]: true,
+0|rsfm  |       [Symbol(kCapture)]: false,
+0|rsfm  |       [Symbol(kCallback)]: null
+0|rsfm  |     },
+0|rsfm  |     headers: Headers {
+0|rsfm  |       'accept-encoding': 'gzip',
+0|rsfm  |       authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+0|rsfm  |       'content-type': 'multipart/related; boundary=bf1de29f-5ad8-4310-8cb3-c52ec7afad90',
+0|rsfm  |       'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',
+0|rsfm  |       'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'
+0|rsfm  |     },
+0|rsfm  |     params: {
+0|rsfm  |       fields: 'id, name',
+0|rsfm  |       supportsAllDrives: true,
+0|rsfm  |       uploadType: 'multipart'
+0|rsfm  |     },
+0|rsfm  |     validateStatus: [Function (anonymous)],
+0|rsfm  |     retry: true,
+0|rsfm  |     body: PassThrough {
+0|rsfm  |       _events: [Object],
+0|rsfm  |       _readableState: [ReadableState],
+0|rsfm  |       _writableState: [WritableState],
+0|rsfm  |       allowHalfOpen: true,
+0|rsfm  |       _maxListeners: undefined,
+0|rsfm  |       _flush: [Function: flush],
+0|rsfm  |       _eventsCount: 5,
+0|rsfm  |       [Symbol(shapeMode)]: true,
+0|rsfm  |       [Symbol(kCapture)]: false,
+0|rsfm  |       [Symbol(kCallback)]: null
+0|rsfm  |     },
+0|rsfm  |     responseType: 'unknown',
+0|rsfm  |     errorRedactor: [Function: defaultErrorRedactor],
+0|rsfm  |     duplex: 'half',
+0|rsfm  |     retryConfig: {
+0|rsfm  |       currentRetryAttempt: 0,
+0|rsfm  |       retry: 3,
+0|rsfm  |       httpMethodsToRetry: [Array],
+0|rsfm  |       noResponseRetries: 2,
+0|rsfm  |       retryDelayMultiplier: 2,
+0|rsfm  |       timeOfFirstRequest: 1760383045831,
+0|rsfm  |       totalTimeout: 9007199254740991,
+0|rsfm  |       maxRetryDelay: 9007199254740991,
+0|rsfm  |       statusCodesToRetry: [Array]
+0|rsfm  |     }
+0|rsfm  |   },
+0|rsfm  |   response: Response {
+0|rsfm  |     size: 0,
+0|rsfm  |     data: { error: [Object] },
+0|rsfm  |     config: {
+0|rsfm  |       url: URL {},
+0|rsfm  |       method: 'POST',
+0|rsfm  |       apiVersion: '',
+0|rsfm  |       userAgentDirectives: [Array],
+0|rsfm  |       paramsSerializer: [Function (anonymous)],
+0|rsfm  |       data: [PassThrough],
+0|rsfm  |       headers: Headers {
+0|rsfm  |         'accept-encoding': 'gzip',
+0|rsfm  |         authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+0|rsfm  |         'content-type': 'multipart/related; boundary=bf1de29f-5ad8-4310-8cb3-c52ec7afad90',
+0|rsfm  |         'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',
+0|rsfm  |         'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'
+0|rsfm  |       },
+0|rsfm  |       params: [Object],
+0|rsfm  |       validateStatus: [Function (anonymous)],
+0|rsfm  |       retry: true,
+0|rsfm  |       body: [PassThrough],
+0|rsfm  |       responseType: 'unknown',
+0|rsfm  |       errorRedactor: [Function: defaultErrorRedactor],
+0|rsfm  |       duplex: 'half'
+0|rsfm  |     },
+0|rsfm  |     [Symbol(Body internals)]: {
+0|rsfm  |       body: [PassThrough],
+0|rsfm  |       stream: [PassThrough],
+0|rsfm  |       boundary: null,
+0|rsfm  |       disturbed: true,
+0|rsfm  |       error: null
+0|rsfm  |     },
+0|rsfm  |     [Symbol(Response internals)]: {
+0|rsfm  |       type: 'default',
+0|rsfm  |       url: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',
+0|rsfm  |       status: 403,
+0|rsfm  |       statusText: 'Forbidden',
+0|rsfm  |       headers: [Object],
+0|rsfm  |       counter: 0,
+0|rsfm  |       highWaterMark: 16384
+0|rsfm  |     }
+0|rsfm  |   },
+0|rsfm  |   code: 403,
+0|rsfm  |   status: 403,
+0|rsfm  |   error: undefined,
+0|rsfm  |   [Symbol(gaxios-gaxios-error)]: '7.1.2',
+0|rsfm  |   [cause]: {
+0|rsfm  |     message: 'Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.',
+0|rsfm  |     code: 403,
+0|rsfm  |     status: 'Forbidden',
+0|rsfm  |     errors: [ [Object] ]
+0|rsfm  |   }
+0|rsfm  | }
+0|rsfm  |     at genericNodeError (node:internal/errors:984:15)
+0|rsfm  |     at wrappedFn (node:internal/errors:538:14)
+0|rsfm  |     at checkExecSyncError (node:child_process:891:11)
+0|rsfm  |     at execSync (node:child_process:963:15)
+0|rsfm  |     at file:///var/www/rsfm/dist/index.js:5923:22
+0|rsfm  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+0|rsfm  |   status: 1,
+0|rsfm  |   signal: null,
+0|rsfm  |   output: [
+0|rsfm  |     null,
+0|rsfm  |     '[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops\n' +
+0|rsfm  |       'Starting backup of all database tables...\n' +
+0|rsfm  |       'Backup directory: backups/backup_2025-10-13T19-17-23\n' +
+0|rsfm  |       'Backing up Import Customers...\n' +
+0|rsfm  |       '✓ Import Customers backed up: 0 records\n' +
+0|rsfm  |       'Backing up Export Customers...\n' +
+0|rsfm  |       '✓ Export Customers backed up: 0 records\n' +
+0|rsfm  |       'Backing up Export Receivers...\n' +
+0|rsfm  |       '✓ Export Receivers backed up: 0 records\n' +
+0|rsfm  |       'Backing up Hauliers...\n' +
+0|rsfm  |       '✓ Hauliers backed up: 0 records\n' +
+0|rsfm  |       'Backing up Shipping Lines...\n' +
+0|rsfm  |       '✓ Shipping Lines backed up: 0 records\n' +
+0|rsfm  |       'Backing up Clearance Agents...\n' +
+0|rsfm  |       '✓ Clearance Agents backed up: 0 records\n' +
+0|rsfm  |       'Backing up Import Shipments...\n' +
+0|rsfm  |       '✓ Import Shipments backed up: 0 records\n' +
+0|rsfm  |       'Backing up Export Shipments...\n' +
+0|rsfm  |       '✓ Export Shipments backed up: 0 records\n' +
+0|rsfm  |       'Backing up Custom Clearances...\n' +
+0|rsfm  |       '✓ Custom Clearances backed up: 0 records\n' +
+0|rsfm  |       'Backing up Job File Groups...\n' +
+0|rsfm  |       '✓ Job File Groups backed up: 0 records\n' +
+0|rsfm  |       'Backing up Messages...\n' +
+0|rsfm  |       '✓ Messages backed up: 0 records\n' +
+0|rsfm  |       'Backing up Email Contacts...\n' +
+0|rsfm  |       '✓ Email Contacts backed up: 0 records\n' +
+0|rsfm  |       'Backing up Purchase Invoices...\n' +
+0|rsfm  |       '✓ Purchase Invoices backed up: 0 records\n' +
+0|rsfm  |       'Backing up Invoices...\n' +
+0|rsfm  |       '✓ Invoices backed up: 0 records\n' +
+0|rsfm  |       'Backing up General References...\n' +
+0|rsfm  |       '✓ General References backed up: 0 records\n' +
+0|rsfm  |       'Backing up Settings...\n' +
+0|rsfm  |       '✓ Settings backed up: 0 records\n' +
+0|rsfm  |       'Backing up Users...\n' +
+0|rsfm  |       '✓ Users backed up: 1 records\n' +
+0|rsfm  |       '\n' +
+0|rsfm  |       '✓ All SQL files generated successfully!\n' +
+0|rsfm  |       '\n' +
+0|rsfm  |       'Backing up email signature files...\n' +
+0|rsfm  |       '✓ Email signature template backed up\n' +
+0|rsfm  |       '✓ Email signature logo backed up\n' +
+0|rsfm  |       '\n' +
+0|rsfm  |       'Creating zip archive: backups/backup_2025-10-13T19-17-23.zip\n' +
+0|rsfm  |       '✓ Zip archive created: 0.02 MB\n' +
+0|rsfm  |       '\n' +
+0|rsfm  |       'Uploading backup to Google Drive...\n' +
+0|rsfm  |       'OAuth not available, falling back to service account\n' +
+0|rsfm  |       '⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")\n' +
+0|rsfm  |       'OAuth not available, falling back to service account\n' +
+0|rsfm  |       '⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")\n' +
+0|rsfm  |       '✓ Found folder in Shared Drive: RS Freight Manager (1eHUAaeTEj06e-XL3QhG545RPySBqWsQy)\n' +
+0|rsfm  |       '✓ Found folder: Backups (1e7_o6MHToOGHfCEBdCfrdB-DtkBwIW9a)\n' +
+0|rsfm  |       '📁 Uploading to personal Drive (no Shared Drive detected)\n',
+0|rsfm  |     'The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |       'The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |       'The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |       'The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |       'Error backing up databases: GaxiosError: Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.\n' +
+0|rsfm  |       '    at Gaxios._request (/var/www/rsfm/node_modules/googleapis-common/node_modules/gaxios/src/gaxios.ts:211:15)\n' +
+0|rsfm  |       '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+0|rsfm  |       '    at async JWT.requestAsync (/var/www/rsfm/node_modules/googleapis-common/node_modules/google-auth-library/build/src/auth/oauth2client.js:463:20)\n' +
+0|rsfm  |       '    at async createAPIRequestAsync (/var/www/rsfm/node_modules/googleapis-common/build/src/apirequest.js:308:25)\n' +
+0|rsfm  |       '    at async GoogleDriveStorageService.uploadBackup (/var/www/rsfm/server/googleDriveStorage.ts:673:18)\n' +
+0|rsfm  |       '    at async backupContactDatabases (/var/www/rsfm/scripts/backup-contact-databases.ts:242:26) {\n' +
+0|rsfm  |       '  config: {\n' +
+0|rsfm  |       '    url: URL {\n' +
+0|rsfm  |       "      href: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',\n" +
+0|rsfm  |       "      origin: 'https://www.googleapis.com',\n" +
+0|rsfm  |       "      protocol: 'https:',\n" +
+0|rsfm  |       "      username: '',\n" +
+0|rsfm  |       "      password: '',\n" +
+0|rsfm  |       "      host: 'www.googleapis.com',\n" +
+0|rsfm  |       "      hostname: 'www.googleapis.com',\n" +
+0|rsfm  |       "      port: '',\n" +
+0|rsfm  |       "      pathname: '/upload/drive/v3/files',\n" +
+0|rsfm  |       "      search: '?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',\n" +
+0|rsfm  |       '      searchParams: URLSearchParams {\n' +
+0|rsfm  |       "        'fields' => 'id, name',\n" +
+0|rsfm  |       "        'supportsAllDrives' => 'true',\n" +
+0|rsfm  |       "        'uploadType' => 'multipart' },\n" +
+0|rsfm  |       "      hash: ''\n" +
+0|rsfm  |       '    },\n' +
+0|rsfm  |       "    method: 'POST',\n" +
+0|rsfm  |       "    apiVersion: '',\n" +
+0|rsfm  |       '    userAgentDirectives: [ [Object] ],\n' +
+0|rsfm  |       '    paramsSerializer: [Function (anonymous)],\n' +
+0|rsfm  |       '    data: PassThrough {\n' +
+0|rsfm  |       '      _events: [Object],\n' +
+0|rsfm  |       '      _readableState: [ReadableState],\n' +
+0|rsfm  |       '      _writableState: [WritableState],\n' +
+0|rsfm  |       '      allowHalfOpen: true,\n' +
+0|rsfm  |       '      _maxListeners: undefined,\n' +
+0|rsfm  |       '      _flush: [Function: flush],\n' +
+0|rsfm  |       '      _eventsCount: 5,\n' +
+0|rsfm  |       '      [Symbol(shapeMode)]: true,\n' +
+0|rsfm  |       '      [Symbol(kCapture)]: false,\n' +
+0|rsfm  |       '      [Symbol(kCallback)]: null\n' +
+0|rsfm  |       '    },\n' +
+0|rsfm  |       '    headers: Headers {\n' +
+0|rsfm  |       "      'accept-encoding': 'gzip',\n" +
+0|rsfm  |       "      authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',\n" +
+0|rsfm  |       "      'content-type': 'multipart/related; boundary=bf1de29f-5ad8-4310-8cb3-c52ec7afad90',\n" +
+0|rsfm  |       "      'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',\n" +
+0|rsfm  |       "      'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'\n" +
+0|rsfm  |       '    },\n' +
+0|rsfm  |       '    params: {\n' +
+0|rsfm  |       "      fields: 'id, name',\n" +
+0|rsfm  |       '      supportsAllDrives: true,\n' +
+0|rsfm  |       "      uploadType: 'multipart'\n" +
+0|rsfm  |       '    },\n' +
+0|rsfm  |       '    validateStatus: [Function (anonymous)],\n' +
+0|rsfm  |       '    retry: true,\n' +
+0|rsfm  |       '    body: PassThrough {\n' +
+0|rsfm  |       '      _events: [Object],\n' +
+0|rsfm  |       '      _readableState: [ReadableState],\n' +
+0|rsfm  |       '      _writableState: [WritableState],\n' +
+0|rsfm  |       '      allowHalfOpen: true,\n' +
+0|rsfm  |       '      _maxListeners: undefined,\n' +
+0|rsfm  |       '      _flush: [Function: flush],\n' +
+0|rsfm  |       '      _eventsCount: 5,\n' +
+0|rsfm  |       '      [Symbol(shapeMode)]: true,\n' +
+0|rsfm  |       '      [Symbol(kCapture)]: false,\n' +
+0|rsfm  |       '      [Symbol(kCallback)]: null\n' +
+0|rsfm  |       '    },\n' +
+0|rsfm  |       "    responseType: 'unknown',\n" +
+0|rsfm  |       '    errorRedactor: [Function: defaultErrorRedactor],\n' +
+0|rsfm  |       "    duplex: 'half',\n" +
+0|rsfm  |       '    retryConfig: {\n' +
+0|rsfm  |       '      currentRetryAttempt: 0,\n' +
+0|rsfm  |       '      retry: 3,\n' +
+0|rsfm  |       '      httpMethodsToRetry: [Array],\n' +
+0|rsfm  |       '      noResponseRetries: 2,\n' +
+0|rsfm  |       '      retryDelayMultiplier: 2,\n' +
+0|rsfm  |       '      timeOfFirstRequest: 1760383045831,\n' +
+0|rsfm  |       '      totalTimeout: 9007199254740991,\n' +
+0|rsfm  |       '      maxRetryDelay: 9007199254740991,\n' +
+0|rsfm  |       '      statusCodesToRetry: [Array]\n' +
+0|rsfm  |       '    }\n' +
+0|rsfm  |       '  },\n' +
+0|rsfm  |       '  response: Response {\n' +
+0|rsfm  |       '    size: 0,\n' +
+0|rsfm  |       '    data: { error: [Object] },\n' +
+0|rsfm  |       '    config: {\n' +
+0|rsfm  |       '      url: URL {},\n' +
+0|rsfm  |       "      method: 'POST',\n" +
+0|rsfm  |       "      apiVersion: '',\n" +
+0|rsfm  |       '      userAgentDirectives: [Array],\n' +
+0|rsfm  |       '      paramsSerializer: [Function (anonymous)],\n' +
+0|rsfm  |       '      data: [PassThrough],\n' +
+0|rsfm  |       '      headers: Headers {\n' +
+0|rsfm  |       "        'accept-encoding': 'gzip',\n" +
+0|rsfm  |       "        authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',\n" +
+0|rsfm  |       "        'content-type': 'multipart/related; boundary=bf1de29f-5ad8-4310-8cb3-c52ec7afad90',\n" +
+0|rsfm  |       "        'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',\n" +
+0|rsfm  |       "        'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'\n" +
+0|rsfm  |       '      },\n' +
+0|rsfm  |       '      params: [Object],\n' +
+0|rsfm  |       '      validateStatus: [Function (anonymous)],\n' +
+0|rsfm  |       '      retry: true,\n' +
+0|rsfm  |       '      body: [PassThrough],\n' +
+0|rsfm  |       "      responseType: 'unknown',\n" +
+0|rsfm  |       '      errorRedactor: [Function: defaultErrorRedactor],\n' +
+0|rsfm  |       "      duplex: 'half'\n" +
+0|rsfm  |       '    },\n' +
+0|rsfm  |       '    [Symbol(Body internals)]: {\n' +
+0|rsfm  |       '      body: [PassThrough],\n' +
+0|rsfm  |       '      stream: [PassThrough],\n' +
+0|rsfm  |       '      boundary: null,\n' +
+0|rsfm  |       '      disturbed: true,\n' +
+0|rsfm  |       '      error: null\n' +
+0|rsfm  |       '    },\n' +
+0|rsfm  |       '    [Symbol(Response internals)]: {\n' +
+0|rsfm  |       "      type: 'default',\n" +
+0|rsfm  |       "      url: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',\n" +
+0|rsfm  |       '      status: 403,\n' +
+0|rsfm  |       "      statusText: 'Forbidden',\n" +
+0|rsfm  |       '      headers: [Object],\n' +
+0|rsfm  |       '      counter: 0,\n' +
+0|rsfm  |       '      highWaterMark: 16384\n' +
+0|rsfm  |       '    }\n' +
+0|rsfm  |       '  },\n' +
+0|rsfm  |       '  code: 403,\n' +
+0|rsfm  |       '  status: 403,\n' +
+0|rsfm  |       '  error: undefined,\n' +
+0|rsfm  |       "  [Symbol(gaxios-gaxios-error)]: '7.1.2',\n" +
+0|rsfm  |       '  [cause]: {\n' +
+0|rsfm  |       "    message: 'Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.',\n" +
+0|rsfm  |       '    code: 403,\n' +
+0|rsfm  |       "    status: 'Forbidden',\n" +
+0|rsfm  |       '    errors: [ [Object] ]\n' +
+0|rsfm  |       '  }\n' +
+0|rsfm  |       '}\n'
+0|rsfm  |   ],
+0|rsfm  |   pid: 44397,
+0|rsfm  |   stdout: '[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops\n' +
+0|rsfm  |     'Starting backup of all database tables...\n' +
+0|rsfm  |     'Backup directory: backups/backup_2025-10-13T19-17-23\n' +
+0|rsfm  |     'Backing up Import Customers...\n' +
+0|rsfm  |     '✓ Import Customers backed up: 0 records\n' +
+0|rsfm  |     'Backing up Export Customers...\n' +
+0|rsfm  |     '✓ Export Customers backed up: 0 records\n' +
+0|rsfm  |     'Backing up Export Receivers...\n' +
+0|rsfm  |     '✓ Export Receivers backed up: 0 records\n' +
+0|rsfm  |     'Backing up Hauliers...\n' +
+0|rsfm  |     '✓ Hauliers backed up: 0 records\n' +
+0|rsfm  |     'Backing up Shipping Lines...\n' +
+0|rsfm  |     '✓ Shipping Lines backed up: 0 records\n' +
+0|rsfm  |     'Backing up Clearance Agents...\n' +
+0|rsfm  |     '✓ Clearance Agents backed up: 0 records\n' +
+0|rsfm  |     'Backing up Import Shipments...\n' +
+0|rsfm  |     '✓ Import Shipments backed up: 0 records\n' +
+0|rsfm  |     'Backing up Export Shipments...\n' +
+0|rsfm  |     '✓ Export Shipments backed up: 0 records\n' +
+0|rsfm  |     'Backing up Custom Clearances...\n' +
+0|rsfm  |     '✓ Custom Clearances backed up: 0 records\n' +
+0|rsfm  |     'Backing up Job File Groups...\n' +
+0|rsfm  |     '✓ Job File Groups backed up: 0 records\n' +
+0|rsfm  |     'Backing up Messages...\n' +
+0|rsfm  |     '✓ Messages backed up: 0 records\n' +
+0|rsfm  |     'Backing up Email Contacts...\n' +
+0|rsfm  |     '✓ Email Contacts backed up: 0 records\n' +
+0|rsfm  |     'Backing up Purchase Invoices...\n' +
+0|rsfm  |     '✓ Purchase Invoices backed up: 0 records\n' +
+0|rsfm  |     'Backing up Invoices...\n' +
+0|rsfm  |     '✓ Invoices backed up: 0 records\n' +
+0|rsfm  |     'Backing up General References...\n' +
+0|rsfm  |     '✓ General References backed up: 0 records\n' +
+0|rsfm  |     'Backing up Settings...\n' +
+0|rsfm  |     '✓ Settings backed up: 0 records\n' +
+0|rsfm  |     'Backing up Users...\n' +
+0|rsfm  |     '✓ Users backed up: 1 records\n' +
+0|rsfm  |     '\n' +
+0|rsfm  |     '✓ All SQL files generated successfully!\n' +
+0|rsfm  |     '\n' +
+0|rsfm  |     'Backing up email signature files...\n' +
+0|rsfm  |     '✓ Email signature template backed up\n' +
+0|rsfm  |     '✓ Email signature logo backed up\n' +
+0|rsfm  |     '\n' +
+0|rsfm  |     'Creating zip archive: backups/backup_2025-10-13T19-17-23.zip\n' +
+0|rsfm  |     '✓ Zip archive created: 0.02 MB\n' +
+0|rsfm  |     '\n' +
+0|rsfm  |     'Uploading backup to Google Drive...\n' +
+0|rsfm  |     'OAuth not available, falling back to service account\n' +
+0|rsfm  |     '⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")\n' +
+0|rsfm  |     'OAuth not available, falling back to service account\n' +
+0|rsfm  |     '⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")\n' +
+0|rsfm  |     '✓ Found folder in Shared Drive: RS Freight Manager (1eHUAaeTEj06e-XL3QhG545RPySBqWsQy)\n' +
+0|rsfm  |     '✓ Found folder: Backups (1e7_o6MHToOGHfCEBdCfrdB-DtkBwIW9a)\n' +
+0|rsfm  |     '📁 Uploading to personal Drive (no Shared Drive detected)\n',
+0|rsfm  |   stderr: 'The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |     'The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |     'The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |     'The `fromJSON` method is deprecated. Please use the `JWT` constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.\n' +
+0|rsfm  |     'Error backing up databases: GaxiosError: Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.\n' +
+0|rsfm  |     '    at Gaxios._request (/var/www/rsfm/node_modules/googleapis-common/node_modules/gaxios/src/gaxios.ts:211:15)\n' +
+0|rsfm  |     '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+0|rsfm  |     '    at async JWT.requestAsync (/var/www/rsfm/node_modules/googleapis-common/node_modules/google-auth-library/build/src/auth/oauth2client.js:463:20)\n' +
+0|rsfm  |     '    at async createAPIRequestAsync (/var/www/rsfm/node_modules/googleapis-common/build/src/apirequest.js:308:25)\n' +
+0|rsfm  |     '    at async GoogleDriveStorageService.uploadBackup (/var/www/rsfm/server/googleDriveStorage.ts:673:18)\n' +
+0|rsfm  |     '    at async backupContactDatabases (/var/www/rsfm/scripts/backup-contact-databases.ts:242:26) {\n' +
+0|rsfm  |     '  config: {\n' +
+0|rsfm  |     '    url: URL {\n' +
+0|rsfm  |     "      href: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',\n" +
+0|rsfm  |     "      origin: 'https://www.googleapis.com',\n" +
+0|rsfm  |     "      protocol: 'https:',\n" +
+0|rsfm  |     "      username: '',\n" +
+0|rsfm  |     "      password: '',\n" +
+0|rsfm  |     "      host: 'www.googleapis.com',\n" +
+0|rsfm  |     "      hostname: 'www.googleapis.com',\n" +
+0|rsfm  |     "      port: '',\n" +
+0|rsfm  |     "      pathname: '/upload/drive/v3/files',\n" +
+0|rsfm  |     "      search: '?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',\n" +
+0|rsfm  |     '      searchParams: URLSearchParams {\n' +
+0|rsfm  |     "        'fields' => 'id, name',\n" +
+0|rsfm  |     "        'supportsAllDrives' => 'true',\n" +
+0|rsfm  |     "        'uploadType' => 'multipart' },\n" +
+0|rsfm  |     "      hash: ''\n" +
+0|rsfm  |     '    },\n' +
+0|rsfm  |     "    method: 'POST',\n" +
+0|rsfm  |     "    apiVersion: '',\n" +
+0|rsfm  |     '    userAgentDirectives: [ [Object] ],\n' +
+0|rsfm  |     '    paramsSerializer: [Function (anonymous)],\n' +
+0|rsfm  |     '    data: PassThrough {\n' +
+0|rsfm  |     '      _events: [Object],\n' +
+0|rsfm  |     '      _readableState: [ReadableState],\n' +
+0|rsfm  |     '      _writableState: [WritableState],\n' +
+0|rsfm  |     '      allowHalfOpen: true,\n' +
+0|rsfm  |     '      _maxListeners: undefined,\n' +
+0|rsfm  |     '      _flush: [Function: flush],\n' +
+0|rsfm  |     '      _eventsCount: 5,\n' +
+0|rsfm  |     '      [Symbol(shapeMode)]: true,\n' +
+0|rsfm  |     '      [Symbol(kCapture)]: false,\n' +
+0|rsfm  |     '      [Symbol(kCallback)]: null\n' +
+0|rsfm  |     '    },\n' +
+0|rsfm  |     '    headers: Headers {\n' +
+0|rsfm  |     "      'accept-encoding': 'gzip',\n" +
+0|rsfm  |     "      authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',\n" +
+0|rsfm  |     "      'content-type': 'multipart/related; boundary=bf1de29f-5ad8-4310-8cb3-c52ec7afad90',\n" +
+0|rsfm  |     "      'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',\n" +
+0|rsfm  |     "      'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'\n" +
+0|rsfm  |     '    },\n' +
+0|rsfm  |     '    params: {\n' +
+0|rsfm  |     "      fields: 'id, name',\n" +
+0|rsfm  |     '      supportsAllDrives: true,\n' +
+0|rsfm  |     "      uploadType: 'multipart'\n" +
+0|rsfm  |     '    },\n' +
+0|rsfm  |     '    validateStatus: [Function (anonymous)],\n' +
+0|rsfm  |     '    retry: true,\n' +
+0|rsfm  |     '    body: PassThrough {\n' +
+0|rsfm  |     '      _events: [Object],\n' +
+0|rsfm  |     '      _readableState: [ReadableState],\n' +
+0|rsfm  |     '      _writableState: [WritableState],\n' +
+0|rsfm  |     '      allowHalfOpen: true,\n' +
+0|rsfm  |     '      _maxListeners: undefined,\n' +
+0|rsfm  |     '      _flush: [Function: flush],\n' +
+0|rsfm  |     '      _eventsCount: 5,\n' +
+0|rsfm  |     '      [Symbol(shapeMode)]: true,\n' +
+0|rsfm  |     '      [Symbol(kCapture)]: false,\n' +
+0|rsfm  |     '      [Symbol(kCallback)]: null\n' +
+0|rsfm  |     '    },\n' +
+0|rsfm  |     "    responseType: 'unknown',\n" +
+0|rsfm  |     '    errorRedactor: [Function: defaultErrorRedactor],\n' +
+0|rsfm  |     "    duplex: 'half',\n" +
+0|rsfm  |     '    retryConfig: {\n' +
+0|rsfm  |     '      currentRetryAttempt: 0,\n' +
+0|rsfm  |     '      retry: 3,\n' +
+0|rsfm  |     '      httpMethodsToRetry: [Array],\n' +
+0|rsfm  |     '      noResponseRetries: 2,\n' +
+0|rsfm  |     '      retryDelayMultiplier: 2,\n' +
+0|rsfm  |     '      timeOfFirstRequest: 1760383045831,\n' +
+0|rsfm  |     '      totalTimeout: 9007199254740991,\n' +
+0|rsfm  |     '      maxRetryDelay: 9007199254740991,\n' +
+0|rsfm  |     '      statusCodesToRetry: [Array]\n' +
+0|rsfm  |     '    }\n' +
+0|rsfm  |     '  },\n' +
+0|rsfm  |     '  response: Response {\n' +
+0|rsfm  |     '    size: 0,\n' +
+0|rsfm  |     '    data: { error: [Object] },\n' +
+0|rsfm  |     '    config: {\n' +
+0|rsfm  |     '      url: URL {},\n' +
+0|rsfm  |     "      method: 'POST',\n" +
+0|rsfm  |     "      apiVersion: '',\n" +
+0|rsfm  |     '      userAgentDirectives: [Array],\n' +
+0|rsfm  |     '      paramsSerializer: [Function (anonymous)],\n' +
+0|rsfm  |     '      data: [PassThrough],\n' +
+0|rsfm  |     '      headers: Headers {\n' +
+0|rsfm  |     "        'accept-encoding': 'gzip',\n" +
+0|rsfm  |     "        authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',\n" +
+0|rsfm  |     "        'content-type': 'multipart/related; boundary=bf1de29f-5ad8-4310-8cb3-c52ec7afad90',\n" +
+0|rsfm  |     "        'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',\n" +
+0|rsfm  |     "        'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'\n" +
+0|rsfm  |     '      },\n' +
+0|rsfm  |     '      params: [Object],\n' +
+0|rsfm  |     '      validateStatus: [Function (anonymous)],\n' +
+0|rsfm  |     '      retry: true,\n' +
+0|rsfm  |     '      body: [PassThrough],\n' +
+0|rsfm  |     "      responseType: 'unknown',\n" +
+0|rsfm  |     '      errorRedactor: [Function: defaultErrorRedactor],\n' +
+0|rsfm  |     "      duplex: 'half'\n" +
+0|rsfm  |     '    },\n' +
+0|rsfm  |     '    [Symbol(Body internals)]: {\n' +
+0|rsfm  |     '      body: [PassThrough],\n' +
+0|rsfm  |     '      stream: [PassThrough],\n' +
+0|rsfm  |     '      boundary: null,\n' +
+0|rsfm  |     '      disturbed: true,\n' +
+0|rsfm  |     '      error: null\n' +
+0|rsfm  |     '    },\n' +
+0|rsfm  |     '    [Symbol(Response internals)]: {\n' +
+0|rsfm  |     "      type: 'default',\n" +
+0|rsfm  |     "      url: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',\n" +
+0|rsfm  |     '      status: 403,\n' +
+0|rsfm  |     "      statusText: 'Forbidden',\n" +
+0|rsfm  |     '      headers: [Object],\n' +
+0|rsfm  |     '      counter: 0,\n' +
+0|rsfm  |     '      highWaterMark: 16384\n' +
+0|rsfm  |     '    }\n' +
+0|rsfm  |     '  },\n' +
+0|rsfm  |     '  code: 403,\n' +
+0|rsfm  |     '  status: 403,\n' +
+0|rsfm  |     '  error: undefined,\n' +
+0|rsfm  |     "  [Symbol(gaxios-gaxios-error)]: '7.1.2',\n" +
+0|rsfm  |     '  [cause]: {\n' +
+0|rsfm  |     "    message: 'Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.',\n" +
+0|rsfm  |     '    code: 403,\n' +
+0|rsfm  |     "    status: 'Forbidden',\n" +
+0|rsfm  |     '    errors: [ [Object] ]\n' +
+0|rsfm  |     '  }\n' +
+0|rsfm  |     '}\n'
+0|rsfm  | }
+0|rsfm  | 7:17:25 PM [express] POST /api/backups/create 500 in 4522ms :: {"error":"Failed to create backup"}
+0|rsfm  | 7:17:25 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
