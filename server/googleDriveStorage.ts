@@ -611,8 +611,27 @@ export class GoogleDriveStorageService {
         { responseType: 'arraybuffer' }
       );
 
+      // Debug: check what we're actually receiving
+      console.log('Download response type:', typeof response.data);
+      console.log('Is Buffer?', Buffer.isBuffer(response.data));
+      console.log('Is ArrayBuffer?', response.data instanceof ArrayBuffer);
+      
+      // Handle different response types
+      let buffer: Buffer;
+      if (Buffer.isBuffer(response.data)) {
+        buffer = response.data;
+      } else if (response.data instanceof ArrayBuffer) {
+        buffer = Buffer.from(response.data);
+      } else if (typeof response.data === 'string') {
+        buffer = Buffer.from(response.data, 'binary');
+      } else {
+        // If it's wrapped in an object, try to extract it
+        console.log('Response data keys:', Object.keys(response.data));
+        throw new Error(`Unexpected response type: ${typeof response.data}`);
+      }
+
       return { 
-        buffer: Buffer.from(response.data as ArrayBuffer),
+        buffer,
         fileName: metadata.data.name!
       };
     } catch (error) {
