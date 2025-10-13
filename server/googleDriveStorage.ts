@@ -132,8 +132,23 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClient();
     const folderName = 'RS Freight Manager';
 
-    // PRIORITY 1: Search for shared folder (shared with service account)
-    // Service accounts can only write to shared drives, so check this FIRST
+    // PRIORITY 1: Search in Shared Drives (team drives)
+    // Service accounts can write to Shared Drives - check this FIRST
+    const sharedDriveResponse = await drive.files.list({
+      q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      fields: 'files(id, name)',
+      corpora: 'allDrives',
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
+    });
+
+    if (sharedDriveResponse.data.files && sharedDriveResponse.data.files.length > 0) {
+      this.rootFolderId = sharedDriveResponse.data.files[0].id!;
+      console.log(`✓ Found folder in Shared Drive: ${folderName} (${this.rootFolderId})`);
+      return this.rootFolderId;
+    }
+
+    // PRIORITY 2: Search for shared folder (shared with service account from My Drive)
     const sharedResponse = await drive.files.list({
       q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and sharedWithMe=true`,
       fields: 'files(id, name)',
@@ -148,7 +163,7 @@ export class GoogleDriveStorageService {
       return this.rootFolderId;
     }
 
-    // PRIORITY 2: Search for existing folder at root level (fallback for OAuth users)
+    // PRIORITY 3: Search for existing folder at root level (fallback for OAuth users)
     const rootResponse = await drive.files.list({
       q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: 'files(id, name)',
