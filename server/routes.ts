@@ -3275,6 +3275,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Diagnostic: Check Google Drive folder access (Admin only)
+  app.get("/api/backups/diagnose", requireAuth, requireAdmin, async (_req, res) => {
+    try {
+      const drive = await getGoogleDriveClient();
+      const folderName = 'RS Freight Manager';
+      
+      // Search for shared folders
+      const sharedResponse = await drive.files.list({
+        q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and sharedWithMe=true`,
+        fields: 'files(id, name, owners, shared, permissions)',
+        spaces: 'drive',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true
+      });
+      
+      // Search for root folders
+      const rootResponse = await drive.files.list({
+        q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+        fields: 'files(id, name, owners, shared)',
+        spaces: 'drive'
+      });
+      
+      res.json({
+        serviceAccount: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        sharedFolders: sharedResponse.data.files || [],
+        rootFolders: rootResponse.data.files || [],
+        recommendation: sharedResponse.data.files && sharedResponse.data.files.length > 0
+          ? `✓ Found shared folder! Backups should work.`
+          : `⚠️ No shared "${folderName}" folder found. Please share it with: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`
+      });
+    } catch (error) {
+      console.error("Diagnose error:", error);
+      res.status(500).json({ error: "Failed to diagnose Google Drive access" });
+    }
+  });
+
   // Restore from specific backup (download from Google Drive first) - Admin only
   app.post("/api/backups/restore/:fileId", requireAuth, requireAdmin, async (req, res) => {
     try {

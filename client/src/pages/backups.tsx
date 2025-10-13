@@ -53,6 +53,30 @@ export default function BackupsPage() {
     gcTime: 0, // Don't cache results
   });
 
+  const diagnoseMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("GET", "/api/backups/diagnose", {});
+    },
+    onSuccess: (data: any) => {
+      const sharedCount = data.sharedFolders?.length || 0;
+      const rootCount = data.rootFolders?.length || 0;
+      
+      toast({
+        title: "Google Drive Diagnostic Results",
+        description: `Service Account: ${data.serviceAccount}\n${data.recommendation}\nShared folders: ${sharedCount}, Root folders: ${rootCount}`,
+        variant: sharedCount > 0 ? "default" : "destructive",
+      });
+      console.log("Google Drive Diagnostic:", data);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to run diagnostic. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const createBackupMutation = useMutation({
     mutationFn: async () => {
       return apiRequest("POST", "/api/backups/create", {});
@@ -236,14 +260,27 @@ export default function BackupsPage() {
             {isAdmin ? "Manage backups for your contact databases" : "View and create database backups"}
           </p>
         </div>
-        <Button
-          onClick={() => createBackupMutation.mutate()}
-          disabled={createBackupMutation.isPending}
-          data-testid="button-create-backup"
-        >
-          <Database className="h-4 w-4 mr-2" />
-          {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
-        </Button>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <Button
+              onClick={() => diagnoseMutation.mutate()}
+              disabled={diagnoseMutation.isPending}
+              variant="outline"
+              data-testid="button-diagnose-drive"
+            >
+              <AlertCircle className="h-4 w-4 mr-2" />
+              {diagnoseMutation.isPending ? "Checking..." : "Check Drive Access"}
+            </Button>
+          )}
+          <Button
+            onClick={() => createBackupMutation.mutate()}
+            disabled={createBackupMutation.isPending}
+            data-testid="button-create-backup"
+          >
+            <Database className="h-4 w-4 mr-2" />
+            {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
+          </Button>
+        </div>
       </div>
 
       <Alert>

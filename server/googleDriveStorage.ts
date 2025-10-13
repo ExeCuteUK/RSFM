@@ -99,19 +99,8 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClient();
     const folderName = 'RS Freight Manager';
 
-    // Search for existing folder at root level
-    const rootResponse = await drive.files.list({
-      q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id, name)',
-      spaces: 'drive'
-    });
-
-    if (rootResponse.data.files && rootResponse.data.files.length > 0) {
-      this.rootFolderId = rootResponse.data.files[0].id!;
-      return this.rootFolderId;
-    }
-
-    // Search for shared folder (shared with service account)
+    // PRIORITY 1: Search for shared folder (shared with service account)
+    // Service accounts can only write to shared drives, so check this FIRST
     const sharedResponse = await drive.files.list({
       q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and sharedWithMe=true`,
       fields: 'files(id, name)',
@@ -122,23 +111,29 @@ export class GoogleDriveStorageService {
 
     if (sharedResponse.data.files && sharedResponse.data.files.length > 0) {
       this.rootFolderId = sharedResponse.data.files[0].id!;
+      console.log(`✓ Found shared folder: ${folderName} (${this.rootFolderId})`);
       return this.rootFolderId;
     }
 
-    // Create root folder at Google Drive root
-    const folderMetadata = {
-      name: folderName,
-      mimeType: 'application/vnd.google-apps.folder',
-      parents: ['root']
-    };
-
-    const folder = await drive.files.create({
-      requestBody: folderMetadata,
-      fields: 'id'
+    // PRIORITY 2: Search for existing folder at root level (fallback for OAuth users)
+    const rootResponse = await drive.files.list({
+      q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      fields: 'files(id, name)',
+      spaces: 'drive'
     });
 
-    this.rootFolderId = folder.data.id!;
-    return this.rootFolderId;
+    if (rootResponse.data.files && rootResponse.data.files.length > 0) {
+      this.rootFolderId = rootResponse.data.files[0].id!;
+      console.log(`✓ Found root folder: ${folderName} (${this.rootFolderId})`);
+      return this.rootFolderId;
+    }
+
+    // ERROR: No shared folder found and can't create in service account's Drive
+    throw new Error(
+      `Google Drive folder "${folderName}" not found. ` +
+      `Service accounts cannot create files in their own Drive. ` +
+      `Please share a folder named "${folderName}" with the service account: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`
+    );
   }
 
   // Get or create a subfolder
