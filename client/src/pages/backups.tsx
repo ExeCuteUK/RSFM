@@ -30,7 +30,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface Backup {
-  fileId: string;
+  id: string;
   name: string;
   size: string;
   createdTime: string;
@@ -319,7 +319,7 @@ export default function BackupsPage() {
               </TableHeader>
               <TableBody>
                 {backups.map((backup) => (
-                  <TableRow key={backup.fileId}>
+                  <TableRow key={backup.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <Database className="h-4 w-4 text-muted-foreground" />
@@ -348,9 +348,9 @@ export default function BackupsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleRestore(backup.fileId)}
+                            onClick={() => handleRestore(backup.id)}
                             disabled={restoreBackupMutation.isPending}
-                            data-testid={`button-restore-${backup.fileId}`}
+                            data-testid={`button-restore-${backup.id}`}
                           >
                             <Upload className="h-3 w-3 mr-1" />
                             Restore
@@ -358,9 +358,9 @@ export default function BackupsPage() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDelete(backup.fileId)}
+                            onClick={() => handleDelete(backup.id)}
                             disabled={deleteBackupMutation.isPending}
-                            data-testid={`button-delete-${backup.fileId}`}
+                            data-testid={`button-delete-${backup.id}`}
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
                             Delete
@@ -399,7 +399,7 @@ export default function BackupsPage() {
                 </span>
               ) : (
                 <>
-                  Select which tables to restore from <code className="px-1 py-0.5 bg-muted rounded">{backups?.find(b => b.fileId === selectedBackup)?.name || selectedBackup}</code>.
+                  Select which tables to restore from <code className="px-1 py-0.5 bg-muted rounded">{backups?.find(b => b.id === selectedBackup)?.name || selectedBackup}</code>.
                   This will permanently delete current data in the selected tables.
                 </>
               )}
@@ -501,7 +501,7 @@ export default function BackupsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete backup?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the backup <code className="px-1 py-0.5 bg-muted rounded">{backups?.find(b => b.fileId === selectedBackup)?.name || selectedBackup}</code> from Google Drive.
+              This will permanently delete the backup <code className="px-1 py-0.5 bg-muted rounded">{backups?.find(b => b.id === selectedBackup)?.name || selectedBackup}</code> from Google Drive.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
