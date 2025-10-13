@@ -3243,10 +3243,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create backup of all contact databases and upload to Google Drive (all authenticated users)
   app.post("/api/backups/create", requireAuth, async (_req, res) => {
     try {
+      // Debug: Log if DATABASE_URL is present
+      console.log("DATABASE_URL exists in process.env:", !!process.env.DATABASE_URL);
+      
       const { execSync } = await import("child_process");
       const result = execSync("tsx scripts/backup-contact-databases.ts", {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
+        env: process.env,
       });
       
       // Parse the output to get backup name and file ID
