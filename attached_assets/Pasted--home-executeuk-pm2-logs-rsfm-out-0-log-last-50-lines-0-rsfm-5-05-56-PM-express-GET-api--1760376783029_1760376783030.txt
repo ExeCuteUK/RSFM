@@ -1,0 +1,51 @@
+/home/executeuk/.pm2/logs/rsfm-out-0.log last 50 lines:
+0|rsfm     | 5:05:56 PM [express] GET /api/auth/me 200 in 3ms :: {"user":{"id":"11156abf-3677-4ecb-b8e6-5616d7266…
+0|rsfm     | 5:05:56 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 5:05:56 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:06:02 PM [express] POST /api/backups/create 500 in 4295ms :: {"error":"Failed to create backup"}
+0|rsfm     | 5:06:06 PM [express] GET /api/presence/online-users 304 in 3ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 5:06:26 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:06:56 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 5:07:26 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:07:56 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:08:26 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 5:09:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 5:10:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:11:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:12:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:13:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 5:14:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 5:15:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 5:16:54 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:17:45 PM [express] 🚀 Starting R.S Freight Manager server...
+0|rsfm     | 5:17:45 PM [express] Environment: production
+0|rsfm     | 5:17:45 PM [express] Initializing session store...
+0|rsfm     | 5:17:45 PM [express] ✅ Server successfully started on port 5000
+0|rsfm     | 5:17:45 PM [express] 🌐 Access the application at http://0.0.0.0:5000
+0|rsfm     | 5:17:47 PM [express] POST /api/presence/heartbeat 200 in 8ms :: {"success":true}
+0|rsfm     | 5:17:47 PM [express] GET /api/messages/unread-count 304 in 3ms :: {"count":"0"}
+0|rsfm     | 5:17:47 PM [express] GET /api/presence/online-users 304 in 3ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 5:17:48 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"11156abf-3677-4ecb-b8e6-5616d7266…
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | OAuth not available, falling back to service account
+0|rsfm     | ⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")
+0|rsfm     | 5:17:49 PM [express] POST /api/presence/heartbeat 200 in 10ms :: {"success":true}
+0|rsfm     | 5:17:49 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | ✓ Found folder in Shared Drive: RS Freight Manager (1eHUAaeTEj06e-XL3QhG545RPySBqWsQy)
+0|rsfm     | ✓ Found folder: Backups (1e7_o6MHToOGHfCEBdCfrdB-DtkBwIW9a)
+0|rsfm     | 5:17:50 PM [express] GET /api/backups 304 in 1168ms :: []
+0|rsfm     | DATABASE_URL exists in process.env: true
+0|rsfm     | 5:17:55 PM [express] POST /api/backups/create 500 in 4615ms :: {"error":"Failed to create backup"}
+0|rsfm     | 5:17:59 PM [express] GET /api/presence/online-users 304 in 3ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 5:18:09 PM [express] GET /api/presence/online-users 304 in 3ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 5:18:19 PM [express] GET /api/messages/unread-count 304 in 4ms :: {"count":"0"}
+0|rsfm     | 5:18:19 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:18:19 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 5:18:29 PM [express] GET /api/presence/online-users 304 in 3ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
+0|rsfm     | 5:18:49 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 5:32:13 PM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 5:32:19 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | DATABASE_URL exists in process.env: true
+0|rsfm     | 5:32:29 PM [express] POST /api/backups/create 500 in 4615ms :: {"error":"Failed to create backup"}
+0|rsfm     | 5:32:29 PM [express] GET /api/presence/online-users 304 in 2ms :: ["11156abf-3677-4ecb-b8e6-5616d726…
