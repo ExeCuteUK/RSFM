@@ -412,6 +412,44 @@ export class GoogleDriveStorageService {
     return { fileId, objectPath, filename: fileName };
   }
 
+  // Upload invoice to dedicated RS Invoices folder
+  async uploadInvoice(
+    fileName: string, 
+    buffer: Buffer, 
+    mimeType: string = 'application/pdf'
+  ): Promise<{ fileId: string; objectPath: string; filename: string }> {
+    const drive = await getGoogleDriveClient();
+    
+    // Get root folder (RS Freight Manager)
+    const rootId = await this.getRootFolder();
+    
+    // Get or create "RS Invoices" folder
+    const invoicesFolderId = await this.getOrCreateFolder(rootId, 'RS Invoices');
+    
+    const fileMetadata = {
+      name: fileName,
+      parents: [invoicesFolderId]
+    };
+
+    const media = {
+      mimeType: mimeType,
+      body: Readable.from(buffer)
+    };
+
+    const file = await drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id',
+      supportsAllDrives: true
+    });
+
+    const fileId = file.data.id!;
+    const objectPath = `/objects/${fileId}`;
+
+    console.log(`✓ Invoice uploaded to RS Invoices: ${fileName} (${fileId})`);
+    return { fileId, objectPath, filename: fileName };
+  }
+
   // Generate an upload URL (for Google Drive, we'll handle uploads differently)
   async getObjectEntityUploadURL(filename?: string): Promise<{ uploadURL: string; objectPath: string; fileId: string }> {
     // For Google Drive, we'll use a different approach

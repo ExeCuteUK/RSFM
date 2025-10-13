@@ -2696,24 +2696,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
         const filename = `${prefix} - ${invoice.jobRef}.pdf`;
         
-        // Determine job type folder name
-        let jobTypeFolder: 'Import Shipments' | 'Export Shipments' | 'Custom Clearances';
-        if (invoice.jobType === 'import') {
-          jobTypeFolder = 'Import Shipments';
-        } else if (invoice.jobType === 'export') {
-          jobTypeFolder = 'Export Shipments';
-        } else {
-          jobTypeFolder = 'Custom Clearances';
-        }
-        
-        // Upload to Google Drive in "RS Invoice" subfolder
-        const { fileId, objectPath } = await driveStorage.uploadFileToJobFolder(
+        // Upload to Google Drive in "RS Invoices" folder
+        const { fileId, objectPath } = await driveStorage.uploadInvoice(
           filename,
           pdfBuffer,
-          'application/pdf',
-          jobTypeFolder,
-          invoice.jobRef.toString(),
-          'RS Invoice'
+          'application/pdf'
         );
         
         // Update invoice with Google Drive info
@@ -2752,28 +2739,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
         const filename = `${prefix} - ${invoice.jobRef}.pdf`;
         
-        // Determine job type folder name
-        let jobTypeFolder: 'Import Shipments' | 'Export Shipments' | 'Custom Clearances';
-        if (invoice.jobType === 'import') {
-          jobTypeFolder = 'Import Shipments';
-        } else if (invoice.jobType === 'export') {
-          jobTypeFolder = 'Export Shipments';
-        } else {
-          jobTypeFolder = 'Custom Clearances';
-        }
-        
-        // Upload new PDF to Google Drive in "RS Invoice" subfolder (before deleting old one)
-        const { fileId, objectPath } = await driveStorage.uploadFileToJobFolder(
+        // Upload new PDF to Google Drive in "RS Invoices" folder (before deleting old one)
+        const { fileId, objectPath } = await driveStorage.uploadInvoice(
           filename,
           pdfBuffer,
-          'application/pdf',
-          jobTypeFolder,
-          invoice.jobRef.toString(),
-          'RS Invoice'
+          'application/pdf'
         );
         
-        // Store old PDF ID for deletion after successful update
-        const oldPdfId = invoice.googleDrivePdfId;
+        // Store old PDF path for deletion after successful update
+        const oldPdfPath = invoice.googleDrivePdfPath;
         
         // Update invoice with new Google Drive info
         await storage.updateInvoice(invoice.id, {
@@ -2785,9 +2759,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         invoice.googleDrivePdfPath = objectPath;
         
         // Delete old PDF only after successful upload and DB update
-        if (oldPdfId && oldPdfId !== fileId) {
+        if (oldPdfPath && oldPdfPath !== objectPath) {
           try {
-            await driveStorage.deleteFile(oldPdfId);
+            await driveStorage.deleteFile(oldPdfPath);
           } catch (deleteError) {
             console.error("Error deleting old invoice PDF from Google Drive:", deleteError);
           }
