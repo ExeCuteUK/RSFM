@@ -46,12 +46,16 @@ async function migrateFilesToJsonb() {
     await db.execute(sql`
       ALTER TABLE export_shipments 
         ALTER COLUMN attachments DROP DEFAULT,
-        ALTER COLUMN proof_of_delivery DROP DEFAULT
+        ALTER COLUMN proof_of_delivery DROP DEFAULT,
+        ALTER COLUMN transport_documents DROP DEFAULT,
+        ALTER COLUMN clearance_documents DROP DEFAULT
     `);
     await db.execute(sql`
       ALTER TABLE export_shipments 
         ALTER COLUMN attachments TYPE jsonb USING '[]'::jsonb,
-        ALTER COLUMN proof_of_delivery TYPE jsonb USING '[]'::jsonb
+        ALTER COLUMN proof_of_delivery TYPE jsonb USING '[]'::jsonb,
+        ALTER COLUMN transport_documents TYPE jsonb USING '[]'::jsonb,
+        ALTER COLUMN clearance_documents TYPE jsonb USING '[]'::jsonb
     `);
     
     await db.execute(sql`
