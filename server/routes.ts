@@ -19,6 +19,7 @@ import {
   insertUserSchema,
   updateUserSchema,
   insertGeneralReferenceSchema,
+  insertInvoiceChargeTemplateSchema,
   type User
 } from "@shared/schema";
 import { GoogleDriveStorageService, ObjectNotFoundError } from "./googleDriveStorage";
@@ -2917,6 +2918,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting general reference:", error);
       res.status(500).json({ error: "Failed to delete general reference" });
+    }
+  });
+
+  // ========== Invoice Charge Templates Routes ==========
+
+  // Get all invoice charge templates
+  app.get("/api/invoice-charge-templates", requireAuth, async (_req, res) => {
+    try {
+      const templates = await storage.getAllInvoiceChargeTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching invoice charge templates:", error);
+      res.status(500).json({ error: "Failed to fetch invoice charge templates" });
+    }
+  });
+
+  // Create invoice charge template
+  app.post("/api/invoice-charge-templates", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertInvoiceChargeTemplateSchema.parse(req.body);
+      const template = await storage.createInvoiceChargeTemplate(validatedData);
+      res.status(201).json(template);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid template data", details: error.errors });
+      }
+      console.error("Error creating invoice charge template:", error);
+      res.status(500).json({ error: "Failed to create invoice charge template" });
+    }
+  });
+
+  // Delete invoice charge template
+  app.delete("/api/invoice-charge-templates/:id", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteInvoiceChargeTemplate(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting invoice charge template:", error);
+      res.status(500).json({ error: "Failed to delete invoice charge template" });
     }
   });
 

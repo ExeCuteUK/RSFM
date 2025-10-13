@@ -32,6 +32,8 @@ import {
   type InsertPurchaseInvoice,
   type Invoice,
   type InsertInvoice,
+  type InvoiceChargeTemplate,
+  type InsertInvoiceChargeTemplate,
   importCustomers,
   exportCustomers,
   exportReceivers,
@@ -45,6 +47,7 @@ import {
   jobFileGroups,
   purchaseInvoices,
   invoices,
+  invoiceChargeTemplates,
   users,
   messages,
   emailContacts,
@@ -200,6 +203,12 @@ export interface IStorage {
   createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference>;
   updateGeneralReference(id: string, updates: Partial<InsertGeneralReference>): Promise<GeneralReference | undefined>;
   deleteGeneralReference(id: string): Promise<boolean>;
+
+  // Invoice Charge Template methods
+  getAllInvoiceChargeTemplates(): Promise<InvoiceChargeTemplate[]>;
+  getInvoiceChargeTemplate(id: string): Promise<InvoiceChargeTemplate | undefined>;
+  createInvoiceChargeTemplate(template: InsertInvoiceChargeTemplate): Promise<InvoiceChargeTemplate>;
+  deleteInvoiceChargeTemplate(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -1138,6 +1147,22 @@ export class MemStorage implements IStorage {
 
   async deleteGeneralReference(id: string): Promise<boolean> {
     throw new Error("General references not supported in memory storage");
+  }
+
+  async getAllInvoiceChargeTemplates(): Promise<InvoiceChargeTemplate[]> {
+    throw new Error("Invoice charge templates not supported in memory storage");
+  }
+
+  async getInvoiceChargeTemplate(id: string): Promise<InvoiceChargeTemplate | undefined> {
+    throw new Error("Invoice charge templates not supported in memory storage");
+  }
+
+  async createInvoiceChargeTemplate(template: InsertInvoiceChargeTemplate): Promise<InvoiceChargeTemplate> {
+    throw new Error("Invoice charge templates not supported in memory storage");
+  }
+
+  async deleteInvoiceChargeTemplate(id: string): Promise<boolean> {
+    throw new Error("Invoice charge templates not supported in memory storage");
   }
 }
 
@@ -2198,6 +2223,36 @@ export class DatabaseStorage implements IStorage {
   async deleteGeneralReference(id: string): Promise<boolean> {
     const result = await db.delete(generalReferences)
       .where(eq(generalReferences.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async getAllInvoiceChargeTemplates(): Promise<InvoiceChargeTemplate[]> {
+    const templates = await db.select()
+      .from(invoiceChargeTemplates)
+      .orderBy(desc(invoiceChargeTemplates.createdAt));
+    return templates;
+  }
+
+  async getInvoiceChargeTemplate(id: string): Promise<InvoiceChargeTemplate | undefined> {
+    const [template] = await db.select()
+      .from(invoiceChargeTemplates)
+      .where(eq(invoiceChargeTemplates.id, id));
+    return template;
+  }
+
+  async createInvoiceChargeTemplate(template: InsertInvoiceChargeTemplate): Promise<InvoiceChargeTemplate> {
+    const [created] = await db.insert(invoiceChargeTemplates)
+      .values({
+        ...template,
+        id: randomUUID(),
+      })
+      .returning();
+    return created!;
+  }
+
+  async deleteInvoiceChargeTemplate(id: string): Promise<boolean> {
+    const result = await db.delete(invoiceChargeTemplates)
+      .where(eq(invoiceChargeTemplates.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 }

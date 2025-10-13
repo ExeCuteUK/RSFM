@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiRequest, queryClient } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
-import type { ImportShipment, ExportShipment, CustomClearance, Invoice, ImportCustomer, ExportCustomer, ExportReceiver } from '@shared/schema'
+import type { ImportShipment, ExportShipment, CustomClearance, Invoice, ImportCustomer, ExportCustomer, ExportReceiver, InvoiceChargeTemplate } from '@shared/schema'
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Save, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -146,6 +146,12 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
     { description: '', chargeAmount: '', vatCode: '1', vatAmount: '0' }
   ])
   const [paymentTerms, setPaymentTerms] = useState('Payment due within 30 days of invoice date')
+
+  // Template dialog states
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
+  const [loadTemplateOpen, setLoadTemplateOpen] = useState(false)
+  const [templateName, setTemplateName] = useState('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState('')
 
   // Helper function to extract postcode from delivery address
   const extractPostcode = (address: string): string => {
@@ -652,6 +658,82 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   const vatAmount = lineItems.reduce((sum, item) => sum + (parseFloat(item.vatAmount) || 0), 0)
   const total = subtotal + vatAmount
 
+  // Fetch templates
+  const { data: templates = [] } = useQuery<InvoiceChargeTemplate[]>({
+    queryKey: ['/api/invoice-charge-templates'],
+    enabled: open
+  })
+
+  // Save template mutation
+  const saveTemplateMutation = useMutation({
+    mutationFn: async (data: { templateName: string; lineItems: LineItem[] }) => {
+      const response = await apiRequest('POST', '/api/invoice-charge-templates', data)
+      return response.json()
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/invoice-charge-templates'] })
+      toast({
+        title: 'Success',
+        description: 'Template saved successfully'
+      })
+      setSaveTemplateOpen(false)
+      setTemplateName('')
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save template',
+        variant: 'destructive'
+      })
+    }
+  })
+
+  // Handle save template
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Template name is required',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    if (lineItems.length === 0 || lineItems.every(item => !item.description.trim())) {
+      toast({
+        title: 'Validation Error',
+        description: 'At least one line item with a description is required',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    saveTemplateMutation.mutate({ templateName, lineItems })
+  }
+
+  // Handle load template
+  const handleLoadTemplate = () => {
+    if (!selectedTemplateId) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select a template',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    const template = templates.find(t => t.id === selectedTemplateId)
+    if (template) {
+      setLineItems(template.lineItems as LineItem[])
+      toast({
+        title: 'Success',
+        description: 'Template loaded successfully'
+      })
+      setLoadTemplateOpen(false)
+      setSelectedTemplateId('')
+    }
+  }
+
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
       if (existingInvoice) {
@@ -1081,18 +1163,40 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           {/* Description of Charges Card */}
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <CardTitle className="text-sm font-semibold">Description of Charges</CardTitle>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={addLineItem}
-                  data-testid="button-add-line-item"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Line
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setLoadTemplateOpen(true)}
+                    data-testid="button-load-template"
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Load From Template
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setSaveTemplateOpen(true)}
+                    data-testid="button-save-template"
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    Save Charges Template
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={addLineItem}
+                    data-testid="button-add-line-item"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Line
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -1209,6 +1313,104 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           {saveMutation.isPending ? 'Saving...' : existingInvoice ? 'Update Invoice' : 'Create Invoice'}
         </Button>
       </div>
+
+      {/* Save Template Dialog */}
+      <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Charges Template</DialogTitle>
+            <DialogDescription>
+              Save the current line items as a template for future use
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="template-name">Template Name</Label>
+              <Input
+                id="template-name"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="Enter template name..."
+                data-testid="input-template-name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSaveTemplateOpen(false)
+                setTemplateName('')
+              }}
+              data-testid="button-cancel-save-template"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveTemplate}
+              disabled={saveTemplateMutation.isPending}
+              data-testid="button-confirm-save-template"
+            >
+              {saveTemplateMutation.isPending ? 'Saving...' : 'Save Template'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Load Template Dialog */}
+      <Dialog open={loadTemplateOpen} onOpenChange={setLoadTemplateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Load Charges Template</DialogTitle>
+            <DialogDescription>
+              Select a template to load its line items
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="select-template">Select Template</Label>
+              <Select
+                value={selectedTemplateId}
+                onValueChange={setSelectedTemplateId}
+              >
+                <SelectTrigger id="select-template" data-testid="select-template">
+                  <SelectValue placeholder="Choose a template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.length === 0 ? (
+                    <SelectItem value="none" disabled>No templates available</SelectItem>
+                  ) : (
+                    templates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.templateName}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setLoadTemplateOpen(false)
+                setSelectedTemplateId('')
+              }}
+              data-testid="button-cancel-load-template"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleLoadTemplate}
+              disabled={!selectedTemplateId}
+              data-testid="button-confirm-load-template"
+            >
+              Load Template
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 

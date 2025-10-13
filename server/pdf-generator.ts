@@ -200,8 +200,8 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         let filteredConsignorAddress = invoice.consignorAddress;
         if (invoice.jobType === 'export') {
           filteredConsignorAddress = invoice.consignorAddress
-            .replace(/,?\s*(UK|United Kingdom)\s*$/im, '')
-            .replace(/\n\s*(UK|United Kingdom)\s*$/im, '');
+            .replace(/,?\s*(UK|United Kingdom|Great Britain|GB)\s*$/im, '')
+            .replace(/\n\s*(UK|United Kingdom|Great Britain|GB)\s*$/im, '');
         }
         
         const consignorLines = filteredConsignorAddress.split('\n').filter(line => line.trim()).slice(0, 5);
@@ -237,10 +237,10 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
             .slice(0, -1) // Remove last line (usually country)
             .join('\n');
         } else {
-          // For export jobs, remove only UK/United Kingdom
+          // For export jobs, remove UK variations (UK, United Kingdom, Great Britain, GB)
           filteredConsigneeAddress = invoice.consigneeAddress
-            .replace(/,?\s*(UK|United Kingdom)\s*$/im, '')
-            .replace(/\n\s*(UK|United Kingdom)\s*$/im, '');
+            .replace(/,?\s*(UK|United Kingdom|Great Britain|GB)\s*$/im, '')
+            .replace(/\n\s*(UK|United Kingdom|Great Britain|GB)\s*$/im, '');
         }
         
         const consigneeLines = filteredConsigneeAddress.split('\n').filter(line => line.trim()).slice(0, 5);

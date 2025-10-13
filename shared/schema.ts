@@ -926,3 +926,24 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
 
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type Invoice = typeof invoices.$inferSelect;
+
+// Invoice Charge Templates (for saving/loading common charge descriptions)
+export const invoiceChargeTemplates = pgTable("invoice_charge_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  templateName: text("template_name").notNull(),
+  lineItems: jsonb("line_items").$type<InvoiceLineItem[]>().notNull(),
+  createdBy: varchar("created_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertInvoiceChargeTemplateSchema = createInsertSchema(invoiceChargeTemplates).omit({
+  id: true,
+  createdAt: true,
+  createdBy: true,
+}).extend({
+  templateName: z.string().min(1, "Template name is required"),
+  lineItems: z.array(invoiceLineItemSchema).min(1, "At least one line item is required"),
+});
+
+export type InsertInvoiceChargeTemplate = z.infer<typeof insertInvoiceChargeTemplateSchema>;
+export type InvoiceChargeTemplate = typeof invoiceChargeTemplates.$inferSelect;

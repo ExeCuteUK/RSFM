@@ -1782,100 +1782,86 @@ export default function CustomClearances() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => {
-                                if (clearance.jobType === 'export') {
-                                  handleSendHaulierEadEmail(clearance)
-                                } else {
-                                  handleSendHaulierEadEmail(clearance)
-                                }
-                              }}
-                              className="hover-elevate rounded p-0 shrink-0"
-                              data-testid={`button-send-haulier-ead-icon-${clearance.id}`}
-                            >
-                              <Mail className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-purple-500 transition-colors" />
-                            </button>
-                            <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-haulier-ead-${clearance.id}`}>
-                              {clearance.jobType === 'export' ? 'Send Haulier EAD' : 'Send Haulier GVMS'}
-                              {clearance.sendHaulierEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                            </p>
+                        {clearance.jobType === 'export' && (
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleSendHaulierEadEmail(clearance)}
+                                className="hover-elevate rounded p-0 shrink-0"
+                                data-testid={`button-send-haulier-ead-icon-${clearance.id}`}
+                              >
+                                <Mail className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-purple-500 transition-colors" />
+                              </button>
+                              <p className={`text-xs ${getStatusColor(clearance.sendHaulierEadStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-haulier-ead-${clearance.id}`}>
+                                Send Haulier EAD
+                                {clearance.sendHaulierEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 1)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendHaulierEadStatusIndicator === 1 || clearance.sendHaulierEadStatusIndicator === null
+                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                    : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
+                                }`}
+                                data-testid={`button-send-haulier-ead-yellow-${clearance.id}`}
+                                title="To Do"
+                              />
+                              <button
+                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 3)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendHaulierEadStatusIndicator === 3
+                                    ? 'bg-green-400 border-green-500 scale-110'
+                                    : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
+                                }`}
+                                data-testid={`button-send-haulier-ead-green-${clearance.id}`}
+                                title="Completed"
+                              />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 1)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendHaulierEadStatusIndicator === 1 || clearance.sendHaulierEadStatusIndicator === null
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                              }`}
-                              data-testid={`button-send-haulier-ead-yellow-${clearance.id}`}
-                              title="To Do"
-                            />
-                            <button
-                              onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 3)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.sendHaulierEadStatusIndicator === 3
-                                  ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                              }`}
-                              data-testid={`button-send-haulier-ead-green-${clearance.id}`}
-                              title="Completed"
-                            />
-                          </div>
-                        </div>
+                        )}
 
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => handleSendCustomerGvmsEadEmail(clearance)}
-                              className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                              data-testid={`button-send-customer-doc-email-${clearance.id}`}
-                              title="Send GVMS/EAD email to customer"
-                            >
-                              <Mail className="h-4 w-4 text-muted-foreground hover:text-purple-500 transition-colors" />
-                            </button>
-                            <p className={`text-xs ${getStatusColor(clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-customer-${clearance.id}`}>
-                              {clearance.jobType === 'export' ? 'Send Customer EAD' : 'Send Customer GVMS'}
-                              {(clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === 3 && <Check className="h-3 w-3" />}
-                            </p>
+                        {clearance.jobType === 'export' && (
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleSendCustomerGvmsEadEmail(clearance)}
+                                className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                                data-testid={`button-send-customer-doc-email-${clearance.id}`}
+                                title="Send EAD email to customer"
+                              >
+                                <Mail className="h-4 w-4 text-muted-foreground hover:text-purple-500 transition-colors" />
+                              </button>
+                              <p className={`text-xs ${getStatusColor(clearance.sendCustomerEadStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`todo-send-customer-${clearance.id}`}>
+                                Send Customer EAD
+                                {clearance.sendCustomerEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleSendCustomerEadStatusUpdate(clearance.id, 1)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendCustomerEadStatusIndicator === 1 || clearance.sendCustomerEadStatusIndicator === null
+                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                    : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
+                                }`}
+                                data-testid={`button-send-customer-yellow-${clearance.id}`}
+                                title="To Do"
+                              />
+                              <button
+                                onClick={() => handleSendCustomerEadStatusUpdate(clearance.id, 3)}
+                                className={`h-5 w-5 rounded border-2 transition-all ${
+                                  clearance.sendCustomerEadStatusIndicator === 3
+                                    ? 'bg-green-400 border-green-500 scale-110'
+                                    : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
+                                }`}
+                                data-testid={`button-send-customer-green-${clearance.id}`}
+                                title="Completed"
+                              />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                if (clearance.jobType === 'export') {
-                                  handleSendCustomerEadStatusUpdate(clearance.id, 1)
-                                } else {
-                                  handleSendCustomerGvmsStatusUpdate(clearance.id, 1)
-                                }
-                              }}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                (clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === 1 || (clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === null
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                              }`}
-                              data-testid={`button-send-customer-yellow-${clearance.id}`}
-                              title="To Do"
-                            />
-                            <button
-                              onClick={() => {
-                                if (clearance.jobType === 'export') {
-                                  handleSendCustomerEadStatusUpdate(clearance.id, 3)
-                                } else {
-                                  handleSendCustomerGvmsStatusUpdate(clearance.id, 3)
-                                }
-                              }}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                (clearance.jobType === 'export' ? clearance.sendCustomerEadStatusIndicator : clearance.sendCustomerGvmsStatusIndicator) === 3
-                                  ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                              }`}
-                              data-testid={`button-send-customer-green-${clearance.id}`}
-                              title="Completed"
-                            />
-                          </div>
-                        </div>
+                        )}
 
                         {!clearance.createdFromId && (
                           <div className="flex items-center justify-between gap-2 flex-wrap">
