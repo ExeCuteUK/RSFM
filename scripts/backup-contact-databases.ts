@@ -1,3 +1,7 @@
+// Load environment variables FIRST (before any imports that need them)
+import { config } from 'dotenv';
+config();
+
 import { db } from "../server/db";
 import { 
   importCustomers, 
