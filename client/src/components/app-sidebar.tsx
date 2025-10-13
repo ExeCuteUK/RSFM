@@ -140,7 +140,7 @@ export function AppSidebar() {
               R.S. Freight Manager
             </h2>
             <p className="text-[11px] text-muted-foreground" data-testid="text-app-version">
-              Version : 4.1.2 alpha
+              Version 4.2.0 Beta
             </p>
           </div>
         </div>
@@ -202,7 +202,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Beta Testing</SidebarGroupLabel>
+          <SidebarGroupLabel>Alpha Testing</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {betaTestingItems.map((item) => (

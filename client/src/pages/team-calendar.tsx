@@ -21,10 +21,12 @@ interface CalendarEvent {
   start: {
     date?: string;
     dateTime?: string;
+    timeZone?: string;
   };
   end: {
     date?: string;
     dateTime?: string;
+    timeZone?: string;
   };
   creator?: {
     email?: string;
@@ -134,10 +136,16 @@ export default function TeamCalendar() {
       description: newEvent.description,
       start: newEvent.isAllDay 
         ? { date: newEvent.startDate }
-        : { dateTime: `${newEvent.startDate}T${newEvent.startTime}:00` },
+        : { 
+            dateTime: `${newEvent.startDate}T${newEvent.startTime}:00`,
+            timeZone: 'Europe/London'
+          },
       end: newEvent.isAllDay
         ? { date: newEvent.endDate }
-        : { dateTime: `${newEvent.endDate}T${newEvent.endTime}:00` },
+        : { 
+            dateTime: `${newEvent.endDate}T${newEvent.endTime}:00`,
+            timeZone: 'Europe/London'
+          },
     };
     
     createMutation.mutate(eventData);
@@ -174,10 +182,16 @@ export default function TeamCalendar() {
       description: newEvent.description,
       start: newEvent.isAllDay 
         ? { date: newEvent.startDate }
-        : { dateTime: `${newEvent.startDate}T${newEvent.startTime}:00` },
+        : { 
+            dateTime: `${newEvent.startDate}T${newEvent.startTime}:00`,
+            timeZone: 'Europe/London'
+          },
       end: newEvent.isAllDay
         ? { date: newEvent.endDate }
-        : { dateTime: `${newEvent.endDate}T${newEvent.endTime}:00` },
+        : { 
+            dateTime: `${newEvent.endDate}T${newEvent.endTime}:00`,
+            timeZone: 'Europe/London'
+          },
     };
     
     updateMutation.mutate({ eventId: editingEvent.id, event: eventData });

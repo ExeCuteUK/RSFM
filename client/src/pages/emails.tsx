@@ -935,7 +935,7 @@ export default function Emails() {
               </div>
 
               {/* Email Body */}
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-4 bg-white dark:bg-white">
                 {isLoadingFullEmail ? (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

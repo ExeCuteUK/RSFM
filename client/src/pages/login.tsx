@@ -53,13 +53,13 @@ export default function Login() {
 
   return (
     <div 
-      className="flex items-center justify-center min-h-screen bg-background bg-cover bg-center bg-no-repeat"
+      className="flex items-center justify-center min-h-screen bg-white dark:bg-white bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${worldMapBg})` }}
     >
-      <Card className="w-full max-w-md bg-card/25 backdrop-blur-sm border-card-border/50">
+      <Card className="w-full max-w-md bg-white/90 dark:bg-white/90 backdrop-blur-sm border-gray-300 dark:border-gray-300 text-black dark:text-black">
         <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>Sign in to your R.S International Freight Manager account</CardDescription>
+          <CardTitle className="text-black dark:text-black">Login</CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-600">Sign in to your R.S International Freight Manager account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

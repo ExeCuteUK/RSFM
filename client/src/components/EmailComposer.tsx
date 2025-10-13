@@ -70,10 +70,9 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
     queryKey: ['/api/auth/me'],
   });
 
-  // Fetch email signature
-  const { data: signatureData } = useQuery({
+  // Fetch email signature (always fetch, but only apply if user wants to use it)
+  const { data: signatureData, isLoading: isLoadingSignature } = useQuery({
     queryKey: ['/api/settings/email-signature'],
-    enabled: !!userData?.user?.useSignature,
   });
 
   // Pre-fill for replies and forwards
@@ -101,12 +100,15 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
         setBody(quotedBody);
         setSignatureAdded(true);
       }
-    } else if (mode === 'compose' && !signatureAdded && signatureData?.signature) {
-      // For new emails, add signature at the end (only once)
+    } else if (mode === 'compose' && !signatureAdded && signatureData?.signature && userData?.user?.useSignature) {
+      // For new emails, add signature at the end (only once, and only if user wants to use signature)
       setBody(`<p><br></p><p><br></p>${signatureData.signature}`);
       setSignatureAdded(true);
+    } else if (mode === 'compose' && !signatureAdded && !signatureData?.signature && !isLoadingSignature && userData?.user?.useSignature) {
+      // Mark as added even if there's no signature to prevent infinite loops
+      setSignatureAdded(true);
     }
-  }, [originalEmail, mode, signatureData, signatureAdded]);
+  }, [originalEmail, mode, signatureData, signatureAdded, userData, isLoadingSignature]);
 
   // Reset state when composer closes
   useEffect(() => {
@@ -279,6 +281,13 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
     mode === 'replyAll' ? 'Reply All' :
     'Forward';
 
+  // Prevent arrow key events from propagating to background email list
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.stopPropagation();
+    }
+  };
+
   return (
     <DraggableWindow
       id="email-composer"
@@ -287,7 +296,7 @@ export function EmailComposer({ isOpen, onClose, mode = 'compose', originalEmail
       height={650}
       onClose={handleClose}
     >
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full" onKeyDown={handleKeyDown}>
         {/* Top Action Toolbar */}
         <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/20">
           <Button
