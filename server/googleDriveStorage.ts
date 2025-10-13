@@ -643,30 +643,6 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClientForBackups();
     const backupsFolderId = await this.getBackupsFolder();
     
-    // Get the Backups folder metadata to find its parent (which may have driveId)
-    const folderMetadata = await drive.files.get({
-      fileId: backupsFolderId,
-      fields: 'id, name, driveId, parents',
-      supportsAllDrives: true
-    });
-    
-    let driveId: string | undefined = folderMetadata.data.driveId;
-    
-    // If no driveId on this folder, check its parent (Shared Drive root folders have driveId)
-    if (!driveId && folderMetadata.data.parents && folderMetadata.data.parents.length > 0) {
-      const parentId = folderMetadata.data.parents[0];
-      console.log(`🔍 Checking parent folder for Shared Drive info: ${parentId}`);
-      
-      const parentMetadata = await drive.files.get({
-        fileId: parentId,
-        fields: 'id, name, driveId',
-        supportsAllDrives: true
-      });
-      
-      driveId = parentMetadata.data.driveId;
-      console.log(`📂 Parent folder: ${parentMetadata.data.name}, driveId: ${driveId || 'none'}`);
-    }
-    
     const fileMetadata: any = {
       name: backupName,
       mimeType: 'application/zip',
@@ -686,12 +662,12 @@ export class GoogleDriveStorageService {
       supportsAllDrives: true
     };
 
-    // If we found a driveId, use it
-    if (driveId) {
-      createOptions.driveId = driveId;
-      console.log(`✅ Uploading to Shared Drive: ${driveId}`);
+    // Use the cached driveId if available (set during getRootFolderForBackups)
+    if (this.sharedDriveId) {
+      createOptions.driveId = this.sharedDriveId;
+      console.log(`✅ Uploading to Shared Drive: ${this.sharedDriveId}`);
     } else {
-      console.log(`⚠️  No driveId found - uploading to personal Drive`);
+      console.log(`📁 Uploading to personal Drive (no Shared Drive detected)`);
     }
 
     const file = await drive.files.create(createOptions);
