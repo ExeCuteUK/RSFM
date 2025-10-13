@@ -45,7 +45,7 @@ The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for r
 - **Email Reader:** White background enforced in dark mode (bg-white dark:bg-white) to ensure email content with inline styles remains readable
 - **Email Composer:** Signature loading improved with query always enabled and conditional application; arrow key events (ArrowUp/ArrowDown) stopped from propagating to background email list
 - **Calendar Events:** Timezone (Europe/London) automatically added to timed events (create/update) to prevent server-side timezone errors
-- **Version:** Updated to 4.2.1 Beta; fixed Shared Drive backup uploads by detecting and passing driveId parameter
+- **Version:** Updated to 4.2.2 Beta; fixed Shared Drive backups by caching driveId during folder search instead of metadata lookup
 
 ### Backend Architecture
 
