@@ -145,11 +145,13 @@ export class GoogleDriveStorageService {
   async getOrCreateFolder(parentId: string, folderName: string): Promise<string> {
     const drive = await getGoogleDriveClient();
 
-    // Search for existing folder
+    // Search for existing folder (supports shared drives)
     const response = await drive.files.list({
       q: `name='${folderName}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: 'files(id, name)',
-      spaces: 'drive'
+      spaces: 'drive',
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
     });
 
     if (response.data.files && response.data.files.length > 0) {
@@ -525,7 +527,9 @@ export class GoogleDriveStorageService {
       q: `'${backupsFolderId}' in parents and trashed=false`,
       fields: 'files(id, name, size, createdTime)',
       orderBy: 'createdTime desc',
-      spaces: 'drive'
+      spaces: 'drive',
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
     });
 
     return (response.data.files || []).map(file => ({
