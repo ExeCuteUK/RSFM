@@ -1,13 +1,9 @@
 // Migration script to fix invoice_charge_templates table schema
 // Changes ID column from integer to varchar to support UUIDs
 
-// Load environment variables from .env file (for Ubuntu server)
-try {
-  const { config } = await import('dotenv');
-  config();
-} catch {
-  // dotenv not available - using inherited environment variables
-}
+// Load environment variables from .env file FIRST (for Ubuntu server)
+import dotenv from 'dotenv';
+dotenv.config();
 
 import { sql } from 'drizzle-orm';
 import { db } from '../server/db';
