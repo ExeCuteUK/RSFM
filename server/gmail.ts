@@ -1,115 +1,34 @@
 import { google } from 'googleapis';
 
-let connectionSettings: any;
-
 // WARNING: Never cache this client.
 // Access tokens expire, so a new client must be created each time.
 // Always call this function again to get a fresh client.
 export async function getUncachableGmailClient() {
-  // Method 1: Try OAuth with Client ID/Secret/Refresh Token (works on Ubuntu and Replit)
-  if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
-    const oauth2Client = new google.auth.OAuth2(
-      process.env.GMAIL_CLIENT_ID,
-      process.env.GMAIL_CLIENT_SECRET,
-      'http://localhost' // Redirect URI (not used for refresh token flow)
+  if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET || !process.env.GMAIL_REFRESH_TOKEN) {
+    throw new Error(
+      'Gmail not configured. Please set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN environment variables.'
     );
-
-    oauth2Client.setCredentials({
-      refresh_token: process.env.GMAIL_REFRESH_TOKEN
-    });
-
-    return google.gmail({ version: 'v1', auth: oauth2Client });
   }
 
-  // Method 2: Fallback to Replit Connector (only works on Replit)
-  const accessToken = await getReplitAccessToken();
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    'http://localhost' // Redirect URI (not used for refresh token flow)
+  );
 
-  const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({
-    access_token: accessToken
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN
   });
 
   return google.gmail({ version: 'v1', auth: oauth2Client });
 }
 
-// Get access token from Replit Connector (legacy method for Replit deployments)
-async function getReplitAccessToken() {
-  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
-  }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
-
-  if (!xReplitToken) {
-    throw new Error('Gmail not configured. Please set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN environment variables, or use Replit connector.');
-  }
-
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-mail',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
-
-  if (!connectionSettings || !accessToken) {
-    throw new Error('Gmail not connected');
-  }
-  return accessToken;
-}
-
 export async function getGmailConnectionStatus() {
   try {
-    // Try OAuth credentials first (works on Ubuntu and Replit)
-    if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
-      try {
-        const gmail = await getUncachableGmailClient();
-        const profile = await gmail.users.getProfile({ userId: 'me' });
-        return { 
-          connected: true, 
-          email: profile.data.emailAddress || null 
-        };
-      } catch (error) {
-        return { connected: false, email: null };
-      }
-    }
-
-    // Fallback to Replit connector
-    const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
-    const xReplitToken = process.env.REPL_IDENTITY 
-      ? 'repl ' + process.env.REPL_IDENTITY 
-      : process.env.WEB_REPL_RENEWAL 
-      ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-      : null;
-
-    if (!xReplitToken) {
+    if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET || !process.env.GMAIL_REFRESH_TOKEN) {
       return { connected: false, email: null };
     }
 
-    const connection = await fetch(
-      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-mail',
-      {
-        headers: {
-          'Accept': 'application/json',
-          'X_REPLIT_TOKEN': xReplitToken
-        }
-      }
-    ).then(res => res.json()).then(data => data.items?.[0]);
-
-    if (!connection) {
-      return { connected: false, email: null };
-    }
-
-    // Try to get user email from Gmail API
     try {
       const gmail = await getUncachableGmailClient();
       const profile = await gmail.users.getProfile({ userId: 'me' });
@@ -118,7 +37,7 @@ export async function getGmailConnectionStatus() {
         email: profile.data.emailAddress || null 
       };
     } catch (error) {
-      return { connected: true, email: null };
+      return { connected: false, email: null };
     }
   } catch (error) {
     return { connected: false, email: null };
@@ -740,6 +659,7 @@ export async function createDraft(options: {
     if (options.cc) {
       messageParts.push(`Cc: ${options.cc}`);
     }
+    
     if (options.bcc) {
       messageParts.push(`Bcc: ${options.bcc}`);
     }
@@ -750,9 +670,19 @@ export async function createDraft(options: {
       `Content-Type: multipart/related; boundary="${boundary}"`,
       '',
       `--${boundary}`,
+      `Content-Type: multipart/alternative; boundary="${boundaryAlt}"`,
+      '',
+      `--${boundaryAlt}`,
+      'Content-Type: text/plain; charset="UTF-8"',
+      '',
+      options.body.replace(/<[^>]*>/g, ''), // Strip HTML for plain text version
+      '',
+      `--${boundaryAlt}`,
       'Content-Type: text/html; charset="UTF-8"',
       '',
       options.body,
+      '',
+      `--${boundaryAlt}--`,
       '',
       `--${boundary}`,
       'Content-Type: image/jpeg',
@@ -760,14 +690,14 @@ export async function createDraft(options: {
       'Content-ID: <signature-logo>',
       '',
       logoBase64,
+      '',
       `--${boundary}--`
     );
     
-      message = messageParts.join('\r\n');
+    message = messageParts.join('\r\n');
     } catch (error) {
-      // If logo file is missing, fall back to simple HTML email
-      console.warn('Signature logo not found, falling back to simple HTML email:', error);
-      
+      console.error('Error reading signature logo:', error);
+      // Fallback to simple HTML email
       const messageParts = [
         `To: ${options.to}`,
       ];
@@ -775,6 +705,7 @@ export async function createDraft(options: {
       if (options.cc) {
         messageParts.push(`Cc: ${options.cc}`);
       }
+      
       if (options.bcc) {
         messageParts.push(`Bcc: ${options.bcc}`);
       }
@@ -784,7 +715,7 @@ export async function createDraft(options: {
         `Subject: ${options.subject}`,
         'Content-Type: text/html; charset="UTF-8"',
         '',
-        options.body.replace(/cid:signature-logo/g, '')  // Remove broken CID reference
+        options.body
       );
       
       message = messageParts.join('\r\n');
@@ -798,6 +729,7 @@ export async function createDraft(options: {
     if (options.cc) {
       messageParts.push(`Cc: ${options.cc}`);
     }
+    
     if (options.bcc) {
       messageParts.push(`Bcc: ${options.bcc}`);
     }
@@ -813,30 +745,65 @@ export async function createDraft(options: {
     message = messageParts.join('\r\n');
   }
   
-  const encodedMessage = Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const encodedMessage = Buffer.from(message)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
   
   if (options.draftId) {
+    // Update existing draft
     const result = await gmail.users.drafts.update({
       userId: 'me',
       id: options.draftId,
       requestBody: {
         message: {
-          raw: encodedMessage,
-        },
-      },
+          raw: encodedMessage
+        }
+      }
     });
-    return result.data as { id: string; message: { id: string } };
+    
+    return {
+      id: result.data.id!,
+      message: { id: result.data.message?.id! }
+    };
   } else {
+    // Create new draft
     const result = await gmail.users.drafts.create({
       userId: 'me',
       requestBody: {
         message: {
-          raw: encodedMessage,
-        },
-      },
+          raw: encodedMessage
+        }
+      }
     });
-    return result.data as { id: string; message: { id: string } };
+    
+    return {
+      id: result.data.id!,
+      message: { id: result.data.message?.id! }
+    };
   }
+}
+
+export async function getDraft(draftId: string): Promise<any> {
+  const gmail = await getUncachableGmailClient();
+  
+  const result = await gmail.users.drafts.get({
+    userId: 'me',
+    id: draftId
+  });
+  
+  return result.data;
+}
+
+export async function listDrafts(): Promise<any[]> {
+  const gmail = await getUncachableGmailClient();
+  
+  const result = await gmail.users.drafts.list({
+    userId: 'me'
+  });
+  
+  return result.data.drafts || [];
 }
 
 export async function deleteDraft(draftId: string): Promise<void> {
@@ -844,7 +811,7 @@ export async function deleteDraft(draftId: string): Promise<void> {
   
   await gmail.users.drafts.delete({
     userId: 'me',
-    id: draftId,
+    id: draftId
   });
 }
 
@@ -854,40 +821,32 @@ export async function sendDraft(draftId: string): Promise<any> {
   const result = await gmail.users.drafts.send({
     userId: 'me',
     requestBody: {
-      id: draftId,
-    },
+      id: draftId
+    }
   });
   
   return result.data;
 }
 
-export async function getUnreadCount(): Promise<number> {
-  const gmail = await getUncachableGmailClient();
-  
-  const response = await gmail.users.labels.get({
-    userId: 'me',
-    id: 'INBOX',
-  });
-  
-  return response.data.messagesUnread || 0;
-}
+// ========== Attachment Management ==========
 
 export async function getAttachment(messageId: string, attachmentId: string): Promise<Buffer> {
   const gmail = await getUncachableGmailClient();
   
   const response = await gmail.users.messages.attachments.get({
     userId: 'me',
-    messageId,
+    messageId: messageId,
     id: attachmentId,
   });
   
-  // The data is base64url encoded
-  const data = response.data.data;
-  if (!data) {
-    throw new Error('No attachment data found');
+  if (!response.data.data) {
+    throw new Error('No attachment data received');
   }
   
-  // Convert base64url to base64
-  const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
-  return Buffer.from(base64, 'base64');
+  // Decode base64url to buffer
+  const base64Data = response.data.data
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  
+  return Buffer.from(base64Data, 'base64');
 }

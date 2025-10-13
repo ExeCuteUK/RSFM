@@ -3,101 +3,24 @@ import { Response } from 'express';
 import { randomUUID } from 'crypto';
 import { Readable } from 'stream';
 
-let connectionSettings: any;
-
-// Get Google Drive client using Service Account (for Ubuntu) or Replit Connector (fallback)
+// Get Google Drive client using Service Account
 async function getGoogleDriveClient() {
-  // Method 1: Try Service Account (works on Ubuntu and Replit)
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY) {
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/drive'],
-    });
-
-    const authClient = await auth.getClient();
-    return google.drive({ version: 'v3', auth: authClient as any });
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY) {
+    throw new Error(
+      'Google Drive not configured. Please set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY environment variables.'
+    );
   }
 
-  // Method 2: Fallback to Replit Connector (only works on Replit)
-  const accessToken = await getReplitAccessToken();
-
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: accessToken
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    },
+    scopes: ['https://www.googleapis.com/auth/drive'],
   });
 
-  return google.drive({ version: 'v3', auth: oauth2Client });
-}
-
-// Get Google Drive client for backups - PREFERS OAuth (can write to personal drives)
-async function getGoogleDriveClientForBackups() {
-  // Method 1: Try Replit OAuth Connector FIRST (can write to personal "My Drive")
-  try {
-    const accessToken = await getReplitAccessToken();
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({
-      access_token: accessToken
-    });
-    console.log('✓ Using OAuth for backups (can write to personal Drive)');
-    return google.drive({ version: 'v3', auth: oauth2Client });
-  } catch (error) {
-    console.log('OAuth not available, falling back to service account');
-  }
-
-  // Method 2: Fallback to Service Account (only works with Shared Drives)
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY) {
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/drive'],
-    });
-
-    const authClient = await auth.getClient();
-    console.log('⚠️  Using service account for backups (only works with Shared Drives, not personal "My Drive")');
-    return google.drive({ version: 'v3', auth: authClient as any });
-  }
-
-  throw new Error('No Google Drive authentication available for backups');
-}
-
-// Get access token from Replit Connector (legacy method for Replit deployments)
-async function getReplitAccessToken() {
-  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
-  }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
-
-  if (!xReplitToken) {
-    throw new Error('Google Drive not configured. Please set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY environment variables, or use Replit connector.');
-  }
-
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-drive',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
-
-  if (!connectionSettings || !accessToken) {
-    throw new Error('Google Drive not connected');
-  }
-  return accessToken;
+  const authClient = await auth.getClient();
+  return google.drive({ version: 'v3', auth: authClient as any });
 }
 
 export class ObjectNotFoundError extends Error {
@@ -164,20 +87,7 @@ export class GoogleDriveStorageService {
       return this.rootFolderId;
     }
 
-    // PRIORITY 3: Search for existing folder at root level (fallback for OAuth users)
-    const rootResponse = await drive.files.list({
-      q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id, name)',
-      spaces: 'drive'
-    });
-
-    if (rootResponse.data.files && rootResponse.data.files.length > 0) {
-      this.rootFolderId = rootResponse.data.files[0].id!;
-      console.log(`✓ Found root folder: ${folderName} (${this.rootFolderId})`);
-      return this.rootFolderId;
-    }
-
-    // ERROR: No shared folder found and can't create in service account's Drive
+    // ERROR: No shared folder found and service account can't create in its own Drive
     throw new Error(
       `Google Drive folder "${folderName}" not found. ` +
       `Service accounts cannot create files in their own Drive. ` +
@@ -240,19 +150,19 @@ export class GoogleDriveStorageService {
     return this.privateFolderId;
   }
 
-  // Get backups folder ID (uses OAuth client for write access to personal drives)
+  // Get backups folder ID
   async getBackupsFolder(): Promise<string> {
     if (this.backupsFolderId) {
       return this.backupsFolderId;
     }
 
-    const drive = await getGoogleDriveClientForBackups();
+    const drive = await getGoogleDriveClient();
     const rootId = await this.getRootFolderForBackups(drive);
     this.backupsFolderId = await this.getOrCreateFolderForBackups(drive, rootId, 'Backups');
     return this.backupsFolderId;
   }
 
-  // Get root folder for backups (uses provided OAuth drive client)
+  // Get root folder for backups
   private async getRootFolderForBackups(drive: any): Promise<string> {
     const driveName = 'RS Freight Manager';
 
@@ -305,35 +215,15 @@ export class GoogleDriveStorageService {
       return sharedResponse.data.files[0].id!;
     }
 
-    // PRIORITY 4: Search for folder at root level
-    const rootResponse = await drive.files.list({
-      q: `name='${driveName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id, name)',
-      spaces: 'drive'
-    });
-
-    if (rootResponse.data.files && rootResponse.data.files.length > 0) {
-      console.log(`✓ Found root folder: ${driveName} (${rootResponse.data.files[0].id})`);
-      return rootResponse.data.files[0].id!;
-    }
-
-    // Create root folder (OAuth can create in user's Drive)
-    const folderMetadata = {
-      name: driveName,
-      mimeType: 'application/vnd.google-apps.folder',
-      parents: ['root']
-    };
-
-    const folder = await drive.files.create({
-      requestBody: folderMetadata,
-      fields: 'id'
-    });
-
-    console.log(`✓ Created root folder: ${driveName} (${folder.data.id})`);
-    return folder.data.id!;
+    // ERROR: Service account cannot create folders
+    throw new Error(
+      `Google Drive folder "${driveName}" not found. ` +
+      `Service accounts cannot create files in their own Drive. ` +
+      `Please share a folder named "${driveName}" with the service account: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`
+    );
   }
 
-  // Get or create subfolder for backups (uses provided OAuth drive client)
+  // Get or create subfolder for backups
   private async getOrCreateFolderForBackups(drive: any, parentId: string, folderName: string): Promise<string> {
     // Search for existing folder
     const response = await drive.files.list({
@@ -652,7 +542,7 @@ export class GoogleDriveStorageService {
 
   // Upload backup to Google Drive
   async uploadBackup(backupName: string, buffer: Buffer): Promise<{ fileId: string; fileName: string }> {
-    const drive = await getGoogleDriveClientForBackups();
+    const drive = await getGoogleDriveClient();
     const backupsFolderId = await this.getBackupsFolder();
     
     const fileMetadata: any = {
@@ -661,78 +551,85 @@ export class GoogleDriveStorageService {
       parents: [backupsFolderId]
     };
 
+    // If using Shared Drive, add driveId parameter
+    if (this.sharedDriveId) {
+      console.log(`✓ Uploading backup to Shared Drive: ${this.sharedDriveId}`);
+    }
+
     const media = {
       mimeType: 'application/zip',
       body: Readable.from(buffer)
     };
 
-    // Prepare create options with Shared Drive support
-    // NOTE: No need to pass driveId to files.create - it's determined by the parent folder
-    const createOptions: any = {
+    const file = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
       fields: 'id, name',
       supportsAllDrives: true
-    };
+    });
 
-    if (this.sharedDriveId) {
-      console.log(`✅ Uploading to Shared Drive (parent folder is in drive: ${this.sharedDriveId})`);
-    } else {
-      console.log(`📁 Uploading to personal Drive (no Shared Drive detected)`);
-    }
-
-    const file = await drive.files.create(createOptions);
+    console.log(`✓ Backup uploaded successfully: ${backupName} (${file.data.id})`);
 
     return { 
-      fileId: file.data.id!,
-      fileName: file.data.name!
+      fileId: file.data.id!, 
+      fileName: file.data.name! 
     };
   }
 
-  // List all backups in Google Drive
-  async listBackups(): Promise<Array<{ fileId: string; name: string; size: string; createdTime: string }>> {
-    const drive = await getGoogleDriveClientForBackups();
+  // List backups from Google Drive
+  async listBackups(): Promise<Array<{ id: string; name: string; createdTime?: string; size?: string }>> {
+    const drive = await getGoogleDriveClient();
     const backupsFolderId = await this.getBackupsFolder();
 
     const response = await drive.files.list({
       q: `'${backupsFolderId}' in parents and trashed=false`,
-      fields: 'files(id, name, size, createdTime)',
+      fields: 'files(id, name, createdTime, size)',
       orderBy: 'createdTime desc',
       spaces: 'drive',
       supportsAllDrives: true,
       includeItemsFromAllDrives: true
     });
 
-    return (response.data.files || []).map(file => ({
-      fileId: file.id!,
-      name: file.name!,
-      size: file.size || '0',
-      createdTime: file.createdTime || ''
-    }));
+    return response.data.files || [];
   }
 
-  // Download backup from Google Drive
-  async downloadBackup(fileId: string): Promise<Buffer> {
-    const drive = await getGoogleDriveClientForBackups();
+  // Download backup as buffer
+  async downloadBackup(fileId: string): Promise<{ buffer: Buffer; fileName: string }> {
+    const drive = await getGoogleDriveClient();
 
     try {
+      // Get file metadata
+      const metadata = await drive.files.get({
+        fileId: fileId,
+        fields: 'name',
+        supportsAllDrives: true
+      });
+
+      // Download file content
       const response = await drive.files.get(
         { fileId: fileId, alt: 'media', supportsAllDrives: true },
         { responseType: 'arraybuffer' }
       );
 
-      return Buffer.from(response.data as ArrayBuffer);
+      return { 
+        buffer: Buffer.from(response.data as ArrayBuffer),
+        fileName: metadata.data.name!
+      };
     } catch (error) {
       throw new ObjectNotFoundError();
     }
   }
 
-  // Delete backup from Google Drive
+  // Delete backup
   async deleteBackup(fileId: string): Promise<void> {
-    const drive = await getGoogleDriveClientForBackups();
+    const drive = await getGoogleDriveClient();
 
     try {
-      await drive.files.delete({ fileId: fileId, supportsAllDrives: true });
+      await drive.files.delete({ 
+        fileId: fileId,
+        supportsAllDrives: true
+      });
+      console.log(`✓ Backup deleted: ${fileId}`);
     } catch (error) {
       throw new ObjectNotFoundError();
     }
