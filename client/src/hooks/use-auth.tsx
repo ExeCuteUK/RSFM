@@ -36,8 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
       return apiRequest("POST", "/api/auth/login", { username, password });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/me"] });
     },
   });
 
@@ -45,8 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (data: { username: string; password: string; fullName?: string; email?: string }) => {
       return apiRequest("POST", "/api/auth/register", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/me"] });
     },
   });
 
