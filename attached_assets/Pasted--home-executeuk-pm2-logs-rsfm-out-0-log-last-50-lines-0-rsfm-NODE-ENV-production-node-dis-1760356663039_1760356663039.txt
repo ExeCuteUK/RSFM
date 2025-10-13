@@ -1,0 +1,50 @@
+/home/executeuk/.pm2/logs/rsfm-out-0.log last 50 lines:
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:24 +00:00: 2025-10-13 10:53:24 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:26 +00:00: 2025-10-13 10:53:26 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:28 +00:00: 2025-10-13 10:53:28 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:29 +00:00: 2025-10-13 10:53:29 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:31 +00:00: 2025-10-13 10:53:31 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:33 +00:00: 2025-10-13 10:53:33 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:34 +00:00: 2025-10-13 10:53:35 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:36 +00:00: 2025-10-13 10:53:36 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:38 +00:00: 2025-10-13 10:53:38 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:40 +00:00: 2025-10-13 10:53:40 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     | 2025-10-13 10:53:41 +00:00: 2025-10-13 10:53:42 +00:00:
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
