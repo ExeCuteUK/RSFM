@@ -120,6 +120,7 @@ export class GoogleDriveStorageService {
   private publicFolderId: string | null = null;
   private privateFolderId: string | null = null;
   private backupsFolderId: string | null = null;
+  private sharedDriveId: string | null = null;  // Cache driveId for Shared Drive uploads
 
   constructor() {}
 
@@ -258,15 +259,24 @@ export class GoogleDriveStorageService {
     // PRIORITY 1: Search in Shared Drives (team drives)
     const sharedDriveResponse = await drive.files.list({
       q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id, name)',
+      fields: 'files(id, name, driveId)',  // Request driveId to cache it
       corpora: 'allDrives',
       supportsAllDrives: true,
       includeItemsFromAllDrives: true
     });
 
     if (sharedDriveResponse.data.files && sharedDriveResponse.data.files.length > 0) {
-      console.log(`✓ Found folder in Shared Drive: ${folderName} (${sharedDriveResponse.data.files[0].id})`);
-      return sharedDriveResponse.data.files[0].id!;
+      const folder = sharedDriveResponse.data.files[0];
+      
+      // Cache the driveId if this folder is in a Shared Drive
+      if (folder.driveId) {
+        this.sharedDriveId = folder.driveId;
+        console.log(`✓ Found folder in Shared Drive: ${folderName} (${folder.id}), driveId: ${folder.driveId}`);
+      } else {
+        console.log(`✓ Found folder in Shared Drive: ${folderName} (${folder.id})`);
+      }
+      
+      return folder.id!;
     }
 
     // PRIORITY 2: Search for shared folder (from My Drive)
