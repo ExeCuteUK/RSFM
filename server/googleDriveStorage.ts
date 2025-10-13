@@ -256,33 +256,19 @@ export class GoogleDriveStorageService {
   private async getRootFolderForBackups(drive: any): Promise<string> {
     const folderName = 'RS Freight Manager';
 
-    // PRIORITY 1: Check if there's a Shared Drive with this exact name
-    try {
-      const drivesResponse = await drive.drives.list({
-        fields: 'drives(id, name)'
-      });
+    // HARDCODED Shared Drive ID for testing - TODO: Make dynamic
+    const SHARED_DRIVE_ID = '0AEwAL9Ms5tl7Uk9PVA';
+    this.sharedDriveId = SHARED_DRIVE_ID;
+    console.log(`✓ Using Shared Drive ID: ${this.sharedDriveId}`);
 
-      if (drivesResponse.data.drives) {
-        const sharedDrive = drivesResponse.data.drives.find((d: any) => d.name === folderName);
-        if (sharedDrive) {
-          // The Shared Drive's ID IS the driveId we need
-          this.sharedDriveId = sharedDrive.id;
-          console.log(`✓ Found Shared Drive: ${folderName}, driveId: ${this.sharedDriveId}`);
-          // Return the root of the Shared Drive (use the drive's own ID)
-          return sharedDrive.id!;
-        }
-      }
-    } catch (error) {
-      console.log('⚠️  Could not list Shared Drives (may not have access)');
-    }
-
-    // PRIORITY 2: Search for folder in Shared Drives
+    // Search for folder in the Shared Drive
     const sharedDriveResponse = await drive.files.list({
       q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id, name)',
-      corpora: 'allDrives',
+      driveId: SHARED_DRIVE_ID,
+      corpora: 'drive',
       supportsAllDrives: true,
-      includeItemsFromAllDrives: true
+      includeItemsFromAllDrives: true,
+      fields: 'files(id, name)'
     });
 
     if (sharedDriveResponse.data.files && sharedDriveResponse.data.files.length > 0) {
