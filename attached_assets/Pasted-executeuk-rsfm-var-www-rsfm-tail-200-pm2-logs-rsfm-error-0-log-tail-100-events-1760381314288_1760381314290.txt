@@ -1,0 +1,101 @@
+executeuk@rsfm:/var/www/rsfm$ tail -200 ~/.pm2/logs/rsfm-error-0.log | tail -100
+    '      _eventsCount: 5,\n' +
+    '      [Symbol(shapeMode)]: true,\n' +
+    '      [Symbol(kCapture)]: false,\n' +
+    '      [Symbol(kCallback)]: null\n' +
+    '    },\n' +
+    '    headers: Headers {\n' +
+    "      'accept-encoding': 'gzip',\n" +
+    "      authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',\n" +
+    "      'content-type': 'multipart/related; boundary=e36dc9e1-f31c-411b-9c72-a1d838e12bf0',\n" +
+    "      'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',\n" +
+    "      'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'\n" +
+    '    },\n' +
+    '    params: {\n' +
+    "      fields: 'id, name',\n" +
+    '      supportsAllDrives: true,\n' +
+    "      uploadType: 'multipart'\n" +
+    '    },\n' +
+    '    validateStatus: [Function (anonymous)],\n' +
+    '    retry: true,\n' +
+    '    body: PassThrough {\n' +
+    '      _events: [Object],\n' +
+    '      _readableState: [ReadableState],\n' +
+    '      _writableState: [WritableState],\n' +
+    '      allowHalfOpen: true,\n' +
+    '      _maxListeners: undefined,\n' +
+    '      _flush: [Function: flush],\n' +
+    '      _eventsCount: 5,\n' +
+    '      [Symbol(shapeMode)]: true,\n' +
+    '      [Symbol(kCapture)]: false,\n' +
+    '      [Symbol(kCallback)]: null\n' +
+    '    },\n' +
+    "    responseType: 'unknown',\n" +
+    '    errorRedactor: [Function: defaultErrorRedactor],\n' +
+    "    duplex: 'half',\n" +
+    '    retryConfig: {\n' +
+    '      currentRetryAttempt: 0,\n' +
+    '      retry: 3,\n' +
+    '      httpMethodsToRetry: [Array],\n' +
+    '      noResponseRetries: 2,\n' +
+    '      retryDelayMultiplier: 2,\n' +
+    '      timeOfFirstRequest: 1760381070305,\n' +
+    '      totalTimeout: 9007199254740991,\n' +
+    '      maxRetryDelay: 9007199254740991,\n' +
+    '      statusCodesToRetry: [Array]\n' +
+    '    }\n' +
+    '  },\n' +
+    '  response: Response {\n' +
+    '    size: 0,\n' +
+    '    data: { error: [Object] },\n' +
+    '    config: {\n' +
+    '      url: URL {},\n' +
+    "      method: 'POST',\n" +
+    "      apiVersion: '',\n" +
+    '      userAgentDirectives: [Array],\n' +
+    '      paramsSerializer: [Function (anonymous)],\n' +
+    '      data: [PassThrough],\n' +
+    '      headers: Headers {\n' +
+    "        'accept-encoding': 'gzip',\n" +
+    "        authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',\n" +
+    "        'content-type': 'multipart/related; boundary=e36dc9e1-f31c-411b-9c72-a1d838e12bf0',\n" +
+    "        'user-agent': 'google-api-nodejs-client/8.0.0 (gzip)',\n" +
+    "        'x-goog-api-client': 'gdcl/8.0.0 gl-node/20.19.5'\n" +
+    '      },\n' +
+    '      params: [Object],\n' +
+    '      validateStatus: [Function (anonymous)],\n' +
+    '      retry: true,\n' +
+    '      body: [PassThrough],\n' +
+    "      responseType: 'unknown',\n" +
+    '      errorRedactor: [Function: defaultErrorRedactor],\n' +
+    "      duplex: 'half'\n" +
+    '    },\n' +
+    '    [Symbol(Body internals)]: {\n' +
+    '      body: [PassThrough],\n' +
+    '      stream: [PassThrough],\n' +
+    '      boundary: null,\n' +
+    '      disturbed: true,\n' +
+    '      error: null\n' +
+    '    },\n' +
+    '    [Symbol(Response internals)]: {\n' +
+    "      type: 'default',\n" +
+    "      url: 'https://www.googleapis.com/upload/drive/v3/files?fields=id%2C%20name&supportsAllDrives=true&uploadType=multipart',\n" +
+    '      status: 403,\n' +
+    "      statusText: 'Forbidden',\n" +
+    '      headers: [Object],\n' +
+    '      counter: 0,\n' +
+    '      highWaterMark: 16384\n' +
+    '    }\n' +
+    '  },\n' +
+    '  code: 403,\n' +
+    '  status: 403,\n' +
+    '  error: undefined,\n' +
+    "  [Symbol(gaxios-gaxios-error)]: '7.1.2',\n" +
+    '  [cause]: {\n' +
+    "    message: 'Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead.',\n" +
+    '    code: 403,\n' +
+    "    status: 'Forbidden',\n" +
+    '    errors: [ [Object] ]\n' +
+    '  }\n' +
+    '}\n'
+}
