@@ -1,0 +1,202 @@
+/home/executeuk/.pm2/logs/rsfm-error.log last 100 lines:
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+0|rsfm     | file:///var/www/rsfm/dist/index.js:1962
+0|rsfm     |   throw new Error(
+0|rsfm     |         ^
+0|rsfm     |
+0|rsfm     | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|rsfm     |     at file:///var/www/rsfm/dist/index.js:1962:9
+0|rsfm     |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|rsfm     |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|rsfm     |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|rsfm     |
+0|rsfm     | Node.js v20.19.5
+
+/home/executeuk/.pm2/logs/rsfm-out.log last 100 lines:
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
+0|rsfm     |
+0|rsfm     |
+0|rsfm     | > rest-express@1.0.0 start
+0|rsfm     | > NODE_ENV=production node dist/index.js
