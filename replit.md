@@ -40,6 +40,13 @@ The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for r
 - **Two-Stage Email Loading:** Email list uses metadata format (headers only) for fast initial load; full email content (body + attachments) loads on demand when user selects an email
 - **31-Day Email Window:** Initial email fetch loads last 31 days of emails for optimal performance and relevance
 
+**UX & Accessibility Fixes:**
+- **Login Page:** Forced light theme with explicit dark mode overrides (bg-white dark:bg-white, text-black dark:text-black) for optimal readability regardless of system theme
+- **Email Reader:** White background enforced in dark mode (bg-white dark:bg-white) to ensure email content with inline styles remains readable
+- **Email Composer:** Signature loading improved with query always enabled and conditional application; arrow key events (ArrowUp/ArrowDown) stopped from propagating to background email list
+- **Calendar Events:** Timezone (Europe/London) automatically added to timed events (create/update) to prevent server-side timezone errors
+- **Version:** Updated to 4.2.0 Beta; sidebar menu item renamed from "Beta Testing" to "Alpha Testing"
+
 ### Backend Architecture
 
 The backend uses Express.js and TypeScript on Node.js (ESM), providing a RESTful API under `/api`. Zod schemas ensure shared validation. PostgreSQL via Drizzle ORM (`DatabaseStorage`) handles persistent data. Data models include various customer types, hauliers, shipping lines, clearance agents, settings, import/export shipments, custom clearances, job file groups (shared document storage), and messages. Automatic custom clearance job generation is integrated, and contact forms support multi-email fields.
