@@ -283,7 +283,9 @@ export class GoogleDriveStorageService {
     const response = await drive.files.list({
       q: `name='${fileName}' and '${publicFolderId}' in parents and trashed=false`,
       fields: 'files(id, name, mimeType, size)',
-      spaces: 'drive'
+      spaces: 'drive',
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
     });
 
     if (response.data.files && response.data.files.length > 0) {
@@ -301,7 +303,8 @@ export class GoogleDriveStorageService {
       // Get file metadata
       const metadata = await drive.files.get({
         fileId: fileId,
-        fields: 'name, mimeType, size'
+        fields: 'name, mimeType, size',
+        supportsAllDrives: true
       });
 
       res.set({
@@ -312,7 +315,7 @@ export class GoogleDriveStorageService {
 
       // Download file content
       const response = await drive.files.get(
-        { fileId: fileId, alt: 'media' },
+        { fileId: fileId, alt: 'media', supportsAllDrives: true },
         { responseType: 'stream' }
       );
 
@@ -435,7 +438,8 @@ export class GoogleDriveStorageService {
     try {
       const response = await drive.files.get({
         fileId: fileId,
-        fields: 'id, name, mimeType, size'
+        fields: 'id, name, mimeType, size',
+        supportsAllDrives: true
       });
 
       return response.data as DriveFile;
@@ -455,7 +459,7 @@ export class GoogleDriveStorageService {
 
     try {
       const response = await drive.files.get(
-        { fileId: fileId, alt: 'media' },
+        { fileId: fileId, alt: 'media', supportsAllDrives: true },
         { responseType: 'arraybuffer' }
       );
 
@@ -502,13 +506,15 @@ export class GoogleDriveStorageService {
           requestBody: {
             role: 'reader',
             type: 'anyone'
-          }
+          },
+          supportsAllDrives: true
         });
       } else {
         // Remove public access
         const permissions = await drive.permissions.list({
           fileId: fileId,
-          fields: 'permissions(id, type)'
+          fields: 'permissions(id, type)',
+          supportsAllDrives: true
         });
 
         if (permissions.data.permissions) {
@@ -516,7 +522,8 @@ export class GoogleDriveStorageService {
             if (permission.type === 'anyone') {
               await drive.permissions.delete({
                 fileId: fileId,
-                permissionId: permission.id!
+                permissionId: permission.id!,
+                supportsAllDrives: true
               });
             }
           }
@@ -555,7 +562,10 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClient();
 
     try {
-      await drive.files.delete({ fileId: fileId });
+      await drive.files.delete({ 
+        fileId: fileId,
+        supportsAllDrives: true
+      });
     } catch (error) {
       throw new ObjectNotFoundError();
     }
