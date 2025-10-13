@@ -596,6 +596,7 @@ export class GoogleDriveStorageService {
   // Download backup as buffer
   async downloadBackup(fileId: string): Promise<{ buffer: Buffer; fileName: string }> {
     const drive = await getGoogleDriveClient();
+    const { Readable } = await import('stream');
 
     try {
       // Get file metadata
@@ -605,36 +606,33 @@ export class GoogleDriveStorageService {
         supportsAllDrives: true
       });
 
-      // Download file content
+      // Download file content as stream
       const response = await drive.files.get(
         { fileId: fileId, alt: 'media', supportsAllDrives: true },
-        { responseType: 'arraybuffer' }
+        { responseType: 'stream' }
       );
 
-      // Debug: check what we're actually receiving
-      console.log('Download response type:', typeof response.data);
-      console.log('Is Buffer?', Buffer.isBuffer(response.data));
-      console.log('Is ArrayBuffer?', response.data instanceof ArrayBuffer);
+      // Convert stream to buffer
+      const chunks: Buffer[] = [];
+      const stream = response.data as Readable;
       
-      // Handle different response types
-      let buffer: Buffer;
-      if (Buffer.isBuffer(response.data)) {
-        buffer = response.data;
-      } else if (response.data instanceof ArrayBuffer) {
-        buffer = Buffer.from(response.data);
-      } else if (typeof response.data === 'string') {
-        buffer = Buffer.from(response.data, 'binary');
-      } else {
-        // If it's wrapped in an object, try to extract it
-        console.log('Response data keys:', Object.keys(response.data));
-        throw new Error(`Unexpected response type: ${typeof response.data}`);
-      }
-
-      return { 
-        buffer,
-        fileName: metadata.data.name!
-      };
+      return new Promise((resolve, reject) => {
+        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+        stream.on('error', (err) => {
+          console.error('Stream error:', err);
+          reject(new ObjectNotFoundError());
+        });
+        stream.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          console.log(`✓ Downloaded backup: ${metadata.data.name} (${buffer.length} bytes)`);
+          resolve({
+            buffer,
+            fileName: metadata.data.name!
+          });
+        });
+      });
     } catch (error) {
+      console.error('Download backup error:', error);
       throw new ObjectNotFoundError();
     }
   }
