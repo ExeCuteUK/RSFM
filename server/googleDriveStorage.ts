@@ -620,17 +620,21 @@ export class GoogleDriveStorageService {
     }
   }
 
-  // Delete backup
+  // Delete backup (moves to trash)
   async deleteBackup(fileId: string): Promise<void> {
     const drive = await getGoogleDriveClient();
 
     try {
-      await drive.files.delete({ 
+      // Move to trash instead of permanent delete
+      // Content Manager role can trash files, but only Manager role can permanently delete
+      await drive.files.update({
         fileId: fileId,
+        requestBody: { trashed: true },
         supportsAllDrives: true
       });
-      console.log(`✓ Backup deleted: ${fileId}`);
+      console.log(`✓ Backup moved to trash: ${fileId}`);
     } catch (error) {
+      console.error('Delete backup error:', error);
       throw new ObjectNotFoundError();
     }
   }
