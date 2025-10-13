@@ -111,3 +111,9 @@ Complete setup instructions in `DEPLOYMENT.md`. Key points:
 - Behind HTTPS reverse proxy: Use `https://` protocol in `APP_BASE_URL`
 - Automated setup via `setup.sh` script
 - PM2 for process management, PostgreSQL 16 database
+
+**Database Migrations:**
+- When deploying schema changes from Replit to Ubuntu, run migrations to sync database structure
+- Invoice templates migration (fixes UUID support): `npx tsx scripts/migrate-invoice-templates.ts`
+- Migration scripts are safe and include data-loss checks before executing
+- Always backup your database before running migrations on production systems
