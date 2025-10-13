@@ -100,14 +100,28 @@ export class GoogleDriveStorageService {
     const folderName = 'RS Freight Manager';
 
     // Search for existing folder at root level
-    const response = await drive.files.list({
+    const rootResponse = await drive.files.list({
       q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: 'files(id, name)',
       spaces: 'drive'
     });
 
-    if (response.data.files && response.data.files.length > 0) {
-      this.rootFolderId = response.data.files[0].id!;
+    if (rootResponse.data.files && rootResponse.data.files.length > 0) {
+      this.rootFolderId = rootResponse.data.files[0].id!;
+      return this.rootFolderId;
+    }
+
+    // Search for shared folder (shared with service account)
+    const sharedResponse = await drive.files.list({
+      q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and sharedWithMe=true`,
+      fields: 'files(id, name)',
+      spaces: 'drive',
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
+    });
+
+    if (sharedResponse.data.files && sharedResponse.data.files.length > 0) {
+      this.rootFolderId = sharedResponse.data.files[0].id!;
       return this.rootFolderId;
     }
 
