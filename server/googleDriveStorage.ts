@@ -256,10 +256,30 @@ export class GoogleDriveStorageService {
   private async getRootFolderForBackups(drive: any): Promise<string> {
     const folderName = 'RS Freight Manager';
 
-    // PRIORITY 1: Search in Shared Drives (team drives)
+    // PRIORITY 1: Check if there's a Shared Drive with this exact name
+    try {
+      const drivesResponse = await drive.drives.list({
+        fields: 'drives(id, name)'
+      });
+
+      if (drivesResponse.data.drives) {
+        const sharedDrive = drivesResponse.data.drives.find((d: any) => d.name === folderName);
+        if (sharedDrive) {
+          // The Shared Drive's ID IS the driveId we need
+          this.sharedDriveId = sharedDrive.id;
+          console.log(`✓ Found Shared Drive: ${folderName}, driveId: ${this.sharedDriveId}`);
+          // Return the root of the Shared Drive (use the drive's own ID)
+          return sharedDrive.id!;
+        }
+      }
+    } catch (error) {
+      console.log('⚠️  Could not list Shared Drives (may not have access)');
+    }
+
+    // PRIORITY 2: Search for folder in Shared Drives
     const sharedDriveResponse = await drive.files.list({
       q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id, name, driveId)',  // Request driveId to cache it
+      fields: 'files(id, name)',
       corpora: 'allDrives',
       supportsAllDrives: true,
       includeItemsFromAllDrives: true
@@ -267,15 +287,7 @@ export class GoogleDriveStorageService {
 
     if (sharedDriveResponse.data.files && sharedDriveResponse.data.files.length > 0) {
       const folder = sharedDriveResponse.data.files[0];
-      
-      // Cache the driveId if this folder is in a Shared Drive
-      if (folder.driveId) {
-        this.sharedDriveId = folder.driveId;
-        console.log(`✓ Found folder in Shared Drive: ${folderName} (${folder.id}), driveId: ${folder.driveId}`);
-      } else {
-        console.log(`✓ Found folder in Shared Drive: ${folderName} (${folder.id})`);
-      }
-      
+      console.log(`✓ Found folder in Shared Drive: ${folderName} (${folder.id})`);
       return folder.id!;
     }
 
