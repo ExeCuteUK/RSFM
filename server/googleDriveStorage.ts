@@ -633,16 +633,29 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClientForBackups();
     const backupsFolderId = await this.getBackupsFolder();
     
-    console.log(`🔍 Backup folder ID: ${backupsFolderId}`);
-    
-    // Get the parent folder metadata to check if it's in a Shared Drive
+    // Get the Backups folder metadata to find its parent (which may have driveId)
     const folderMetadata = await drive.files.get({
       fileId: backupsFolderId,
       fields: 'id, name, driveId, parents',
       supportsAllDrives: true
     });
     
-    console.log(`📂 Folder metadata:`, JSON.stringify(folderMetadata.data, null, 2));
+    let driveId: string | undefined = folderMetadata.data.driveId;
+    
+    // If no driveId on this folder, check its parent (Shared Drive root folders have driveId)
+    if (!driveId && folderMetadata.data.parents && folderMetadata.data.parents.length > 0) {
+      const parentId = folderMetadata.data.parents[0];
+      console.log(`🔍 Checking parent folder for Shared Drive info: ${parentId}`);
+      
+      const parentMetadata = await drive.files.get({
+        fileId: parentId,
+        fields: 'id, name, driveId',
+        supportsAllDrives: true
+      });
+      
+      driveId = parentMetadata.data.driveId;
+      console.log(`📂 Parent folder: ${parentMetadata.data.name}, driveId: ${driveId || 'none'}`);
+    }
     
     const fileMetadata: any = {
       name: backupName,
@@ -663,12 +676,12 @@ export class GoogleDriveStorageService {
       supportsAllDrives: true
     };
 
-    // If the folder is in a Shared Drive, we must specify the driveId
-    if (folderMetadata.data.driveId) {
-      createOptions.driveId = folderMetadata.data.driveId;
-      console.log(`📁 Uploading to Shared Drive: ${folderMetadata.data.driveId}`);
+    // If we found a driveId, use it
+    if (driveId) {
+      createOptions.driveId = driveId;
+      console.log(`✅ Uploading to Shared Drive: ${driveId}`);
     } else {
-      console.log(`⚠️  No driveId found - folder appears to be in personal Drive`);
+      console.log(`⚠️  No driveId found - uploading to personal Drive`);
     }
 
     const file = await drive.files.create(createOptions);
