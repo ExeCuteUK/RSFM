@@ -34,19 +34,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      return apiRequest("POST", "/api/auth/login", { username, password });
+      const res = await apiRequest("POST", "/api/auth/login", { username, password });
+      return res.json();
     },
     onSuccess: async (data) => {
-      console.log("Login response data:", data);
       // Immediately set the user data in cache
       queryClient.setQueryData(["/api/auth/me"], { user: data.user });
-      console.log("Cache updated with user:", data.user);
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (data: { username: string; password: string; fullName?: string; email?: string }) => {
-      return apiRequest("POST", "/api/auth/register", data);
+      const res = await apiRequest("POST", "/api/auth/register", data);
+      return res.json();
     },
     onSuccess: async (data) => {
       // Immediately set the user data in cache
