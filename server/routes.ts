@@ -3375,7 +3375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Download backup from Google Drive
       const driveStorage = new GoogleDriveStorageService();
-      const zipBuffer = await driveStorage.downloadBackup(fileId);
+      const { buffer: zipBuffer, fileName } = await driveStorage.downloadBackup(fileId);
       
       // Create temp directory for extraction
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
