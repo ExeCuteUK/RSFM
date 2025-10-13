@@ -48,6 +48,9 @@ async function restoreContactDatabases() {
       { name: "invoices", file: `${backupDir}/invoices_backup.sql`, category: "Financial" },
       { name: "purchase_invoices", file: `${backupDir}/purchase_invoices_backup.sql`, category: "Financial" },
       
+      // Email & Communication
+      { name: "email_contacts", file: `${backupDir}/email_contacts_backup.sql`, category: "Email" },
+      
       // Contacts
       { name: "clearance_agents", file: `${backupDir}/clearance_agents_backup.sql`, category: "Contacts" },
       { name: "shipping_lines", file: `${backupDir}/shipping_lines_backup.sql`, category: "Contacts" },

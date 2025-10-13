@@ -11,6 +11,7 @@ import {
   customClearances,
   jobFileGroups,
   messages,
+  emailContacts,
   purchaseInvoices,
   invoices,
   generalReferences,
@@ -111,6 +112,13 @@ async function backupContactDatabases() {
     writeFileSync(`${backupDir}/messages_backup.sql`, messagesSQL);
     console.log(`✓ Messages backed up: ${messagesData.length} records`);
 
+    // Backup Email Contacts
+    console.log("Backing up Email Contacts...");
+    const emailContactsData = await db.select().from(emailContacts);
+    const emailContactsSQL = generateInsertSQL("email_contacts", emailContactsData);
+    writeFileSync(`${backupDir}/email_contacts_backup.sql`, emailContactsSQL);
+    console.log(`✓ Email Contacts backed up: ${emailContactsData.length} records`);
+
     // Backup Purchase Invoices
     console.log("Backing up Purchase Invoices...");
     const purchaseInvoicesData = await db.select().from(purchaseInvoices);
@@ -152,8 +160,9 @@ async function backupContactDatabases() {
                          shippingLinesData.length + clearanceAgentsData.length +
                          importShipmentsData.length + exportShipmentsData.length +
                          customClearancesData.length + jobFileGroupsData.length +
-                         messagesData.length + purchaseInvoicesData.length +
-                         invoicesData.length + generalReferencesData.length + settingsData.length + usersData.length;
+                         messagesData.length + emailContactsData.length + 
+                         purchaseInvoicesData.length + invoicesData.length + 
+                         generalReferencesData.length + settingsData.length + usersData.length;
     
     const metadata = {
       timestamp: new Date().toISOString(),
@@ -170,6 +179,7 @@ async function backupContactDatabases() {
         { name: "custom_clearances", count: customClearancesData.length },
         { name: "job_file_groups", count: jobFileGroupsData.length },
         { name: "messages", count: messagesData.length },
+        { name: "email_contacts", count: emailContactsData.length },
         { name: "purchase_invoices", count: purchaseInvoicesData.length },
         { name: "invoices", count: invoicesData.length },
         { name: "general_references", count: generalReferencesData.length },
