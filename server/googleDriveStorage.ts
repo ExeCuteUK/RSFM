@@ -633,7 +633,14 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClientForBackups();
     const backupsFolderId = await this.getBackupsFolder();
     
-    const fileMetadata = {
+    // Get the parent folder metadata to check if it's in a Shared Drive
+    const folderMetadata = await drive.files.get({
+      fileId: backupsFolderId,
+      fields: 'driveId',
+      supportsAllDrives: true
+    });
+    
+    const fileMetadata: any = {
       name: backupName,
       mimeType: 'application/zip',
       parents: [backupsFolderId]
@@ -644,12 +651,21 @@ export class GoogleDriveStorageService {
       body: Readable.from(buffer)
     };
 
-    const file = await drive.files.create({
+    // Prepare create options with Shared Drive support
+    const createOptions: any = {
       requestBody: fileMetadata,
       media: media,
       fields: 'id, name',
       supportsAllDrives: true
-    });
+    };
+
+    // If the folder is in a Shared Drive, we must specify the driveId
+    if (folderMetadata.data.driveId) {
+      createOptions.driveId = folderMetadata.data.driveId;
+      console.log(`📁 Uploading to Shared Drive: ${folderMetadata.data.driveId}`);
+    }
+
+    const file = await drive.files.create(createOptions);
 
     return { 
       fileId: file.data.id!,
