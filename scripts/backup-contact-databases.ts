@@ -329,12 +329,20 @@ function generateInsertSQL(tableName: string, data: any[]): string {
       attachments: 'jsonb'
     },
     import_shipments: {
+      jobContactName: 'text[]',
+      jobContactEmail: 'text[]',
+      haulierContactName: 'text[]',
+      haulierEmail: 'text[]',
       proofOfDelivery: 'jsonb',
       expensesToChargeOut: 'jsonb',
       additionalExpensesIn: 'jsonb',
       attachments: 'jsonb'
     },
     export_shipments: {
+      jobContactName: 'text[]',
+      jobContactEmail: 'text[]',
+      haulierContactName: 'text[]',
+      haulierEmail: 'text[]',
       proofOfDelivery: 'jsonb',
       expensesToChargeOut: 'jsonb',
       additionalExpensesIn: 'jsonb',
@@ -343,6 +351,11 @@ function generateInsertSQL(tableName: string, data: any[]): string {
       clearanceDocuments: 'jsonb'
     },
     custom_clearances: {
+      jobContactName: 'text[]',
+      jobContactEmail: 'text[]',
+      haulierContactName: 'text[]',
+      haulierEmail: 'text[]',
+      expensesToChargeOut: 'jsonb',
       transportDocuments: 'jsonb',
       clearanceDocuments: 'jsonb'
     },
