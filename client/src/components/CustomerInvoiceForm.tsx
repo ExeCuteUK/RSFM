@@ -11,6 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -152,6 +162,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
   const [loadTemplateOpen, setLoadTemplateOpen] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   // Helper function to extract postcode from delivery address
   const extractPostcode = (address: string): string => {
@@ -732,6 +743,48 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
       setLoadTemplateOpen(false)
       setSelectedTemplateId('')
     }
+  }
+
+  // Delete template mutation
+  const deleteTemplateMutation = useMutation({
+    mutationFn: async (templateId: string) => {
+      const response = await apiRequest('DELETE', `/api/invoice-charge-templates/${templateId}`)
+      if (response.status === 204) {
+        return { success: true }
+      }
+      return response.json()
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/invoice-charge-templates'] })
+      toast({
+        title: 'Success',
+        description: 'Template deleted successfully'
+      })
+      setDeleteConfirmOpen(false)
+      setLoadTemplateOpen(false)
+      setSelectedTemplateId('')
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete template',
+        variant: 'destructive'
+      })
+    }
+  })
+
+  // Handle delete template
+  const handleDeleteTemplate = () => {
+    if (!selectedTemplateId) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select a template to delete',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setDeleteConfirmOpen(true)
   }
 
   const saveMutation = useMutation({
@@ -1390,27 +1443,61 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
               </Select>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex justify-between items-center">
             <Button
-              variant="outline"
-              onClick={() => {
-                setLoadTemplateOpen(false)
-                setSelectedTemplateId('')
-              }}
-              data-testid="button-cancel-load-template"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleLoadTemplate}
+              variant="destructive"
+              onClick={handleDeleteTemplate}
               disabled={!selectedTemplateId}
-              data-testid="button-confirm-load-template"
+              data-testid="button-delete-template"
             >
-              Load Template
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete Template
             </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setLoadTemplateOpen(false)
+                  setSelectedTemplateId('')
+                }}
+                data-testid="button-cancel-load-template"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleLoadTemplate}
+                disabled={!selectedTemplateId}
+                data-testid="button-confirm-load-template"
+              >
+                Load Template
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Alert */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this template? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete-template">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTemplateMutation.mutate(selectedTemplateId)}
+              disabled={deleteTemplateMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete-template"
+            >
+              {deleteTemplateMutation.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 
