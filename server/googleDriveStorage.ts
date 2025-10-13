@@ -552,7 +552,7 @@ export class GoogleDriveStorageService {
     return true;
   }
 
-  // Delete a file
+  // Delete a file (moves to trash)
   async deleteFile(objectPath: string): Promise<void> {
     if (!objectPath.startsWith('/objects/')) {
       throw new ObjectNotFoundError();
@@ -562,11 +562,15 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClient();
 
     try {
-      await drive.files.delete({ 
+      // Move to trash instead of permanent delete
+      await drive.files.update({
         fileId: fileId,
+        requestBody: { trashed: true },
         supportsAllDrives: true
       });
+      console.log(`✓ File moved to trash: ${fileId}`);
     } catch (error) {
+      console.error('Delete file error:', error);
       throw new ObjectNotFoundError();
     }
   }
