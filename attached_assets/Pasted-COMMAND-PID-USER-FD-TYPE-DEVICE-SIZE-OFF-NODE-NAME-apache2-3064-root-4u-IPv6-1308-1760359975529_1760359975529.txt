@@ -1,0 +1,28 @@
+COMMAND  PID     USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+apache2 3064     root    4u  IPv6  13083      0t0  TCP *:http (LISTEN)
+apache2 3066 www-data    4u  IPv6  13083      0t0  TCP *:http (LISTEN)
+apache2 3068 www-data    4u  IPv6  13083      0t0  TCP *:http (LISTEN)
+executeuk@rsfm:/var/www/rsfm$ ^C
+executeuk@rsfm:/var/www/rsfm$ sudo systemctl status nginx^M
+Invalid unit name "nginx
+" escaped as "nginx\x0d" (maybe you should use systemd-escape?).
+Unit nginx\x0d.service could not be found.
+executeuk@rsfm:/var/www/rsfm$ sudo systemctl status nginx
+× nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Mon 2025-10-13 12:51:31 UTC; 1min 15s ago
+       Docs: man:nginx(8)
+    Process: 35463 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 35464 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+        CPU: 15ms
+
+Oct 13 12:51:29 rsfm nginx[35464]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Oct 13 12:51:29 rsfm nginx[35464]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Oct 13 12:51:30 rsfm nginx[35464]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Oct 13 12:51:30 rsfm nginx[35464]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Oct 13 12:51:30 rsfm nginx[35464]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Oct 13 12:51:30 rsfm nginx[35464]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Oct 13 12:51:31 rsfm nginx[35464]: nginx: [emerg] still could not bind()
+Oct 13 12:51:31 rsfm systemd[1]: nginx.service: Control process exited, code=exited, status=1/FAILURE
+Oct 13 12:51:31 rsfm systemd[1]: nginx.service: Failed with result 'exit-code'.
+Oct 13 12:51:31 rsfm systemd[1]: Failed to start nginx.service - A high performance web server and a reverse proxy server.
