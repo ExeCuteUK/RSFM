@@ -509,7 +509,8 @@ export class GoogleDriveStorageService {
     const file = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
-      fields: 'id, name'
+      fields: 'id, name',
+      supportsAllDrives: true
     });
 
     return { 
@@ -546,7 +547,7 @@ export class GoogleDriveStorageService {
 
     try {
       const response = await drive.files.get(
-        { fileId: fileId, alt: 'media' },
+        { fileId: fileId, alt: 'media', supportsAllDrives: true },
         { responseType: 'arraybuffer' }
       );
 
@@ -561,7 +562,7 @@ export class GoogleDriveStorageService {
     const drive = await getGoogleDriveClient();
 
     try {
-      await drive.files.delete({ fileId: fileId });
+      await drive.files.delete({ fileId: fileId, supportsAllDrives: true });
     } catch (error) {
       throw new ObjectNotFoundError();
     }
