@@ -47,8 +47,10 @@ export default function BackupsPage() {
   const isAdmin = user?.isAdmin || false;
 
   // Fetch all backups
-  const { data: backups, isLoading } = useQuery<Backup[]>({
+  const { data: backups, isLoading, refetch } = useQuery<Backup[]>({
     queryKey: ["/api/backups"],
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache results
   });
 
   const createBackupMutation = useMutation({
