@@ -158,7 +158,7 @@ export class GoogleDriveStorageService {
       return response.data.files[0].id!;
     }
 
-    // Create folder
+    // Create folder (supports shared drives)
     const folderMetadata = {
       name: folderName,
       mimeType: 'application/vnd.google-apps.folder',
@@ -167,7 +167,8 @@ export class GoogleDriveStorageService {
 
     const folder = await drive.files.create({
       requestBody: folderMetadata,
-      fields: 'id'
+      fields: 'id',
+      supportsAllDrives: true
     });
 
     return folder.data.id!;
