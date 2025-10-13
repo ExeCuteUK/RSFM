@@ -1217,29 +1217,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-sm font-semibold">Description of Charges</CardTitle>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setLoadTemplateOpen(true)}
-                    data-testid="button-load-template"
-                  >
-                    <FileText className="h-4 w-4 mr-1" />
-                    Load From Template
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setSaveTemplateOpen(true)}
-                    data-testid="button-save-template"
-                  >
-                    <Save className="h-4 w-4 mr-1" />
-                    Save Charges Template
-                  </Button>
-                </div>
+                <CardTitle className="text-sm font-semibold">Description of Charges</CardTitle>
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -1317,8 +1295,30 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
               ))}
             </div>
             
-            {/* Totals */}
-            <div className="flex justify-end mt-4">
+            {/* Totals with Template Buttons */}
+            <div className="flex justify-between items-start mt-4 gap-4">
+              <div className="flex items-center gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setLoadTemplateOpen(true)}
+                  data-testid="button-load-template"
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  Load From Template
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSaveTemplateOpen(true)}
+                  data-testid="button-save-template"
+                >
+                  <Save className="h-4 w-4 mr-1" />
+                  Save Charges Template
+                </Button>
+              </div>
               <div className="w-64 space-y-2">
                 <div className="flex justify-between">
                   <span className="font-medium">Invoice Total:</span>

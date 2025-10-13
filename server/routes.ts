@@ -2780,10 +2780,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete invoice
   app.delete("/api/invoices/:id", async (req, res) => {
     try {
+      // Fetch invoice first to get Google Drive PDF info
+      const invoice = await storage.getInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+
+      // Delete PDF from Google Drive if it exists (move to trash)
+      if (invoice.googleDrivePdfPath) {
+        try {
+          await driveStorage.deleteFile(invoice.googleDrivePdfPath);
+          console.log(`✓ Invoice PDF moved to trash: ${invoice.googleDrivePdfPath}`);
+        } catch (pdfError) {
+          console.error("Error deleting invoice PDF from Google Drive:", pdfError);
+          // Don't fail the request if PDF deletion fails
+        }
+      }
+
+      // Delete invoice from database
       const success = await storage.deleteInvoice(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "Invoice not found" });
       }
+      
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete invoice" });
