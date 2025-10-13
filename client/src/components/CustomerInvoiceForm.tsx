@@ -1164,8 +1164,8 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <CardTitle className="text-sm font-semibold">Description of Charges</CardTitle>
                 <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm font-semibold">Description of Charges</CardTitle>
                   <Button 
                     type="button" 
                     variant="outline" 
@@ -1186,17 +1186,17 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                     <Save className="h-4 w-4 mr-1" />
                     Save Charges Template
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={addLineItem}
-                    data-testid="button-add-line-item"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Line
-                  </Button>
                 </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addLineItem}
+                  data-testid="button-add-line-item"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Line
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
