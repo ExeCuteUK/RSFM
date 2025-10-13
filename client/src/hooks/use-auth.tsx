@@ -37,8 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return apiRequest("POST", "/api/auth/login", { username, password });
     },
     onSuccess: async (data) => {
+      console.log("Login response data:", data);
       // Immediately set the user data in cache
       queryClient.setQueryData(["/api/auth/me"], { user: data.user });
+      console.log("Cache updated with user:", data.user);
     },
   });
 
