@@ -1,0 +1,42 @@
+executeuk@rsfm:/var/www/rsfm$ curl -H "Authorization: Bearer $(node -e "const {google} = require('googleapis'); const auth = new google.auth.GoogleAuth({credentials: {client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\\\n/g, '\n')}, scopes: ['https://www.googleapis.com/auth/drive']}); auth.getAccessToken().then(token => console.log(token.token));")" "https://www.googleapis.com/drive/v3/drives"
+[eval]:1
+const {google} = require('googleapis'); const auth = new google.auth.GoogleAuth({credentials: {client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n')}, scopes: ['https://www.googleapis.com/auth/drive']}); auth.getAccessToken().then(token => console.log(token.token));
+                                                                                                                                                                                                                   ^
+
+TypeError: Cannot read properties of undefined (reading 'replace')
+    at [eval]:1:212
+    at runScriptInThisContext (node:internal/vm:209:10)
+    at node:internal/process/execution:118:14
+    at [eval]-wrapper:6:24
+    at runScript (node:internal/process/execution:101:62)
+    at evalScript (node:internal/process/execution:133:3)
+    at node:internal/main/eval_string:51:3
+
+Node.js v20.19.5
+{
+  "error": {
+    "code": 401,
+    "message": "Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+    "errors": [
+      {
+        "message": "Login Required.",
+        "domain": "global",
+        "reason": "required",
+        "location": "Authorization",
+        "locationType": "header"
+      }
+    ],
+    "status": "UNAUTHENTICATED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "CREDENTIALS_MISSING",
+        "domain": "googleapis.com",
+        "metadata": {
+          "service": "drive.googleapis.com",
+          "method": "google.apps.drive.v3.DriveDrives.List"
+        }
+      }
+    ]
+  }
+}
