@@ -255,7 +255,21 @@ export class GoogleDriveStorageService {
   private async getRootFolderForBackups(drive: any): Promise<string> {
     const folderName = 'RS Freight Manager';
 
-    // Search for shared folder first
+    // PRIORITY 1: Search in Shared Drives (team drives)
+    const sharedDriveResponse = await drive.files.list({
+      q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      fields: 'files(id, name)',
+      corpora: 'allDrives',
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
+    });
+
+    if (sharedDriveResponse.data.files && sharedDriveResponse.data.files.length > 0) {
+      console.log(`✓ Found folder in Shared Drive: ${folderName} (${sharedDriveResponse.data.files[0].id})`);
+      return sharedDriveResponse.data.files[0].id!;
+    }
+
+    // PRIORITY 2: Search for shared folder (from My Drive)
     const sharedResponse = await drive.files.list({
       q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and sharedWithMe=true`,
       fields: 'files(id, name)',
@@ -269,7 +283,7 @@ export class GoogleDriveStorageService {
       return sharedResponse.data.files[0].id!;
     }
 
-    // Search for folder at root level
+    // PRIORITY 3: Search for folder at root level
     const rootResponse = await drive.files.list({
       q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: 'files(id, name)',
