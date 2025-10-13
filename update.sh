@@ -67,11 +67,48 @@ echo -e "${GREEN}Step 7: Running database migrations...${NC}"
 npm run db:push
 
 echo ""
-echo -e "${GREEN}Step 8: Restarting PM2 process...${NC}"
-pm2 restart rsfm
+echo -e "${GREEN}Step 8: Updating PM2 ecosystem config...${NC}"
+cat > $APP_DIR/ecosystem.config.cjs << 'EOFECO'
+const fs = require('fs');
+const path = require('path');
+
+// Read .env file and parse it
+const envFile = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
+const envVars = { NODE_ENV: 'production' };
+
+envFile.split('\n').forEach(line => {
+  line = line.trim();
+  if (!line || line.startsWith('#')) return;
+  
+  const [key, ...valueParts] = line.split('=');
+  if (key && valueParts.length > 0) {
+    let value = valueParts.join('=').trim();
+    value = value.replace(/^["']|["']$/g, '');
+    envVars[key.trim()] = value;
+  }
+});
+
+module.exports = {
+  apps: [{
+    name: 'rsfm',
+    script: './dist/index.js',
+    cwd: '/var/www/rsfm',
+    env: envVars,
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G'
+  }]
+};
+EOFECO
 
 echo ""
-echo -e "${GREEN}Step 9: Saving PM2 configuration...${NC}"
+echo -e "${GREEN}Step 9: Restarting PM2 process with ecosystem config...${NC}"
+pm2 delete rsfm 2>/dev/null || true
+pm2 start $APP_DIR/ecosystem.config.cjs
+
+echo ""
+echo -e "${GREEN}Step 10: Saving PM2 configuration...${NC}"
 pm2 save
 
 echo ""

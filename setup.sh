@@ -183,15 +183,88 @@ echo -e "${GREEN}Step 12: Pushing database schema...${NC}"
 npm run db:push
 
 echo ""
-echo -e "${GREEN}Step 13: Setting up PM2 process...${NC}"
+echo -e "${GREEN}Step 13: Clearing users table for fresh setup...${NC}"
+sudo -u postgres psql -d $DB_NAME -c "DELETE FROM users;" 2>/dev/null || echo "Users table not found or already empty"
+
+echo ""
+echo -e "${GREEN}Step 14: Creating PM2 ecosystem config...${NC}"
+cat > $APP_DIR/ecosystem.config.cjs << 'EOFECO'
+const fs = require('fs');
+const path = require('path');
+
+// Read .env file and parse it
+const envFile = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
+const envVars = { NODE_ENV: 'production' };
+
+envFile.split('\n').forEach(line => {
+  line = line.trim();
+  if (!line || line.startsWith('#')) return;
+  
+  const [key, ...valueParts] = line.split('=');
+  if (key && valueParts.length > 0) {
+    let value = valueParts.join('=').trim();
+    value = value.replace(/^["']|["']$/g, '');
+    envVars[key.trim()] = value;
+  }
+});
+
+module.exports = {
+  apps: [{
+    name: 'rsfm',
+    script: './dist/index.js',
+    cwd: '/var/www/rsfm',
+    env: envVars,
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G'
+  }]
+};
+EOFECO
+
+echo ""
+echo -e "${GREEN}Step 15: Starting PM2 process with ecosystem config...${NC}"
 pm2 delete rsfm 2>/dev/null || true
-pm2 start npm --name rsfm -- start
+pm2 start $APP_DIR/ecosystem.config.cjs
 pm2 save
 
 echo ""
-echo -e "${GREEN}Step 14: Enabling PM2 startup script...${NC}"
+echo -e "${GREEN}Step 16: Enabling PM2 startup script...${NC}"
 sudo env PATH=$PATH:/usr/bin $(which pm2) startup systemd -u $APP_USER --hp /home/$APP_USER
 pm2 save
+
+echo ""
+echo -e "${GREEN}Step 17: Configuring firewall (UFW)...${NC}"
+if ! command -v ufw &> /dev/null; then
+    echo "Installing UFW..."
+    sudo apt-get install -y ufw
+fi
+
+# Reset UFW to default state (deny incoming, allow outgoing)
+sudo ufw --force reset
+
+# Set default policies
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Allow SSH (critical - prevents lockout)
+sudo ufw allow 22/tcp comment 'SSH'
+
+# Allow application port
+sudo ufw allow 5000/tcp comment 'R.S Freight Manager'
+
+# Allow HTTP and HTTPS (for future reverse proxy setup)
+sudo ufw allow 80/tcp comment 'HTTP'
+sudo ufw allow 443/tcp comment 'HTTPS'
+
+# Enable firewall
+sudo ufw --force enable
+
+# Show status
+sudo ufw status numbered
+
+echo -e "${GREEN}Firewall configured successfully!${NC}"
+echo -e "${YELLOW}Ports allowed: SSH (22), HTTP (80), HTTPS (443), App (5000)${NC}"
 
 echo ""
 echo -e "${GREEN}=========================================="
