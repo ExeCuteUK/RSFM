@@ -39,13 +39,14 @@ export default function Login() {
         title: "Login successful",
         description: "Welcome back!",
       });
-      // Don't manually redirect - let the useEffect handle it when user state updates
+      // User state will update, triggering redirect via useEffect
     } catch (error) {
       toast({
         title: "Login failed",
         description: error instanceof Error ? error.message : "Invalid credentials",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
