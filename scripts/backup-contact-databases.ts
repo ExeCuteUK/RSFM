@@ -1,3 +1,12 @@
+// Optional: Load environment variables from .env file (for manual command-line runs)
+// When run via API, env vars are inherited from the parent process
+try {
+  const { config } = await import('dotenv');
+  config();
+} catch {
+  // dotenv not available - using inherited environment variables
+}
+
 import { db } from "../server/db";
 import { 
   importCustomers, 
