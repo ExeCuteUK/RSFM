@@ -254,18 +254,32 @@ export class GoogleDriveStorageService {
 
   // Get root folder for backups (uses provided OAuth drive client)
   private async getRootFolderForBackups(drive: any): Promise<string> {
-    const folderName = 'RS Freight Manager';
+    const driveName = 'RS Freight Manager';
 
-    // HARDCODED Shared Drive ID for testing - TODO: Make dynamic
-    const SHARED_DRIVE_ID = '0AEwAL9Ms5tl7Uk9PVA';
-    this.sharedDriveId = SHARED_DRIVE_ID;
-    console.log(`✓ Using Shared Drive ID: ${this.sharedDriveId}`);
+    // PRIORITY 1: Check if there's a Shared Drive with this exact name
+    try {
+      const drivesResponse = await drive.drives.list({
+        fields: 'drives(id, name)'
+      });
 
-    // Search for folder in the Shared Drive
+      if (drivesResponse.data.drives) {
+        const sharedDrive = drivesResponse.data.drives.find((d: any) => d.name === driveName);
+        if (sharedDrive) {
+          // Found a Shared Drive! Cache its ID and return the drive's root (the drive ID itself)
+          this.sharedDriveId = sharedDrive.id;
+          console.log(`✓ Found Shared Drive: ${driveName} (ID: ${this.sharedDriveId})`);
+          // The root of a Shared Drive is the drive ID itself
+          return sharedDrive.id!;
+        }
+      }
+    } catch (error) {
+      console.log('⚠️  Could not list Shared Drives (may not have access)');
+    }
+
+    // PRIORITY 2: Search for folder in Shared Drives (someone else's shared drive)
     const sharedDriveResponse = await drive.files.list({
-      q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      driveId: SHARED_DRIVE_ID,
-      corpora: 'drive',
+      q: `name='${driveName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      corpora: 'allDrives',
       supportsAllDrives: true,
       includeItemsFromAllDrives: true,
       fields: 'files(id, name)'
@@ -273,13 +287,13 @@ export class GoogleDriveStorageService {
 
     if (sharedDriveResponse.data.files && sharedDriveResponse.data.files.length > 0) {
       const folder = sharedDriveResponse.data.files[0];
-      console.log(`✓ Found folder in Shared Drive: ${folderName} (${folder.id})`);
+      console.log(`✓ Found folder in Shared Drive: ${driveName} (${folder.id})`);
       return folder.id!;
     }
 
-    // PRIORITY 2: Search for shared folder (from My Drive)
+    // PRIORITY 3: Search for shared folder (from My Drive)
     const sharedResponse = await drive.files.list({
-      q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and sharedWithMe=true`,
+      q: `name='${driveName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and sharedWithMe=true`,
       fields: 'files(id, name)',
       spaces: 'drive',
       supportsAllDrives: true,
@@ -287,25 +301,25 @@ export class GoogleDriveStorageService {
     });
 
     if (sharedResponse.data.files && sharedResponse.data.files.length > 0) {
-      console.log(`✓ Found shared folder: ${folderName} (${sharedResponse.data.files[0].id})`);
+      console.log(`✓ Found shared folder: ${driveName} (${sharedResponse.data.files[0].id})`);
       return sharedResponse.data.files[0].id!;
     }
 
-    // PRIORITY 3: Search for folder at root level
+    // PRIORITY 4: Search for folder at root level
     const rootResponse = await drive.files.list({
-      q: `name='${folderName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      q: `name='${driveName}' and 'root' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: 'files(id, name)',
       spaces: 'drive'
     });
 
     if (rootResponse.data.files && rootResponse.data.files.length > 0) {
-      console.log(`✓ Found root folder: ${folderName} (${rootResponse.data.files[0].id})`);
+      console.log(`✓ Found root folder: ${driveName} (${rootResponse.data.files[0].id})`);
       return rootResponse.data.files[0].id!;
     }
 
     // Create root folder (OAuth can create in user's Drive)
     const folderMetadata = {
-      name: folderName,
+      name: driveName,
       mimeType: 'application/vnd.google-apps.folder',
       parents: ['root']
     };
@@ -315,7 +329,7 @@ export class GoogleDriveStorageService {
       fields: 'id'
     });
 
-    console.log(`✓ Created root folder: ${folderName} (${folder.data.id})`);
+    console.log(`✓ Created root folder: ${driveName} (${folder.data.id})`);
     return folder.data.id!;
   }
 
