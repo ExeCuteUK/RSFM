@@ -3943,22 +3943,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Compare ETA
         let etaDiscrepancy = null;
-        if (trackingEta && shipment.importDateEtaPort) {
-          const jobEta = new Date(shipment.importDateEtaPort);
-          const trackEta = new Date(trackingEta);
-          
-          // Strip time for date-only comparison
-          jobEta.setHours(0, 0, 0, 0);
-          trackEta.setHours(0, 0, 0, 0);
-          
-          const daysDiff = Math.round((trackEta.getTime() - jobEta.getTime()) / (1000 * 60 * 60 * 24));
-          
-          if (Math.abs(daysDiff) > 0) {
+        if (trackingEta) {
+          if (!shipment.importDateEtaPort) {
+            // Tracking has ETA but job field is empty - flag as discrepancy
             etaDiscrepancy = {
-              jobEta: shipment.importDateEtaPort,
+              jobEta: null,
               trackingEta: trackingEta,
-              daysDiff: daysDiff
+              daysDiff: null,
+              missingJobData: true
             };
+          } else {
+            // Both exist - compare them
+            const jobEta = new Date(shipment.importDateEtaPort);
+            const trackEta = new Date(trackingEta);
+            
+            // Strip time for date-only comparison
+            jobEta.setHours(0, 0, 0, 0);
+            trackEta.setHours(0, 0, 0, 0);
+            
+            const daysDiff = Math.round((trackEta.getTime() - jobEta.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (Math.abs(daysDiff) > 0) {
+              etaDiscrepancy = {
+                jobEta: shipment.importDateEtaPort,
+                trackingEta: trackingEta,
+                daysDiff: daysDiff
+              };
+            }
           }
         }
 
@@ -4002,22 +4013,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Compare Dispatch Date
         let dispatchDiscrepancy = null;
-        if (trackingDeparture && shipment.dispatchDate) {
-          const jobDispatch = new Date(shipment.dispatchDate);
-          const trackDispatch = new Date(trackingDeparture);
-          
-          // Strip time for date-only comparison
-          jobDispatch.setHours(0, 0, 0, 0);
-          trackDispatch.setHours(0, 0, 0, 0);
-          
-          const daysDiff = Math.round((trackDispatch.getTime() - jobDispatch.getTime()) / (1000 * 60 * 60 * 24));
-          
-          if (Math.abs(daysDiff) > 0) {
+        if (trackingDeparture) {
+          if (!shipment.dispatchDate) {
+            // Tracking has dispatch date but job field is empty - flag as discrepancy
             dispatchDiscrepancy = {
-              jobDispatch: shipment.dispatchDate,
+              jobDispatch: null,
               trackingDispatch: trackingDeparture,
-              daysDiff: daysDiff
+              daysDiff: null,
+              missingJobData: true
             };
+          } else {
+            // Both exist - compare them
+            const jobDispatch = new Date(shipment.dispatchDate);
+            const trackDispatch = new Date(trackingDeparture);
+            
+            // Strip time for date-only comparison
+            jobDispatch.setHours(0, 0, 0, 0);
+            trackDispatch.setHours(0, 0, 0, 0);
+            
+            const daysDiff = Math.round((trackDispatch.getTime() - jobDispatch.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (Math.abs(daysDiff) > 0) {
+              dispatchDiscrepancy = {
+                jobDispatch: shipment.dispatchDate,
+                trackingDispatch: trackingDeparture,
+                daysDiff: daysDiff
+              };
+            }
           }
         }
 

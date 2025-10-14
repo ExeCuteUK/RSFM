@@ -355,8 +355,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   }, [exportClearanceAgent, form])
 
   const handleFormSubmit = async (data: InsertExportShipment) => {
-    const normalizedProofOfDelivery: string[] = [...(data.proofOfDelivery || [])];
-    const normalizedAttachments: string[] = [...(data.attachments || [])];
+    const normalizedProofOfDelivery: Array<{filename: string; path: string}> = [...(data.proofOfDelivery || [])];
+    const normalizedAttachments: Array<{filename: string; path: string}> = [...(data.attachments || [])];
 
     if (pendingProofOfDelivery.length > 0) {
       try {
@@ -367,7 +367,14 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
           credentials: "include"
         });
         const normalizeData = await normalizeResponse.json();
-        normalizedProofOfDelivery.push(...normalizeData.paths);
+        
+        pendingProofOfDelivery.forEach((url, index) => {
+          const filename = decodeURIComponent(url.split('/').pop()?.split('?')[0] || 'file');
+          normalizedProofOfDelivery.push({
+            filename,
+            path: normalizeData.paths[index]
+          });
+        });
       } catch (error) {
         toast({
           title: "Error",
@@ -387,7 +394,14 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
           credentials: "include"
         });
         const normalizeData = await normalizeResponse.json();
-        normalizedAttachments.push(...normalizeData.paths);
+        
+        pendingAttachments.forEach((url, index) => {
+          const filename = decodeURIComponent(url.split('/').pop()?.split('?')[0] || 'file');
+          normalizedAttachments.push({
+            filename,
+            path: normalizeData.paths[index]
+          });
+        });
       } catch (error) {
         toast({
           title: "Error",

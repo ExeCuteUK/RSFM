@@ -24,9 +24,10 @@ interface ContainerDiscrepancy {
     vessel: string | null
   }
   etaDiscrepancy: {
-    jobEta: string
+    jobEta: string | null
     trackingEta: string
-    daysDiff: number
+    daysDiff: number | null
+    missingJobData?: boolean
   } | null
   portDiscrepancy: {
     jobPort: string
@@ -37,9 +38,10 @@ interface ContainerDiscrepancy {
     trackingVessel: string
   } | null
   dispatchDiscrepancy: {
-    jobDispatch: string
+    jobDispatch: string | null
     trackingDispatch: string
-    daysDiff: number
+    daysDiff: number | null
+    missingJobData?: boolean
   } | null
   deliveryDiscrepancy: {
     jobDelivery: string
@@ -147,7 +149,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
           <ScrollArea className="flex-1 -mx-6 px-6">
             <div className="space-y-4">
               {/* Discrepancies - Red */}
-              {data?.discrepancies?.map((discrepancy) => (
+              {(data?.discrepancies || []).map((discrepancy) => (
                 <div
                   key={discrepancy.shipmentId}
                   className="bg-card border border-border rounded-lg p-4"
@@ -158,7 +160,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                       <Badge variant="outline" className="font-mono">
                         JOB {discrepancy.jobRef}
                       </Badge>
-                      <span className="font-medium">{discrepancy.customerName}</span>
+                      <span className="font-medium text-sm">{discrepancy.customerName}</span>
                     </div>
                     <div className="text-sm text-muted-foreground space-y-0.5">
                       <div>Container: {discrepancy.containerNumber}</div>
@@ -178,7 +180,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                         <div className="flex-1">
                           <div className="flex items-center justify-between gap-2">
                             <div className="font-medium text-red-900 dark:text-red-100">
-                              Dispatch Date Mismatch
+                              {discrepancy.dispatchDiscrepancy.missingJobData ? 'Dispatch Date Missing' : 'Dispatch Date Mismatch'}
                             </div>
                             <Button
                               size="sm"
@@ -194,7 +196,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                                   Updating...
                                 </>
                               ) : (
-                                'Update'
+                                discrepancy.dispatchDiscrepancy.missingJobData ? 'Add' : 'Update'
                               )}
                             </Button>
                           </div>
@@ -202,7 +204,9 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                             <div>
                               <span className="text-muted-foreground">Job:</span>{' '}
                               <span className="font-medium">
-                                {format(new Date(discrepancy.dispatchDiscrepancy.jobDispatch), 'dd MMM yyyy')}
+                                {discrepancy.dispatchDiscrepancy.jobDispatch 
+                                  ? format(new Date(discrepancy.dispatchDiscrepancy.jobDispatch), 'dd MMM yyyy')
+                                  : 'Not set'}
                               </span>
                               {' '}<span className="text-muted-foreground">|</span>{' '}
                               <span className="text-muted-foreground">Tracking:</span>{' '}
@@ -210,12 +214,14 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                                 {format(new Date(discrepancy.dispatchDiscrepancy.trackingDispatch), 'dd MMM yyyy')}
                               </span>
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {discrepancy.dispatchDiscrepancy.daysDiff > 0
-                                ? `${discrepancy.dispatchDiscrepancy.daysDiff} day${discrepancy.dispatchDiscrepancy.daysDiff === 1 ? '' : 's'} later`
-                                : `${Math.abs(discrepancy.dispatchDiscrepancy.daysDiff)} day${Math.abs(discrepancy.dispatchDiscrepancy.daysDiff) === 1 ? '' : 's'} earlier`
-                              }
-                            </div>
+                            {!discrepancy.dispatchDiscrepancy.missingJobData && discrepancy.dispatchDiscrepancy.daysDiff !== null && (
+                              <div className="text-xs text-muted-foreground">
+                                {discrepancy.dispatchDiscrepancy.daysDiff > 0
+                                  ? `${discrepancy.dispatchDiscrepancy.daysDiff} day${discrepancy.dispatchDiscrepancy.daysDiff === 1 ? '' : 's'} later`
+                                  : `${Math.abs(discrepancy.dispatchDiscrepancy.daysDiff)} day${Math.abs(discrepancy.dispatchDiscrepancy.daysDiff) === 1 ? '' : 's'} earlier`
+                                }
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -227,7 +233,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                         <div className="flex-1">
                           <div className="flex items-center justify-between gap-2">
                             <div className="font-medium text-red-900 dark:text-red-100">
-                              ETA Mismatch
+                              {discrepancy.etaDiscrepancy.missingJobData ? 'ETA Port Missing' : 'ETA Mismatch'}
                             </div>
                             <Button
                               size="sm"
@@ -243,7 +249,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                                   Updating...
                                 </>
                               ) : (
-                                'Update'
+                                discrepancy.etaDiscrepancy.missingJobData ? 'Add' : 'Update'
                               )}
                             </Button>
                           </div>
@@ -251,7 +257,9 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                             <div>
                               <span className="text-muted-foreground">Job:</span>{' '}
                               <span className="font-medium">
-                                {format(new Date(discrepancy.etaDiscrepancy.jobEta), 'dd MMM yyyy')}
+                                {discrepancy.etaDiscrepancy.jobEta 
+                                  ? format(new Date(discrepancy.etaDiscrepancy.jobEta), 'dd MMM yyyy')
+                                  : 'Not set'}
                               </span>
                               {' '}<span className="text-muted-foreground">|</span>{' '}
                               <span className="text-muted-foreground">Tracking:</span>{' '}
@@ -259,12 +267,14 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                                 {format(new Date(discrepancy.etaDiscrepancy.trackingEta), 'dd MMM yyyy')}
                               </span>
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {discrepancy.etaDiscrepancy.daysDiff > 0
-                                ? `${discrepancy.etaDiscrepancy.daysDiff} day${discrepancy.etaDiscrepancy.daysDiff === 1 ? '' : 's'} later`
-                                : `${Math.abs(discrepancy.etaDiscrepancy.daysDiff)} day${Math.abs(discrepancy.etaDiscrepancy.daysDiff) === 1 ? '' : 's'} earlier`
-                              }
-                            </div>
+                            {!discrepancy.etaDiscrepancy.missingJobData && discrepancy.etaDiscrepancy.daysDiff !== null && (
+                              <div className="text-xs text-muted-foreground">
+                                {discrepancy.etaDiscrepancy.daysDiff > 0
+                                  ? `${discrepancy.etaDiscrepancy.daysDiff} day${discrepancy.etaDiscrepancy.daysDiff === 1 ? '' : 's'} later`
+                                  : `${Math.abs(discrepancy.etaDiscrepancy.daysDiff)} day${Math.abs(discrepancy.etaDiscrepancy.daysDiff) === 1 ? '' : 's'} earlier`
+                                }
+                              </div>
+                            )}
                             {discrepancy.deliveryDiscrepancy && (
                               <div className="font-semibold text-red-900 dark:text-red-100 text-xs mt-1">
                                 Current Delivery Plan based on new Port ETA: {discrepancy.deliveryDiscrepancy.daysFromArrival} day{discrepancy.deliveryDiscrepancy.daysFromArrival === 1 ? '' : 's'} between arrival and delivery
@@ -362,7 +372,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
               ))}
 
               {/* Matched Containers - Green */}
-              {data?.matchedContainers?.map((container) => (
+              {(data?.matchedContainers || []).map((container) => (
                 <div
                   key={container.shipmentId}
                   className="bg-card border border-green-200 dark:border-green-900/50 rounded-lg p-4"
@@ -375,7 +385,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                         <Badge variant="outline" className="font-mono">
                           JOB {container.jobRef}
                         </Badge>
-                        <span className="font-medium">{container.customerName}</span>
+                        <span className="font-medium text-sm">{container.customerName}</span>
                       </div>
                       <div className="text-sm text-muted-foreground space-y-0.5">
                         <div>Container: {container.containerNumber}</div>
@@ -395,7 +405,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
               ))}
 
               {/* Not Tracked - Yellow Warning */}
-              {data?.notTrackedContainers?.map((container) => (
+              {(data?.notTrackedContainers || []).map((container) => (
                 <div
                   key={container.shipmentId}
                   className="bg-card border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-4"
@@ -408,7 +418,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                         <Badge variant="outline" className="font-mono">
                           JOB {container.jobRef}
                         </Badge>
-                        <span className="font-medium">{container.customerName}</span>
+                        <span className="font-medium text-sm">{container.customerName}</span>
                       </div>
                       <div className="text-sm text-muted-foreground space-y-0.5">
                         <div>Container: {container.containerNumber}</div>

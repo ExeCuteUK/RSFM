@@ -313,18 +313,26 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   }
 
   const handleFormSubmit = (data: InsertCustomClearance) => {
-    const normalizedTransportDocuments: any[] = [...(data.transportDocuments || [])];
-    const normalizedClearanceDocuments: any[] = [...(data.clearanceDocuments || [])];
+    const normalizedTransportDocuments: Array<{filename: string; path: string}> = [...(data.transportDocuments || [])];
+    const normalizedClearanceDocuments: Array<{filename: string; path: string}> = [...(data.clearanceDocuments || [])];
 
     if (pendingTransportDocuments.length > 0) {
       const fileObjects = pendingTransportDocuments.map((fileData) => {
         try {
           // Parse JSON file object
-          return JSON.parse(fileData);
+          const parsed = JSON.parse(fileData);
+          if (parsed.filename && parsed.path) {
+            return parsed;
+          }
         } catch {
-          // Fallback for old-style path strings
-          return fileData.split("?")[0];
+          // Fallback for old-style path strings - extract filename from URL
+          const filename = decodeURIComponent(fileData.split('/').pop()?.split('?')[0] || 'file');
+          const path = fileData.split("?")[0];
+          return { filename, path };
         }
+        // Default fallback
+        const filename = decodeURIComponent(fileData.split('/').pop()?.split('?')[0] || 'file');
+        return { filename, path: fileData };
       });
       normalizedTransportDocuments.push(...fileObjects);
     }
@@ -333,11 +341,19 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       const fileObjects = pendingClearanceDocuments.map((fileData) => {
         try {
           // Parse JSON file object
-          return JSON.parse(fileData);
+          const parsed = JSON.parse(fileData);
+          if (parsed.filename && parsed.path) {
+            return parsed;
+          }
         } catch {
-          // Fallback for old-style path strings
-          return fileData.split("?")[0];
+          // Fallback for old-style path strings - extract filename from URL
+          const filename = decodeURIComponent(fileData.split('/').pop()?.split('?')[0] || 'file');
+          const path = fileData.split("?")[0];
+          return { filename, path };
         }
+        // Default fallback
+        const filename = decodeURIComponent(fileData.split('/').pop()?.split('?')[0] || 'file');
+        return { filename, path: fileData };
       });
       normalizedClearanceDocuments.push(...fileObjects);
     }

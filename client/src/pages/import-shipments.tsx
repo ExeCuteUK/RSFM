@@ -1725,7 +1725,10 @@ Hope all is OK.`
         <div className="flex items-center gap-2">
           <Button 
             data-testid="button-check-containers" 
-            onClick={() => setContainerCheckDialogOpen(true)} 
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/terminal49/check-all-containers"] })
+              setContainerCheckDialogOpen(true)
+            }} 
             variant="outline"
           >
             <Container className="h-4 w-4 mr-2" />
@@ -2078,7 +2081,7 @@ Hope all is OK.`
                         <button
                           onClick={() => handleAdviseClearanceToAgent(shipment.id)}
                           data-testid={`button-advise-clearance-${shipment.id}`}
-                          title="Send clearance details to agent"
+                          title={shipment.rsToClear ? "Send clearance details to agent" : "Notify Customer of Arrival"}
                           className="p-0 border-0 bg-transparent shrink-0"
                         >
                           <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-blue-500 transition-colors" />
