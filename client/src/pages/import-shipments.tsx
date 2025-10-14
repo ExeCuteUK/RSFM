@@ -96,6 +96,24 @@ export default function ImportShipments() {
     }
   }, [location])
 
+  // Auto-trigger container check when autoCheck parameter is present
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const autoCheck = params.get('autoCheck')
+    
+    if (autoCheck === 'true') {
+      // Open the container check dialog
+      setContainerCheckDialogOpen(true)
+      
+      // Clean up the URL parameter
+      params.delete('autoCheck')
+      const newUrl = params.toString() 
+        ? `/import-shipments?${params.toString()}`
+        : '/import-shipments'
+      setLocation(newUrl, { replace: true })
+    }
+  }, [location, setLocation])
+
   const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
     refetchInterval: 15000,
@@ -2145,18 +2163,29 @@ Hope all is OK.`
                       <h3 className="font-semibold text-lg" data-testid={`text-todo-title-${shipment.id}`}>
                         To-Do List
                       </h3>
-                      {shipment.linkedClearanceId && (() => {
-                        const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
-                        return linkedClearance ? (
-                          <button
-                            onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
-                            className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                            data-testid={`badge-clearance-status-${shipment.id}`}
+                      <div className="flex items-center gap-2">
+                        {shipment.handoverContainerAtPort && (
+                          <Badge
+                            variant="outline"
+                            className="bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700"
+                            data-testid={`badge-handover-${shipment.id}`}
                           >
-                            {linkedClearance.status}
-                          </button>
-                        ) : null
-                      })()}
+                            Handover to Customer
+                          </Badge>
+                        )}
+                        {shipment.linkedClearanceId && (() => {
+                          const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
+                          return linkedClearance ? (
+                            <button
+                              onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
+                              className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                              data-testid={`badge-clearance-status-${shipment.id}`}
+                            >
+                              {linkedClearance.status}
+                            </button>
+                          ) : null
+                        })()}
+                      </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">

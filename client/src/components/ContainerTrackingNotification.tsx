@@ -142,6 +142,7 @@ export function ContainerTrackingNotification() {
     }
 
     const messageParts: JSX.Element[] = []
+    let hasAutoFillableData = false
     
     data.discrepancies?.forEach((d, idx) => {
       const parts: string[] = []
@@ -151,6 +152,7 @@ export function ContainerTrackingNotification() {
         if (d.dispatchDiscrepancy.missingJobData) {
           // Job field is empty - tracking has data available
           missingFields.push('Dispatch Date')
+          hasAutoFillableData = true
         } else {
           // Normal discrepancy - dates differ
           const days = Math.abs(d.dispatchDiscrepancy.daysDiff!)
@@ -163,6 +165,7 @@ export function ContainerTrackingNotification() {
         if (d.etaDiscrepancy.missingJobData) {
           // Job field is empty - tracking has data available
           missingFields.push('ETA')
+          hasAutoFillableData = true
         } else {
           // Normal discrepancy - dates differ
           const days = Math.abs(d.etaDiscrepancy.daysDiff!)
@@ -212,7 +215,7 @@ export function ContainerTrackingNotification() {
         
         containerMsg = (
           <span key={idx}>
-            Container <strong>{d.containerNumber}</strong> is missing {fieldList} in the job record (available via <strong>Check Current Containers</strong> in Import Shipments), and also {discrepancyText}
+            Container <strong>{d.containerNumber}</strong> is missing {fieldList} in the job record, and also {discrepancyText}
           </span>
         )
       } else if (missingFields.length > 0) {
@@ -223,7 +226,7 @@ export function ContainerTrackingNotification() {
         
         containerMsg = (
           <span key={idx}>
-            Container <strong>{d.containerNumber}</strong> is missing {fieldList} in the job record, but this info is available in tracking data. You can auto-fill it using the <strong>Check Current Containers</strong> button in Import Shipments
+            Container <strong>{d.containerNumber}</strong> is missing {fieldList} in the job record
           </span>
         )
       } else {
@@ -241,9 +244,11 @@ export function ContainerTrackingNotification() {
         {greeting} I've noticed that {messageParts.map((part, idx) => (
           <span key={idx}>
             {part}
-            {idx < messageParts.length - 1 && '. Also, '}
+            {idx < messageParts.length - 1 && (messageParts.length === 2 ? ' and ' : idx === messageParts.length - 2 ? ', and ' : ', ')}
           </span>
-        ))}. {signOff}
+        ))}. {hasAutoFillableData && (
+          <>You can auto-fill {messageParts.length === 1 ? 'this' : 'these'} using the <strong>Check Current Containers</strong> button in Import Shipments. </>
+        )}{signOff}
       </>
     )
   }
@@ -303,7 +308,7 @@ export function ContainerTrackingNotification() {
             </div>
             {!isAllGood && (
               <Button
-                onClick={() => setLocation('/import-shipments')}
+                onClick={() => setLocation('/import-shipments?autoCheck=true')}
                 variant="outline"
                 size="sm"
                 className="mt-3"
