@@ -1624,8 +1624,12 @@ Hope all is OK.`
       if (!shipment.rsToClear) {
         // NOTIFY CUSTOMER OF ARRIVAL EMAIL
         
-        // Get job contact email
-        const jobContactEmail = shipment.jobContactEmail
+        // Get job contact email (handle both array and legacy string formats)
+        const jobContactEmailArray = Array.isArray(shipment.jobContactEmail) 
+          ? shipment.jobContactEmail 
+          : (shipment.jobContactEmail ? [shipment.jobContactEmail] : [])
+        const jobContactEmail = jobContactEmailArray[0] || ""
+        
         if (!jobContactEmail) {
           toast({
             title: "No Job Contact Email",
@@ -1674,21 +1678,17 @@ Hope all is OK.`
         }))
         
         // Open email composer
-        openWindow({
-          type: 'email',
-          title: 'New Email',
+        openEmailComposer({
           id: `email-${Date.now()}`,
-          payload: {
-            to: jobContactEmail || "",
-            cc: "",
-            bcc: "",
-            subject: subject,
-            body: body,
-            attachments: invoiceFiles,
-            metadata: {
-              source: 'notify-customer-arrival-import',
-              shipmentId: shipment.id
-            }
+          to: jobContactEmail || "",
+          cc: "",
+          bcc: "",
+          subject: subject,
+          body: body,
+          attachments: invoiceFiles,
+          metadata: {
+            source: 'notify-customer-arrival-import',
+            shipmentId: shipment.id
           }
         })
         
