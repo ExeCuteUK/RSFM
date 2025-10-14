@@ -71,9 +71,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
 
   const updateField = useMutation({
     mutationFn: async ({ shipmentId, field }: { shipmentId: string; field: string }) => {
-      return apiRequest(`/api/import-shipments/${shipmentId}/update-field/${field}`, {
-        method: "PATCH",
-      })
+      return apiRequest("PATCH", `/api/import-shipments/${shipmentId}/update-field/${field}`)
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })

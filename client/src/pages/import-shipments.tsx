@@ -2083,7 +2083,7 @@ Hope all is OK.`
                           <ClipboardCheck className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-blue-500 transition-colors" />
                         </button>
                         <p className={`text-xs ${getClearanceStatusColor(shipment.clearanceStatusIndicator)} font-medium flex items-center gap-1`} data-testid={`text-rs-to-clear-${shipment.id}`}>
-                          {shipment.rsToClear ? 'Advise Clearance to Agent' : 'Send Customs Arrival Info to Customer'}
+                          {shipment.rsToClear ? 'Advise Clearance to Agent' : 'Notify Customer of Arrival'}
                           {shipment.clearanceStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
@@ -2204,56 +2204,58 @@ Hope all is OK.`
                       </div>
                     </div>
                   )}
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleBookDeliveryCustomerEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                          data-testid={`button-book-delivery-email-${shipment.id}`}
-                          title="Send booking email to customer"
-                        >
-                          <CalendarCheck className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
-                        </button>
-                        <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)} flex items-center gap-1`} data-testid={`text-delivery-booked-${shipment.id}`}>
-                          Book Delivery With Customer
-                          {shipment.deliveryBookedStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.deliveryBookedStatusIndicator === 1 || shipment.deliveryBookedStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-delivery-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 2)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.deliveryBookedStatusIndicator === 2
-                              ? 'bg-orange-400 border-orange-500 scale-110'
-                              : 'bg-orange-200 border-orange-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-delivery-status-orange-${shipment.id}`}
-                          title="Waiting for Reply"
-                        />
-                        <button
-                          onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.deliveryBookedStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-delivery-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
+                  {!shipment.handoverContainerAtPort && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleBookDeliveryCustomerEmail(shipment)}
+                            className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                            data-testid={`button-book-delivery-email-${shipment.id}`}
+                            title="Send booking email to customer"
+                          >
+                            <CalendarCheck className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
+                          </button>
+                          <p className={`text-xs font-medium ${getDeliveryBookedStatusColor(shipment.deliveryBookedStatusIndicator)} flex items-center gap-1`} data-testid={`text-delivery-booked-${shipment.id}`}>
+                            Book Delivery With Customer
+                            {shipment.deliveryBookedStatusIndicator === 3 && <Check className="h-3 w-3" />}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 1)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.deliveryBookedStatusIndicator === 1 || shipment.deliveryBookedStatusIndicator === null
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-delivery-status-yellow-${shipment.id}`}
+                            title="To Do"
+                          />
+                          <button
+                            onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 2)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.deliveryBookedStatusIndicator === 2
+                                ? 'bg-orange-400 border-orange-500 scale-110'
+                                : 'bg-orange-200 border-orange-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-delivery-status-orange-${shipment.id}`}
+                            title="Waiting for Reply"
+                          />
+                          <button
+                            onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.deliveryBookedStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-delivery-status-green-${shipment.id}`}
+                            title="Completed"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   {shipment.containerShipment === "Container Shipment" && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -2328,7 +2330,7 @@ Hope all is OK.`
                         <button
                           onClick={() => updateInvoiceCustomerStatus.mutate({ id: shipment.id, status: null })}
                           className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === null
+                            shipment.invoiceCustomerStatusIndicator === 1 || shipment.invoiceCustomerStatusIndicator === null
                               ? 'bg-yellow-400 border-yellow-500 scale-110'
                               : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
                           }`}
@@ -2353,51 +2355,53 @@ Hope all is OK.`
                       </div>
                     </div>
                   </div>
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleSendPodToCustomerEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                          data-testid={`button-send-pod-email-${shipment.id}`}
-                          title="Send POD email to customer"
-                        >
-                          <Mail className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
-                        </button>
-                        <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-customer-${shipment.id}`}>
-                          Send POD To Customer
-                          {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => updateSendPodToCustomerStatus.mutate({ id: shipment.id, status: null })}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-send-pod-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
-                          </div>
+                  {!shipment.handoverContainerAtPort && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleSendPodToCustomerEmail(shipment)}
+                            className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                            data-testid={`button-send-pod-email-${shipment.id}`}
+                            title="Send POD email to customer"
+                          >
+                            <Mail className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
+                          </button>
+                          <p className={`text-xs font-medium ${getSendPodToCustomerStatusColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-customer-${shipment.id}`}>
+                            Send POD To Customer
+                            {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
+                          </p>
                         </div>
-                        <button
-                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-send-pod-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => updateSendPodToCustomerStatus.mutate({ id: shipment.id, status: null })}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendPodToCustomerStatusIndicator === null
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-send-pod-status-yellow-${shipment.id}`}
+                            title="To Do"
+                          />
+                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.sendPodToCustomerStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-send-pod-status-green-${shipment.id}`}
+                            title="Completed"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   {(() => {
                     // Use shared documents from job_file_groups if available, otherwise fall back to shipment's own attachments
                     const sharedDocs = shipment.jobRef ? (sharedDocsMap[shipment.jobRef] || []) : []

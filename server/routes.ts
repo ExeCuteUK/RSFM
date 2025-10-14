@@ -3829,8 +3829,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Extract tracking data
         const trackingEta = attrs.pod_eta_at;
-        const trackingPort = attrs.pod_full_name || attrs.pod_locode;
-        const trackingVessel = attrs.vessel_name;
+        const trackingPort = attrs.port_of_discharge_name;
+        const trackingVessel = attrs.pod_vessel_name;
         const trackingDeparture = attrs.pol_atd_at || attrs.pol_etd_at; // Actual or Estimated departure
         
         // Compare ETA
@@ -4067,12 +4067,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updates.importDateEtaPort = attrs.pod_eta_at.split('T')[0]; // Extract date only
       }
       
-      if (attrs.pod_full_name || attrs.pod_locode) {
-        updates.portOfArrival = attrs.pod_full_name || attrs.pod_locode;
+      if (attrs.port_of_discharge_name) {
+        updates.portOfArrival = attrs.port_of_discharge_name;
       }
       
-      if (attrs.vessel_name) {
-        updates.vesselName = attrs.vessel_name;
+      if (attrs.pod_vessel_name) {
+        updates.vesselName = attrs.pod_vessel_name;
       }
 
       if (attrs.pol_atd_at || attrs.pol_etd_at) {
@@ -4181,13 +4181,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           break;
         case 'port':
-          if (attrs.pod_full_name || attrs.pod_locode) {
-            updates.portOfArrival = attrs.pod_full_name || attrs.pod_locode;
+          if (attrs.port_of_discharge_name) {
+            updates.portOfArrival = attrs.port_of_discharge_name;
           }
           break;
         case 'vessel':
-          if (attrs.vessel_name) {
-            updates.vesselName = attrs.vessel_name;
+          if (attrs.pod_vessel_name) {
+            updates.vesselName = attrs.pod_vessel_name;
           }
           break;
         case 'dispatch':
