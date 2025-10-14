@@ -147,7 +147,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
           <ScrollArea className="flex-1 -mx-6 px-6">
             <div className="space-y-4">
               {/* Discrepancies - Red */}
-              {data?.discrepancies.map((discrepancy) => (
+              {data?.discrepancies?.map((discrepancy) => (
                 <div
                   key={discrepancy.shipmentId}
                   className="bg-card border border-border rounded-lg p-4"
@@ -362,7 +362,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
               ))}
 
               {/* Matched Containers - Green */}
-              {data?.matchedContainers.map((container) => (
+              {data?.matchedContainers?.map((container) => (
                 <div
                   key={container.shipmentId}
                   className="bg-card border border-green-200 dark:border-green-900/50 rounded-lg p-4"
@@ -395,7 +395,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
               ))}
 
               {/* Not Tracked - Yellow Warning */}
-              {data?.notTrackedContainers.map((container) => (
+              {data?.notTrackedContainers?.map((container) => (
                 <div
                   key={container.shipmentId}
                   className="bg-card border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-4"
