@@ -3851,15 +3851,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Compare Port of Arrival
         let portDiscrepancy = null;
-        if (trackingPort && shipment.portOfArrival) {
-          const jobPort = shipment.portOfArrival.toLowerCase().trim();
-          const trackPort = trackingPort.toLowerCase().trim();
+        if (shipment.portOfArrival || trackingPort) {
+          const jobPort = shipment.portOfArrival?.toLowerCase().trim() || '';
+          const trackPort = trackingPort?.toLowerCase().trim() || '';
           
-          // Check if ports are different (allowing partial matches)
-          if (!jobPort.includes(trackPort) && !trackPort.includes(jobPort)) {
+          // Flag if ports don't match (allowing partial matches when both exist)
+          if (jobPort && trackPort) {
+            // Both exist - check if they match
+            if (!jobPort.includes(trackPort) && !trackPort.includes(jobPort)) {
+              portDiscrepancy = {
+                jobPort: shipment.portOfArrival || 'Not set',
+                trackingPort: trackingPort || 'Not available'
+              };
+            }
+          } else if (jobPort !== trackPort) {
+            // One is missing - flag as discrepancy
             portDiscrepancy = {
-              jobPort: shipment.portOfArrival,
-              trackingPort: trackingPort
+              jobPort: shipment.portOfArrival || 'Not set',
+              trackingPort: trackingPort || 'Not available'
             };
           }
         }

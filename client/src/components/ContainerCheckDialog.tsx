@@ -188,13 +188,10 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                           </div>
                           <div className="mt-1 space-y-1">
                             <div>
-                              <span className="text-muted-foreground">Job Dispatch:</span>{' '}
                               <span className="font-medium">
                                 {format(new Date(discrepancy.dispatchDiscrepancy.jobDispatch), 'dd MMM yyyy')}
                               </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Tracking Dispatch:</span>{' '}
+                              {' '}<span className="text-muted-foreground">|</span>{' '}
                               <span className="font-medium">
                                 {format(new Date(discrepancy.dispatchDiscrepancy.trackingDispatch), 'dd MMM yyyy')}
                               </span>
@@ -236,37 +233,14 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                                 : `${Math.abs(discrepancy.etaDiscrepancy.daysDiff)} day${Math.abs(discrepancy.etaDiscrepancy.daysDiff) === 1 ? '' : 's'} earlier`
                               }
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {discrepancy.deliveryDiscrepancy && (
-                      <div className="flex items-start gap-2 text-sm bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded p-3">
-                        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <div className="font-medium text-red-900 dark:text-red-100">
-                            Delivery vs Arrival Timing
-                          </div>
-                          <div className="mt-1 space-y-1">
-                            <div>
-                              <span className="text-muted-foreground">Job Delivery:</span>{' '}
-                              <span className="font-medium">
-                                {format(new Date(discrepancy.deliveryDiscrepancy.jobDelivery), 'dd MMM yyyy')}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Tracking Arrival:</span>{' '}
-                              <span className="font-medium">
-                                {format(new Date(discrepancy.deliveryDiscrepancy.trackingEta), 'dd MMM yyyy')}
-                              </span>
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {discrepancy.deliveryDiscrepancy.daysFromArrival} day{discrepancy.deliveryDiscrepancy.daysFromArrival === 1 ? '' : 's'} between arrival and delivery
-                              {discrepancy.deliveryDiscrepancy.weekendDaysFromArrival > 0 && (
-                                <> ({discrepancy.deliveryDiscrepancy.weekendDaysFromArrival} weekend day{discrepancy.deliveryDiscrepancy.weekendDaysFromArrival === 1 ? '' : 's'})</>
-                              )}
-                            </div>
+                            {discrepancy.deliveryDiscrepancy && (
+                              <div className="font-semibold text-red-900 dark:text-red-100 text-xs mt-1">
+                                Current Delivery Plan based on new Port ETA: {discrepancy.deliveryDiscrepancy.daysFromArrival} day{discrepancy.deliveryDiscrepancy.daysFromArrival === 1 ? '' : 's'} between arrival and delivery
+                                {discrepancy.deliveryDiscrepancy.weekendDaysFromArrival > 0 && (
+                                  <> ({discrepancy.deliveryDiscrepancy.weekendDaysFromArrival} weekend day{discrepancy.deliveryDiscrepancy.weekendDaysFromArrival === 1 ? '' : 's'})</>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
