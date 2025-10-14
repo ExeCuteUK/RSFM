@@ -54,7 +54,9 @@ The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for r
 - **Email Reader:** White background enforced in dark mode (bg-white dark:bg-white) to ensure email content with inline styles remains readable
 - **Email Composer:** Signature loading improved with query always enabled and conditional application; arrow key events (ArrowUp/ArrowDown) stopped from propagating to background email list
 - **Calendar Events:** Timezone (Europe/London) automatically added to timed events (create/update) to prevent server-side timezone errors
-- **Version:** Updated to 4.2.4 Beta
+- **Version:** Updated to 4.2.5 Beta
+  - **Eric's Personality:** Container tracking notifications now feature randomized greetings (sometimes addressing the user by first name) and varied sign-off messages for a more natural experience
+  - **Performance Optimization:** Container tracking excludes delivered/completed jobs from Terminal49 API checks, reducing unnecessary API calls
   - **Smart SCAC Matching:** Shipping line lookup now uses intelligent partial matching to handle name variations (e.g., "CMA CGM (UK) Shipping" correctly maps to CMDU SCAC code)
   - **Auto-Refresh Notifications:** Container tracking notifications automatically update/disappear after field updates via cache invalidation
   - **Handover Job Display:** Dashboard container table shows green "N/A" for delivery date and "Handover" for references when handover at port is enabled

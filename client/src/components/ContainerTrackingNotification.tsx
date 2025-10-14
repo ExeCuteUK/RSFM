@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, CheckCircle2, X, Package } from "lucide-react"
 import { useLocation } from "wouter"
+import { useAuth } from "@/hooks/use-auth"
 
 interface ContainerDiscrepancy {
   shipmentId: string
@@ -65,6 +66,7 @@ interface ContainerCheckResponse {
 export function ContainerTrackingNotification() {
   const [, setLocation] = useLocation()
   const [isDismissed, setIsDismissed] = useState(false)
+  const { user } = useAuth()
 
   // Load check data in background - always fetch fresh when dashboard loads
   const { data, isLoading } = useQuery<ContainerCheckResponse>({
@@ -73,6 +75,41 @@ export function ContainerTrackingNotification() {
     refetchOnMount: 'always', // Always fetch fresh data when component mounts
     staleTime: 0, // Data is always considered stale to ensure fresh checks
   })
+
+  // Extract first name from user's full name
+  const firstName = user?.fullName?.split(' ')[0] || ''
+
+  // Random greeting variations
+  const getRandomGreeting = () => {
+    const greetingsWithName = firstName ? [
+      `Hi ${firstName}! It's Eric here.`,
+      `Hey ${firstName}, Eric checking in.`,
+      `Quick update for you, ${firstName}. Eric here.`,
+    ] : []
+    
+    const greetingsWithoutName = [
+      "Hi! It's Eric here.",
+      "Hey there, Eric checking in.",
+      "Eric here with an update.",
+      "Quick update from Eric.",
+      "Hi! Eric here.",
+    ]
+    
+    const allGreetings = [...greetingsWithName, ...greetingsWithoutName]
+    return allGreetings[Math.floor(Math.random() * allGreetings.length)]
+  }
+
+  // Random sign-off variations
+  const getRandomSignOff = () => {
+    const signOffs = [
+      "Worth taking a look when you get a chance!",
+      "Might be worth checking out!",
+      "Just thought you should know!",
+      "Something to look into when you have a moment.",
+      "Thought I'd give you a heads up!",
+    ]
+    return signOffs[Math.floor(Math.random() * signOffs.length)]
+  }
 
   // Reset dismissal when data changes (after updates)
   useEffect(() => {
@@ -97,7 +134,7 @@ export function ContainerTrackingNotification() {
       const totalTracked = data.matchedContainers.length + data.discrepancies.length
       return (
         <>
-          Hi! It's Eric here. I've checked {totalTracked} container{totalTracked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!
+          {getRandomGreeting()} I've checked {totalTracked} container{totalTracked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!
         </>
       )
     }
@@ -149,12 +186,12 @@ export function ContainerTrackingNotification() {
 
     return (
       <>
-        Hi! It's Eric here. I've noticed that {messageParts.map((part, idx) => (
+        {getRandomGreeting()} I've noticed that {messageParts.map((part, idx) => (
           <span key={idx}>
             {part}
             {idx < messageParts.length - 1 && '. Also, '}
           </span>
-        ))}. Worth taking a look when you get a chance!
+        ))}. {getRandomSignOff()}
       </>
     )
   }
