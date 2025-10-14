@@ -119,7 +119,8 @@ export function ContainerTrackingNotification() {
         parts.push(`is arriving ${days} day${days === 1 ? '' : 's'} ${direction}`)
       }
       
-      if (d.deliveryDiscrepancy) {
+      // Only show delivery gap message if there's an ETA discrepancy (the "which" makes it a continuation)
+      if (d.deliveryDiscrepancy && d.etaDiscrepancy) {
         parts.push(`which leaves a ${d.deliveryDiscrepancy.daysFromArrival} day delivery gap based on its new arrival date`)
       }
       
