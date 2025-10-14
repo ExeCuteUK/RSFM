@@ -24,7 +24,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle, RefreshCw, Download, GitBranch } from "lucide-react";
+import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle, RefreshCw, Download, GitBranch, FileText } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -728,6 +728,7 @@ function UpdateManagement() {
   const { toast } = useToast();
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [updateOutput, setUpdateOutput] = useState<string>("");
+  const [logFilePath, setLogFilePath] = useState<string>("");
   
   // Fetch current version
   const { data: versionInfo, isLoading: versionLoading, refetch: refetchVersion } = useQuery<{
@@ -755,10 +756,12 @@ function UpdateManagement() {
   const updateMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/system/update", {});
-      return response as { success: boolean; output: string; errors: string | null };
+      return response as { success: boolean; output: string; errors: string | null; logFile?: string };
     },
     onSuccess: (data) => {
       setUpdateOutput(data.output || "");
+      setLogFilePath(data.logFile || "");
+      
       if (data.success) {
         toast({
           title: "Update Complete",
@@ -771,21 +774,20 @@ function UpdateManagement() {
       } else {
         toast({
           title: "Update Failed",
-          description: data.errors || "An error occurred during the update.",
+          description: data.logFile ? `Check the log file for details: ${data.logFile}` : (data.errors || "An error occurred during the update."),
           variant: "destructive",
         });
       }
       setShowUpdateDialog(false);
     },
     onError: (error: any) => {
-      // Save full error details to log output
-      const errorDetails = error.message || error.toString();
-      setUpdateOutput(errorDetails);
+      // Try to extract log file path from error response
+      const logFile = error.logFile || '/tmp/update.log';
+      setLogFilePath(logFile);
       
-      // Show brief user-friendly message in toast
       toast({
         title: "Update Failed",
-        description: "The update process encountered an error. See the log below for details.",
+        description: `The update script failed. Check the log file: ${logFile}`,
         variant: "destructive",
       });
       setShowUpdateDialog(false);
@@ -907,6 +909,17 @@ function UpdateManagement() {
                 </Alert>
               )}
             </div>
+          )}
+
+          {/* Log File Path */}
+          {logFilePath && (
+            <Alert>
+              <FileText className="h-4 w-4" />
+              <AlertTitle>Update Log File</AlertTitle>
+              <AlertDescription>
+                Full update logs have been written to: <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{logFilePath}</code>
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Update Output */}

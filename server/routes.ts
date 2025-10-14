@@ -5334,6 +5334,9 @@ ${messageText}
 
   // Execute update script (admin only)
   app.post("/api/system/update", requireAdmin, async (req: Request, res: Response) => {
+    const logFilePath = '/tmp/update.log';
+    const timestamp = new Date().toISOString();
+    
     try {
       // Check if update.sh exists
       const updateScriptPath = path.join(process.cwd(), 'update.sh');
@@ -5349,19 +5352,34 @@ ${messageText}
         maxBuffer: 10 * 1024 * 1024 // 10MB buffer for logs
       });
       
+      // Write logs to file
+      const logContent = `=== Update Log (${timestamp}) ===\n\n--- STDOUT ---\n${stdout}\n\n--- STDERR ---\n${stderr || '(none)'}\n\n`;
+      await fs.writeFile(logFilePath, logContent, 'utf-8');
+      
       res.json({
         success: true,
         output: stdout,
-        errors: stderr || null
+        errors: stderr || null,
+        logFile: logFilePath
       });
     } catch (error: any) {
       console.error("Error running update script:", error);
+      
+      // Write error logs to file
+      const errorLogContent = `=== Update Error Log (${timestamp}) ===\n\nError: ${error.message}\n\n--- STDOUT ---\n${error.stdout || '(none)'}\n\n--- STDERR ---\n${error.stderr || '(none)'}\n\n`;
+      try {
+        await fs.writeFile(logFilePath, errorLogContent, 'utf-8');
+      } catch (writeError) {
+        console.error("Failed to write error log:", writeError);
+      }
+      
       res.status(500).json({ 
         success: false,
         error: "Update failed", 
         details: error.message,
         output: error.stdout || '',
-        errors: error.stderr || ''
+        errors: error.stderr || '',
+        logFile: logFilePath
       });
     }
   });
