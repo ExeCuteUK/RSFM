@@ -267,6 +267,11 @@ echo -e "${GREEN}Firewall configured successfully!${NC}"
 echo -e "${YELLOW}Ports allowed: SSH (22), HTTP (80), HTTPS (443), App (5000)${NC}"
 
 echo ""
+echo -e "${GREEN}Step 18: Making update script executable...${NC}"
+chmod +x $APP_DIR/update.sh
+echo -e "${GREEN}Update script is now executable${NC}"
+
+echo ""
 echo -e "${GREEN}=========================================="
 echo "Setup Complete!"
 echo "==========================================${NC}"
