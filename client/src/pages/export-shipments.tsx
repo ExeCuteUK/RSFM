@@ -1162,48 +1162,50 @@ Hope all is OK.`
                         </Button>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
+                    <p className="text-lg text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
                       {getCustomerName(shipment.destinationCustomerId)}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button 
-                          className={`${getStatusColor(shipment.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                          data-testid={`badge-status-${shipment.id}`}
-                        >
-                          {shipment.status}
-                          <ChevronDown className="h-3 w-3" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Awaiting Collection" })}>
-                          Awaiting Collection
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Dispatched" })}>
-                          Dispatched
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Delivered" })}>
-                          Delivered
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Completed" })}>
-                          Completed
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    {shipment.linkedClearanceId && (() => {
-                      const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
-                      return linkedClearance ? (
-                        <button
-                          onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
-                          className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                          data-testid={`badge-clearance-status-${shipment.id}`}
-                        >
-                          {linkedClearance.status}
-                        </button>
-                      ) : null
-                    })()}
+                    <div className="flex items-center gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button 
+                            className={`${getStatusColor(shipment.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                            data-testid={`badge-status-${shipment.id}`}
+                          >
+                            {shipment.status}
+                            <ChevronDown className="h-3 w-3" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Awaiting Collection" })}>
+                            Awaiting Collection
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Dispatched" })}>
+                            Dispatched
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Delivered" })}>
+                            Delivered
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateStatus.mutate({ id: shipment.id, status: "Completed" })}>
+                            Completed
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      {shipment.linkedClearanceId && (() => {
+                        const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
+                        return linkedClearance ? (
+                          <button
+                            onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
+                            className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                            data-testid={`badge-clearance-status-${shipment.id}`}
+                          >
+                            {linkedClearance.status}
+                          </button>
+                        ) : null
+                      })()}
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-1 text-xs">
@@ -1223,12 +1225,12 @@ Hope all is OK.`
                     </>
                   )}
                   {shipment.containerShipment === "Container Shipment" && shipment.vesselName && (
-                    <p className="font-semibold text-lg" data-testid={`text-vessel-name-${shipment.id}`}>
+                    <p data-testid={`text-vessel-name-${shipment.id}`}>
                       {shipment.vesselName}
                     </p>
                   )}
                   {shipment.containerShipment !== "Air Freight" && shipment.haulierName && (
-                    <p className="font-semibold text-lg" data-testid={`text-haulier-name-${shipment.id}`}>
+                    <p data-testid={`text-haulier-name-${shipment.id}`}>
                       {shipment.haulierName}
                     </p>
                   )}

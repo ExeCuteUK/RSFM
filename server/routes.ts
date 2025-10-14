@@ -2030,8 +2030,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Skip Zod validation for file fields since they use JSONB which Zod doesn't handle well
       // Validate everything except file arrays
+      // For partial updates (like MRN-only), make invoiceValue and currency truly optional by omitting and re-adding
       const { transportDocuments, clearanceDocuments, ...restBody } = req.body;
-      const validatedData = insertCustomClearanceSchema.partial().parse(restBody);
+      const partialSchema = insertCustomClearanceSchema
+        .partial()
+        .omit({ invoiceValue: true, currency: true })
+        .extend({
+          invoiceValue: z.string().nullable().optional(),
+          currency: z.string().nullable().optional(),
+        });
+      const validatedData = partialSchema.parse(restBody);
       
       // Detect and delete removed transport documents from Google Drive
       if (transportDocuments !== undefined) {

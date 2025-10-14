@@ -452,10 +452,7 @@ export const insertImportShipmentSchema = createInsertSchema(importShipments).om
     (val) => val !== null && val !== undefined && val.length > 0,
     { message: "Departure Country is required" }
   ),
-  incoterms: z.string().nullable().refine(
-    (val) => val !== null && val !== undefined && val.length > 0,
-    { message: "Incoterms is required" }
-  ),
+  incoterms: z.string().nullable().optional(),
   containerShipment: z.string().nullable().refine(
     (val) => val !== null && val !== undefined && val.length > 0,
     { message: "Shipment Type is required" }

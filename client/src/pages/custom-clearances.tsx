@@ -1651,49 +1651,51 @@ export default function CustomClearances() {
                           )}
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
+                      <p className="text-lg text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
                         {getCustomerName(clearance)}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button 
-                            className={`${getClearanceStatusBadgeColor(clearance.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                            data-testid={`badge-status-${clearance.id}`}
-                          >
-                            {clearance.status}
-                            <ChevronDown className="h-3 w-3" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Request CC" })}>
-                            Request CC
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
-                            Awaiting Entry
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
-                            Waiting Arrival
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
-                            P.H Hold
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Customs Issue" })}>
-                            Customs Issue
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Fully Cleared" })}>
-                            Fully Cleared
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        clearance.jobType === 'import' 
-                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                          : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-                      }`}>
-                        {clearance.jobType}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button 
+                              className={`${getClearanceStatusBadgeColor(clearance.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                              data-testid={`badge-status-${clearance.id}`}
+                            >
+                              {clearance.status}
+                              <ChevronDown className="h-3 w-3" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Request CC" })}>
+                              Request CC
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
+                              Awaiting Entry
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
+                              Waiting Arrival
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
+                              P.H Hold
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Customs Issue" })}>
+                              Customs Issue
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Fully Cleared" })}>
+                              Fully Cleared
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <span className={`text-xs px-2 py-0.5 rounded ${
+                          clearance.jobType === 'import' 
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                            : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                        }`}>
+                          {clearance.jobType}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-1 text-xs">
