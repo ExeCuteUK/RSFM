@@ -3770,7 +3770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Fetch all tracked shipments from Terminal49
       const response = await fetch(
-        `${TERMINAL49_BASE_URL}/shipments?include=containers,transport_events,port_events`,
+        `${TERMINAL49_BASE_URL}/shipments?include=containers`,
         {
           headers: {
             "Authorization": `Token ${TERMINAL49_API_KEY}`,
