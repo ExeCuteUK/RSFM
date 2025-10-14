@@ -28,6 +28,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
 
 const menuItems = [
@@ -140,27 +141,19 @@ export function AppSidebar() {
   return (
     <Sidebar data-testid="sidebar-app">
       <SidebarHeader className="border-b border-sidebar-border p-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/favicon-32x32.png" 
-              alt="RS Freight Manager" 
-              className="w-8 h-8"
-            />
-            <div className="flex-1">
-              <h2 className="text-sm font-semibold leading-tight" data-testid="text-app-title">
-                R.S. Freight Manager
-              </h2>
-              <p className="text-[11px] text-muted-foreground" data-testid="text-app-version">
-                Version 4.2.6 Beta
-              </p>
-            </div>
-          </div>
-          <div className="text-[11px] text-muted-foreground space-y-0.5">
-            <p className="font-semibold">Engine Revisions</p>
-            <p className="leading-tight">- ERIC 1.1</p>
-            <p className="leading-tight">- FOCR 1.2</p>
-            <p className="leading-tight">- T49T 1.2</p>
+        <div className="flex items-center gap-3">
+          <img 
+            src="/favicon-32x32.png" 
+            alt="RS Freight Manager" 
+            className="w-8 h-8"
+          />
+          <div className="flex-1">
+            <h2 className="text-sm font-semibold leading-tight" data-testid="text-app-title">
+              R.S. Freight Manager
+            </h2>
+            <p className="text-[11px] text-muted-foreground" data-testid="text-app-version">
+              Version 4.2.6 Beta
+            </p>
           </div>
         </div>
       </SidebarHeader>
@@ -243,6 +236,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-sidebar-border p-6">
+        <div className="text-[11px] text-muted-foreground space-y-0.5">
+          <p className="font-semibold">Engine Revisions</p>
+          <p className="leading-tight">- ERIC 1.1</p>
+          <p className="leading-tight">- FOCR 1.2</p>
+          <p className="leading-tight">- T49T 1.2</p>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }

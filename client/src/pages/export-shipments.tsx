@@ -1162,7 +1162,7 @@ Hope all is OK.`
                         </Button>
                       </div>
                     </div>
-                    <p className="text-lg text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
+                    <p className="text-lg font-semibold text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
                       {getCustomerName(shipment.destinationCustomerId)}
                     </p>
                   </div>
@@ -1193,18 +1193,6 @@ Hope all is OK.`
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                      {shipment.linkedClearanceId && (() => {
-                        const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
-                        return linkedClearance ? (
-                          <button
-                            onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
-                            className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                            data-testid={`badge-clearance-status-${shipment.id}`}
-                          >
-                            {linkedClearance.status}
-                          </button>
-                        ) : null
-                      })()}
                     </div>
                   </div>
                 </div>
@@ -1277,9 +1265,23 @@ Hope all is OK.`
                   
                   {shipment.exportClearanceAgent === "R.S" && (
                   <div className="pt-2 mt-2 border-t">
-                    <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${shipment.id}`}>
-                      To-Do List
-                    </h3>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h3 className="font-semibold text-lg" data-testid={`text-todo-title-${shipment.id}`}>
+                        To-Do List
+                      </h3>
+                      {shipment.linkedClearanceId && (() => {
+                        const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
+                        return linkedClearance ? (
+                          <button
+                            onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
+                            className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                            data-testid={`badge-clearance-status-${shipment.id}`}
+                          >
+                            {linkedClearance.status}
+                          </button>
+                        ) : null
+                      })()}
+                    </div>
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">

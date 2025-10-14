@@ -1624,74 +1624,64 @@ Hope all is OK.`
       if (!shipment.rsToClear) {
         // NOTIFY CUSTOMER OF ARRIVAL EMAIL
         
-        // Get customer contact email
-        const customerContact = customer?.email?.[0]
-        if (!customerContact) {
+        // Get job contact email
+        const jobContactEmail = shipment.jobContactEmail
+        if (!jobContactEmail) {
           toast({
-            title: "No Customer Contact",
-            description: "Please add a contact email for this customer first.",
+            title: "No Job Contact Email",
+            description: "Please add a job contact email for this shipment first.",
             variant: "destructive",
           })
           return
         }
         
+        // Extract first name from job contact name
+        const jobContactName = shipment.jobContactName || customerName
+        const firstName = jobContactName.split(' ')[0]
+        
         // Build subject with conditional customer ref
-        const customerRef = shipment.customerReferenceNumber ? `${shipment.customerReferenceNumber} / ` : ""
-        const truckContainerFlight = shipment.trailerOrContainerNumber || "TBA"
-        const eta = formatDate(shipment.importDateEtaPort) || "TBA"
-        const subject = `Arrival Notification / ${customerRef}Our Ref : ${shipment.jobRef} / ${truckContainerFlight} / ETA : ${shipment.portOfArrival || "TBA"} ${eta}`
+        const customerRef = shipment.customerReferenceNumber ? `Your Ref : ${shipment.customerReferenceNumber} / ` : ""
+        const containerNumber = shipment.trailerOrContainerNumber || "TBA"
+        const etaDate = formatDate(shipment.importDateEtaPort) || "TBA"
+        const etaPort = shipment.portOfArrival || "TBA"
+        const subject = `Notification Of Arrival / ${customerRef}Our Ref : ${shipment.jobRef} / Container ${containerNumber} / ETA : ${etaPort} ${etaDate}`
         
         // Build body
-        let body = `Dear ${customerName},\n\n`
-        body += `We are pleased to inform you that your shipment has arrived at ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.importDateEtaPort) || "TBA"}.\n\n`
-        body += `Shipment Details:\n`
-        body += `Our Reference: ${shipment.jobRef}\n`
-        if (shipment.customerReferenceNumber) {
-          body += `Your Reference: ${shipment.customerReferenceNumber}\n`
-        }
-        body += `Container/Trailer: ${truckContainerFlight}\n`
-        body += `Port of Arrival: ${shipment.portOfArrival || "TBA"}\n`
-        body += `Arrival Date: ${formatDate(shipment.importDateEtaPort) || "TBA"}\n\n`
+        let body = `Hi ${firstName},\n\n`
+        body += `Wanted to let you know we have a container (${containerNumber}) that will be arriving into ${shipment.portOfArrival || "TBA"} on ${etaDate}.\n\n`
+        body += `We will be arranging this release to yourselves.`
         
         // Prepare attachments array
         const attachments: Array<{ url: string; name: string }> = []
         
-        // Check for invoice and add to attachments if exists
-        const invoiceAttachments = shipment.attachments || []
-        const hasInvoice = invoiceAttachments.some(file => {
-          const fileName = getFileName(file).toLowerCase()
-          return fileName.includes('invoice') || fileName.includes('inv_')
-        })
+        // Check for invoice in R.S Invoice & Credits (rsInvoiceCredits field)
+        const rsInvoiceCredits = shipment.rsInvoiceCredits || []
+        const hasInvoice = rsInvoiceCredits.length > 0
         
         if (hasInvoice) {
-          body += `Please find attached the invoice for this shipment. We kindly request payment at your earliest convenience.\n\n`
+          body += `\n\nAttached is our handover invoice for this release. Please confirm soonest once this has been paid.`
           
           // Add invoice to attachments
-          invoiceAttachments.forEach(file => {
-            const fileName = getFileName(file).toLowerCase()
-            if (fileName.includes('invoice') || fileName.includes('inv_')) {
-              attachments.push({
-                url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
-                name: getFileName(file)
-              })
-            }
+          rsInvoiceCredits.forEach(file => {
+            attachments.push({
+              url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+              name: getFileName(file)
+            })
           })
         } else {
           // Sanity check - show warning if no invoice found
           toast({
             title: "No Invoice Found",
-            description: "Consider adding an invoice before sending this notification.",
-            variant: "default",
+            description: "You haven't created an invoice yet. Please create an invoice in R.S Invoice & Credits first, then create this email again.",
+            variant: "destructive",
           })
+          return
         }
-        
-        body += `If you have any questions, please do not hesitate to contact us.\n\n`
-        body += `Best regards,\nR.S International`
         
         // Open email composer
         openEmailComposer({
           id: `email-${Date.now()}`,
-          to: customerContact || "",
+          to: jobContactEmail || "",
           cc: "",
           bcc: "",
           subject: subject,
@@ -2059,7 +2049,7 @@ Hope all is OK.`
                         </Button>
                       </div>
                     </div>
-                    <p className="text-lg text-muted-foreground" data-testid={`text-customer-${shipment.id}`}>
+                    <p className="text-lg font-semibold text-muted-foreground" data-testid={`text-customer-${shipment.id}`}>
                       {getCustomerName(shipment.importCustomerId)}
                     </p>
                   </div>
@@ -2090,18 +2080,6 @@ Hope all is OK.`
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                      {shipment.linkedClearanceId && (() => {
-                        const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
-                        return linkedClearance ? (
-                          <button
-                            onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
-                            className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                            data-testid={`badge-clearance-status-${shipment.id}`}
-                          >
-                            {linkedClearance.status}
-                          </button>
-                        ) : null
-                      })()}
                     </div>
                   </div>
                 </div>
@@ -2164,9 +2142,23 @@ Hope all is OK.`
                     )}
                   </div>
                   <div className="pt-2 mt-2 border-t">
-                    <h3 className="font-semibold text-lg mb-2" data-testid={`text-todo-title-${shipment.id}`}>
-                      To-Do List
-                    </h3>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h3 className="font-semibold text-lg" data-testid={`text-todo-title-${shipment.id}`}>
+                        To-Do List
+                      </h3>
+                      {shipment.linkedClearanceId && (() => {
+                        const linkedClearance = getLinkedClearance(shipment.linkedClearanceId)
+                        return linkedClearance ? (
+                          <button
+                            onClick={() => setLocation(`/custom-clearances?search=${shipment.jobRef}`)}
+                            className={`${getClearanceStatusBadgeClass(linkedClearance.status)} inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                            data-testid={`badge-clearance-status-${shipment.id}`}
+                          >
+                            {linkedClearance.status}
+                          </button>
+                        ) : null
+                      })()}
+                    </div>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
                         <button
@@ -2359,7 +2351,9 @@ Hope all is OK.`
                           <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
                             {shipment.deliveryRelease === "Line" 
                               ? "Pay Line for Delivery" 
-                              : `Release Container to : ${shipment.deliveryRelease || "N/A"}`}
+                              : shipment.handoverContainerToCustomerAtPort 
+                                ? `Release Container to : ${getCustomerName(shipment.importCustomerId)}`
+                                : `Release Container to : ${shipment.deliveryRelease || "N/A"}`}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">

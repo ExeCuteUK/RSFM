@@ -1651,7 +1651,7 @@ export default function CustomClearances() {
                           )}
                         </div>
                       </div>
-                      <p className="text-lg text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
+                      <p className="text-lg font-semibold text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
                         {getCustomerName(clearance)}
                       </p>
                     </div>
