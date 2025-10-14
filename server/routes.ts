@@ -4095,6 +4095,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update specific field from Terminal49 tracking
+  app.patch("/api/import-shipments/:id/update-field/:field", async (req, res) => {
+    try {
+      if (!TERMINAL49_API_KEY) {
+        return res.status(500).json({ error: "Terminal49 API key not configured" });
+      }
+
+      const { id, field } = req.params;
+      const shipment = await storage.getImportShipment(id);
+      
+      if (!shipment) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      if (shipment.containerShipment !== 'Container Shipment') {
+        return res.status(400).json({ error: "Not a container shipment" });
+      }
+
+      const containerNumber = shipment.trailerOrContainerNumber?.trim();
+      if (!containerNumber) {
+        return res.status(400).json({ error: "No container number found" });
+      }
+
+      // Fetch Terminal49 data
+      const response = await fetch(
+        `${TERMINAL49_BASE_URL}/shipments?include=containers`,
+        {
+          headers: {
+            "Authorization": `Token ${TERMINAL49_API_KEY}`,
+            "Content-Type": "application/vnd.api+json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
+        return res.status(response.status).json({ 
+          error: "Terminal49 API error", 
+          details: data 
+        });
+      }
+
+      // Build container map
+      const containerMap = new Map();
+      if (data.included) {
+        data.included
+          .filter((item: any) => item.type === 'container')
+          .forEach((container: any) => {
+            const number = container.attributes?.number?.trim().toUpperCase();
+            if (number) {
+              containerMap.set(number, container);
+            }
+          });
+      }
+
+      // Find this container
+      const container = containerMap.get(containerNumber.toUpperCase());
+      if (!container) {
+        return res.status(404).json({ error: "Container not found in Terminal49" });
+      }
+
+      // Find the shipment
+      const shipmentId = container.relationships?.shipment?.data?.id;
+      if (!shipmentId) {
+        return res.status(404).json({ error: "Shipment relationship not found" });
+      }
+
+      const trackedShipment = data.data?.find((s: any) => s.id === shipmentId);
+      if (!trackedShipment) {
+        return res.status(404).json({ error: "Tracked shipment not found" });
+      }
+
+      const attrs = trackedShipment.attributes;
+
+      // Prepare update data for specific field
+      const updates: any = {};
+      
+      switch (field) {
+        case 'eta':
+          if (attrs.pod_eta_at) {
+            updates.importDateEtaPort = attrs.pod_eta_at.split('T')[0];
+          }
+          break;
+        case 'port':
+          if (attrs.pod_full_name || attrs.pod_locode) {
+            updates.portOfArrival = attrs.pod_full_name || attrs.pod_locode;
+          }
+          break;
+        case 'vessel':
+          if (attrs.vessel_name) {
+            updates.vesselName = attrs.vessel_name;
+          }
+          break;
+        case 'dispatch':
+          if (attrs.pol_atd_at || attrs.pol_etd_at) {
+            const departure = attrs.pol_atd_at || attrs.pol_etd_at;
+            updates.dispatchDate = departure.split('T')[0];
+          }
+          break;
+        case 'delivery':
+          // Delivery is calculated, so update ETA which affects delivery
+          if (attrs.pod_eta_at) {
+            updates.importDateEtaPort = attrs.pod_eta_at.split('T')[0];
+          }
+          break;
+        default:
+          return res.status(400).json({ error: "Invalid field parameter" });
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ error: "No update data available from Terminal49" });
+      }
+
+      // Update the shipment
+      const updatedShipment = await storage.updateImportShipment(id, updates);
+      
+      res.json({ 
+        success: true,
+        shipment: updatedShipment,
+        updates
+      });
+
+    } catch (error) {
+      console.error("Terminal49 update field error:", error);
+      res.status(500).json({ error: "Failed to update field" });
+    }
+  });
+
   // ========== Gmail Routes (Per-User OAuth) ==========
   
   // Get OAuth URL for Gmail connection

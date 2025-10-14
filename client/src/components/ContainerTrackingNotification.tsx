@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, CheckCircle2, X, Loader2, Package } from "lucide-react"
+import { AlertTriangle, CheckCircle2, X, Package } from "lucide-react"
 import { useLocation } from "wouter"
 
 interface ContainerDiscrepancy {
@@ -43,12 +43,9 @@ interface ContainerCheckResponse {
   totalChecked: number
 }
 
-const STORAGE_KEY = 'container_notification_dismissed'
-
 export function ContainerTrackingNotification() {
   const [, setLocation] = useLocation()
   const [isDismissed, setIsDismissed] = useState(false)
-  const [showNotification, setShowNotification] = useState(false)
 
   // Load check data in background - always fetch fresh when dashboard loads
   const { data, isLoading } = useQuery<ContainerCheckResponse>({
@@ -58,72 +55,16 @@ export function ContainerTrackingNotification() {
     staleTime: 0, // Data is always considered stale to ensure fresh checks
   })
 
-  useEffect(() => {
-    if (!data || isLoading) return
-
-    // Get dismissed data from localStorage
-    const stored = localStorage.getItem(STORAGE_KEY)
-    let shouldShow = true
-
-    if (stored) {
-      try {
-        const dismissed = JSON.parse(stored)
-        const today = new Date().toDateString()
-
-        // Create signature of current discrepancies (include all discrepancy types)
-        const currentSignature = data.discrepancies
-          .map(d => `${d.shipmentId}-${d.etaDiscrepancy?.daysDiff}-${d.portDiscrepancy?.trackingPort}-${d.vesselDiscrepancy?.trackingVessel}-${d.dispatchDiscrepancy?.daysDiff}-${d.deliveryDiscrepancy?.daysDiff}`)
-          .sort()
-          .join('|')
-
-        if (data.allGood) {
-          // All good: only show once per day
-          shouldShow = dismissed.date !== today || !dismissed.allGoodDismissed
-        } else {
-          // Issues found: show if it's a different day, different issues, or not dismissed
-          shouldShow = dismissed.date !== today || dismissed.signature !== currentSignature
-        }
-      } catch {
-        shouldShow = true
-      }
-    }
-
-    setShowNotification(shouldShow)
-  }, [data, isLoading])
-
   const handleDismiss = () => {
-    const today = new Date().toDateString()
-    
-    if (data?.allGood) {
-      // All good: remember we dismissed it today
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        date: today,
-        allGoodDismissed: true,
-        signature: ''
-      }))
-    } else if (data?.discrepancies) {
-      // Issues: save the signature so we know if issues change
-      const signature = data.discrepancies
-        .map(d => `${d.shipmentId}-${d.etaDiscrepancy?.daysDiff}-${d.portDiscrepancy?.trackingPort}-${d.vesselDiscrepancy?.trackingVessel}-${d.dispatchDiscrepancy?.daysDiff}-${d.deliveryDiscrepancy?.daysDiff}`)
-        .sort()
-        .join('|')
-      
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        date: today,
-        allGoodDismissed: false,
-        signature
-      }))
-    }
-    
+    // Only dismiss for current session - will re-appear on next dashboard visit
     setIsDismissed(true)
-    setShowNotification(false)
   }
 
   const generateMessage = () => {
     if (!data) return ""
 
     if (data.allGood) {
-      return `We've checked ${data.totalChecked} container${data.totalChecked !== 1 ? 's' : ''} and everything looks on schedule.`
+      return `Hi! It's Eric here. I've checked ${data.totalChecked} container${data.totalChecked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!`
     }
 
     const messages: string[] = []
@@ -134,38 +75,40 @@ export function ContainerTrackingNotification() {
       if (d.dispatchDiscrepancy) {
         const days = Math.abs(d.dispatchDiscrepancy.daysDiff)
         const direction = d.dispatchDiscrepancy.daysDiff > 0 ? 'later' : 'earlier'
-        parts.push(`departed ${days} day${days === 1 ? '' : 's'} ${direction}`)
+        parts.push(`actually departed ${days} day${days === 1 ? '' : 's'} ${direction} than expected`)
       }
       
       if (d.etaDiscrepancy) {
         const days = Math.abs(d.etaDiscrepancy.daysDiff)
-        const direction = d.etaDiscrepancy.daysDiff > 0 ? 'late' : 'early'
-        parts.push(`arriving ${days} day${days === 1 ? '' : 's'} ${direction}`)
+        const direction = d.etaDiscrepancy.daysDiff > 0 ? 'later' : 'earlier'
+        parts.push(`is arriving ${days} day${days === 1 ? '' : 's'} ${direction}`)
       }
       
       if (d.deliveryDiscrepancy) {
-        const days = Math.abs(d.deliveryDiscrepancy.daysDiff)
-        const direction = d.deliveryDiscrepancy.daysDiff > 0 ? 'after' : 'before'
-        parts.push(`delivery ${days} day${days === 1 ? '' : 's'} ${direction} arrival`)
+        parts.push(`which leaves a ${d.deliveryDiscrepancy.daysFromArrival} day delivery gap based on its new arrival date`)
       }
       
       if (d.portDiscrepancy) {
-        parts.push(`port changed to ${d.portDiscrepancy.trackingPort}`)
+        parts.push(`the port of arrival has changed to ${d.portDiscrepancy.trackingPort}`)
       }
       
       if (d.vesselDiscrepancy) {
-        parts.push(`vessel changed to ${d.vesselDiscrepancy.trackingVessel}`)
+        parts.push(`the vessel has changed to ${d.vesselDiscrepancy.trackingVessel}`)
       }
       
       if (parts.length > 0) {
-        messages.push(`Container ${d.containerNumber} is ${parts.join(', ')}`)
+        const containerMsg = parts.length === 1 
+          ? `Container ${d.containerNumber} ${parts[0]}`
+          : `Container ${d.containerNumber} ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+        messages.push(containerMsg)
       }
     })
 
-    return messages.join('. ') + '. Please review these in Import Shipments.'
+    const prefix = "Hi! It's Eric here. I've noticed that "
+    return prefix + messages.join('. Also, ') + '. Worth taking a look when you get a chance!'
   }
 
-  if (isLoading || !showNotification || isDismissed) {
+  if (isLoading || isDismissed || !data) {
     return null
   }
 

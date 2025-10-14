@@ -62,24 +62,25 @@ interface ContainerCheckDialogProps {
 
 export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialogProps) {
   const { toast } = useToast()
-  const [updatingShipment, setUpdatingShipment] = useState<string | null>(null)
+  const [updatingField, setUpdatingField] = useState<string | null>(null)
 
   const { data, isLoading, refetch } = useQuery<ContainerCheckResponse>({
     queryKey: ["/api/terminal49/check-all-containers"],
     enabled: open,
   })
 
-  const updateSingleShipment = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest(`/api/import-shipments/${id}/update-from-terminal49`, {
-        method: "POST",
+  const updateField = useMutation({
+    mutationFn: async ({ shipmentId, field }: { shipmentId: string; field: string }) => {
+      return apiRequest(`/api/import-shipments/${shipmentId}/update-field/${field}`, {
+        method: "PATCH",
       })
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/terminal49/check-all-containers"] })
       toast({
         title: "Success",
-        description: "Shipment updated with tracking data",
+        description: `${variables.field.charAt(0).toUpperCase() + variables.field.slice(1)} updated with tracking data`,
       })
       refetch()
     },
@@ -91,13 +92,13 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
       })
     },
     onSettled: () => {
-      setUpdatingShipment(null)
+      setUpdatingField(null)
     }
   })
 
-  const handleUpdate = (shipmentId: string) => {
-    setUpdatingShipment(shipmentId)
-    updateSingleShipment.mutate(shipmentId)
+  const handleFieldUpdate = (shipmentId: string, field: string) => {
+    setUpdatingField(`${shipmentId}-${field}`)
+    updateField.mutate({ shipmentId, field })
   }
 
   return (
@@ -140,42 +141,22 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                   className="bg-card border border-border rounded-lg p-4"
                   data-testid={`container-discrepancy-${discrepancy.jobRef}`}
                 >
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="font-mono">
-                          JOB {discrepancy.jobRef}
-                        </Badge>
-                        <span className="font-medium">{discrepancy.customerName}</span>
-                      </div>
-                      <div className="text-sm text-muted-foreground space-y-0.5">
-                        <div>Container: {discrepancy.containerNumber}</div>
-                        {discrepancy.currentJobData.portOfArrival && (
-                          <div>Port: {discrepancy.currentJobData.portOfArrival}</div>
-                        )}
-                        {discrepancy.currentJobData.eta && (
-                          <div>ETA: {format(new Date(discrepancy.currentJobData.eta), 'dd MMM yyyy')}</div>
-                        )}
-                      </div>
+                  <div className="flex-1 mb-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="outline" className="font-mono">
+                        JOB {discrepancy.jobRef}
+                      </Badge>
+                      <span className="font-medium">{discrepancy.customerName}</span>
                     </div>
-                    <Button
-                      onClick={() => handleUpdate(discrepancy.shipmentId)}
-                      disabled={updatingShipment === discrepancy.shipmentId}
-                      size="sm"
-                      data-testid={`button-update-all-${discrepancy.jobRef}`}
-                    >
-                      {updatingShipment === discrepancy.shipmentId ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Updating...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Update All
-                        </>
+                    <div className="text-sm text-muted-foreground space-y-0.5">
+                      <div>Container: {discrepancy.containerNumber}</div>
+                      {discrepancy.currentJobData.portOfArrival && (
+                        <div>Port: {discrepancy.currentJobData.portOfArrival}</div>
                       )}
-                    </Button>
+                      {discrepancy.currentJobData.eta && (
+                        <div>ETA: {format(new Date(discrepancy.currentJobData.eta), 'dd MMM yyyy')}</div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -183,15 +164,36 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                       <div className="flex items-start gap-2 text-sm bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded p-3">
                         <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <div className="font-medium text-red-900 dark:text-red-100">
-                            Dispatch Date Mismatch
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-medium text-red-900 dark:text-red-100">
+                              Dispatch Date Mismatch
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => handleFieldUpdate(discrepancy.shipmentId, 'dispatch')}
+                              disabled={updatingField === `${discrepancy.shipmentId}-dispatch`}
+                              data-testid={`button-update-dispatch-${discrepancy.containerNumber}`}
+                            >
+                              {updatingField === `${discrepancy.shipmentId}-dispatch` ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                  Updating...
+                                </>
+                              ) : (
+                                'Update'
+                              )}
+                            </Button>
                           </div>
                           <div className="mt-1 space-y-1">
                             <div>
+                              <span className="text-muted-foreground">Job:</span>{' '}
                               <span className="font-medium">
                                 {format(new Date(discrepancy.dispatchDiscrepancy.jobDispatch), 'dd MMM yyyy')}
                               </span>
                               {' '}<span className="text-muted-foreground">|</span>{' '}
+                              <span className="text-muted-foreground">Tracking:</span>{' '}
                               <span className="font-medium">
                                 {format(new Date(discrepancy.dispatchDiscrepancy.trackingDispatch), 'dd MMM yyyy')}
                               </span>
@@ -211,18 +213,36 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                       <div className="flex items-start gap-2 text-sm bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded p-3">
                         <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <div className="font-medium text-red-900 dark:text-red-100">
-                            ETA Mismatch
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-medium text-red-900 dark:text-red-100">
+                              ETA Mismatch
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => handleFieldUpdate(discrepancy.shipmentId, 'eta')}
+                              disabled={updatingField === `${discrepancy.shipmentId}-eta`}
+                              data-testid={`button-update-eta-${discrepancy.containerNumber}`}
+                            >
+                              {updatingField === `${discrepancy.shipmentId}-eta` ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                  Updating...
+                                </>
+                              ) : (
+                                'Update'
+                              )}
+                            </Button>
                           </div>
                           <div className="mt-1 space-y-1">
                             <div>
-                              <span className="text-muted-foreground">Job ETA:</span>{' '}
+                              <span className="text-muted-foreground">Job:</span>{' '}
                               <span className="font-medium">
                                 {format(new Date(discrepancy.etaDiscrepancy.jobEta), 'dd MMM yyyy')}
                               </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Tracking ETA:</span>{' '}
+                              {' '}<span className="text-muted-foreground">|</span>{' '}
+                              <span className="text-muted-foreground">Tracking:</span>{' '}
                               <span className="font-medium">
                                 {format(new Date(discrepancy.etaDiscrepancy.trackingEta), 'dd MMM yyyy')}
                               </span>
@@ -250,8 +270,27 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                       <div className="flex items-start gap-2 text-sm bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded p-3">
                         <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <div className="font-medium text-red-900 dark:text-red-100">
-                            Port of Arrival Mismatch
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-medium text-red-900 dark:text-red-100">
+                              Port of Arrival Mismatch
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => handleFieldUpdate(discrepancy.shipmentId, 'port')}
+                              disabled={updatingField === `${discrepancy.shipmentId}-port`}
+                              data-testid={`button-update-port-${discrepancy.containerNumber}`}
+                            >
+                              {updatingField === `${discrepancy.shipmentId}-port` ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                  Updating...
+                                </>
+                              ) : (
+                                'Update'
+                              )}
+                            </Button>
                           </div>
                           <div className="mt-1 space-y-1">
                             <div>
@@ -271,8 +310,27 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                       <div className="flex items-start gap-2 text-sm bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded p-3">
                         <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <div className="font-medium text-red-900 dark:text-red-100">
-                            Vessel Name Mismatch
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-medium text-red-900 dark:text-red-100">
+                              Vessel Name Mismatch
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => handleFieldUpdate(discrepancy.shipmentId, 'vessel')}
+                              disabled={updatingField === `${discrepancy.shipmentId}-vessel`}
+                              data-testid={`button-update-vessel-${discrepancy.containerNumber}`}
+                            >
+                              {updatingField === `${discrepancy.shipmentId}-vessel` ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                  Updating...
+                                </>
+                              ) : (
+                                'Update'
+                              )}
+                            </Button>
                           </div>
                           <div className="mt-1 space-y-1">
                             <div>
