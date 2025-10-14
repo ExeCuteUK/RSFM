@@ -1679,17 +1679,20 @@ Hope all is OK.`
         }
         
         // Open email composer
-        openEmailComposer({
+        openWindow({
+          type: 'email-composer',
           id: `email-${Date.now()}`,
-          to: jobContactEmail || "",
-          cc: "",
-          bcc: "",
-          subject: subject,
-          body: body,
-          attachments: attachments,
-          metadata: {
-            source: 'notify-customer-arrival-import',
-            shipmentId: shipment.id
+          payload: {
+            to: jobContactEmail || "",
+            cc: "",
+            bcc: "",
+            subject: subject,
+            body: body,
+            attachments: attachments,
+            metadata: {
+              source: 'notify-customer-arrival-import',
+              shipmentId: shipment.id
+            }
           }
         })
         
@@ -2391,7 +2394,7 @@ Hope all is OK.`
                       </div>
                     </div>
                   )}
-                  {!shipment.handoverContainerToCustomerAtPort && (
+                  {!shipment.handoverContainerAtPort && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
@@ -2646,6 +2649,10 @@ Hope all is OK.`
                                     return (
                                     <div key={invoice.id} className="flex items-center gap-1 group">
                                       <span
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          setViewingPdf({ url: `/api/invoices/${invoice.id}/pdf`, name: `RS Invoice - ${invoice.jobRef}.pdf` })
+                                        }}
                                         className={`text-xs ${colorClass} hover:underline cursor-pointer truncate flex-1`}
                                         title={`${prefix} ${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
                                       >

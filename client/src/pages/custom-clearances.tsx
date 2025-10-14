@@ -2052,6 +2052,10 @@ export default function CustomClearances() {
                                     return (
                                     <div key={invoice.id} className="flex items-center gap-1 group">
                                       <span
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          setViewingPdf({ url: `/api/invoices/${invoice.id}/pdf`, name: `RS Invoice - ${invoice.jobRef}.pdf` })
+                                        }}
                                         className={`text-xs ${colorClass} hover:underline cursor-pointer truncate flex-1`}
                                         title={`${prefix} ${invoice.invoiceNumber} - £${invoice.total.toFixed(2)}`}
                                       >
