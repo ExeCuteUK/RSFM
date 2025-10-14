@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -54,6 +54,13 @@ export function ContainerTrackingNotification() {
     refetchOnMount: 'always', // Always fetch fresh data when component mounts
     staleTime: 0, // Data is always considered stale to ensure fresh checks
   })
+
+  // Reset dismissal when data changes (after updates)
+  useEffect(() => {
+    if (data) {
+      setIsDismissed(false)
+    }
+  }, [data?.allGood, data?.discrepancies?.length])
 
   const handleDismiss = () => {
     // Only dismiss for current session - will re-appear on next dashboard visit

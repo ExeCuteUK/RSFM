@@ -3517,7 +3517,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!shippingLineName) return null;
     
     const normalizedName = shippingLineName.toLowerCase().trim();
-    return SHIPPING_LINE_SCAC_MAP[normalizedName] || null;
+    
+    // First try exact match
+    const exactMatch = SHIPPING_LINE_SCAC_MAP[normalizedName];
+    if (exactMatch) return exactMatch;
+    
+    // Then try partial matching for common variations
+    // Check if the name contains key shipping line identifiers
+    if (normalizedName.includes("cma cgm") || normalizedName.includes("cma-cgm")) return "CMDU";
+    if (normalizedName.includes("maersk")) return "MAEU";
+    if (normalizedName.includes("cosco")) return "COSU";
+    if (normalizedName.includes("msc") || normalizedName.includes("mediterranean shipping")) return "MSCU";
+    if (normalizedName.includes("hapag")) return "HLCU";
+    if (normalizedName.includes("ocean network express")) return "ONEY";
+    if (normalizedName.includes("evergreen")) return "EGLV";
+    if (normalizedName.includes("yang ming")) return "YMLU";
+    if (normalizedName.includes("zim")) return "ZIMU";
+    if (normalizedName.includes("pacific international")) return "PCIU";
+    if (normalizedName.includes("hyundai") || normalizedName.includes("hmm")) return "HDMU";
+    if (normalizedName.includes("oocl") || normalizedName.includes("orient overseas")) return "OOLU";
+    if (normalizedName.includes("k line") || normalizedName.includes("kawasaki")) return "KKLU";
+    
+    return null;
   }
 
   // Create tracking request for a container

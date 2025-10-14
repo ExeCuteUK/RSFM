@@ -1036,6 +1036,7 @@ export default function Dashboard() {
                               shipment={shipment}
                               fieldName="customerReferenceNumber"
                               value={shipment.customerReferenceNumber || ""}
+                              displayValue={shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}
                               customCellColor={clearanceColor}
                             />
                             {/* Delivery Date */}
@@ -1043,9 +1044,9 @@ export default function Dashboard() {
                               shipment={shipment}
                               fieldName="deliveryDate"
                               value={shipment.deliveryDate || ""}
-                              displayValue={shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : ''}
+                              displayValue={shipment.handoverContainerAtPort ? 'N/A' : (shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : '')}
                               type="date"
-                              customCellColor={deliveryBookedColor}
+                              customCellColor={shipment.handoverContainerAtPort ? 'bg-green-100 dark:bg-green-900' : deliveryBookedColor}
                             />
                             {/* Rls */}
                             <EditableCell
