@@ -1680,7 +1680,8 @@ Hope all is OK.`
         
         // Open email composer
         openWindow({
-          type: 'email-composer',
+          type: 'email',
+          title: 'New Email',
           id: `email-${Date.now()}`,
           payload: {
             to: jobContactEmail || "",
