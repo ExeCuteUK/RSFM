@@ -16,6 +16,7 @@ import { Link, useLocation } from "wouter"
 import { useQuery } from "@tanstack/react-query"
 import { Badge } from "@/components/ui/badge"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
+import { queryClient } from "@/lib/queryClient"
 
 import {
   Sidebar,
@@ -126,6 +127,16 @@ export function AppSidebar() {
     })
   }
 
+  const handleContactsClick = () => {
+    // Invalidate all contact-related queries to refresh data
+    queryClient.invalidateQueries({ queryKey: ["/api/import-customers"] })
+    queryClient.invalidateQueries({ queryKey: ["/api/export-customers"] })
+    queryClient.invalidateQueries({ queryKey: ["/api/export-receivers"] })
+    queryClient.invalidateQueries({ queryKey: ["/api/hauliers"] })
+    queryClient.invalidateQueries({ queryKey: ["/api/shipping-lines"] })
+    queryClient.invalidateQueries({ queryKey: ["/api/clearance-agents"] })
+  }
+
   return (
     <Sidebar data-testid="sidebar-app">
       <SidebarHeader className="border-b border-sidebar-border p-6">
@@ -158,7 +169,7 @@ export function AppSidebar() {
                     data-active={location === item.url}
                     className={location === item.url ? "bg-sidebar-accent" : ""}
                   >
-                    <Link href={item.url}>
+                    <Link href={item.url} onClick={item.title === "Contacts" ? handleContactsClick : undefined}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>

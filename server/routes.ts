@@ -3145,6 +3145,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  /**
+   * Extract MRN (Movement Reference Number) from OCR text
+   * 
+   * MRN Format: 2-digit year + GB + alphanumeric (e.g., 25GBBD9ZSL1C153AR1)
+   * Bank Account Format: GB + 2+ digits (e.g., GB16BARC20051723372545)
+   * 
+   * Priority: Look for MRN near "MRN:" label first
+   * Validation: Must have letters mixed in after GB (not all digits = bank account)
+   */
+  function extractMRNNumber(text: string): string | null {
+    if (!text) return null;
+
+    // MRN regex pattern: 
+    // - Starts with 2 digits (year)
+    // - Followed by GB
+    // - Followed by 12-16 alphanumeric characters (must contain at least some letters)
+    const mrnPattern = /\b(\d{2}GB[A-Z0-9]{12,16})\b/gi;
+    
+    // Bank account pattern to exclude:
+    // - Starts with GB
+    // - Followed by 2 digits (check digits)
+    // - Then mostly/all digits
+    // Note: No 'g' flag since we're using .test() which is stateful with 'g'
+    const bankAccountPattern = /\bGB\d{2}[A-Z]{0,4}\d{10,}\b/i;
+    
+    // Strategy 1: Look for MRN near "MRN:" label (within 50 characters after label)
+    const mrnLabelMatch = text.match(/MRN[:\s]+([^\n]{0,50})/i);
+    if (mrnLabelMatch) {
+      const nearbyText = mrnLabelMatch[1];
+      const matches = Array.from(nearbyText.matchAll(mrnPattern));
+      
+      for (const match of matches) {
+        const candidate = match[1].toUpperCase();
+        
+        // Exclude bank accounts (GB + 2 digits at positions 2-3 indicates bank account)
+        if (bankAccountPattern.test(candidate)) {
+          continue;
+        }
+        
+        // Validate: Must have letters after "GB" (not just digits)
+        const afterGB = candidate.substring(4); // Everything after "YYGB"
+        const hasLetters = /[A-Z]/.test(afterGB);
+        
+        if (hasLetters) {
+          return candidate;
+        }
+      }
+    }
+    
+    // Strategy 2: Search entire text if not found near label
+    const allMatches = Array.from(text.matchAll(mrnPattern));
+    
+    for (const match of allMatches) {
+      const candidate = match[1].toUpperCase();
+      
+      // Exclude bank accounts
+      if (bankAccountPattern.test(candidate)) {
+        continue;
+      }
+      
+      // Validate: Must have letters after "GB" (not just digits)
+      const afterGB = candidate.substring(4); // Everything after "YYGB"
+      const hasLetters = /[A-Z]/.test(afterGB);
+      
+      if (hasLetters) {
+        return candidate;
+      }
+    }
+    
+    return null;
+  }
+
   // OCR text extraction from uploaded files
   app.post("/api/objects/ocr", async (req, res) => {
     try {
@@ -3209,9 +3281,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Extract MRN number from text - matches "MRN: 25GBB1QSFFBJOAXAR1" or "25GBB1QSFFBJOAXAR1"
-          const mrnMatch = extractedText.match(/(?:MRN:\s*)?(\d{2}[A-Z]{2,}[A-Z0-9]{10,})/i);
-          const mrnNumber = mrnMatch ? mrnMatch[1] || mrnMatch[0] : null;
+          // Extract MRN number from text using improved detection
+          const mrnNumber = extractMRNNumber(extractedText);
 
           res.json({ 
             text: extractedText || "No text found in PDF",
@@ -3239,9 +3310,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           await worker.terminate();
           
-          // Extract MRN number from text - matches "MRN: 25GBB1QSFFBJOAXAR1" or "25GBB1QSFFBJOAXAR1"
-          const mrnMatch = text.match(/(?:MRN:\s*)?(\d{2}[A-Z]{2,}[A-Z0-9]{10,})/i);
-          const mrnNumber = mrnMatch ? mrnMatch[1] || mrnMatch[0] : null;
+          // Extract MRN number from text using improved detection
+          const mrnNumber = extractMRNNumber(text);
 
           res.json({ 
             text, 

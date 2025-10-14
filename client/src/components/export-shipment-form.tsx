@@ -1181,6 +1181,9 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           testId="pod-uploader"
                           label="Proof Of Delivery Files:"
                           dragDropLabel="Drop POD files here or click to browse"
+                          jobType={defaultValues?.jobRef ? "export" : undefined}
+                          jobRef={defaultValues?.jobRef ? defaultValues.jobRef.toString() : undefined}
+                          documentType={defaultValues?.jobRef ? "POD" : undefined}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1967,6 +1970,9 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         testId="attachments-uploader"
                         label="Transport Documents:"
                         dragDropLabel="Drop transport documents here or click to browse"
+                        jobType={defaultValues?.jobRef ? "export" : undefined}
+                        jobRef={defaultValues?.jobRef ? defaultValues.jobRef.toString() : undefined}
+                        documentType={defaultValues?.jobRef ? "Transport Documents" : undefined}
                       />
                     </FormControl>
                     <FormMessage />

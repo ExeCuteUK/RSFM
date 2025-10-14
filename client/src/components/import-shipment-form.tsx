@@ -715,6 +715,9 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                             testId="pod-uploader"
                             label="Proof Of Delivery Files:"
                             dragDropLabel="Drop POD files here or click to browse"
+                            jobType={defaultValues?.jobRef ? "import" : undefined}
+                            jobRef={defaultValues?.jobRef ? defaultValues.jobRef.toString() : undefined}
+                            documentType={defaultValues?.jobRef ? "POD" : undefined}
                           />
                         </FormControl>
                         <FormMessage />
@@ -2185,6 +2188,9 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         testId="attachments-uploader"
                         label="Transport Documents:"
                         dragDropLabel="Drop files here or click to browse"
+                        jobType={defaultValues?.jobRef ? "import" : undefined}
+                        jobRef={defaultValues?.jobRef ? defaultValues.jobRef.toString() : undefined}
+                        documentType={defaultValues?.jobRef ? "Transport Documents" : undefined}
                       />
                     </FormControl>
                     <FormMessage />

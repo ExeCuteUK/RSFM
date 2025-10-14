@@ -98,6 +98,7 @@ export default function ImportShipments() {
 
   const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
+    refetchInterval: 15000,
   })
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({

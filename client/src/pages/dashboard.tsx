@@ -1055,13 +1055,19 @@ export default function Dashboard() {
                               value={shipment.deliveryRelease || ""}
                               customCellColor={releaseColor}
                             />
-                            {/* Delivery Address */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="deliveryAddress"
-                              value={shipment.deliveryAddress || ""}
-                              customCellColor={addressColor}
-                            />
+                            {/* Delivery Address - read only when handover enabled */}
+                            {shipment.handoverContainerAtPort ? (
+                              <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900" data-testid={`cell-delivery-address-${shipment.jobRef}`}>
+                                N/A
+                              </td>
+                            ) : (
+                              <EditableCell
+                                shipment={shipment}
+                                fieldName="deliveryAddress"
+                                value={shipment.deliveryAddress || ""}
+                                customCellColor={addressColor}
+                              />
+                            )}
                             {/* Rate In */}
                             <EditableCell
                               shipment={shipment}

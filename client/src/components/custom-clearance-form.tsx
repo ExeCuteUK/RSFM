@@ -1496,9 +1496,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             testId="transport-docs-uploader"
                             label="Transport Documents:"
                             dragDropLabel="Drop transport documents here or click to browse"
-                            jobType="Custom Clearances"
+                            jobType={jobRef ? "clearance" : undefined}
                             jobRef={jobRef?.toString()}
-                            documentType="Transport Documents"
+                            documentType={jobRef ? "Transport Documents" : undefined}
                           />
                           
                           {/* Display shared documents from job_file_groups */}
@@ -1594,9 +1594,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                           testId="clearance-docs-uploader"
                           label="Clearance Documents:"
                           dragDropLabel="Drop clearance documents here or click to browse"
-                          jobType="Custom Clearances"
+                          jobType={jobRef ? "clearance" : undefined}
                           jobRef={jobRef?.toString()}
-                          documentType="Clearance Documents"
+                          documentType={jobRef ? "Clearance Documents" : undefined}
                         />
                       </FormControl>
                       <FormMessage />

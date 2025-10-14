@@ -83,6 +83,7 @@ export default function ExportShipments() {
 
   const { data: allShipments = [], isLoading } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
+    refetchInterval: 15000,
   })
 
   const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
