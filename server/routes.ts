@@ -3790,7 +3790,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get import customers for name lookup
-      const importCustomers = await storage.getImportCustomers();
+      const importCustomers = await storage.getAllImportCustomers();
       const customerMap = new Map(importCustomers.map(c => [c.id, c]));
 
       // Build a map of containers from the included array
