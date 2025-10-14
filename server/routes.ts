@@ -3829,14 +3829,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Compare each container shipment with tracking data
       const discrepancies = [];
+      const matchedContainers = [];
+      const notTrackedContainers = [];
       
       for (const shipment of containerShipments) {
         const containerNumber = shipment.trailerOrContainerNumber?.trim();
         if (!containerNumber) continue;
 
+        const customer = customerMap.get(shipment.importCustomerId || '');
+
         // Find container in included array
         const container = containerMap.get(containerNumber.toUpperCase());
-        if (!container) continue; // Not tracked yet
+        if (!container) {
+          // Not tracked yet
+          notTrackedContainers.push({
+            shipmentId: shipment.id,
+            jobRef: shipment.jobRef,
+            customerName: customer?.companyName || 'Unknown Customer',
+            containerNumber: containerNumber,
+            status: 'not_tracked'
+          });
+          continue;
+        }
 
         // Find the shipment this container belongs to
         const shipmentId = container.relationships?.shipment?.data?.id;
@@ -3846,7 +3860,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!trackedShipment) continue;
 
         const attrs = trackedShipment.attributes;
-        const customer = customerMap.get(shipment.importCustomerId || '');
         
         // Extract tracking data
         const trackingEta = attrs.pod_eta_at;
@@ -3982,13 +3995,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
-        // If any discrepancies found, add to list
+        // If any discrepancies found, add to discrepancies list
         if (etaDiscrepancy || portDiscrepancy || vesselDiscrepancy || dispatchDiscrepancy || deliveryDiscrepancy) {
           discrepancies.push({
             shipmentId: shipment.id,
             jobRef: shipment.jobRef,
             customerName: customer?.companyName || 'Unknown Customer',
             containerNumber: containerNumber,
+            status: 'discrepancy',
             // Current job data for reference
             currentJobData: {
               containerNumber: containerNumber,
@@ -4005,12 +4019,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
             dispatchDiscrepancy,
             deliveryDiscrepancy
           });
+        } else {
+          // Container is tracked and matches perfectly
+          matchedContainers.push({
+            shipmentId: shipment.id,
+            jobRef: shipment.jobRef,
+            customerName: customer?.companyName || 'Unknown Customer',
+            containerNumber: containerNumber,
+            status: 'matched',
+            currentJobData: {
+              containerNumber: containerNumber,
+              portOfArrival: shipment.portOfArrival,
+              eta: shipment.importDateEtaPort,
+              dispatchDate: shipment.dispatchDate,
+              delivery: shipment.deliveryDate,
+              vessel: shipment.vesselName
+            }
+          });
         }
       }
 
       res.json({
         discrepancies,
-        allGood: discrepancies.length === 0,
+        matchedContainers,
+        notTrackedContainers,
+        allGood: discrepancies.length === 0 && notTrackedContainers.length === 0,
         totalChecked: containerShipments.length
       });
 
