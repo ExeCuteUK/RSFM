@@ -108,7 +108,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
             Container Tracking Check
           </DialogTitle>
           <DialogDescription>
-            Compare job data with live Terminal49 tracking information
+            Compare job data with live tracking information
           </DialogDescription>
         </DialogHeader>
 
