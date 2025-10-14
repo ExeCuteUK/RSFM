@@ -127,11 +127,11 @@ export function ContainerTrackingNotification() {
     if (!data) return null
 
     // Only show discrepancies in notification (filter out not-tracked containers)
-    const hasDiscrepancies = data.discrepancies.length > 0
+    const hasDiscrepancies = (data.discrepancies?.length ?? 0) > 0
 
     if (!hasDiscrepancies) {
       // Calculate total tracked containers (matched + discrepancies)
-      const totalTracked = data.matchedContainers.length + data.discrepancies.length
+      const totalTracked = (data.matchedContainers?.length ?? 0) + (data.discrepancies?.length ?? 0)
       return (
         <>
           {greeting} I've checked {totalTracked} container{totalTracked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!
@@ -141,7 +141,7 @@ export function ContainerTrackingNotification() {
 
     const messageParts: JSX.Element[] = []
     
-    data.discrepancies.forEach((d, idx) => {
+    data.discrepancies?.forEach((d, idx) => {
       const parts: string[] = []
       
       if (d.dispatchDiscrepancy) {
@@ -201,8 +201,8 @@ export function ContainerTrackingNotification() {
   }
 
   // Only show notification if there are actual discrepancies OR if all containers match
-  const hasDiscrepancies = data.discrepancies.length > 0
-  const hasTrackedContainers = data.matchedContainers.length > 0 || hasDiscrepancies
+  const hasDiscrepancies = (data.discrepancies?.length ?? 0) > 0
+  const hasTrackedContainers = (data.matchedContainers?.length ?? 0) > 0 || hasDiscrepancies
   
   if (!hasTrackedContainers) {
     // Don't show notification if there are only untracked containers
