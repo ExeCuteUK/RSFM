@@ -666,11 +666,15 @@ export default function Dashboard() {
         setColumnWidths(widths)
       }
       setEditingCell({ shipmentId: shipment.id, fieldName })
-      setTempValue(value)
+      // Use displayValue if available (formatted), otherwise use raw value
+      const editValue = displayValue !== undefined ? displayValue : value
+      setTempValue(editValue)
     }
 
     const handleBlur = () => {
-      if (tempValue !== value && !isSaving) {
+      // Compare against displayValue if available, otherwise use raw value
+      const originalValue = displayValue !== undefined ? displayValue : value
+      if (tempValue !== originalValue && !isSaving) {
         handleSave(shipment.id, fieldName, tempValue)
       } else {
         setEditingCell(null)
@@ -681,7 +685,9 @@ export default function Dashboard() {
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === "Enter" && type !== "textarea") {
         e.preventDefault()
-        if (tempValue !== value) {
+        // Compare against displayValue if available, otherwise use raw value
+        const originalValue = displayValue !== undefined ? displayValue : value
+        if (tempValue !== originalValue) {
           handleSave(shipment.id, fieldName, tempValue)
         } else {
           setEditingCell(null)
@@ -950,10 +956,10 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Ship Line</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>POA</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Vessel</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>Eta Port</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>ETA Port</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>References</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[8] ? { width: `${columnWidths[8]}px` } : undefined}>Delivery Date</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>Rls</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>RLS</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>Delivery Address</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Rate In</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Rate Out</th>
