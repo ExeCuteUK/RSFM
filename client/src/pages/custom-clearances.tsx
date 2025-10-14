@@ -1656,38 +1656,54 @@ export default function CustomClearances() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button 
+                            className={`${getClearanceStatusBadgeColor(clearance.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                            data-testid={`badge-status-${clearance.id}`}
+                          >
+                            {clearance.status}
+                            <ChevronDown className="h-3 w-3" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Request CC" })}>
+                            Request CC
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
+                            Awaiting Entry
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
+                            Waiting Arrival
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
+                            P.H Hold
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Customs Issue" })}>
+                            Customs Issue
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Fully Cleared" })}>
+                            Fully Cleared
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                      {clearance.trailerOrContainerNumber ? (
+                        <p className="text-lg font-semibold" data-testid={`text-trailer-${clearance.id}`}>
+                          {clearance.trailerOrContainerNumber}
+                        </p>
+                      ) : (
+                        <div></div>
+                      )}
                       <div className="flex items-center gap-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button 
-                              className={`${getClearanceStatusBadgeColor(clearance.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                              data-testid={`badge-status-${clearance.id}`}
-                            >
-                              {clearance.status}
-                              <ChevronDown className="h-3 w-3" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Request CC" })}>
-                              Request CC
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
-                              Awaiting Entry
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
-                              Waiting Arrival
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
-                              P.H Hold
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Customs Issue" })}>
-                              Customs Issue
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Fully Cleared" })}>
-                              Fully Cleared
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        {clearance.etaPort && (
+                          <p className="text-lg font-semibold text-right" data-testid={`text-eta-${clearance.id}`}>
+                            ETA: {formatDate(clearance.etaPort)}
+                          </p>
+                        )}
                         <span className={`text-xs px-2 py-0.5 rounded ${
                           clearance.jobType === 'import' 
                             ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
@@ -1697,20 +1713,6 @@ export default function CustomClearances() {
                         </span>
                       </div>
                     </div>
-                  </div>
-                  <div className="space-y-1 text-xs">
-                    {clearance.trailerOrContainerNumber && (
-                      <div className="flex items-center justify-between">
-                        <p className="text-lg font-semibold" data-testid={`text-trailer-${clearance.id}`}>
-                          {clearance.trailerOrContainerNumber}
-                        </p>
-                        {clearance.etaPort && (
-                          <p className="text-lg font-semibold text-right" data-testid={`text-eta-${clearance.id}`}>
-                            ETA: {formatDate(clearance.etaPort)}
-                          </p>
-                        )}
-                      </div>
-                    )}
                     {clearance.portOfArrival && (
                       <p data-testid={`text-port-${clearance.id}`}>
                         <span className="font-medium">
