@@ -1635,9 +1635,24 @@ Hope all is OK.`
           return
         }
         
+        // Get all invoices for this shipment from the database
+        const shipmentInvoices = allInvoices.filter(inv => 
+          inv.jobRef === shipment.jobRef && inv.jobType === 'import' && inv.jobId === shipment.id
+        )
+        
+        // Check if invoices exist
+        if (shipmentInvoices.length === 0) {
+          toast({
+            title: "No Invoice Found",
+            description: "You haven't created an invoice yet. Please create an invoice first, then create this email again.",
+            variant: "destructive",
+          })
+          return
+        }
+        
         // Extract first name from job contact name
         const jobContactName = shipment.jobContactName || customerName
-        const firstName = jobContactName.split(' ')[0]
+        const firstName = Array.isArray(jobContactName) ? jobContactName[0]?.split(' ')[0] : jobContactName.split(' ')[0]
         
         // Build subject with conditional customer ref
         const customerRef = shipment.customerReferenceNumber ? `Your Ref : ${shipment.customerReferenceNumber} / ` : ""
@@ -1650,33 +1665,13 @@ Hope all is OK.`
         let body = `Hi ${firstName},\n\n`
         body += `Wanted to let you know we have a container (${containerNumber}) that will be arriving into ${shipment.portOfArrival || "TBA"} on ${etaDate}.\n\n`
         body += `We will be arranging this release to yourselves.`
+        body += `\n\nAttached is our handover invoice for this release. Please confirm soonest once this has been paid.`
         
-        // Prepare attachments array
-        const attachments: Array<{ url: string; name: string }> = []
-        
-        // Check for invoice in R.S Invoice & Credits (rsInvoiceCredits field)
-        const rsInvoiceCredits = shipment.rsInvoiceCredits || []
-        const hasInvoice = rsInvoiceCredits.length > 0
-        
-        if (hasInvoice) {
-          body += `\n\nAttached is our handover invoice for this release. Please confirm soonest once this has been paid.`
-          
-          // Add invoice to attachments
-          rsInvoiceCredits.forEach(file => {
-            attachments.push({
-              url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
-              name: getFileName(file)
-            })
-          })
-        } else {
-          // Sanity check - show warning if no invoice found
-          toast({
-            title: "No Invoice Found",
-            description: "You haven't created an invoice yet. Please create an invoice in R.S Invoice & Credits first, then create this email again.",
-            variant: "destructive",
-          })
-          return
-        }
+        // Get invoice PDF paths with proper filenames (attach ALL invoices automatically)
+        const invoiceFiles = shipmentInvoices.map(invoice => ({
+          url: `/api/invoices/${invoice.id}/pdf`,
+          name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
+        }))
         
         // Open email composer
         openWindow({
@@ -1689,7 +1684,7 @@ Hope all is OK.`
             bcc: "",
             subject: subject,
             body: body,
-            attachments: attachments,
+            attachments: invoiceFiles,
             metadata: {
               source: 'notify-customer-arrival-import',
               shipmentId: shipment.id
