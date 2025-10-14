@@ -13,9 +13,10 @@ interface ContainerDiscrepancy {
   containerNumber: string
   status: 'discrepancy'
   etaDiscrepancy: {
-    jobEta: string
+    jobEta: string | null
     trackingEta: string
-    daysDiff: number
+    daysDiff: number | null
+    missingJobData?: boolean
   } | null
   portDiscrepancy: {
     jobPort: string
@@ -26,9 +27,10 @@ interface ContainerDiscrepancy {
     trackingVessel: string
   } | null
   dispatchDiscrepancy: {
-    jobDispatch: string
+    jobDispatch: string | null
     trackingDispatch: string
-    daysDiff: number
+    daysDiff: number | null
+    missingJobData?: boolean
   } | null
   deliveryDiscrepancy: {
     jobDelivery: string
@@ -143,25 +145,38 @@ export function ContainerTrackingNotification() {
     
     data.discrepancies?.forEach((d, idx) => {
       const parts: string[] = []
+      const missingFields: string[] = []
       
       if (d.dispatchDiscrepancy) {
-        const days = Math.abs(d.dispatchDiscrepancy.daysDiff)
-        const direction = d.dispatchDiscrepancy.daysDiff > 0 ? 'later' : 'earlier'
-        parts.push(`actually departed ${days} day${days === 1 ? '' : 's'} ${direction} than expected`)
+        if (d.dispatchDiscrepancy.missingJobData) {
+          // Job field is empty - tracking has data available
+          missingFields.push('Dispatch Date')
+        } else {
+          // Normal discrepancy - dates differ
+          const days = Math.abs(d.dispatchDiscrepancy.daysDiff!)
+          const direction = d.dispatchDiscrepancy.daysDiff! > 0 ? 'later' : 'earlier'
+          parts.push(`actually departed ${days} day${days === 1 ? '' : 's'} ${direction} than expected`)
+        }
       }
       
       if (d.etaDiscrepancy) {
-        const days = Math.abs(d.etaDiscrepancy.daysDiff)
-        const direction = d.etaDiscrepancy.daysDiff > 0 ? 'later' : 'earlier'
-        parts.push(`is arriving ${days} day${days === 1 ? '' : 's'} ${direction}`)
+        if (d.etaDiscrepancy.missingJobData) {
+          // Job field is empty - tracking has data available
+          missingFields.push('ETA')
+        } else {
+          // Normal discrepancy - dates differ
+          const days = Math.abs(d.etaDiscrepancy.daysDiff!)
+          const direction = d.etaDiscrepancy.daysDiff! > 0 ? 'later' : 'earlier'
+          parts.push(`is arriving ${days} day${days === 1 ? '' : 's'} ${direction}`)
+        }
       }
       
-      // Handle delivery discrepancy messaging
+      // Handle delivery discrepancy messaging (only if ETA exists and isn't missing)
       if (d.deliveryDiscrepancy) {
-        if (d.etaDiscrepancy) {
+        if (d.etaDiscrepancy && !d.etaDiscrepancy.missingJobData) {
           // ETA changed - use contextual message
           parts.push(`which leaves a ${d.deliveryDiscrepancy.daysFromArrival} day delivery gap based on its new arrival date`)
-        } else {
+        } else if (!d.etaDiscrepancy?.missingJobData) {
           // No ETA change - use standalone message about delivery scheduling
           const days = d.deliveryDiscrepancy.daysFromArrival
           parts.push(`has a larger than normal delivery gap of ${days} day${days === 1 ? '' : 's'} between arrival and the delivery booking`)
@@ -176,12 +191,49 @@ export function ContainerTrackingNotification() {
         parts.push(`the vessel has changed to ${d.vesselDiscrepancy.trackingVessel}`)
       }
       
-      if (parts.length > 0) {
-        const containerMsg = parts.length === 1 
+      // Build combined message for this container
+      if (missingFields.length === 0 && parts.length === 0) {
+        // Nothing to report (shouldn't happen but defensive)
+        return
+      }
+      
+      // Construct message combining missing fields and discrepancies
+      let containerMsg: JSX.Element
+      
+      if (missingFields.length > 0 && parts.length > 0) {
+        // Both missing fields and discrepancies - combine them
+        const fieldList = missingFields.length === 1 
+          ? missingFields[0]
+          : `${missingFields.slice(0, -1).join(', ')} and ${missingFields[missingFields.length - 1]}`
+        
+        const discrepancyText = parts.length === 1 
+          ? parts[0]
+          : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+        
+        containerMsg = (
+          <span key={idx}>
+            Container <strong>{d.containerNumber}</strong> is missing {fieldList} in the job record (available via <strong>Check Current Containers</strong> in Import Shipments), and also {discrepancyText}
+          </span>
+        )
+      } else if (missingFields.length > 0) {
+        // Only missing fields
+        const fieldList = missingFields.length === 1 
+          ? missingFields[0]
+          : `${missingFields.slice(0, -1).join(', ')} and ${missingFields[missingFields.length - 1]}`
+        
+        containerMsg = (
+          <span key={idx}>
+            Container <strong>{d.containerNumber}</strong> is missing {fieldList} in the job record, but this info is available in tracking data. You can auto-fill it using the <strong>Check Current Containers</strong> button in Import Shipments
+          </span>
+        )
+      } else {
+        // Only normal discrepancies
+        containerMsg = parts.length === 1 
           ? <span key={idx}>Container <strong>{d.containerNumber}</strong> {parts[0]}</span>
           : <span key={idx}>Container <strong>{d.containerNumber}</strong> {parts.slice(0, -1).join(', ')} and {parts[parts.length - 1]}</span>
-        messageParts.push(containerMsg)
       }
+      
+      messageParts.push(containerMsg)
     })
 
     return (
