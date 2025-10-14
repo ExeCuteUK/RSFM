@@ -1,0 +1,63 @@
+/home/executeuk/.pm2/logs/rsfm-error-0.log last 30 lines:
+0|rsfm     |   dataType: undefined,
+0|rsfm     |   constraint: undefined,
+0|rsfm     |   file: 'parse_relation.c',
+0|rsfm     |   line: '3722',
+0|rsfm     |   routine: 'errorMissingColumn'
+0|rsfm     | }
+0|rsfm     | Error creating invoice charge template: error: column "line_items"                                                   of relation "invoice_charge_templates" does not exist
+0|rsfm     |     at /var/www/rsfm/node_modules/pg-pool/index.js:45:11
+0|rsfm     |     at process.processTicksAndRejections (node:internal/process/tas                                                  k_queues:95:5)
+0|rsfm     |     at async file:///var/www/rsfm/node_modules/drizzle-orm/node-pos                                                  tgres/session.js:83:22
+0|rsfm     |     at async DatabaseStorage.createInvoiceChargeTemplate (file:///v                                                  ar/www/rsfm/dist/index.js:2701:23)
+0|rsfm     |     at async file:///var/www/rsfm/dist/index.js:5672:24 {
+0|rsfm     |   length: 147,
+0|rsfm     |   severity: 'ERROR',
+0|rsfm     |   code: '42703',
+0|rsfm     |   detail: undefined,
+0|rsfm     |   hint: undefined,
+0|rsfm     |   position: '64',
+0|rsfm     |   internalPosition: undefined,
+0|rsfm     |   internalQuery: undefined,
+0|rsfm     |   where: undefined,
+0|rsfm     |   schema: undefined,
+0|rsfm     |   table: undefined,
+0|rsfm     |   column: undefined,
+0|rsfm     |   dataType: undefined,
+0|rsfm     |   constraint: undefined,
+0|rsfm     |   file: 'parse_target.c',
+0|rsfm     |   line: '1066',
+0|rsfm     |   routine: 'checkInsertTargets'
+0|rsfm     | }
+
+/home/executeuk/.pm2/logs/rsfm-out-0.log last 30 lines:
+0|rsfm     | 10:55:49 PM [express] GET /api/shipping-lines 200 in 5ms :: [{"id":                                                  "f16cfda9-ba12-41ce-b272-d8d7887d8…
+0|rsfm     | 10:55:49 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"                                                  success":true}
+0|rsfm     | 10:55:56 PM [express] GET /api/invoice-charge-templates 500 in 12ms                                                   :: {"error":"Failed to fetch invo…
+0|rsfm     | 10:55:59 PM [express] GET /api/presence/online-users 200 in 4ms ::                                                   ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 10:56:05 PM [express] POST /api/invoice-charge-templates 500 in 17m                                                  s :: {"error":"Failed to create in…
+0|rsfm     | 10:56:09 PM [express] GET /api/presence/online-users 304 in 2ms ::                                                   ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 10:56:19 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"                                                  success":true}
+0|rsfm     | 10:56:19 PM [express] GET /api/messages/unread-count 304 in 3ms ::                                                   {"count":"0"}
+0|rsfm     | 10:56:19 PM [express] GET /api/presence/online-users 304 in 3ms ::                                                   ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 10:56:49 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"                                                  success":true}
+0|rsfm     | 10:57:19 PM [express] POST /api/presence/heartbeat 200 in 7ms :: {"                                                  success":true}
+0|rsfm     | 10:57:49 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"                                                  success":true}
+0|rsfm     | 10:58:19 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"                                                  success":true}
+0|rsfm     | 10:58:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"                                                  success":true}
+0|rsfm     | 10:59:54 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"                                                  success":true}
+0|rsfm     | 11:00:32 PM [express] 🚀 Starting R.S Freight Manager server...
+0|rsfm     | 11:00:32 PM [express] Environment: production
+0|rsfm     | 11:00:32 PM [express] Initializing session store...
+0|rsfm     | 11:00:32 PM [express] ✅ Server successfully started on port 5000
+0|rsfm     | 11:00:32 PM [express] 🌐 Access the application at http://0.0.0.0:5                                                  000
+0|rsfm     | 11:00:34 PM [express] GET /api/presence/online-users 304 in 7ms ::                                                   ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 11:00:34 PM [express] POST /api/presence/heartbeat 200 in 5ms :: {"                                                  success":true}
+0|rsfm     | 11:00:34 PM [express] GET /api/messages/unread-count 304 in 3ms ::                                                   {"count":"0"}
+0|rsfm     | 11:00:36 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":                                                  "f6ec8b73-01e0-48d4-ab62-4af13cde7…
+0|rsfm     | 11:00:37 PM [express] POST /api/presence/heartbeat 200 in 2ms :: {"                                                  success":true}
+0|rsfm     | 11:00:39 PM [express] GET /api/invoice-charge-templates 500 in 13ms                                                   :: {"error":"Failed to fetch invo…
+0|rsfm     | 11:00:47 PM [express] GET /api/presence/online-users 304 in 2ms ::                                                   ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 11:00:49 PM [express] POST /api/invoice-charge-templates 500 in 17m                                                  s :: {"error":"Failed to create in…
+0|rsfm     | 11:01:07 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"                                                  success":true}
+0|rsfm     | 11:01:37 PM [express] POST /api/presence/heartbeat 200 in 3ms :: {"                                                  success":true}
