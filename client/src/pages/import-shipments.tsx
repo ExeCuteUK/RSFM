@@ -29,6 +29,7 @@ import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, Fil
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
+import { ContainerCheckDialog } from "@/components/ContainerCheckDialog"
 import type { ImportShipment, InsertImportShipment, ImportCustomer, CustomClearance, JobFileGroup, ClearanceAgent, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useEmail } from "@/contexts/EmailContext"
@@ -73,6 +74,7 @@ export default function ImportShipments() {
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ shipment: ImportShipment; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
+  const [containerCheckDialogOpen, setContainerCheckDialogOpen] = useState(false)
   const { toast } = useToast()
   const [location, setLocation] = useLocation()
   
@@ -1719,10 +1721,20 @@ Hope all is OK.`
             Manage incoming shipments and customs clearances
           </p>
         </div>
-        <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground">
-          <Plus className="h-4 w-4 mr-2" />
-          New Import Shipment
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            data-testid="button-check-containers" 
+            onClick={() => setContainerCheckDialogOpen(true)} 
+            variant="outline"
+          >
+            <Container className="h-4 w-4 mr-2" />
+            Check Current Containers
+          </Button>
+          <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground">
+            <Plus className="h-4 w-4 mr-2" />
+            New Import Shipment
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
@@ -3775,6 +3787,12 @@ Hope all is OK.`
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Container Check Dialog */}
+      <ContainerCheckDialog 
+        open={containerCheckDialogOpen} 
+        onOpenChange={setContainerCheckDialogOpen}
+      />
 
     </div>
   )

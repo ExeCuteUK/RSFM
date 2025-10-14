@@ -6,6 +6,12 @@ R.S International Freight Manager is a web-based enterprise solution for logisti
 
 The application includes comprehensive file upload functionality integrated with Google Drive, featuring a shared document storage system that automatically syncs files between linked jobs (import/export shipments and their custom clearances) via their shared `jobRef`, ensuring seamless access to documents and invoices. Key capabilities include a dual-engine OCR system for text extraction, a multi-user internal messaging system with real-time notifications, job history display on customer contact cards, quick user access with real-time presence tracking, a draggable, minimizable email composer with multi-draft support, and a team calendar powered by Google Calendar API for managing holidays and annual leave (includes UK public holidays integration). The dashboard features a tabbed interface for container management, Nisbets, import/export work, and clearance management.
 
+**Container Tracking Comparison System:**
+- **Dashboard Notification:** Async background check on page load compares all container shipments against Terminal49 tracking data; displays friendly English summary of discrepancies (ETA changes, port changes, vessel updates)
+- **Smart Dismissal Logic:** "All good" notifications dismissed for the day; issue notifications re-show if problems persist or change
+- **Import Shipments Page:** "Check Current Containers" button provides detailed view of all tracked containers with discrepancy highlighting in red; one-click update buttons sync job data with live tracking information
+- **JSON:API Parsing:** Properly hydrates container data from Terminal49's `included` array via relationships for accurate matching
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

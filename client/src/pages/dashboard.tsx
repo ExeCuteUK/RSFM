@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { ImportExportWorkGrid } from "@/components/ImportExportWorkGrid"
 import { ClearanceWorkGrid } from "@/components/ClearanceWorkGrid"
+import { ContainerTrackingNotification } from "@/components/ContainerTrackingNotification"
 
 const DASHBOARD_STORAGE_KEY = 'dashboard_preferences'
 const CONTAINER_STORAGE_KEY = 'containerGrid_preferences'
@@ -875,6 +876,8 @@ export default function Dashboard() {
           Welcome back! Here's an overview of your freight operations.
         </p>
       </div>
+
+      <ContainerTrackingNotification />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">

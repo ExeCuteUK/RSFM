@@ -3749,6 +3749,160 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check all containers against Terminal49 tracking
+  app.get("/api/terminal49/check-all-containers", async (req, res) => {
+    try {
+      if (!TERMINAL49_API_KEY) {
+        return res.status(500).json({ error: "Terminal49 API key not configured" });
+      }
+
+      // Fetch all import shipments that are container shipments
+      const importShipments = await storage.getAllImportShipments();
+      const containerShipments = importShipments.filter(s => s.containerShipment === 'Container Shipment');
+
+      if (containerShipments.length === 0) {
+        return res.json({ 
+          discrepancies: [],
+          allGood: true,
+          message: "No container shipments to check"
+        });
+      }
+
+      // Fetch all tracked shipments from Terminal49
+      const response = await fetch(
+        `${TERMINAL49_BASE_URL}/shipments?include=containers,transport_events,port_events`,
+        {
+          headers: {
+            "Authorization": `Token ${TERMINAL49_API_KEY}`,
+            "Content-Type": "application/vnd.api+json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
+        return res.status(response.status).json({ 
+          error: "Terminal49 API error", 
+          details: data 
+        });
+      }
+
+      // Get import customers for name lookup
+      const importCustomers = await storage.getImportCustomers();
+      const customerMap = new Map(importCustomers.map(c => [c.id, c]));
+
+      // Build a map of containers from the included array
+      const containerMap = new Map();
+      if (data.included) {
+        data.included
+          .filter((item: any) => item.type === 'container')
+          .forEach((container: any) => {
+            const number = container.attributes?.number?.trim().toUpperCase();
+            if (number) {
+              containerMap.set(number, container);
+            }
+          });
+      }
+
+      // Compare each container shipment with tracking data
+      const discrepancies = [];
+      
+      for (const shipment of containerShipments) {
+        const containerNumber = shipment.trailerOrContainerNumber?.trim();
+        if (!containerNumber) continue;
+
+        // Find container in included array
+        const container = containerMap.get(containerNumber.toUpperCase());
+        if (!container) continue; // Not tracked yet
+
+        // Find the shipment this container belongs to
+        const shipmentId = container.relationships?.shipment?.data?.id;
+        if (!shipmentId) continue;
+
+        const trackedShipment = data.data?.find((s: any) => s.id === shipmentId);
+        if (!trackedShipment) continue;
+
+        const attrs = trackedShipment.attributes;
+        const customer = customerMap.get(shipment.importCustomerId || '');
+        
+        // Extract tracking data
+        const trackingEta = attrs.pod_eta_at;
+        const trackingPort = attrs.pod_full_name || attrs.pod_locode;
+        const trackingVessel = attrs.vessel_name;
+        
+        // Compare ETA
+        let etaDiscrepancy = null;
+        if (trackingEta && shipment.importDateEtaPort) {
+          const jobEta = new Date(shipment.importDateEtaPort);
+          const trackEta = new Date(trackingEta);
+          const daysDiff = Math.round((trackEta.getTime() - jobEta.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (Math.abs(daysDiff) > 0) {
+            etaDiscrepancy = {
+              jobEta: shipment.importDateEtaPort,
+              trackingEta: trackingEta,
+              daysDiff: daysDiff
+            };
+          }
+        }
+
+        // Compare Port of Arrival
+        let portDiscrepancy = null;
+        if (trackingPort && shipment.portOfArrival) {
+          const jobPort = shipment.portOfArrival.toLowerCase().trim();
+          const trackPort = trackingPort.toLowerCase().trim();
+          
+          // Check if ports are different (allowing partial matches)
+          if (!jobPort.includes(trackPort) && !trackPort.includes(jobPort)) {
+            portDiscrepancy = {
+              jobPort: shipment.portOfArrival,
+              trackingPort: trackingPort
+            };
+          }
+        }
+
+        // Compare Vessel
+        let vesselDiscrepancy = null;
+        if (trackingVessel && shipment.vesselName) {
+          const jobVessel = shipment.vesselName.toLowerCase().trim();
+          const trackVessel = trackingVessel.toLowerCase().trim();
+          
+          if (jobVessel !== trackVessel) {
+            vesselDiscrepancy = {
+              jobVessel: shipment.vesselName,
+              trackingVessel: trackingVessel
+            };
+          }
+        }
+
+        // If any discrepancies found, add to list
+        if (etaDiscrepancy || portDiscrepancy || vesselDiscrepancy) {
+          discrepancies.push({
+            shipmentId: shipment.id,
+            jobRef: shipment.jobRef,
+            customerName: customer?.companyName || 'Unknown Customer',
+            containerNumber: containerNumber,
+            etaDiscrepancy,
+            portDiscrepancy,
+            vesselDiscrepancy
+          });
+        }
+      }
+
+      res.json({
+        discrepancies,
+        allGood: discrepancies.length === 0,
+        totalChecked: containerShipments.length
+      });
+
+    } catch (error) {
+      console.error("Terminal49 check all containers error:", error);
+      res.status(500).json({ error: "Failed to check containers" });
+    }
+  });
+
   // ========== Gmail Routes (Per-User OAuth) ==========
   
   // Get OAuth URL for Gmail connection
