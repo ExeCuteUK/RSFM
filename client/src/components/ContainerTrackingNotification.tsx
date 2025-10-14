@@ -10,6 +10,7 @@ interface ContainerDiscrepancy {
   jobRef: number
   customerName: string
   containerNumber: string
+  status: 'discrepancy'
   etaDiscrepancy: {
     jobEta: string
     trackingEta: string
@@ -37,8 +38,26 @@ interface ContainerDiscrepancy {
   } | null
 }
 
+interface MatchedContainer {
+  shipmentId: string
+  jobRef: number
+  customerName: string
+  containerNumber: string
+  status: 'matched'
+}
+
+interface NotTrackedContainer {
+  shipmentId: string
+  jobRef: number
+  customerName: string
+  containerNumber: string
+  status: 'not_tracked'
+}
+
 interface ContainerCheckResponse {
   discrepancies: ContainerDiscrepancy[]
+  matchedContainers: MatchedContainer[]
+  notTrackedContainers: NotTrackedContainer[]
   allGood: boolean
   totalChecked: number
 }
@@ -68,15 +87,24 @@ export function ContainerTrackingNotification() {
   }
 
   const generateMessage = () => {
-    if (!data) return ""
+    if (!data) return null
 
-    if (data.allGood) {
-      return `Hi! It's Eric here. I've checked ${data.totalChecked} container${data.totalChecked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!`
+    // Only show discrepancies in notification (filter out not-tracked containers)
+    const hasDiscrepancies = data.discrepancies.length > 0
+
+    if (!hasDiscrepancies) {
+      // Calculate total tracked containers (matched + discrepancies)
+      const totalTracked = data.matchedContainers.length + data.discrepancies.length
+      return (
+        <>
+          Hi! It's Eric here. I've checked {totalTracked} container{totalTracked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!
+        </>
+      )
     }
 
-    const messages: string[] = []
+    const messageParts: JSX.Element[] = []
     
-    data.discrepancies.forEach((d) => {
+    data.discrepancies.forEach((d, idx) => {
       const parts: string[] = []
       
       if (d.dispatchDiscrepancy) {
@@ -105,21 +133,38 @@ export function ContainerTrackingNotification() {
       
       if (parts.length > 0) {
         const containerMsg = parts.length === 1 
-          ? `Container ${d.containerNumber} ${parts[0]}`
-          : `Container ${d.containerNumber} ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
-        messages.push(containerMsg)
+          ? <span key={idx}>Container <strong>{d.containerNumber}</strong> {parts[0]}</span>
+          : <span key={idx}>Container <strong>{d.containerNumber}</strong> {parts.slice(0, -1).join(', ')} and {parts[parts.length - 1]}</span>
+        messageParts.push(containerMsg)
       }
     })
 
-    const prefix = "Hi! It's Eric here. I've noticed that "
-    return prefix + messages.join('. Also, ') + '. Worth taking a look when you get a chance!'
+    return (
+      <>
+        Hi! It's Eric here. I've noticed that {messageParts.map((part, idx) => (
+          <span key={idx}>
+            {part}
+            {idx < messageParts.length - 1 && '. Also, '}
+          </span>
+        ))}. Worth taking a look when you get a chance!
+      </>
+    )
   }
 
   if (isLoading || isDismissed || !data) {
     return null
   }
 
-  const isAllGood = data?.allGood
+  // Only show notification if there are actual discrepancies OR if all containers match
+  const hasDiscrepancies = data.discrepancies.length > 0
+  const hasTrackedContainers = data.matchedContainers.length > 0 || hasDiscrepancies
+  
+  if (!hasTrackedContainers) {
+    // Don't show notification if there are only untracked containers
+    return null
+  }
+
+  const isAllGood = !hasDiscrepancies
   const message = generateMessage()
 
   return (
