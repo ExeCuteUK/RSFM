@@ -993,16 +993,10 @@ export default function Dashboard() {
                                 {shipment.jobRef}
                               </button>
                             </td>
-                            {/* Consignee - editable dropdown */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="importCustomerId"
-                              value={shipment.importCustomerId || ""}
-                              displayValue={getCustomerName(shipment.importCustomerId)}
-                              type="dropdown"
-                              options={importCustomers.map(c => ({ value: c.id, label: c.companyName || '' }))}
-                              customCellColor={clearanceColor}
-                            />
+                            {/* Consignee - read only */}
+                            <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
+                              {getCustomerName(shipment.importCustomerId)}
+                            </td>
                             {/* Container no. */}
                             <EditableCell
                               shipment={shipment}
@@ -1050,15 +1044,10 @@ export default function Dashboard() {
                               displayValue={shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}
                               customCellColor={clearanceColor}
                             />
-                            {/* Delivery Date */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="deliveryDate"
-                              value={shipment.deliveryDate || ""}
-                              displayValue={shipment.handoverContainerAtPort ? 'N/A' : (shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : '')}
-                              type="date"
-                              customCellColor={shipment.handoverContainerAtPort ? 'bg-green-100 dark:bg-green-900' : deliveryBookedColor}
-                            />
+                            {/* Delivery Date - read only */}
+                            <td className={`px-1 text-center border-r border-border align-middle ${shipment.handoverContainerAtPort ? 'bg-green-100 dark:bg-green-900' : deliveryBookedColor}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
+                              {shipment.handoverContainerAtPort ? 'N/A' : (shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : '')}
+                            </td>
                             {/* Rls */}
                             <EditableCell
                               shipment={shipment}
