@@ -3777,9 +3777,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: "Terminal49 API key not configured" });
       }
 
-      // Fetch all import shipments that are container shipments
+      // Fetch all import shipments that are container shipments (exclude delivered/completed jobs)
       const importShipments = await storage.getAllImportShipments();
-      const containerShipments = importShipments.filter(s => s.containerShipment === 'Container Shipment');
+      const containerShipments = importShipments.filter(s => 
+        s.containerShipment === 'Container Shipment' && 
+        s.importStatus !== 'Delivered' && 
+        s.importStatus !== 'Completed'
+      );
 
       if (containerShipments.length === 0) {
         return res.json({ 
