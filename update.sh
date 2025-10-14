@@ -67,7 +67,7 @@ echo -e "${GREEN}Step 7: Running database migrations...${NC}"
 echo "Running data migration script (text[] to jsonb)..."
 npx tsx scripts/migrate-attachments-to-jsonb.ts || echo -e "${YELLOW}Migration script returned non-zero exit code, continuing...${NC}"
 echo "Pushing database schema changes..."
-npm run db:push
+npm run db:push -- --force
 
 echo ""
 echo -e "${GREEN}Step 8: Updating PM2 ecosystem config...${NC}"
