@@ -3859,6 +3859,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (trackingEta && shipment.importDateEtaPort) {
           const jobEta = new Date(shipment.importDateEtaPort);
           const trackEta = new Date(trackingEta);
+          
+          // Strip time for date-only comparison
+          jobEta.setHours(0, 0, 0, 0);
+          trackEta.setHours(0, 0, 0, 0);
+          
           const daysDiff = Math.round((trackEta.getTime() - jobEta.getTime()) / (1000 * 60 * 60 * 24));
           
           if (Math.abs(daysDiff) > 0) {
@@ -3913,6 +3918,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (trackingDeparture && shipment.dispatchDate) {
           const jobDispatch = new Date(shipment.dispatchDate);
           const trackDispatch = new Date(trackingDeparture);
+          
+          // Strip time for date-only comparison
+          jobDispatch.setHours(0, 0, 0, 0);
+          trackDispatch.setHours(0, 0, 0, 0);
+          
           const daysDiff = Math.round((trackDispatch.getTime() - jobDispatch.getTime()) / (1000 * 60 * 60 * 24));
           
           if (Math.abs(daysDiff) > 0) {
@@ -3929,6 +3939,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (trackingEta && shipment.deliveryDate && shipment.importDateEtaPort) {
           const jobDelivery = new Date(shipment.deliveryDate);
           const trackEta = new Date(trackingEta);
+          
+          // Strip time for date-only comparison
+          jobDelivery.setHours(0, 0, 0, 0);
+          trackEta.setHours(0, 0, 0, 0);
+          
           const deliveryDiff = Math.round((jobDelivery.getTime() - trackEta.getTime()) / (1000 * 60 * 60 * 24));
           
           // Only flag if there's a mismatch
