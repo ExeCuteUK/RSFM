@@ -24,7 +24,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle } from "lucide-react";
+import { UserPlus, Pencil, Trash2, Shield, Mail, CheckCircle, AlertCircle, RefreshCw, Download, GitBranch } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -248,6 +248,7 @@ export default function SettingsPage() {
           <TabsTrigger value="financials" data-testid="tab-financials">Financials & Charges</TabsTrigger>
           <TabsTrigger value="email" data-testid="tab-email">Email</TabsTrigger>
           <TabsTrigger value="users" data-testid="tab-users">Users</TabsTrigger>
+          <TabsTrigger value="update" data-testid="tab-update">Update</TabsTrigger>
         </TabsList>
 
         <TabsContent value="financials" className="mt-6">
@@ -698,8 +699,250 @@ export default function SettingsPage() {
             </Card>
           )}
         </TabsContent>
+
+        <TabsContent value="update" className="mt-6">
+          {currentUser?.isAdmin ? (
+            <UpdateManagement />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Access Denied</CardTitle>
+                <CardDescription>
+                  Administrator access is required to update the system
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  You don't have permission to view this page. Please contact your administrator.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function UpdateManagement() {
+  const { toast } = useToast();
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [updateOutput, setUpdateOutput] = useState<string>("");
+  
+  // Fetch current version
+  const { data: versionInfo, isLoading: versionLoading, refetch: refetchVersion } = useQuery<{
+    hash: string;
+    message: string;
+    date: string;
+    author: string;
+  }>({
+    queryKey: ["/api/system/version"],
+  });
+
+  // Check for updates
+  const { data: updateInfo, isLoading: updateLoading, refetch: checkUpdates } = useQuery<{
+    localHash: string;
+    remoteHash: string;
+    updateAvailable: boolean;
+    commitsAhead: number;
+    commits: Array<{ hash: string; message: string }>;
+  }>({
+    queryKey: ["/api/system/check-updates"],
+    enabled: false, // Only run when manually triggered
+  });
+
+  // Execute update mutation
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/system/update", {});
+      return response as { success: boolean; output: string; errors: string | null };
+    },
+    onSuccess: (data) => {
+      setUpdateOutput(data.output || "");
+      if (data.success) {
+        toast({
+          title: "Update Complete",
+          description: "The system has been updated successfully. The application will restart shortly.",
+        });
+        // Refetch version info after update
+        setTimeout(() => {
+          refetchVersion();
+        }, 2000);
+      } else {
+        toast({
+          title: "Update Failed",
+          description: data.errors || "An error occurred during the update.",
+          variant: "destructive",
+        });
+      }
+      setShowUpdateDialog(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setShowUpdateDialog(false);
+    },
+  });
+
+  const handleCheckUpdates = () => {
+    checkUpdates();
+  };
+
+  const handleUpdate = () => {
+    setShowUpdateDialog(true);
+  };
+
+  const confirmUpdate = () => {
+    updateMutation.mutate();
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleString();
+    } catch {
+      return dateStr;
+    }
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GitBranch className="h-5 w-5" />
+            System Update
+          </CardTitle>
+          <CardDescription>
+            Check for updates and install the latest version
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Current Version */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Current Version</h3>
+            {versionLoading ? (
+              <p className="text-sm text-muted-foreground">Loading...</p>
+            ) : versionInfo ? (
+              <div className="bg-muted p-4 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-mono font-semibold">{versionInfo.hash}</span>
+                  <Badge variant="outline" data-testid="badge-current-version">Current</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{versionInfo.message}</p>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span>By {versionInfo.author}</span>
+                  <span>{formatDate(versionInfo.date)}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Version information unavailable</p>
+            )}
+          </div>
+
+          {/* Check for Updates Button */}
+          <div>
+            <Button
+              onClick={handleCheckUpdates}
+              disabled={updateLoading}
+              variant="outline"
+              data-testid="button-check-updates"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${updateLoading ? 'animate-spin' : ''}`} />
+              {updateLoading ? "Checking..." : "Check for Updates"}
+            </Button>
+          </div>
+
+          {/* Update Info */}
+          {updateInfo && (
+            <div className="space-y-2">
+              {updateInfo.updateAvailable ? (
+                <>
+                  <Alert>
+                    <Download className="h-4 w-4" />
+                    <AlertTitle>Update Available</AlertTitle>
+                    <AlertDescription>
+                      {updateInfo.commitsAhead} new {updateInfo.commitsAhead === 1 ? 'commit' : 'commits'} available
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="bg-muted p-4 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-mono font-semibold">{updateInfo.remoteHash}</span>
+                      <Badge variant="default" data-testid="badge-new-version">New</Badge>
+                    </div>
+                    <div className="space-y-1 mt-2">
+                      <p className="text-sm font-medium">Recent Changes:</p>
+                      {updateInfo.commits.map((commit, idx) => (
+                        <div key={idx} className="text-sm text-muted-foreground pl-2 border-l-2 border-muted-foreground/20">
+                          <span className="font-mono text-xs">{commit.hash}</span> - {commit.message}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleUpdate}
+                    disabled={updateMutation.isPending}
+                    data-testid="button-update-now"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Update Now
+                  </Button>
+                </>
+              ) : (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertTitle>Up to Date</AlertTitle>
+                  <AlertDescription>
+                    You're running the latest version
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
+
+          {/* Update Output */}
+          {updateOutput && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Update Log</h3>
+              <Textarea
+                value={updateOutput}
+                readOnly
+                className="font-mono text-xs h-48"
+                data-testid="textarea-update-log"
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Update Confirmation Dialog */}
+      <AlertDialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm System Update</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will update the system to the latest version and restart the application. 
+              Any unsaved changes will be lost. Are you sure you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-update">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmUpdate}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              data-testid="button-confirm-update"
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? "Updating..." : "Update System"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -1147,3 +1390,4 @@ function UsersManagement({
     </>
   );
 }
+

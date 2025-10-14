@@ -5,6 +5,8 @@ import { z } from "zod";
 import path from "path";
 import multer from "multer";
 import fs from "fs/promises";
+import { exec } from "child_process";
+import { promisify } from "util";
 import { 
   insertImportCustomerSchema,
   insertExportCustomerSchema,
@@ -5262,6 +5264,105 @@ ${messageText}
     } catch (error) {
       console.error("Error fetching signature:", error);
       res.json({ signature: '' });
+    }
+  });
+
+  // System/Update endpoints
+  const execAsync = promisify(exec);
+
+  // Get current git version info
+  app.get("/api/system/version", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { stdout: hash } = await execAsync('git rev-parse --short HEAD');
+      const { stdout: message } = await execAsync('git log -1 --pretty=%B');
+      const { stdout: date } = await execAsync('git log -1 --pretty=%cd --date=iso');
+      const { stdout: author } = await execAsync('git log -1 --pretty=%an');
+      
+      res.json({
+        hash: hash.trim(),
+        message: message.trim(),
+        date: date.trim(),
+        author: author.trim()
+      });
+    } catch (error: any) {
+      console.error("Error getting git version:", error);
+      res.status(500).json({ error: "Failed to get version info", details: error.message });
+    }
+  });
+
+  // Check for updates from remote
+  app.get("/api/system/check-updates", requireAuth, async (req: Request, res: Response) => {
+    try {
+      // Fetch latest from remote without merging
+      await execAsync('git fetch origin main');
+      
+      // Get current local commit
+      const { stdout: localHash } = await execAsync('git rev-parse --short HEAD');
+      
+      // Get remote commit
+      const { stdout: remoteHash } = await execAsync('git rev-parse --short origin/main');
+      
+      // Check if we're behind
+      const { stdout: behindCount } = await execAsync('git rev-list --count HEAD..origin/main');
+      const updateAvailable = parseInt(behindCount.trim()) > 0;
+      
+      // Get commit messages between local and remote if updates available
+      let commits = [];
+      if (updateAvailable) {
+        const { stdout: commitLog } = await execAsync('git log --oneline HEAD..origin/main');
+        commits = commitLog.trim().split('\n').filter(line => line).map(line => {
+          const [hash, ...messageParts] = line.split(' ');
+          return {
+            hash,
+            message: messageParts.join(' ')
+          };
+        });
+      }
+      
+      res.json({
+        localHash: localHash.trim(),
+        remoteHash: remoteHash.trim(),
+        updateAvailable,
+        commitsAhead: parseInt(behindCount.trim()),
+        commits
+      });
+    } catch (error: any) {
+      console.error("Error checking for updates:", error);
+      res.status(500).json({ error: "Failed to check for updates", details: error.message });
+    }
+  });
+
+  // Execute update script (admin only)
+  app.post("/api/system/update", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      // Check if update.sh exists
+      const updateScriptPath = path.join(process.cwd(), 'update.sh');
+      try {
+        await fs.access(updateScriptPath);
+      } catch {
+        return res.status(404).json({ error: "Update script not found at " + updateScriptPath });
+      }
+
+      // Execute update script
+      const { stdout, stderr } = await execAsync('./update.sh', {
+        cwd: process.cwd(),
+        maxBuffer: 10 * 1024 * 1024 // 10MB buffer for logs
+      });
+      
+      res.json({
+        success: true,
+        output: stdout,
+        errors: stderr || null
+      });
+    } catch (error: any) {
+      console.error("Error running update script:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Update failed", 
+        details: error.message,
+        output: error.stdout || '',
+        errors: error.stderr || ''
+      });
     }
   });
 
