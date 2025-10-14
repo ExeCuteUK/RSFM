@@ -1,0 +1,66 @@
+/workspace$ git filter-repo --invert-paths --path backups/temp_restore_2025-10-14T13-40-26/
+git: 'filter-repo' is not a git command. See 'git --help'.
+~/workspace$ rm -rf backups/temp_restore_2025-10-14T13-40-26/
+~/workspace$ git add backups/
+~/workspace$ git commit --amend --no-edit
+[main 257b674] Remove temporary backup files containing secrets
+ Date: Tue Oct 14 18:14:25 2025 +0000
+ 21 files changed, 5810 deletions(-)
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/backup.zip
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/clearance_agents_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/custom_clearances_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/email_contacts_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/export_customers_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/export_receivers_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/export_shipments_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/general_references_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/hauliers_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/import_customers_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/import_shipments_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/invoices_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/job_file_groups_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/messages_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/metadata.json
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/purchase_invoices_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/rs-logo.jpg
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/settings_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/shipping_lines_backup.sql
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/signature-template.html
+ delete mode 100644 backups/temp_restore_2025-10-14T13-40-26/extracted/users_backup.sql
+~/workspace$ git push --force origin main
+Enumerating objects: 217, done.
+Counting objects: 100% (217/217), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (185/185), done.
+Writing objects: 100% (191/191), 1.28 MiB | 5.09 MiB/s, done.
+Total 191 (delta 153), reused 1 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (153/153), completed with 24 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.
+remote:      Visit the repository settings page, https://github.com/ExeCuteUK/RSFM/settings/security_analysis
+remote:     
+remote:     
+remote:       —— Google OAuth Access Token —————————————————————————
+remote:        locations:
+remote:          - commit: bed2b473d9484adca1ea9acafa153089ba0e5158
+remote:            path: backups/temp_restore_2025-10-14T13-40-26/extracted/users_backup.sql:6
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/ExeCuteUK/RSFM/security/secret-scanning/unblock-secret/344GePTKeIvxVtR4X0o6cMpYruv
+remote:     
+remote: 
+remote: 
+To https://github.com/ExeCuteUK/RSFM.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/ExeCuteUK/RSFM.git'
