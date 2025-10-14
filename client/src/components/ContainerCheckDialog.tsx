@@ -14,6 +14,7 @@ interface ContainerDiscrepancy {
   jobRef: number
   customerName: string
   containerNumber: string
+  status: 'discrepancy'
   currentJobData: {
     containerNumber: string
     portOfArrival: string | null
@@ -49,8 +50,34 @@ interface ContainerDiscrepancy {
   } | null
 }
 
+interface MatchedContainer {
+  shipmentId: string
+  jobRef: number
+  customerName: string
+  containerNumber: string
+  status: 'matched'
+  currentJobData: {
+    containerNumber: string
+    portOfArrival: string | null
+    eta: string | null
+    dispatchDate: string | null
+    delivery: string | null
+    vessel: string | null
+  }
+}
+
+interface NotTrackedContainer {
+  shipmentId: string
+  jobRef: number
+  customerName: string
+  containerNumber: string
+  status: 'not_tracked'
+}
+
 interface ContainerCheckResponse {
   discrepancies: ContainerDiscrepancy[]
+  matchedContainers: MatchedContainer[]
+  notTrackedContainers: NotTrackedContainer[]
   allGood: boolean
   totalChecked: number
 }
@@ -116,23 +143,10 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : data?.allGood ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <CheckCircle2 className="h-16 w-16 text-green-600 dark:text-green-400" />
-            <div className="text-center">
-              <h3 className="text-lg font-semibold">All Containers on Track</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Checked {data.totalChecked} container{data.totalChecked !== 1 ? 's' : ''} - all data matches tracking information
-              </p>
-            </div>
-            <Button onClick={() => refetch()} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </div>
         ) : (
           <ScrollArea className="flex-1 -mx-6 px-6">
             <div className="space-y-4">
+              {/* Discrepancies - Red */}
               {data?.discrepancies.map((discrepancy) => (
                 <div
                   key={discrepancy.shipmentId}
@@ -343,6 +357,66 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                         </div>
                       </div>
                     )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Matched Containers - Green */}
+              {data?.matchedContainers.map((container) => (
+                <div
+                  key={container.shipmentId}
+                  className="bg-card border border-green-200 dark:border-green-900/50 rounded-lg p-4"
+                  data-testid={`container-matched-${container.jobRef}`}
+                >
+                  <div className="flex items-start gap-2 text-sm">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="font-mono">
+                          JOB {container.jobRef}
+                        </Badge>
+                        <span className="font-medium">{container.customerName}</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-0.5">
+                        <div>Container: {container.containerNumber}</div>
+                        {container.currentJobData.portOfArrival && (
+                          <div>Port: {container.currentJobData.portOfArrival}</div>
+                        )}
+                        {container.currentJobData.eta && (
+                          <div>ETA: {format(new Date(container.currentJobData.eta), 'dd MMM yyyy')}</div>
+                        )}
+                      </div>
+                      <div className="mt-2 font-medium text-green-700 dark:text-green-400 text-sm">
+                        ✓ All data matches tracking information
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Not Tracked - Yellow Warning */}
+              {data?.notTrackedContainers.map((container) => (
+                <div
+                  key={container.shipmentId}
+                  className="bg-card border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-4"
+                  data-testid={`container-not-tracked-${container.jobRef}`}
+                >
+                  <div className="flex items-start gap-2 text-sm">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="font-mono">
+                          JOB {container.jobRef}
+                        </Badge>
+                        <span className="font-medium">{container.customerName}</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-0.5">
+                        <div>Container: {container.containerNumber}</div>
+                      </div>
+                      <div className="mt-2 font-medium text-yellow-700 dark:text-yellow-400 text-sm">
+                        Tracking not available (may take up to 1 minute to activate)
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
