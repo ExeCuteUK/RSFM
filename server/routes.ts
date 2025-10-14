@@ -3781,8 +3781,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const importShipments = await storage.getAllImportShipments();
       const containerShipments = importShipments.filter(s => 
         s.containerShipment === 'Container Shipment' && 
-        s.importStatus !== 'Delivered' && 
-        s.importStatus !== 'Completed'
+        s.status !== 'Delivered' && 
+        s.status !== 'Completed'
       );
 
       if (containerShipments.length === 0) {
