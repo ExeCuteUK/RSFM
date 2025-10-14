@@ -1341,11 +1341,11 @@ export default function CustomClearances() {
   const getClearanceStatusBadgeColor = (status: string) => {
     switch (status) {
       case "Request CC":
+      case "Awaiting Entry":
+      case "Waiting Arrival":
         return "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700"
       case "Fully Cleared":
         return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700"
-      case "Waiting Arrival":
-        return "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
       case "P.H Hold":
       case "Customs Issue":
         return "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700"
