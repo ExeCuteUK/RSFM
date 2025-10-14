@@ -610,6 +610,12 @@ export default function Dashboard() {
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
+  // Helper to get Rate In/Out color (green when Notify Customer of Arrival is completed)
+  const getRateInOutColor = (adviseStatusIndicator: number | null): string => {
+    if (adviseStatusIndicator === 3) return "bg-green-100 dark:bg-green-900"
+    return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+  }
+
   // Helper to format date
   const formatDate = (dateStr: string | null): string => {
     if (!dateStr) return ""
@@ -980,6 +986,7 @@ export default function Dashboard() {
                         const releaseColor = getContainerReleaseColor(shipment.containerReleaseStatusIndicator)
                         const addressColor = getDeliveryAddressColor(shipment.deliveryAddress)
                         const invoiceColor = getInvoiceStatusColor(shipment.invoiceCustomerStatusIndicator)
+                        const rateInOutColor = getRateInOutColor(shipment.adviseCustomsArrivalStatusIndicator)
 
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-container-${shipment.jobRef}`}>
@@ -1075,7 +1082,7 @@ export default function Dashboard() {
                               value={shipment.haulierFreightRateIn || ""}
                               displayValue={shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}
                               type="number"
-                              customCellColor={invoiceColor}
+                              customCellColor={rateInOutColor}
                             />
                             {/* Rate Out */}
                             <EditableCell
@@ -1084,7 +1091,7 @@ export default function Dashboard() {
                               value={shipment.freightRateOut || ""}
                               displayValue={shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}
                               type="number"
-                              customCellColor={invoiceColor}
+                              customCellColor={rateInOutColor}
                             />
                             {/* Notes */}
                             <EditableCell

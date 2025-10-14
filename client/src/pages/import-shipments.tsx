@@ -1617,6 +1617,97 @@ Hope all is OK.`
       const shipment = allShipments.find(s => s.id === shipmentId)
       if (!shipment) return
       
+      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
+      const customerName = customer?.companyName || "N/A"
+      
+      // Check if this is a "Notify Customer of Arrival" case (not R.S to clear)
+      if (!shipment.rsToClear) {
+        // NOTIFY CUSTOMER OF ARRIVAL EMAIL
+        
+        // Get customer contact email
+        const customerContact = customer?.email?.[0]
+        if (!customerContact) {
+          toast({
+            title: "No Customer Contact",
+            description: "Please add a contact email for this customer first.",
+            variant: "destructive",
+          })
+          return
+        }
+        
+        // Build subject with conditional customer ref
+        const customerRef = shipment.customerReferenceNumber ? `${shipment.customerReferenceNumber} / ` : ""
+        const truckContainerFlight = shipment.trailerOrContainerNumber || "TBA"
+        const eta = formatDate(shipment.importDateEtaPort) || "TBA"
+        const subject = `Arrival Notification / ${customerRef}Our Ref : ${shipment.jobRef} / ${truckContainerFlight} / ETA : ${shipment.portOfArrival || "TBA"} ${eta}`
+        
+        // Build body
+        let body = `Dear ${customerName},\n\n`
+        body += `We are pleased to inform you that your shipment has arrived at ${shipment.portOfArrival || "TBA"} on ${formatDate(shipment.importDateEtaPort) || "TBA"}.\n\n`
+        body += `Shipment Details:\n`
+        body += `Our Reference: ${shipment.jobRef}\n`
+        if (shipment.customerReferenceNumber) {
+          body += `Your Reference: ${shipment.customerReferenceNumber}\n`
+        }
+        body += `Container/Trailer: ${truckContainerFlight}\n`
+        body += `Port of Arrival: ${shipment.portOfArrival || "TBA"}\n`
+        body += `Arrival Date: ${formatDate(shipment.importDateEtaPort) || "TBA"}\n\n`
+        
+        // Prepare attachments array
+        const attachments: Array<{ url: string; name: string }> = []
+        
+        // Check for invoice and add to attachments if exists
+        const invoiceAttachments = shipment.attachments || []
+        const hasInvoice = invoiceAttachments.some(file => {
+          const fileName = getFileName(file).toLowerCase()
+          return fileName.includes('invoice') || fileName.includes('inv_')
+        })
+        
+        if (hasInvoice) {
+          body += `Please find attached the invoice for this shipment. We kindly request payment at your earliest convenience.\n\n`
+          
+          // Add invoice to attachments
+          invoiceAttachments.forEach(file => {
+            const fileName = getFileName(file).toLowerCase()
+            if (fileName.includes('invoice') || fileName.includes('inv_')) {
+              attachments.push({
+                url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+                name: getFileName(file)
+              })
+            }
+          })
+        } else {
+          // Sanity check - show warning if no invoice found
+          toast({
+            title: "No Invoice Found",
+            description: "Consider adding an invoice before sending this notification.",
+            variant: "default",
+          })
+        }
+        
+        body += `If you have any questions, please do not hesitate to contact us.\n\n`
+        body += `Best regards,\nR.S International`
+        
+        // Open email composer
+        openEmailComposer({
+          id: `email-${Date.now()}`,
+          to: customerContact || "",
+          cc: "",
+          bcc: "",
+          subject: subject,
+          body: body,
+          attachments: attachments,
+          metadata: {
+            source: 'notify-customer-arrival-import',
+            shipmentId: shipment.id
+          }
+        })
+        
+        return
+      }
+      
+      // ADVISE CLEARANCE TO AGENT EMAIL (existing logic)
+      
       // Get the clearance agent from the shipment's clearanceAgent field
       const agent = clearanceAgents.find(a => a.agentName === shipment.clearanceAgent)
       
@@ -1629,8 +1720,6 @@ Hope all is OK.`
         return
       }
       
-      const customer = importCustomers.find(c => c.id === shipment.importCustomerId)
-      const customerName = customer?.companyName || "N/A"
       const vatPaymentMethod = customer?.vatPaymentMethod || "N/A"
       
       // Build email subject
@@ -2306,59 +2395,61 @@ Hope all is OK.`
                       </div>
                     </div>
                   )}
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleSendInvoiceToCustomerEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                          data-testid={`button-send-invoice-email-${shipment.id}`}
-                          title="Send invoice email to customer"
-                        >
-                          <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
-                        </button>
-                        <button
-                          onClick={() => openWindow({ 
-                            type: 'customer-invoice', 
-                            id: `invoice-${shipment.id}-${Date.now()}`, 
-                            payload: { job: shipment, jobType: 'import' } 
-                          })}
-                          className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer flex items-center gap-1`}
-                          data-testid={`button-invoice-customer-${shipment.id}`}
-                        >
-                          Send Invoice/Credit to Customer
-                          {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => updateInvoiceCustomerStatus.mutate({ id: shipment.id, status: null })}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 1 || shipment.invoiceCustomerStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-invoice-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
-                          </div>
+                  {!shipment.handoverContainerToCustomerAtPort && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleSendInvoiceToCustomerEmail(shipment)}
+                            className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                            data-testid={`button-send-invoice-email-${shipment.id}`}
+                            title="Send invoice email to customer"
+                          >
+                            <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
+                          </button>
+                          <button
+                            onClick={() => openWindow({ 
+                              type: 'customer-invoice', 
+                              id: `invoice-${shipment.id}-${Date.now()}`, 
+                              payload: { job: shipment, jobType: 'import' } 
+                            })}
+                            className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer flex items-center gap-1`}
+                            data-testid={`button-invoice-customer-${shipment.id}`}
+                          >
+                            Send Invoice/Credit to Customer
+                            {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-invoice-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => updateInvoiceCustomerStatus.mutate({ id: shipment.id, status: null })}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.invoiceCustomerStatusIndicator === 1 || shipment.invoiceCustomerStatusIndicator === null
+                                ? 'bg-yellow-400 border-yellow-500 scale-110'
+                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-invoice-status-yellow-${shipment.id}`}
+                            title="To Do"
+                          />
+                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
+                            className={`h-5 w-5 rounded border-2 transition-all ${
+                              shipment.invoiceCustomerStatusIndicator === 3
+                                ? 'bg-green-400 border-green-500 scale-110'
+                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
+                            }`}
+                            data-testid={`button-invoice-status-green-${shipment.id}`}
+                            title="Completed"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   {!shipment.handoverContainerAtPort && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
