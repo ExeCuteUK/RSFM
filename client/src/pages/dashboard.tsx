@@ -105,6 +105,11 @@ export default function Dashboard() {
     }
   }, [editingCell])
 
+  // Refresh container tracking when dashboard loads
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["/api/terminal49/check-all-containers"] })
+  }, [])
+
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
     refetchInterval: 5000,

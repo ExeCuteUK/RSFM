@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -68,19 +68,19 @@ export function ContainerTrackingNotification() {
   const [isDismissed, setIsDismissed] = useState(false)
   const { user } = useAuth()
 
-  // Load check data in background - always fetch fresh when dashboard loads
+  // Load check data - only refetch when explicitly triggered
   const { data, isLoading } = useQuery<ContainerCheckResponse>({
     queryKey: ["/api/terminal49/check-all-containers"],
     refetchOnWindowFocus: false,
-    refetchOnMount: 'always', // Always fetch fresh data when component mounts
-    staleTime: 0, // Data is always considered stale to ensure fresh checks
+    refetchOnMount: false, // Don't auto-refetch on mount
+    staleTime: Infinity, // Keep data fresh indefinitely (only refetch on explicit invalidation)
   })
 
   // Extract first name from user's full name
   const firstName = user?.fullName?.split(' ')[0] || ''
 
-  // Random greeting variations
-  const getRandomGreeting = () => {
+  // Stable random greeting - only changes when data changes
+  const greeting = useMemo(() => {
     const greetingsWithName = firstName ? [
       `Hi ${firstName}! It's Eric here.`,
       `Hey ${firstName}, Eric checking in.`,
@@ -97,10 +97,10 @@ export function ContainerTrackingNotification() {
     
     const allGreetings = [...greetingsWithName, ...greetingsWithoutName]
     return allGreetings[Math.floor(Math.random() * allGreetings.length)]
-  }
+  }, [data?.allGood, data?.discrepancies?.length, firstName])
 
-  // Random sign-off variations
-  const getRandomSignOff = () => {
+  // Stable random sign-off - only changes when data changes
+  const signOff = useMemo(() => {
     const signOffs = [
       "Worth taking a look when you get a chance!",
       "Might be worth checking out!",
@@ -109,7 +109,7 @@ export function ContainerTrackingNotification() {
       "Thought I'd give you a heads up!",
     ]
     return signOffs[Math.floor(Math.random() * signOffs.length)]
-  }
+  }, [data?.allGood, data?.discrepancies?.length])
 
   // Reset dismissal when data changes (after updates)
   useEffect(() => {
@@ -134,7 +134,7 @@ export function ContainerTrackingNotification() {
       const totalTracked = data.matchedContainers.length + data.discrepancies.length
       return (
         <>
-          {getRandomGreeting()} I've checked {totalTracked} container{totalTracked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!
+          {greeting} I've checked {totalTracked} container{totalTracked !== 1 ? 's' : ''} for you and everything looks on schedule – all good!
         </>
       )
     }
@@ -186,12 +186,12 @@ export function ContainerTrackingNotification() {
 
     return (
       <>
-        {getRandomGreeting()} I've noticed that {messageParts.map((part, idx) => (
+        {greeting} I've noticed that {messageParts.map((part, idx) => (
           <span key={idx}>
             {part}
             {idx < messageParts.length - 1 && '. Also, '}
           </span>
-        ))}. {getRandomSignOff()}
+        ))}. {signOff}
       </>
     )
   }
