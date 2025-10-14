@@ -14,6 +14,13 @@ interface ContainerDiscrepancy {
   jobRef: number
   customerName: string
   containerNumber: string
+  currentJobData: {
+    containerNumber: string
+    portOfArrival: string | null
+    eta: string | null
+    dispatchDate: string | null
+    vessel: string | null
+  }
   etaDiscrepancy: {
     jobEta: string
     trackingEta: string
@@ -26,6 +33,11 @@ interface ContainerDiscrepancy {
   vesselDiscrepancy: {
     jobVessel: string
     trackingVessel: string
+  } | null
+  dispatchDiscrepancy: {
+    jobDispatch: string
+    trackingDispatch: string
+    daysDiff: number
   } | null
 }
 
@@ -49,21 +61,10 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
     enabled: open,
   })
 
-  const updateShipment = useMutation({
-    mutationFn: async ({ 
-      id, 
-      updates 
-    }: { 
-      id: string
-      updates: {
-        importDateEtaPort?: string
-        portOfArrival?: string
-        vesselName?: string
-      }
-    }) => {
-      return apiRequest(`/api/import-shipments/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates),
+  const updateSingleShipment = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest(`/api/import-shipments/${id}/update-from-terminal49`, {
+        method: "POST",
       })
     },
     onSuccess: () => {
@@ -86,21 +87,9 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
     }
   })
 
-  const handleUpdateAll = (discrepancy: ContainerDiscrepancy) => {
-    setUpdatingShipment(discrepancy.shipmentId)
-    const updates: any = {}
-    
-    if (discrepancy.etaDiscrepancy) {
-      updates.importDateEtaPort = discrepancy.etaDiscrepancy.trackingEta
-    }
-    if (discrepancy.portDiscrepancy) {
-      updates.portOfArrival = discrepancy.portDiscrepancy.trackingPort
-    }
-    if (discrepancy.vesselDiscrepancy) {
-      updates.vesselName = discrepancy.vesselDiscrepancy.trackingVessel
-    }
-
-    updateShipment.mutate({ id: discrepancy.shipmentId, updates })
+  const handleUpdate = (shipmentId: string) => {
+    setUpdatingShipment(shipmentId)
+    updateSingleShipment.mutate(shipmentId)
   }
 
   return (
@@ -144,19 +133,25 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                   data-testid={`container-discrepancy-${discrepancy.jobRef}`}
                 >
                   <div className="flex items-start justify-between gap-4 mb-3">
-                    <div>
+                    <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="outline" className="font-mono">
                           JOB {discrepancy.jobRef}
                         </Badge>
                         <span className="font-medium">{discrepancy.customerName}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        Container: {discrepancy.containerNumber}
+                      <div className="text-sm text-muted-foreground space-y-0.5">
+                        <div>Container: {discrepancy.containerNumber}</div>
+                        {discrepancy.currentJobData.portOfArrival && (
+                          <div>Port: {discrepancy.currentJobData.portOfArrival}</div>
+                        )}
+                        {discrepancy.currentJobData.eta && (
+                          <div>ETA: {format(new Date(discrepancy.currentJobData.eta), 'dd MMM yyyy')}</div>
+                        )}
                       </div>
                     </div>
                     <Button
-                      onClick={() => handleUpdateAll(discrepancy)}
+                      onClick={() => handleUpdate(discrepancy.shipmentId)}
                       disabled={updatingShipment === discrepancy.shipmentId}
                       size="sm"
                       data-testid={`button-update-all-${discrepancy.jobRef}`}
@@ -176,6 +171,37 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                   </div>
 
                   <div className="space-y-2">
+                    {discrepancy.dispatchDiscrepancy && (
+                      <div className="flex items-start gap-2 text-sm bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded p-3">
+                        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <div className="font-medium text-red-900 dark:text-red-100">
+                            Dispatch Date Mismatch
+                          </div>
+                          <div className="mt-1 space-y-1">
+                            <div>
+                              <span className="text-muted-foreground">Job Dispatch:</span>{' '}
+                              <span className="font-medium">
+                                {format(new Date(discrepancy.dispatchDiscrepancy.jobDispatch), 'dd MMM yyyy')}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Tracking Dispatch:</span>{' '}
+                              <span className="font-medium">
+                                {format(new Date(discrepancy.dispatchDiscrepancy.trackingDispatch), 'dd MMM yyyy')}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {discrepancy.dispatchDiscrepancy.daysDiff > 0
+                                ? `${discrepancy.dispatchDiscrepancy.daysDiff} day${discrepancy.dispatchDiscrepancy.daysDiff === 1 ? '' : 's'} later`
+                                : `${Math.abs(discrepancy.dispatchDiscrepancy.daysDiff)} day${Math.abs(discrepancy.dispatchDiscrepancy.daysDiff) === 1 ? '' : 's'} earlier`
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {discrepancy.etaDiscrepancy && (
                       <div className="flex items-start gap-2 text-sm bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded p-3">
                         <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />

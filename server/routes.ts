@@ -3831,6 +3831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const trackingEta = attrs.pod_eta_at;
         const trackingPort = attrs.pod_full_name || attrs.pod_locode;
         const trackingVessel = attrs.vessel_name;
+        const trackingDeparture = attrs.pol_atd_at || attrs.pol_etd_at; // Actual or Estimated departure
         
         // Compare ETA
         let etaDiscrepancy = null;
@@ -3877,16 +3878,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
+        // Compare Dispatch Date
+        let dispatchDiscrepancy = null;
+        if (trackingDeparture && shipment.dispatchDate) {
+          const jobDispatch = new Date(shipment.dispatchDate);
+          const trackDispatch = new Date(trackingDeparture);
+          const daysDiff = Math.round((trackDispatch.getTime() - jobDispatch.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (Math.abs(daysDiff) > 0) {
+            dispatchDiscrepancy = {
+              jobDispatch: shipment.dispatchDate,
+              trackingDispatch: trackingDeparture,
+              daysDiff: daysDiff
+            };
+          }
+        }
+
         // If any discrepancies found, add to list
-        if (etaDiscrepancy || portDiscrepancy || vesselDiscrepancy) {
+        if (etaDiscrepancy || portDiscrepancy || vesselDiscrepancy || dispatchDiscrepancy) {
           discrepancies.push({
             shipmentId: shipment.id,
             jobRef: shipment.jobRef,
             customerName: customer?.companyName || 'Unknown Customer',
             containerNumber: containerNumber,
+            // Current job data for reference
+            currentJobData: {
+              containerNumber: containerNumber,
+              portOfArrival: shipment.portOfArrival,
+              eta: shipment.importDateEtaPort,
+              dispatchDate: shipment.dispatchDate,
+              vessel: shipment.vesselName
+            },
+            // Discrepancies
             etaDiscrepancy,
             portDiscrepancy,
-            vesselDiscrepancy
+            vesselDiscrepancy,
+            dispatchDiscrepancy
           });
         }
       }
@@ -3900,6 +3927,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Terminal49 check all containers error:", error);
       res.status(500).json({ error: "Failed to check containers" });
+    }
+  });
+
+  // Update single import shipment from Terminal49 tracking
+  app.post("/api/import-shipments/:id/update-from-terminal49", async (req, res) => {
+    try {
+      if (!TERMINAL49_API_KEY) {
+        return res.status(500).json({ error: "Terminal49 API key not configured" });
+      }
+
+      const { id } = req.params;
+      const shipment = await storage.getImportShipment(id);
+      
+      if (!shipment) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      if (shipment.containerShipment !== 'Container Shipment') {
+        return res.status(400).json({ error: "Not a container shipment" });
+      }
+
+      const containerNumber = shipment.trailerOrContainerNumber?.trim();
+      if (!containerNumber) {
+        return res.status(400).json({ error: "No container number found" });
+      }
+
+      // Fetch Terminal49 data
+      const response = await fetch(
+        `${TERMINAL49_BASE_URL}/shipments?include=containers`,
+        {
+          headers: {
+            "Authorization": `Token ${TERMINAL49_API_KEY}`,
+            "Content-Type": "application/vnd.api+json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("Terminal49 API error:", response.status, JSON.stringify(data, null, 2));
+        return res.status(response.status).json({ 
+          error: "Terminal49 API error", 
+          details: data 
+        });
+      }
+
+      // Build container map
+      const containerMap = new Map();
+      if (data.included) {
+        data.included
+          .filter((item: any) => item.type === 'container')
+          .forEach((container: any) => {
+            const number = container.attributes?.number?.trim().toUpperCase();
+            if (number) {
+              containerMap.set(number, container);
+            }
+          });
+      }
+
+      // Find this container
+      const container = containerMap.get(containerNumber.toUpperCase());
+      if (!container) {
+        return res.status(404).json({ error: "Container not found in Terminal49" });
+      }
+
+      // Find the shipment
+      const shipmentId = container.relationships?.shipment?.data?.id;
+      if (!shipmentId) {
+        return res.status(404).json({ error: "Shipment relationship not found" });
+      }
+
+      const trackedShipment = data.data?.find((s: any) => s.id === shipmentId);
+      if (!trackedShipment) {
+        return res.status(404).json({ error: "Tracked shipment not found" });
+      }
+
+      const attrs = trackedShipment.attributes;
+
+      // Prepare update data
+      const updates: any = {};
+      
+      if (attrs.pod_eta_at) {
+        updates.importDateEtaPort = attrs.pod_eta_at.split('T')[0]; // Extract date only
+      }
+      
+      if (attrs.pod_full_name || attrs.pod_locode) {
+        updates.portOfArrival = attrs.pod_full_name || attrs.pod_locode;
+      }
+      
+      if (attrs.vessel_name) {
+        updates.vesselName = attrs.vessel_name;
+      }
+
+      if (attrs.pol_atd_at || attrs.pol_etd_at) {
+        const departure = attrs.pol_atd_at || attrs.pol_etd_at;
+        updates.dispatchDate = departure.split('T')[0]; // Extract date only
+      }
+
+      // Update the shipment
+      const updatedShipment = await storage.updateImportShipment(id, updates);
+      
+      res.json({ 
+        success: true,
+        shipment: updatedShipment,
+        updates
+      });
+
+    } catch (error) {
+      console.error("Terminal49 update shipment error:", error);
+      res.status(500).json({ error: "Failed to update shipment" });
     }
   });
 

@@ -38,11 +38,12 @@ export function ContainerTrackingNotification() {
   const [isDismissed, setIsDismissed] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
 
-  // Load check data in background
+  // Load check data in background - always fetch fresh when dashboard loads
   const { data, isLoading } = useQuery<ContainerCheckResponse>({
     queryKey: ["/api/terminal49/check-all-containers"],
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: 'always', // Always fetch fresh data when component mounts
+    staleTime: 0, // Data is always considered stale to ensure fresh checks
   })
 
   useEffect(() => {
