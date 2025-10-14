@@ -23,6 +23,18 @@ interface ContainerDiscrepancy {
     jobVessel: string
     trackingVessel: string
   } | null
+  dispatchDiscrepancy: {
+    jobDispatch: string
+    trackingDispatch: string
+    daysDiff: number
+  } | null
+  deliveryDiscrepancy: {
+    jobDelivery: string
+    trackingEta: string
+    daysDiff: number
+    daysFromArrival: number
+    weekendDaysFromArrival: number
+  } | null
 }
 
 interface ContainerCheckResponse {
@@ -58,9 +70,9 @@ export function ContainerTrackingNotification() {
         const dismissed = JSON.parse(stored)
         const today = new Date().toDateString()
 
-        // Create signature of current discrepancies
+        // Create signature of current discrepancies (include all discrepancy types)
         const currentSignature = data.discrepancies
-          .map(d => `${d.shipmentId}-${d.etaDiscrepancy?.daysDiff}-${d.portDiscrepancy?.trackingPort}-${d.vesselDiscrepancy?.trackingVessel}`)
+          .map(d => `${d.shipmentId}-${d.etaDiscrepancy?.daysDiff}-${d.portDiscrepancy?.trackingPort}-${d.vesselDiscrepancy?.trackingVessel}-${d.dispatchDiscrepancy?.daysDiff}-${d.deliveryDiscrepancy?.daysDiff}`)
           .sort()
           .join('|')
 
@@ -92,7 +104,7 @@ export function ContainerTrackingNotification() {
     } else if (data?.discrepancies) {
       // Issues: save the signature so we know if issues change
       const signature = data.discrepancies
-        .map(d => `${d.shipmentId}-${d.etaDiscrepancy?.daysDiff}-${d.portDiscrepancy?.trackingPort}-${d.vesselDiscrepancy?.trackingVessel}`)
+        .map(d => `${d.shipmentId}-${d.etaDiscrepancy?.daysDiff}-${d.portDiscrepancy?.trackingPort}-${d.vesselDiscrepancy?.trackingVessel}-${d.dispatchDiscrepancy?.daysDiff}-${d.deliveryDiscrepancy?.daysDiff}`)
         .sort()
         .join('|')
       
@@ -119,10 +131,22 @@ export function ContainerTrackingNotification() {
     data.discrepancies.forEach((d) => {
       const parts: string[] = []
       
+      if (d.dispatchDiscrepancy) {
+        const days = Math.abs(d.dispatchDiscrepancy.daysDiff)
+        const direction = d.dispatchDiscrepancy.daysDiff > 0 ? 'later' : 'earlier'
+        parts.push(`departed ${days} day${days === 1 ? '' : 's'} ${direction}`)
+      }
+      
       if (d.etaDiscrepancy) {
         const days = Math.abs(d.etaDiscrepancy.daysDiff)
         const direction = d.etaDiscrepancy.daysDiff > 0 ? 'late' : 'early'
         parts.push(`arriving ${days} day${days === 1 ? '' : 's'} ${direction}`)
+      }
+      
+      if (d.deliveryDiscrepancy) {
+        const days = Math.abs(d.deliveryDiscrepancy.daysDiff)
+        const direction = d.deliveryDiscrepancy.daysDiff > 0 ? 'after' : 'before'
+        parts.push(`delivery ${days} day${days === 1 ? '' : 's'} ${direction} arrival`)
       }
       
       if (d.portDiscrepancy) {
