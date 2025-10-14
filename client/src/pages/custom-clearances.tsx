@@ -1643,6 +1643,15 @@ export default function CustomClearances() {
                               size="icon"
                               variant="ghost"
                               title="Linked to shipment"
+                              onClick={() => {
+                                // Remove # symbol if present and navigate to linked shipment page
+                                const jobRefStr = clearance.jobRef.toString().replace('#', '')
+                                if (clearance.jobType === "import") {
+                                  setLocation(`/import-shipments?search=${jobRefStr}`)
+                                } else {
+                                  setLocation(`/export-shipments?search=${jobRefStr}`)
+                                }
+                              }}
                               data-testid={`button-link-${clearance.id}`}
                               className="h-7 w-7"
                             >

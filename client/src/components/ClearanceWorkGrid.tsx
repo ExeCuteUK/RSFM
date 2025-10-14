@@ -365,11 +365,24 @@ export function ClearanceWorkGrid() {
     const cellColor = getCellColor(clearance, fieldName, value)
 
     if (fieldName === "link") {
+      const handleLinkClick = () => {
+        if (clearance.createdFromId) {
+          // Remove # symbol if present and navigate to linked shipment page
+          const jobRefStr = `${clearance.jobRef}`.replace('#', '')
+          if (clearance.jobType === "import") {
+            setLocation(`/import-shipments?search=${jobRefStr}`)
+          } else {
+            setLocation(`/export-shipments?search=${jobRefStr}`)
+          }
+        }
+      }
+
       return (
         <td 
           key={fieldName} 
-          className={`border px-2 py-1 text-center ${cellColor}`}
+          className={`border px-2 py-1 text-center ${clearance.createdFromId ? 'cursor-pointer hover-elevate' : ''} ${cellColor}`}
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+          onClick={handleLinkClick}
         >
           {clearance.createdFromId && (
             <Link2 className="w-4 h-4 mx-auto text-green-600 dark:text-green-400" />
@@ -380,19 +393,9 @@ export function ClearanceWorkGrid() {
 
     if (fieldName === "jobRef") {
       const handleJobRefClick = () => {
-        const jobRefStr = `${value}`
-        
-        // If it's a linked job (created from import/export shipment)
-        if (clearance.createdFromId) {
-          if (clearance.jobType === "import") {
-            setLocation(`/import-shipments?search=${jobRefStr}`)
-          } else {
-            setLocation(`/export-shipments?search=${jobRefStr}`)
-          }
-        } else {
-          // Dedicated clearance job
-          setLocation(`/custom-clearances?search=${jobRefStr}`)
-        }
+        // Remove # symbol if present and navigate to custom clearances page
+        const jobRefStr = `${value}`.replace('#', '')
+        setLocation(`/custom-clearances?search=${jobRefStr}`)
       }
 
       return (
