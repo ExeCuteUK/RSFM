@@ -3947,7 +3947,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
-        // Compare Delivery Date vs Tracking ETA (if there's a discrepancy)
+        // Compare Delivery Date vs Tracking ETA - flag only if gap exceeds 5 days
         let deliveryDiscrepancy = null;
         if (trackingEta && shipment.deliveryDate && shipment.importDateEtaPort) {
           const jobDelivery = new Date(shipment.deliveryDate);
@@ -3959,32 +3959,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           const deliveryDiff = Math.round((jobDelivery.getTime() - trackEta.getTime()) / (1000 * 60 * 60 * 24));
           
-          // Only flag if there's a mismatch
-          if (Math.abs(deliveryDiff) > 0) {
-            // Calculate days from arrival to delivery (inclusive)
-            const arrivalDate = trackEta;
-            const deliveryDate = jobDelivery;
-            
-            // Count total days and weekend days between arrival and delivery (inclusive of both dates)
-            let daysFromArrival = 0;
-            let weekendDaysFromArrival = 0;
-            
-            const start = new Date(arrivalDate);
-            const end = new Date(deliveryDate);
-            
-            // Ensure start is before end for counting
-            const [countStart, countEnd] = start <= end ? [start, end] : [end, start];
-            
-            const current = new Date(countStart);
-            while (current <= countEnd) {
-              daysFromArrival++;
-              const dayOfWeek = current.getDay();
-              if (dayOfWeek === 0 || dayOfWeek === 6) { // Sunday or Saturday
-                weekendDaysFromArrival++;
-              }
-              current.setDate(current.getDate() + 1);
+          // Calculate days from arrival to delivery (inclusive)
+          const arrivalDate = trackEta;
+          const deliveryDate = jobDelivery;
+          
+          // Count total days and weekend days between arrival and delivery (inclusive of both dates)
+          let daysFromArrival = 0;
+          let weekendDaysFromArrival = 0;
+          
+          const start = new Date(arrivalDate);
+          const end = new Date(deliveryDate);
+          
+          // Ensure start is before end for counting
+          const [countStart, countEnd] = start <= end ? [start, end] : [end, start];
+          
+          const current = new Date(countStart);
+          while (current <= countEnd) {
+            daysFromArrival++;
+            const dayOfWeek = current.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) { // Sunday or Saturday
+              weekendDaysFromArrival++;
             }
-            
+            current.setDate(current.getDate() + 1);
+          }
+          
+          // Only flag as discrepancy if delivery gap exceeds 5 days
+          if (daysFromArrival > 5) {
             deliveryDiscrepancy = {
               jobDelivery: shipment.deliveryDate,
               trackingEta: trackingEta,
