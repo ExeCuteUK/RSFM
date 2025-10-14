@@ -777,10 +777,15 @@ function UpdateManagement() {
       }
       setShowUpdateDialog(false);
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      // Save full error details to log output
+      const errorDetails = error.message || error.toString();
+      setUpdateOutput(errorDetails);
+      
+      // Show brief user-friendly message in toast
       toast({
         title: "Update Failed",
-        description: error.message,
+        description: "The update process encountered an error. See the log below for details.",
         variant: "destructive",
       });
       setShowUpdateDialog(false);
