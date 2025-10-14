@@ -167,6 +167,11 @@ export function ContainerTrackingNotification() {
   const isAllGood = !hasDiscrepancies
   const message = generateMessage()
 
+  // Don't render if message generation failed
+  if (!message) {
+    return null
+  }
+
   return (
     <Card 
       className={`border-l-4 ${isAllGood ? 'border-l-green-500' : 'border-l-yellow-500'}`}
