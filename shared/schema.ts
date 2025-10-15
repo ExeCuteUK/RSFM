@@ -418,6 +418,10 @@ export const importShipments = pgTable("import_shipments", {
   additionalNotes: text("additional_notes"),
   jobTags: text("job_tags").array(),
   
+  // Job Hold
+  jobHold: boolean("job_hold").default(false),
+  holdDescription: text("hold_description"),
+  
   // File Attachments (stored as array of {filename, path} objects)
   attachments: jsonb("attachments").$type<Array<{filename: string; path: string}>>(),
   
@@ -741,6 +745,10 @@ export const customClearances = pgTable("custom_clearances", {
   // Link to source shipment
   createdFromType: text("created_from_type"),
   createdFromId: varchar("created_from_id"),
+  
+  // Job Hold
+  jobHold: boolean("job_hold").default(false),
+  holdDescription: text("hold_description"),
   
   // Clearance Agent and MRN fields
   clearanceAgent: text("clearance_agent"),
