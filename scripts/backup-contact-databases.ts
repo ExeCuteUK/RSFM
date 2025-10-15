@@ -156,12 +156,17 @@ async function backupContactDatabases() {
     writeFileSync(`${backupDir}/settings_backup.sql`, settingsSQL);
     console.log(`✓ Settings backed up: ${settingsData.length} records`);
 
-    // Backup Users
+    // Backup Users (exclude sensitive OAuth tokens)
     console.log("Backing up Users...");
     const usersData = await db.select().from(users);
-    const usersSQL = generateInsertSQL("users", usersData);
+    // Remove sensitive OAuth tokens from backup
+    const sanitizedUsersData = usersData.map(user => {
+      const { accessToken, refreshToken, ...safeUserData } = user;
+      return safeUserData;
+    });
+    const usersSQL = generateInsertSQL("users", sanitizedUsersData);
     writeFileSync(`${backupDir}/users_backup.sql`, usersSQL);
-    console.log(`✓ Users backed up: ${usersData.length} records`);
+    console.log(`✓ Users backed up: ${usersData.length} records (OAuth tokens excluded for security)`);
 
     // Create metadata file
     const totalRecords = importCustomersData.length + exportCustomersData.length + 

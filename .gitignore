@@ -3,4 +3,7 @@ dist
 .DS_Store
 server/public
 vite.config.ts.*
-*.tar.gzbackups/temp_*/
+*.tar.gz
+backups/temp_*/
+backups/temp_restore_*/
+backups/backup_*/
