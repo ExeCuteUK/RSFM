@@ -351,6 +351,9 @@ export default function ImportShipments() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "attachment" | "pod" }) => {
+      // Show uploading toast immediately
+      toast({ title: "Uploading..." })
+      
       // Get shipment info for folder organization
       const shipment = allShipments.find(s => s.id === id)
       if (!shipment) throw new Error("Shipment not found")
