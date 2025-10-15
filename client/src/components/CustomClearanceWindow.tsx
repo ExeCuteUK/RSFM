@@ -95,13 +95,11 @@ export function CustomClearanceWindow({ windowId, payload, onSubmitSuccess }: Cu
       width={900}
       height={700}
     >
-      <div className="p-6">
-        <CustomClearanceForm
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          defaultValues={payload.defaultValues}
-        />
-      </div>
+      <CustomClearanceForm
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        defaultValues={payload.defaultValues}
+      />
     </DraggableWindow>
   )
 }

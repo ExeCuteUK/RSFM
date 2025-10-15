@@ -462,8 +462,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)} className="flex flex-col h-full max-h-[calc(100vh-200px)]">
-        <div className="flex-1 overflow-auto space-y-6 pr-2">
+      <form onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)} className="flex flex-col h-full">
+        <div className="flex-1 overflow-auto p-6 space-y-6">
           <div className="grid gap-6">
           <Card>
             <CardHeader>
@@ -2025,10 +2025,10 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               />
             </CardContent>
           </Card>
-          </div>
+        </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t bg-background">
+        <div className="sticky bottom-0 flex justify-end gap-2 px-6 py-4 border-t bg-background">
           <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel">
             Cancel
           </Button>

@@ -104,13 +104,11 @@ export function ExportShipmentWindow({ windowId, payload, onSubmitSuccess }: Exp
       width={900}
       height={700}
     >
-      <div className="p-6">
-        <ExportShipmentForm
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          defaultValues={payload.defaultValues}
-        />
-      </div>
+      <ExportShipmentForm
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        defaultValues={payload.defaultValues}
+      />
     </DraggableWindow>
   )
 }

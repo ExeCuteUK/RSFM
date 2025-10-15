@@ -105,14 +105,12 @@ export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: Imp
       width={900}
       height={700}
     >
-      <div className="p-6">
-        <ImportShipmentForm
-          key={(payload.defaultValues as any)?.id || 'new'}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          defaultValues={payload.defaultValues}
-        />
-      </div>
+      <ImportShipmentForm
+        key={(payload.defaultValues as any)?.id || 'new'}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        defaultValues={payload.defaultValues}
+      />
     </DraggableWindow>
   )
 }
