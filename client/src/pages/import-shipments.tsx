@@ -1165,20 +1165,19 @@ export default function ImportShipments() {
         documentText = shipmentInvoices.length > 1 ? "Invoices" : "Invoice"
       }
       
-      // Build body with agent information if present
-      let body = `${greeting},\n\nPlease find attached our ${documentText}.`
+      // Build body with shipment details
+      const etaCustoms = formatDate(shipment.importDateEtaCustoms) || "TBA"
+      const containerOrTrailer = shipment.trailerOrContainerNumber || "TBA"
       
-      // Add agent information if present
-      const agentContactNameArray = Array.isArray(shipment.agentContactName)
-        ? shipment.agentContactName.filter(Boolean)
-        : (shipment.agentContactName ? shipment.agentContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
-      const agentEmailArray = Array.isArray(shipment.agentEmail)
-        ? shipment.agentEmail.filter(Boolean)
-        : (shipment.agentEmail ? shipment.agentEmail.split(',').map(e => e.trim()).filter(Boolean) : [])
+      let body = `${greeting},\n\n`
+      body += `Please find attached ${documentText} for this shipment that arrived on ${etaCustoms} on ${containerOrTrailer}.`
       
-      if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
-        body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
+      // Conditionally add customer reference
+      if (customerRef) {
+        body += ` Your Ref ${customerRef}`
       }
+      
+      body += `\n\nWe appreciate your business and if there are any issues then please let me know.`
       
       // Get invoice PDF paths with proper filenames
       const invoiceFiles = shipmentInvoices.map(invoice => ({
