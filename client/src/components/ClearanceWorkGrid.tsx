@@ -308,7 +308,7 @@ export function ClearanceWorkGrid() {
 
   const getCellColor = (clearance: CustomClearance, fieldName: string, value: any) => {
     // Link column, Job Ref, and Notes always green
-    if (fieldName === "link" || fieldName === "jobRef" || fieldName === "notes") {
+    if (fieldName === "link" || fieldName === "jobRef" || fieldName === "additionalNotes") {
       return "bg-green-100 dark:bg-green-900"
     }
 
@@ -658,7 +658,7 @@ export function ClearanceWorkGrid() {
                       {renderCell(clearance, "mrn", clearance.mrn, columnWidths[7])}
                       {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[8])}
                       {renderCell(clearance, "agentAdvised", formatDate(getAgentAdvisedTimestamp(clearance)), columnWidths[9])}
-                      {renderCell(clearance, "notes", clearance.additionalNotes, columnWidths[10])}
+                      {renderCell(clearance, "additionalNotes", clearance.additionalNotes, columnWidths[10])}
                     </tr>
                   )
                 })}

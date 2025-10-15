@@ -956,7 +956,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
                   />
                 </div>
                 <div>
-                  <Label htmlFor="exportersRef">Exporters Ref</Label>
+                  <Label htmlFor="exportersRef">Client Ref</Label>
                   <Input
                     id="exportersRef"
                     value={exportersRef}

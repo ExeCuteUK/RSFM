@@ -2704,7 +2704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const pdfBuffer = await generateInvoicePDF({ invoice });
         
         const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
-        const filename = `${prefix} - ${invoice.jobRef}.pdf`;
+        const filename = `${prefix} - ${invoice.invoiceNumber}.pdf`;
         
         // Upload to Google Drive in "RS Invoices" folder
         const { fileId, objectPath } = await driveStorage.uploadInvoice(
@@ -2747,7 +2747,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const pdfBuffer = await generateInvoicePDF({ invoice });
         
         const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
-        const filename = `${prefix} - ${invoice.jobRef}.pdf`;
+        const filename = `${prefix} - ${invoice.invoiceNumber}.pdf`;
         
         // Upload new PDF to Google Drive in "RS Invoices" folder (before deleting old one)
         const { fileId, objectPath } = await driveStorage.uploadInvoice(
@@ -2831,7 +2831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pdfBuffer = await generateInvoicePDF({ invoice });
 
       const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
-      const filename = `${prefix} - ${invoice.jobRef}.pdf`;
+      const filename = `${prefix} - ${invoice.invoiceNumber}.pdf`;
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Length', pdfBuffer.length);
@@ -4833,7 +4833,7 @@ ${messageText}
             fileBuffer = await generateInvoicePDF({ invoice });
             
             const prefix = invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice';
-            filename = `${prefix} - ${invoice.jobRef}.pdf`;
+            filename = `${prefix} - ${invoice.invoiceNumber}.pdf`;
             contentType = 'application/pdf';
           } catch (error) {
             console.error(`Failed to generate invoice PDF for ${invoiceId}:`, error);

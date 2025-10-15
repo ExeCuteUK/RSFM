@@ -61,7 +61,7 @@ export default function CustomClearances() {
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ clearance: CustomClearance; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
-  const [mrnConfirmation, setMrnConfirmation] = useState<{ id: string; fileObject: { filename: string; path: string }; mrnNumber: string; clearance: CustomClearance } | null>(null)
+  const [mrnConfirmation, setMrnConfirmation] = useState<{ id: string; fileObject: { filename: string; path: string }; mrnNumber: string; clearance: CustomClearance; batchFiles?: { filename: string; path: string }[] } | null>(null)
   const { toast } = useToast()
   const [location, setLocation] = useLocation()
   
@@ -418,18 +418,22 @@ export default function CustomClearances() {
   const handleMrnConfirmation = async (confirm: boolean) => {
     if (!mrnConfirmation) return
 
-    const { id, fileObject, mrnNumber, clearance } = mrnConfirmation
-    const currentFiles = clearance.clearanceDocuments || []
+    const { id, fileObject, mrnNumber, clearance, batchFiles } = mrnConfirmation
     
-    // Normalize current files to ensure they're all objects
-    const normalizedCurrentFiles = currentFiles.map((f: any) => {
-      if (typeof f === 'string') {
-        return { filename: f.split('/').pop() || f, path: f };
-      }
-      return f;
-    });
-    
-    const updatedFiles = [...normalizedCurrentFiles, fileObject]
+    // Use batchFiles if available (from drag-drop), otherwise use single fileObject
+    const updatedFiles = batchFiles || (() => {
+      const currentFiles = clearance.clearanceDocuments || []
+      
+      // Normalize current files to ensure they're all objects
+      const normalizedCurrentFiles = currentFiles.map((f: any) => {
+        if (typeof f === 'string') {
+          return { filename: f.split('/').pop() || f, path: f };
+        }
+        return f;
+      });
+      
+      return [...normalizedCurrentFiles, fileObject]
+    })()
 
     try {
       await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
@@ -443,11 +447,12 @@ export default function CustomClearances() {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
       queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
 
+      const fileCount = batchFiles ? batchFiles.length - (clearance.clearanceDocuments?.length || 0) : 1
       toast({ 
-        title: confirm ? "MRN Added" : "File Uploaded",
+        title: confirm ? "MRN Added" : (fileCount > 1 ? "Files Uploaded" : "File Uploaded"),
         description: confirm 
           ? `MRN ${mrnNumber} has been added to the clearance.`
-          : "File uploaded without MRN."
+          : (fileCount > 1 ? `${fileCount} files uploaded without MRN.` : "File uploaded without MRN.")
       })
     } catch (error) {
       toast({ 
@@ -966,8 +971,12 @@ export default function CustomClearances() {
     const clearance = clearances.find(c => c.id === clearanceId)
     if (!clearance) return
 
+    // Show uploading toast
+    toast({ title: "Uploading..." })
+
     // Batch upload: Upload ALL files to Google Drive first, collect paths, then ONE database update
     const uploadedFileObjects: { filename: string; path: string }[] = []
+    let detectedMrn: string | null = null
     
     try {
       for (const file of files) {
@@ -990,9 +999,28 @@ export default function CustomClearances() {
 
         const { objectPath, filename } = await uploadResponse.json()
         uploadedFileObjects.push({ filename, path: objectPath })
+
+        // If it's a clearance document and we haven't found an MRN yet, scan for MRN
+        if (type === "clearance" && !detectedMrn) {
+          try {
+            const ocrResponse = await fetch("/api/objects/ocr", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ objectPath, filename }),
+              credentials: "include"
+            })
+            const { mrnNumber } = await ocrResponse.json()
+            
+            if (mrnNumber) {
+              detectedMrn = mrnNumber
+            }
+          } catch (error) {
+            console.error("OCR failed for file:", filename, error)
+          }
+        }
       }
 
-      // Now update database with ALL uploaded files in ONE request
+      // Prepare updated files list
       const currentFiles = type === "transport" ? (clearance.transportDocuments || []) : (clearance.clearanceDocuments || [])
       const normalizedCurrentFiles = currentFiles.map((f: any) => {
         if (typeof f === 'string') {
@@ -1003,15 +1031,37 @@ export default function CustomClearances() {
 
       const updatedFiles = [...normalizedCurrentFiles, ...uploadedFileObjects]
 
-      await apiRequest("PATCH", `/api/custom-clearances/${clearanceId}`, {
-        [type === "transport" ? "transportDocuments" : "clearanceDocuments"]: updatedFiles
-      })
+      // If MRN was detected, show confirmation dialog
+      if (detectedMrn) {
+        // Store all uploaded files in a way that MRN confirmation can access them
+        setMrnConfirmation({ 
+          id: clearanceId, 
+          fileObject: uploadedFileObjects[0], // Just for compatibility, not actually used
+          mrnNumber: detectedMrn, 
+          clearance,
+          // Store the complete files list for batch update
+          batchFiles: updatedFiles
+        })
+      } else {
+        // No MRN found, just update with all files
+        await apiRequest("PATCH", `/api/custom-clearances/${clearanceId}`, {
+          [type === "transport" ? "transportDocuments" : "clearanceDocuments"]: updatedFiles
+        })
 
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
-      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
-      toast({ title: `${files.length} file(s) uploaded successfully` })
+        queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+        queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"] })
+        queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+        queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+        
+        if (type === "clearance") {
+          toast({ 
+            title: "No MRN Found", 
+            description: `${files.length} file(s) uploaded. OCR scan completed but no MRN was detected.`
+          })
+        } else {
+          toast({ title: `${files.length} file(s) uploaded successfully` })
+        }
+      }
     } catch (error) {
       toast({ title: "File upload failed", variant: "destructive" })
     }
@@ -1815,14 +1865,13 @@ export default function CustomClearances() {
                               onClick={() => handleAdviseAgentEmail(clearance)}
                               data-testid={`button-advise-agent-email-${clearance.id}`}
                             />
-                            <button
-                              onClick={() => setClearanceAgentDialog({ show: true, clearanceId: clearance.id })}
-                              className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium hover:underline cursor-pointer flex items-center gap-1`}
-                              data-testid={`button-advise-clearance-${clearance.id}`}
+                            <p
+                              className={`text-xs ${getStatusColor(clearance.adviseAgentStatusIndicator)} font-medium flex items-center gap-1`}
+                              data-testid={`text-advise-clearance-${clearance.id}`}
                             >
                               Advise Clearance To Agent
                               {clearance.adviseAgentStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                            </button>
+                            </p>
                           </div>
                           <div className="flex items-center gap-1">
                             <button
@@ -1980,19 +2029,13 @@ export default function CustomClearances() {
                               >
                                 <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-purple-500 transition-colors" />
                               </button>
-                              <button
-                                onClick={() => openWindow({ 
-                                  type: 'customer-invoice',
-                                  title: `Invoice - CC#${clearance.jobRef}`,
-                                  id: `invoice-${clearance.id}-${Date.now()}`, 
-                                  payload: { job: clearance, jobType: 'clearance' } 
-                                })}
-                                className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium hover:underline cursor-pointer flex items-center gap-1`}
-                                data-testid={`button-invoice-customer-${clearance.id}`}
+                              <p
+                                className={`text-xs ${getStatusColor(clearance.invoiceCustomerStatusIndicator)} font-medium flex items-center gap-1`}
+                                data-testid={`text-invoice-customer-${clearance.id}`}
                               >
                                 Send Invoice/Credit to Customer
                                 {clearance.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                              </button>
+                              </p>
                             </div>
                             <div className="flex items-center gap-1">
                               <button

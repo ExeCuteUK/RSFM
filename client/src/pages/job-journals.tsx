@@ -657,9 +657,9 @@ export default function JobJournals() {
                 <tr className="border-b-4">
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">#</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Job Ref</th>
+                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Client Name</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Destination</th>
-                  <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
                   <th className="text-center p-1 font-semibold underline border-r-4 border-border bg-background">Identifier</th>
                   <th className="text-center p-1 font-semibold underline border-l-2 border-r border-border bg-background">Invoice From</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Invoice No</th>
@@ -697,14 +697,14 @@ export default function JobJournals() {
                         {entry.jobRef}
                       </button>
                     </td>
+                    <td className="p-1 text-center border-r border-border" data-testid={`text-date-${entry.jobRef}`}>
+                      {formatDateToDDMMYY(entry.date)}
+                    </td>
                     <td className="p-1 text-center border-r border-border" data-testid={`text-customer-${entry.jobRef}`}>
                       {entry.customerName}
                     </td>
                     <td className="p-1 text-center border-r border-border" data-testid={`text-destination-${entry.jobRef}`}>
                       {entry.destination}
-                    </td>
-                    <td className="p-1 text-center border-r border-border" data-testid={`text-date-${entry.jobRef}`}>
-                      {formatDateToDDMMYY(entry.date)}
                     </td>
                     <td className="p-1 text-center border-r-4 border-border" data-testid={`text-reg-${entry.jobRef}`}>
                       {entry.regContainerFlight}

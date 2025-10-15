@@ -735,12 +735,23 @@ export default function Dashboard() {
       }
 
       if (type === "textarea") {
+        const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+          const cursorPosition = e.target.selectionStart
+          setTempValue(e.target.value)
+          // Restore cursor position after state update
+          requestAnimationFrame(() => {
+            if (textareaRef.current) {
+              textareaRef.current.setSelectionRange(cursorPosition, cursorPosition)
+            }
+          })
+        }
+
         return (
           <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
             <textarea
               ref={textareaRef}
               value={tempValue}
-              onChange={(e) => setTempValue(e.target.value)}
+              onChange={handleTextareaChange}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               className="w-full min-h-[60px] max-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"

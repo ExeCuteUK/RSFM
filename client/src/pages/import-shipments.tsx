@@ -2483,18 +2483,13 @@ Hope all is OK.`
                           >
                             <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-blue-500 transition-colors" />
                           </button>
-                          <button
-                            onClick={() => openWindow({ 
-                              type: 'customer-invoice', 
-                              id: `invoice-${shipment.id}-${Date.now()}`, 
-                              payload: { job: shipment, jobType: 'import' } 
-                            })}
-                            className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} hover:underline cursor-pointer flex items-center gap-1`}
-                            data-testid={`button-invoice-customer-${shipment.id}`}
+                          <p
+                            className={`text-xs font-medium ${getInvoiceCustomerStatusColor(shipment.invoiceCustomerStatusIndicator)} flex items-center gap-1`}
+                            data-testid={`text-invoice-customer-${shipment.id}`}
                           >
                             Send Invoice/Credit to Customer
                             {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                          </button>
+                          </p>
                         </div>
                         <div className="flex items-center gap-1">
                           <button

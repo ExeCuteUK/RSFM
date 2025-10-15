@@ -71,11 +71,11 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
       
       if (invoice.exportersRef) {
         doc.font('Helvetica-Bold')
-           .text('Exporters Ref :', 400, 168);
+           .text('Client Ref :', 400, 168);
         doc.text(invoice.exportersRef, valueX, 168);
         doc.font('Helvetica'); // Reset to normal font
       } else {
-        doc.text('Exporters Ref :', 400, 168);
+        doc.text('Client Ref :', 400, 168);
         doc.text('', valueX, 168);
       }
 
