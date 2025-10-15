@@ -492,8 +492,9 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)} className="space-y-6">
-        <div className="grid gap-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)} className="flex flex-col h-full max-h-[calc(100vh-200px)]">
+        <div className="flex-1 overflow-auto space-y-6 pr-2">
+          <div className="grid gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Customer &amp; Basic Information</CardTitle>
@@ -1654,9 +1655,10 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 pt-4 border-t bg-background">
           <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel">
             Cancel
           </Button>
