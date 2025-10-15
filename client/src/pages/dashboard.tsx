@@ -260,8 +260,26 @@ export default function Dashboard() {
       const updateData: Partial<ImportShipment> = {}
       const shipment = importShipments.find(s => s.id === shipmentId)
       
+      // Handle sendHaulierEadStatusIndicatorTimestamp specially
+      if (fieldName === "sendHaulierEadStatusIndicatorTimestamp") {
+        if (!value.trim()) {
+          // Clearing the timestamp - set status to 2 (yellow/to do)
+          updateData.sendHaulierEadStatusIndicator = 2
+          updateData.sendHaulierEadStatusIndicatorTimestamp = null as any
+        } else {
+          // Setting a timestamp - validate DD/MM/YY format and set status to 3 (green/completed)
+          const convertedDate = validateAndConvertDate(value)
+          if (!convertedDate) {
+            throw new Error("Invalid date format. Use DD/MM/YY")
+          }
+          // Store the entered date at midnight UTC
+          const dateObj = new Date(convertedDate)
+          updateData.sendHaulierEadStatusIndicator = 3
+          updateData.sendHaulierEadStatusIndicatorTimestamp = dateObj.toISOString() as any
+        }
+      }
       // Handle different field types with validation
-      if (fieldName === "collectionDate" || fieldName === "dispatchDate" || fieldName === "importDateEtaPort" || fieldName === "deliveryDate") {
+      else if (fieldName === "collectionDate" || fieldName === "dispatchDate" || fieldName === "importDateEtaPort" || fieldName === "deliveryDate") {
         const convertedDate = validateAndConvertDate(value)
         ;(updateData as any)[fieldName] = convertedDate
         
@@ -1590,14 +1608,29 @@ export default function Dashboard() {
                               timestamp={shipment.clearanceStatusIndicatorTimestamp}
                             />
                             
-                            {/* Entry to Haulier - EDITABLE STATUS TIMESTAMP */}
-                            <EditableStatusTimestampCell
-                              shipment={shipment}
-                              statusIndicatorField="sendHaulierEadStatusIndicator"
-                              timestampField="sendHaulierEadStatusIndicatorTimestamp"
-                              statusIndicator={shipment.sendHaulierEadStatusIndicator}
-                              timestamp={shipment.sendHaulierEadStatusIndicatorTimestamp}
-                            />
+                            {/* Entry to Haulier - CUSTOM CELL */}
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "sendHaulierEadStatusIndicatorTimestamp" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${!shipment.sendHaulierEadStatusIndicatorTimestamp ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  placeholder="DD/MM/YY"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${!shipment.sendHaulierEadStatusIndicatorTimestamp ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}
+                                onClick={() => handleCellClick(shipment.id, "sendHaulierEadStatusIndicatorTimestamp", shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : "")}
+                                data-testid={`cell-entry-haulier-${shipment.jobRef}`}
+                              >
+                                <span className="block text-xs">{shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ""}</span>
+                              </td>
+                            )}
                             
                             {/* Delivery Booked Date - EDITABLE DATE */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryDate" ? (

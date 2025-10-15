@@ -1715,38 +1715,50 @@ Hope all is OK.`
           inv.jobRef === shipment.jobRef && inv.jobType === 'import' && inv.jobId === shipment.id
         )
         
-        // Check if invoices exist
-        if (shipmentInvoices.length === 0) {
-          toast({
-            title: "No Invoice Found",
-            description: "You haven't created an invoice yet. Please create an invoice first, then create this email again.",
-            variant: "destructive",
-          })
-          return
-        }
-        
         // Extract first name from job contact name
         const jobContactName = shipment.jobContactName || customerName
         const firstName = Array.isArray(jobContactName) ? jobContactName[0]?.split(' ')[0] : jobContactName.split(' ')[0]
         
-        // Build subject with conditional customer ref
+        // Build subject with conditional customer ref and different text for Road Shipments
         const customerRef = shipment.customerReferenceNumber ? `Your Ref : ${shipment.customerReferenceNumber} / ` : ""
-        const containerNumber = shipment.trailerOrContainerNumber || "TBA"
+        const containerOrTrailer = shipment.trailerOrContainerNumber || "TBA"
         const etaDate = formatDate(shipment.importDateEtaPort) || "TBA"
         const etaPort = shipment.portOfArrival || "TBA"
-        const subject = `Notification Of Arrival / ${customerRef}Our Ref : ${shipment.jobRef} / Container ${containerNumber} / ETA : ${etaPort} ${etaDate}`
         
-        // Build body
-        let body = `Hi ${firstName},\n\n`
-        body += `Wanted to let you know we have a container (${containerNumber}) that will be arriving into ${shipment.portOfArrival || "TBA"} on ${etaDate}.\n\n`
-        body += `We will be arranging this release to yourselves.`
-        body += `\n\nAttached is our handover invoice for this release. Please confirm soonest once this has been paid.`
+        let subject, body, attachmentFiles
         
-        // Get invoice PDF paths with proper filenames (attach ALL invoices automatically)
-        const invoiceFiles = shipmentInvoices.map(invoice => ({
-          url: `/api/invoices/${invoice.id}/pdf`,
-          name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
-        }))
+        if (shipment.containerShipment === "Road Shipment") {
+          // Road Shipment: Use "Trailer" and custom subject/body
+          subject = `Notification Of Arrival & Clearance Arrange Request / ${customerRef}Our Ref : ${shipment.jobRef} / Trailer ${containerOrTrailer} / ETA : ${etaPort} ${etaDate}`
+          
+          body = `Hi ${firstName},\n\n`
+          body += `Just to let you know we have Truck Number ${containerOrTrailer} arriving into ${etaPort} on ${etaDate}.\n\n`
+          body += `Please could you arrange for the GVMS entry to be created and sent back to me ASAP. (Further information noted below if applicable and documents enclosed).`
+          
+          // For Road Shipments, attach Documents instead of Invoices
+          attachmentFiles = (shipment.documents || []).map(doc => ({
+            url: `/api/job-files/download?path=${encodeURIComponent(doc.path)}`,
+            name: doc.filename
+          }))
+        } else {
+          // Container Shipment: Original logic
+          subject = `Notification Of Arrival / ${customerRef}Our Ref : ${shipment.jobRef} / Container ${containerOrTrailer} / ETA : ${etaPort} ${etaDate}`
+          
+          body = `Hi ${firstName},\n\n`
+          body += `Wanted to let you know we have a container (${containerOrTrailer}) that will be arriving into ${etaPort} on ${etaDate}.\n\n`
+          body += `We will be arranging this release to yourselves.`
+          
+          // Only mention invoice if one exists
+          if (shipmentInvoices.length > 0) {
+            body += `\n\nAttached is our handover invoice for this release. Please confirm soonest once this has been paid.`
+          }
+          
+          // Attach invoices for Container Shipments
+          attachmentFiles = shipmentInvoices.map(invoice => ({
+            url: `/api/invoices/${invoice.id}/pdf`,
+            name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
+          }))
+        }
         
         // Open email composer
         openEmailComposer({
@@ -1756,7 +1768,7 @@ Hope all is OK.`
           bcc: "",
           subject: subject,
           body: body,
-          attachments: invoiceFiles,
+          attachments: attachmentFiles,
           metadata: {
             source: 'notify-customer-arrival-import',
             shipmentId: shipment.id
@@ -2343,7 +2355,7 @@ Hope all is OK.`
                       </div>
                     </div>
                   )}
-                  {shipment.containerShipment === "Road Shipment" && !shipment.rsToClear && (
+                  {shipment.containerShipment === "Road Shipment" && shipment.rsToClear && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
