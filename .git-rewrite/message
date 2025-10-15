@@ -1,0 +1,8 @@
+Add logging to object storage to aid in debugging file access issues
+
+Add console logs to `server/objectStorage.ts` to show the object name being looked for and whether it exists, aiding in debugging `ObjectNotFoundError`.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: 52f71d4c-ddf4-4c3e-a40e-bc570b5bf45c
+Replit-Commit-Checkpoint-Type: full_checkpoint
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/bbd37997-4919-4fd5-b0d5-69af7a9dbd9b/52f71d4c-ddf4-4c3e-a40e-bc570b5bf45c/ti8oiFX
