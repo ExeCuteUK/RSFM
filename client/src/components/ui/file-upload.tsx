@@ -21,7 +21,7 @@ interface FileUploadProps {
 export function FileUpload({
   value = [],
   onChange,
-  maxFiles = 10,
+  maxFiles = 25,
   accept,
   testId = "file-upload",
 }: FileUploadProps) {

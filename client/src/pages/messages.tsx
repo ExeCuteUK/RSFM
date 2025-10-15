@@ -84,7 +84,7 @@ export default function Messages() {
     if (files.length === 0) return;
     
     const fileArray = Array.from(files);
-    const maxFiles = 10;
+    const maxFiles = 25;
     const maxFileSize = 10 * 1024 * 1024; // 10MB
     
     // Check file count limit

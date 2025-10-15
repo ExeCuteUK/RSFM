@@ -425,9 +425,57 @@ export default function ExportShipments() {
     const files = Array.from(e.dataTransfer.files)
     if (files.length === 0) return
 
-    // Upload files sequentially to avoid race condition
-    for (const file of files) {
-      await uploadFile.mutateAsync({ id: shipmentId, file, fileType: type })
+    // Get shipment info for folder organization
+    const shipment = allShipments.find(s => s.id === shipmentId)
+    if (!shipment) return
+
+    // Batch upload: Upload ALL files to Google Drive first, collect paths, then ONE database update
+    const uploadedFileObjects: { filename: string; path: string }[] = []
+    
+    try {
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('filename', file.name)
+        formData.append('jobType', 'Export Shipments')
+        formData.append('jobRef', shipment.jobRef.toString())
+        formData.append('documentType', type === "attachment" ? "Transport Documents" : "POD")
+
+        const uploadResponse = await fetch("/api/objects/upload", {
+          method: "POST",
+          body: formData,
+          credentials: "include"
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload file')
+        }
+
+        const { objectPath, filename } = await uploadResponse.json()
+        uploadedFileObjects.push({ filename, path: objectPath })
+      }
+
+      // Now update database with ALL uploaded files in ONE request
+      const currentFiles = type === "attachment" ? (shipment.attachments || []) : (shipment.proofOfDelivery || [])
+      const normalizedCurrentFiles = currentFiles.map((f: any) => {
+        if (typeof f === 'string') {
+          return { filename: f.split('/').pop() || f, path: f }
+        }
+        return f
+      })
+
+      const updatedFiles = [...normalizedCurrentFiles, ...uploadedFileObjects]
+
+      await apiRequest("PATCH", `/api/export-shipments/${shipmentId}`, {
+        [type === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
+      })
+
+      queryClient.invalidateQueries({ queryKey: ["/api/export-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/job-file-groups"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
+      toast({ title: `${files.length} file(s) uploaded successfully` })
+    } catch (error) {
+      toast({ title: "File upload failed", variant: "destructive" })
     }
   }
 

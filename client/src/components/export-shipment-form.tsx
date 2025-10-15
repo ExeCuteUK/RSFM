@@ -368,12 +368,22 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
         });
         const normalizeData = await normalizeResponse.json();
         
-        pendingProofOfDelivery.forEach((url, index) => {
-          const filename = decodeURIComponent(url.split('/').pop()?.split('?')[0] || 'file');
-          normalizedProofOfDelivery.push({
-            filename,
-            path: normalizeData.paths[index]
-          });
+        pendingProofOfDelivery.forEach((fileDataStr, index) => {
+          // Parse the JSON string to get filename and path
+          try {
+            const fileData = JSON.parse(fileDataStr);
+            normalizedProofOfDelivery.push({
+              filename: fileData.filename,
+              path: normalizeData.paths[index]
+            });
+          } catch {
+            // Fallback for legacy URL format
+            const filename = decodeURIComponent(fileDataStr.split('/').pop()?.split('?')[0] || 'file');
+            normalizedProofOfDelivery.push({
+              filename,
+              path: normalizeData.paths[index]
+            });
+          }
         });
       } catch (error) {
         toast({
@@ -395,12 +405,22 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
         });
         const normalizeData = await normalizeResponse.json();
         
-        pendingAttachments.forEach((url, index) => {
-          const filename = decodeURIComponent(url.split('/').pop()?.split('?')[0] || 'file');
-          normalizedAttachments.push({
-            filename,
-            path: normalizeData.paths[index]
-          });
+        pendingAttachments.forEach((fileDataStr, index) => {
+          // Parse the JSON string to get filename and path
+          try {
+            const fileData = JSON.parse(fileDataStr);
+            normalizedAttachments.push({
+              filename: fileData.filename,
+              path: normalizeData.paths[index]
+            });
+          } catch {
+            // Fallback for legacy URL format
+            const filename = decodeURIComponent(fileDataStr.split('/').pop()?.split('?')[0] || 'file');
+            normalizedAttachments.push({
+              filename,
+              path: normalizeData.paths[index]
+            });
+          }
         });
       } catch (error) {
         toast({
@@ -1191,7 +1211,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                           onChange={field.onChange}
                           pendingFiles={pendingProofOfDelivery}
                           onPendingFilesChange={setPendingProofOfDelivery}
-                          maxFiles={10}
+                          maxFiles={25}
                           testId="pod-uploader"
                           label="Proof Of Delivery Files:"
                           dragDropLabel="Drop POD files here or click to browse"
@@ -1980,7 +2000,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         onChange={field.onChange}
                         pendingFiles={pendingAttachments}
                         onPendingFilesChange={setPendingAttachments}
-                        maxFiles={10}
+                        maxFiles={25}
                         testId="attachments-uploader"
                         label="Transport Documents:"
                         dragDropLabel="Drop transport documents here or click to browse"

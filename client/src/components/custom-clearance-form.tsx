@@ -1531,7 +1531,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             onChange={field.onChange}
                             pendingFiles={pendingTransportDocuments}
                             onPendingFilesChange={setPendingTransportDocuments}
-                            maxFiles={10}
+                            maxFiles={25}
                             testId="transport-docs-uploader"
                             label="Transport Documents:"
                             dragDropLabel="Drop transport documents here or click to browse"
@@ -1629,7 +1629,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                             
                             setPendingClearanceDocuments(newPendingFiles)
                           }}
-                          maxFiles={10}
+                          maxFiles={25}
                           testId="clearance-docs-uploader"
                           label="Clearance Documents:"
                           dragDropLabel="Drop clearance documents here or click to browse"
