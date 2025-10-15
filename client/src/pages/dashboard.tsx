@@ -650,24 +650,19 @@ export default function Dashboard() {
   }) => {
     const inputRef = useRef<HTMLInputElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
-    const cursorPosRef = useRef<number>(0)
     const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
       if (isEditing) {
-        // Focus and restore cursor position after every render
+        // Just focus - let browser handle cursor position naturally
         if (type === "textarea" && textareaRef.current) {
           textareaRef.current.focus()
-          // Restore cursor position from ref (updated in onChange before value changes)
-          textareaRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current)
         } else if (inputRef.current) {
           inputRef.current.focus()
-          // Restore cursor position from ref (updated in onChange before value changes)
-          inputRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current)
         }
       }
-    }, [isEditing, type, tempValue])
+    }, [isEditing, type])
 
     const handleClick = () => {
       // Capture column widths before entering edit mode
@@ -680,8 +675,6 @@ export default function Dashboard() {
       // Use displayValue if available (formatted), otherwise use raw value
       const editValue = displayValue !== undefined ? displayValue : value
       setTempValue(editValue)
-      // Reset cursor position to end of text when entering edit mode
-      cursorPosRef.current = editValue.length
     }
 
     const handleBlur = () => {
@@ -742,17 +735,12 @@ export default function Dashboard() {
       }
 
       if (type === "textarea") {
-        const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-          cursorPosRef.current = e.target.selectionStart
-          setTempValue(e.target.value)
-        }
-
         return (
           <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
             <textarea
               ref={textareaRef}
               value={tempValue}
-              onChange={handleTextareaChange}
+              onChange={(e) => setTempValue(e.target.value)}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               className="w-full min-h-[60px] max-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
@@ -768,10 +756,7 @@ export default function Dashboard() {
             ref={inputRef}
             type="text"
             value={tempValue}
-            onChange={(e) => {
-              cursorPosRef.current = e.target.selectionStart
-              setTempValue(e.target.value)
-            }}
+            onChange={(e) => setTempValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
