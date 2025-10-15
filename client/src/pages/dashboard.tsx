@@ -654,15 +654,15 @@ export default function Dashboard() {
     const isSaving = updateShipmentMutation.isPending
 
     useEffect(() => {
-      if (isEditing) {
-        // Just focus - let browser handle cursor position naturally
+      // Only focus when this specific cell becomes the editing cell
+      if (editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName) {
         if (type === "textarea" && textareaRef.current) {
           textareaRef.current.focus()
         } else if (inputRef.current) {
           inputRef.current.focus()
         }
       }
-    }, [isEditing, type])
+    }, [editingCell, shipment.id, fieldName, type])
 
     const handleClick = () => {
       // Capture column widths before entering edit mode
