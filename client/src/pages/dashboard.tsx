@@ -671,10 +671,10 @@ export default function Dashboard() {
         const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
         setColumnWidths(widths)
       }
-      setEditingCell({ shipmentId: shipment.id, fieldName })
       // Use displayValue if available (formatted), otherwise use raw value
       const editValue = displayValue !== undefined ? displayValue : value
       setTempValue(editValue)
+      setEditingCell({ shipmentId: shipment.id, fieldName })
     }
 
     const handleBlur = () => {
