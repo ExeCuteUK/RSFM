@@ -189,6 +189,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       additionalNotes: "",
       jobTags: [],
       attachments: [],
+      jobHold: defaultValues?.jobHold !== undefined ? defaultValues.jobHold : true,
+      holdDescription: "",
       ...defaultValues
     },
   })
@@ -644,19 +646,53 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="customerReferenceNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Customer Reference Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="customerReferenceNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Customer Reference Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="jobHold"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between space-y-0 pt-7">
+                      <FormLabel>Job Hold</FormLabel>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value || false}
+                          onCheckedChange={field.onChange}
+                          data-testid="checkbox-job-hold"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="holdDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hold Description</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-hold-description" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </CardContent>
           </Card>
 
