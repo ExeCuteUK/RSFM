@@ -271,6 +271,9 @@ export default function CustomClearances() {
 
   const uploadFile = useMutation({
     mutationFn: async ({ id, file, fileType }: { id: string; file: File; fileType: "transport" | "clearance" }) => {
+      // Show uploading toast immediately
+      toast({ title: "Uploading..." })
+      
       // Get clearance info for folder organization
       const clearance = clearances.find(c => c.id === id)
       if (!clearance) throw new Error("Clearance not found")
