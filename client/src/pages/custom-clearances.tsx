@@ -1871,6 +1871,13 @@ export default function CustomClearances() {
                         {clearance.goodsDescription}
                       </p>
                     )}
+                    {(clearance.weight || (clearance.numberOfPieces && clearance.packaging)) && (
+                      <p className="text-muted-foreground" data-testid={`text-weight-pieces-${clearance.id}`}>
+                        {clearance.weight && <>Weight: {clearance.weight}kgs</>}
+                        {clearance.weight && clearance.numberOfPieces && clearance.packaging && ', '}
+                        {clearance.numberOfPieces && clearance.packaging && `${clearance.numberOfPieces} ${clearance.packaging}`}
+                      </p>
+                    )}
 
                     {/* To-Do List */}
                     <div className="pt-2 mt-2 border-t">
