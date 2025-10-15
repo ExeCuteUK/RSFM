@@ -862,13 +862,14 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Delivery Address</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Rate In</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Rate Out</th>
-                      <th className="p-1 text-center font-semibold bg-background w-48" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Notes</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background w-48" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Notes</th>
+                      <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[15] ? { width: `${columnWidths[15]}px` } : undefined}>Hold</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
                     {containerShipments.length === 0 ? (
                       <tr>
-                        <td colSpan={15} className="p-4 text-center text-muted-foreground">
+                        <td colSpan={16} className="p-4 text-center text-muted-foreground">
                           No container shipments found
                         </td>
                       </tr>
@@ -1134,6 +1135,14 @@ export default function Dashboard() {
                                 </span>
                               </td>
                             )}
+                            {/* Hold */}
+                            <td className="px-1 text-center align-middle" data-testid={`cell-hold-${shipment.jobRef}`}>
+                              {shipment.jobHold && (
+                                <span className="text-red-600 dark:text-red-400 font-semibold" title={shipment.holdDescription || "Job on hold"}>
+                                  {shipment.holdDescription || "Yes"}
+                                </span>
+                              )}
+                            </td>
                           </tr>
                         )
                       })

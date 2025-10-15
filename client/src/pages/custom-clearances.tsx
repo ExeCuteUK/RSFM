@@ -18,8 +18,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, Download, ChevronLeft, ChevronRight, Container, Truck, Plane, Check } from "lucide-react"
+import { Plus, Pencil, Trash2, FileCheck, Paperclip, Search, StickyNote, FileText, ListTodo, ClipboardCheck, Send, Receipt, Mail, X, ChevronDown, Link2, PoundSterling, Download, ChevronLeft, ChevronRight, Container, Truck, Plane, Check, AlertCircle } from "lucide-react"
 import { PDFViewer } from "@/components/pdf-viewer"
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1713,7 +1714,11 @@ export default function CustomClearances() {
             const hasNotes = clearance.additionalNotes && clearance.additionalNotes.trim().length > 0
 
             return (
-              <Card key={clearance.id} data-testid={`card-clearance-${clearance.id}`}>
+              <Card 
+                key={clearance.id} 
+                data-testid={`card-clearance-${clearance.id}`}
+                className={clearance.jobHold ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900" : ""}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -1789,37 +1794,50 @@ export default function CustomClearances() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button 
-                            className={`${getClearanceStatusBadgeColor(clearance.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
-                            data-testid={`badge-status-${clearance.id}`}
-                          >
-                            {clearance.status}
-                            <ChevronDown className="h-3 w-3" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Request CC" })}>
-                            Request CC
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
-                            Awaiting Entry
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
-                            Waiting Arrival
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
-                            P.H Hold
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Customs Issue" })}>
-                            Customs Issue
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Fully Cleared" })}>
-                            Fully Cleared
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center gap-2">
+                        {clearance.jobHold && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" data-testid={`icon-job-hold-${clearance.id}`} />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="font-semibold">Job Hold</p>
+                              {clearance.holdDescription && <p className="text-xs">{clearance.holdDescription}</p>}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button 
+                              className={`${getClearanceStatusBadgeColor(clearance.status)} inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:opacity-80`}
+                              data-testid={`badge-status-${clearance.id}`}
+                            >
+                              {clearance.status}
+                              <ChevronDown className="h-3 w-3" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Request CC" })}>
+                              Request CC
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
+                              Awaiting Entry
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
+                              Waiting Arrival
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
+                              P.H Hold
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Customs Issue" })}>
+                              Customs Issue
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Fully Cleared" })}>
+                              Fully Cleared
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-1 text-xs">

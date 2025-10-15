@@ -640,6 +640,7 @@ export function ClearanceWorkGrid() {
                   <th className="border px-2 py-1 text-center font-medium w-44">Clearance Agent</th>
                   <th className="border px-2 py-1 text-center font-medium">Agent & Haulier Advised</th>
                   <th className="border px-2 py-1 text-center font-medium">Notes</th>
+                  <th className="border px-2 py-1 text-center font-medium">Hold</th>
                 </tr>
               </thead>
               <tbody>
@@ -659,6 +660,13 @@ export function ClearanceWorkGrid() {
                       {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[8])}
                       {renderCell(clearance, "agentAdvised", formatDate(getAgentAdvisedTimestamp(clearance)), columnWidths[9])}
                       {renderCell(clearance, "additionalNotes", clearance.additionalNotes, columnWidths[10])}
+                      <td className="border px-2 py-1 text-center align-middle" data-testid={`cell-hold-${clearance.jobRef}`}>
+                        {clearance.jobHold && (
+                          <span className="text-red-600 dark:text-red-400 font-semibold" title={clearance.holdDescription || "Job on hold"}>
+                            {clearance.holdDescription || "Yes"}
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   )
                 })}

@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check, ChevronLeft, ChevronRight, Mail, Download } from "lucide-react"
+import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check, ChevronLeft, ChevronRight, Mail, Download, AlertCircle } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
@@ -37,6 +37,7 @@ import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { format } from "date-fns"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 // Helper functions for file objects
@@ -2054,7 +2055,11 @@ Hope all is OK.`
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {shipments.map((shipment) => (
-            <Card key={shipment.id} data-testid={`card-shipment-${shipment.id}`}>
+            <Card 
+              key={shipment.id} 
+              data-testid={`card-shipment-${shipment.id}`}
+              className={shipment.jobHold ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900" : ""}
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -2124,6 +2129,17 @@ Hope all is OK.`
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <div className="flex items-center gap-2">
+                      {shipment.jobHold && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" data-testid={`icon-job-hold-${shipment.id}`} />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="font-semibold">Job Hold</p>
+                            {shipment.holdDescription && <p className="text-xs">{shipment.holdDescription}</p>}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button 
