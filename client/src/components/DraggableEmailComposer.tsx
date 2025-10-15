@@ -409,7 +409,7 @@ export function DraggableEmailComposer() {
               <Command shouldFilter={false}>
                 <CommandInput
                   placeholder="Type recipient email..."
-                  value={data.to}
+                  value={typeof data.to === 'string' ? data.to : ''}
                   onValueChange={(value) => handleDataChange({ ...data, to: value })}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && data.to) {
@@ -509,7 +509,7 @@ export function DraggableEmailComposer() {
                 <Command shouldFilter={false}>
                   <CommandInput
                     placeholder="Type CC email..."
-                    value={data.cc}
+                    value={typeof data.cc === 'string' ? data.cc : ''}
                     onValueChange={(value) => handleDataChange({ ...data, cc: value })}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && data.cc) {
@@ -526,7 +526,7 @@ export function DraggableEmailComposer() {
                     {recentEmails.length > 0 && (
                       <CommandGroup heading="Recent">
                         {recentEmails
-                          .filter(email => !data.cc || email.toLowerCase().includes(data.cc.toLowerCase()))
+                          .filter(email => !data.cc || (typeof data.cc === 'string' && email.toLowerCase().includes(data.cc.toLowerCase())))
                           .map((email) => (
                           <CommandItem
                             key={`cc-recent-${email}`}
@@ -551,9 +551,9 @@ export function DraggableEmailComposer() {
                     {contactEmails.length > 0 && (
                       <CommandGroup heading="Contacts">
                         {contactEmails
-                          .filter(contact => !data.cc || 
+                          .filter(contact => !data.cc || (typeof data.cc === 'string' && (
                             contact.email.toLowerCase().includes(data.cc.toLowerCase()) ||
-                            contact.name.toLowerCase().includes(data.cc.toLowerCase()))
+                            contact.name.toLowerCase().includes(data.cc.toLowerCase()))))
                           .slice(0, 20)
                           .map((contact) => (
                           <CommandItem
@@ -607,7 +607,7 @@ export function DraggableEmailComposer() {
                 <Command shouldFilter={false}>
                   <CommandInput
                     placeholder="Type BCC email..."
-                    value={data.bcc}
+                    value={typeof data.bcc === 'string' ? data.bcc : ''}
                     onValueChange={(value) => handleDataChange({ ...data, bcc: value })}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && data.bcc) {
@@ -624,7 +624,7 @@ export function DraggableEmailComposer() {
                     {recentEmails.length > 0 && (
                       <CommandGroup heading="Recent">
                         {recentEmails
-                          .filter(email => !data.bcc || email.toLowerCase().includes(data.bcc.toLowerCase()))
+                          .filter(email => !data.bcc || (typeof data.bcc === 'string' && email.toLowerCase().includes(data.bcc.toLowerCase())))
                           .map((email) => (
                           <CommandItem
                             key={`bcc-recent-${email}`}
@@ -649,9 +649,9 @@ export function DraggableEmailComposer() {
                     {contactEmails.length > 0 && (
                       <CommandGroup heading="Contacts">
                         {contactEmails
-                          .filter(contact => !data.bcc || 
+                          .filter(contact => !data.bcc || (typeof data.bcc === 'string' && (
                             contact.email.toLowerCase().includes(data.bcc.toLowerCase()) ||
-                            contact.name.toLowerCase().includes(data.bcc.toLowerCase()))
+                            contact.name.toLowerCase().includes(data.bcc.toLowerCase()))))
                           .slice(0, 20)
                           .map((contact) => (
                           <CommandItem
