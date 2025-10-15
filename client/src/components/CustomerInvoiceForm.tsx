@@ -233,8 +233,28 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
       }
     } else if (job) {
       // Create mode - auto-populate from job
-      const today = format(new Date(), 'yyyy-MM-dd')
-      setTaxPointDate(today)
+      // Set tax point date based on job type
+      let taxDate = format(new Date(), 'yyyy-MM-dd')
+      if (jobType === 'import') {
+        const importJob = job as ImportShipment
+        // Use ETA Port date for import shipments
+        if (importJob.importDateEtaPort) {
+          taxDate = importJob.importDateEtaPort
+        }
+      } else if (jobType === 'export') {
+        const exportJob = job as ExportShipment
+        // Use Dispatch Date for export shipments
+        if (exportJob.dispatchDate) {
+          taxDate = exportJob.dispatchDate
+        }
+      } else if (jobType === 'clearance') {
+        const clearanceJob = job as CustomClearance
+        // Use database creation date for clearance jobs
+        if (clearanceJob.createdAt) {
+          taxDate = clearanceJob.createdAt.split('T')[0] // Extract date part only
+        }
+      }
+      setTaxPointDate(taxDate)
       setOurRef(`${job.jobRef}`)
       
       if (jobType === 'import') {
