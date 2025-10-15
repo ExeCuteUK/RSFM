@@ -2185,11 +2185,11 @@ export class DatabaseStorage implements IStorage {
 
   async getNextInvoiceNumber(): Promise<number> {
     const [result] = await db.select({
-      maxInvoiceNumber: sql<number>`COALESCE(MAX(${invoices.invoiceNumber}), 106011)`
+      maxInvoiceNumber: sql<number>`COALESCE(MAX(${invoices.invoiceNumber}), 21001)`
     })
       .from(invoices);
     
-    return (result?.maxInvoiceNumber || 106011) + 1;
+    return (result?.maxInvoiceNumber || 21001) + 1;
   }
 
   // General Reference methods
