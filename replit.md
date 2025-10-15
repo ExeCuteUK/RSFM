@@ -26,6 +26,10 @@ Preferred communication style: Simple, everyday language.
 **Database Population:**
 - All imports use ##! delimiter and combine address fields with line breaks for readability
 
+**Numbering System:**
+- Job references (Import/Export Shipments, Custom Clearances, General References) start at **48000**
+- Invoice numbers start at **21001**
+
 **Database Backups:**
 - All backups are stored in **Google Drive** at: `RS Freight Manager/Backups/`
 - RS Freight Manager folder is at **Google Drive root** (not nested in personal folders)

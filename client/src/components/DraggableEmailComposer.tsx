@@ -90,7 +90,9 @@ export function DraggableEmailComposer() {
       
       toast({ title: "Email sent successfully" });
       
-      if (emailComposerData.to) addToRecentEmails(emailComposerData.to);
+      if (emailComposerData.to && typeof emailComposerData.to === 'string') {
+        addToRecentEmails(emailComposerData.to);
+      }
       
       // Auto-update status based on metadata
       if (emailComposerData.metadata?.source && emailComposerData.metadata?.shipmentId) {
