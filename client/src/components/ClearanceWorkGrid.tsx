@@ -445,7 +445,7 @@ export function ClearanceWorkGrid() {
         return (
           <td 
             key={fieldName} 
-            className="border px-2 py-1"
+            className={`border px-2 py-1 ${cellColor}`}
             style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
           >
             <Select
@@ -479,7 +479,7 @@ export function ClearanceWorkGrid() {
         return (
           <td 
             key={fieldName} 
-            className="border px-2 py-1"
+            className={`border px-2 py-1 ${cellColor}`}
             style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
           >
             <textarea
@@ -499,7 +499,7 @@ export function ClearanceWorkGrid() {
       return (
         <td 
           key={fieldName} 
-          className="border px-2 py-1"
+          className={`border px-2 py-1 ${cellColor}`}
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
           <input
