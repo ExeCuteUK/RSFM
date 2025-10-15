@@ -342,7 +342,6 @@ export default function CustomClearances() {
       const updatedFiles = [...normalizedCurrentFiles, fileObject]
       
       const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
-        ...clearance,
         [fileType === "transport" ? "transportDocuments" : "clearanceDocuments"]: updatedFiles
       })
       return res.json()
@@ -372,7 +371,6 @@ export default function CustomClearances() {
       const updatedFiles = currentFiles.filter((f: any) => f?.path !== filePath && f !== filePath)
       
       const res = await apiRequest("PATCH", `/api/custom-clearances/${id}`, {
-        ...clearance,
         [fileType === "transport" ? "transportDocuments" : "clearanceDocuments"]: updatedFiles
       })
       return res.json()

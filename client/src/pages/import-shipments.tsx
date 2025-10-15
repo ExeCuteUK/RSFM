@@ -390,7 +390,6 @@ export default function ImportShipments() {
       const updatedFiles = [...normalizedCurrentFiles, fileObject]
       
       const res = await apiRequest("PATCH", `/api/import-shipments/${id}`, {
-        ...shipment,
         [fileType === "attachment" ? "attachments" : "proofOfDelivery"]: updatedFiles
       })
       return res.json()
