@@ -732,7 +732,7 @@ export default function ImportShipments() {
       return "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300"
     } else if (status === "Fully Cleared") {
       return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-    } else if (status === "Waiting Arrival") {
+    } else if (status === "Awaiting Arrival") {
       return "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
     } else if (status === "P.H Hold" || status === "Customs Issue") {
       return "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
