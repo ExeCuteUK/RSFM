@@ -6,8 +6,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, AlertTriangle, CheckCircle2, RefreshCw, Package } from "lucide-react"
-import { format } from "date-fns"
+import { format, isValid, parseISO } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
+
+const safeFormatDate = (dateValue: string | null | undefined, formatStr: string = 'dd MMM yyyy'): string => {
+  if (!dateValue) return 'Not set'
+  try {
+    const date = typeof dateValue === 'string' ? parseISO(dateValue) : new Date(dateValue)
+    if (!isValid(date)) return 'Invalid date'
+    return format(date, formatStr)
+  } catch {
+    return 'Invalid date'
+  }
+}
 
 interface ContainerDiscrepancy {
   shipmentId: string
@@ -168,7 +179,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                         <div>Port: {discrepancy.currentJobData.portOfArrival}</div>
                       )}
                       {discrepancy.currentJobData.eta && (
-                        <div>ETA: {format(new Date(discrepancy.currentJobData.eta), 'dd MMM yyyy')}</div>
+                        <div>ETA: {safeFormatDate(discrepancy.currentJobData.eta)}</div>
                       )}
                     </div>
                   </div>
@@ -204,14 +215,12 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                             <div>
                               <span className="text-muted-foreground">Job:</span>{' '}
                               <span className="font-medium">
-                                {discrepancy.dispatchDiscrepancy.jobDispatch 
-                                  ? format(new Date(discrepancy.dispatchDiscrepancy.jobDispatch), 'dd MMM yyyy')
-                                  : 'Not set'}
+                                {safeFormatDate(discrepancy.dispatchDiscrepancy.jobDispatch)}
                               </span>
                               {' '}<span className="text-muted-foreground">|</span>{' '}
                               <span className="text-muted-foreground">Tracking:</span>{' '}
                               <span className="font-medium">
-                                {format(new Date(discrepancy.dispatchDiscrepancy.trackingDispatch), 'dd MMM yyyy')}
+                                {safeFormatDate(discrepancy.dispatchDiscrepancy.trackingDispatch)}
                               </span>
                             </div>
                             {!discrepancy.dispatchDiscrepancy.missingJobData && discrepancy.dispatchDiscrepancy.daysDiff !== null && (
@@ -257,14 +266,12 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                             <div>
                               <span className="text-muted-foreground">Job:</span>{' '}
                               <span className="font-medium">
-                                {discrepancy.etaDiscrepancy.jobEta 
-                                  ? format(new Date(discrepancy.etaDiscrepancy.jobEta), 'dd MMM yyyy')
-                                  : 'Not set'}
+                                {safeFormatDate(discrepancy.etaDiscrepancy.jobEta)}
                               </span>
                               {' '}<span className="text-muted-foreground">|</span>{' '}
                               <span className="text-muted-foreground">Tracking:</span>{' '}
                               <span className="font-medium">
-                                {format(new Date(discrepancy.etaDiscrepancy.trackingEta), 'dd MMM yyyy')}
+                                {safeFormatDate(discrepancy.etaDiscrepancy.trackingEta)}
                               </span>
                             </div>
                             {!discrepancy.etaDiscrepancy.missingJobData && discrepancy.etaDiscrepancy.daysDiff !== null && (
@@ -393,7 +400,7 @@ export function ContainerCheckDialog({ open, onOpenChange }: ContainerCheckDialo
                           <div>Port: {container.currentJobData.portOfArrival}</div>
                         )}
                         {container.currentJobData.eta && (
-                          <div>ETA: {format(new Date(container.currentJobData.eta), 'dd MMM yyyy')}</div>
+                          <div>ETA: {safeFormatDate(container.currentJobData.eta)}</div>
                         )}
                       </div>
                       <div className="mt-2 font-medium text-green-700 dark:text-green-400 text-sm">
