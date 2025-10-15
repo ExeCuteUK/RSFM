@@ -49,7 +49,7 @@ export default function CustomClearances() {
   const { openEmailComposer } = useEmail()
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; clearanceId: string } | null>(null)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Awaiting Arrival", "Waiting Arrival", "P.H Hold", "Customs Issue"])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue"])
   const [selectedShipmentTypes, setSelectedShipmentTypes] = useState<string[]>(["Container Shipment", "Road Shipment", "Air Freight"])
   const [searchText, setSearchText] = useState("")
   const [notesClearanceId, setNotesClearanceId] = useState<string | null>(null)
@@ -1467,7 +1467,7 @@ export default function CustomClearances() {
     switch (status) {
       case "Request CC":
       case "Awaiting Entry":
-      case "Waiting Arrival":
+      case "Awaiting Arrival":
         return "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700"
       case "Fully Cleared":
         return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700"
@@ -1648,13 +1648,13 @@ export default function CustomClearances() {
           Awaiting Entry
         </Button>
         <Button
-          variant={selectedStatuses.includes("Waiting Arrival") ? "default" : "outline"}
+          variant={selectedStatuses.includes("Awaiting Arrival") ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.includes("Waiting Arrival") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
-          onClick={() => handleStatusToggle("Waiting Arrival")}
-          data-testid="filter-waiting-arrival"
+          className={selectedStatuses.includes("Awaiting Arrival") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          onClick={() => handleStatusToggle("Awaiting Arrival")}
+          data-testid="filter-awaiting-arrival"
         >
-          Waiting Arrival
+          Awaiting Arrival
         </Button>
         <Button
           variant={selectedStatuses.includes("P.H Hold") ? "default" : "outline"}
@@ -1823,8 +1823,8 @@ export default function CustomClearances() {
                             <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Entry" })}>
                               Awaiting Entry
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Waiting Arrival" })}>
-                              Waiting Arrival
+                            <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "Awaiting Arrival" })}>
+                              Awaiting Arrival
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => updateClearanceStatus.mutate({ id: clearance.id, status: "P.H Hold" })}>
                               P.H Hold
