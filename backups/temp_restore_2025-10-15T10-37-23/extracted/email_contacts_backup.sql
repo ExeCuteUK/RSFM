@@ -1,0 +1,1 @@
+-- No data to backup for email_contacts
