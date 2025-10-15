@@ -656,16 +656,18 @@ export default function Dashboard() {
 
     useEffect(() => {
       if (isEditing) {
-        // Just focus, don't select - selection happens on click
+        // Focus and restore cursor position after every render
         if (type === "textarea" && textareaRef.current) {
           textareaRef.current.focus()
+          // Restore cursor position from ref (updated in onChange before value changes)
           textareaRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current)
         } else if (inputRef.current) {
           inputRef.current.focus()
+          // Restore cursor position from ref (updated in onChange before value changes)
           inputRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current)
         }
       }
-    }, [isEditing, type])
+    }, [isEditing, type, tempValue])
 
     const handleClick = () => {
       // Capture column widths before entering edit mode
