@@ -1168,7 +1168,7 @@ export class MemStorage implements IStorage {
 
 // Database Storage Implementation using Drizzle ORM
 export class DatabaseStorage implements IStorage {
-  private jobRefCounter: number = 26001;
+  private jobRefCounter: number = 48000;
   private initialized: boolean = false;
   public sessionStore: session.Store;
 
@@ -1192,10 +1192,10 @@ export class DatabaseStorage implements IStorage {
     const [maxGeneral] = await db.select({ max: sql<number>`MAX(${generalReferences.jobRef})` }).from(generalReferences);
     
     const currentMax = Math.max(
-      maxImport.max || 26000,
-      maxExport.max || 26000,
-      maxClearance.max || 26000,
-      maxGeneral.max || 26000
+      maxImport.max || 47999,
+      maxExport.max || 47999,
+      maxClearance.max || 47999,
+      maxGeneral.max || 47999
     );
     
     this.jobRefCounter = currentMax + 1;
