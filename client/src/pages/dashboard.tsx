@@ -665,7 +665,7 @@ export default function Dashboard() {
           inputRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current)
         }
       }
-    }, [isEditing, type, tempValue])
+    }, [isEditing, type])
 
     const handleClick = () => {
       // Capture column widths before entering edit mode
