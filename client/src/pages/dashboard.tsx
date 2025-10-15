@@ -643,157 +643,36 @@ export default function Dashboard() {
     }
   }
 
-  // Editable Cell Component
-  const EditableCell = ({
-    shipment,
-    fieldName,
-    value,
-    displayValue,
-    type = "text",
-    options = [],
-    customCellColor,
-  }: {
-    shipment: ImportShipment
-    fieldName: string
-    value: string
-    displayValue?: string
-    type?: "text" | "number" | "date" | "dropdown" | "textarea"
-    options?: { value: string; label: string }[]
-    customCellColor?: string
-  }) => {
-    const inputRef = useRef<HTMLInputElement>(null)
-    const textareaRef = useRef<HTMLTextAreaElement>(null)
-    const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName
-    const isSaving = updateShipmentMutation.isPending
-
-    useEffect(() => {
-      // Only focus when this specific cell becomes the editing cell
-      if (editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName) {
-        if (type === "textarea" && textareaRef.current) {
-          textareaRef.current.focus()
-        } else if (inputRef.current) {
-          inputRef.current.focus()
-        }
-      }
-    }, [editingCell, shipment.id, fieldName, type])
-
-    const handleClick = () => {
-      // Capture column widths before entering edit mode
-      if (tableRef.current && !editingCell) {
-        const headers = tableRef.current.querySelectorAll('thead th')
-        const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
-        setColumnWidths(widths)
-      }
-      // Use displayValue if available (formatted), otherwise use raw value
-      const editValue = displayValue !== undefined ? displayValue : value
-      setTempValue(editValue)
-      setEditingCell({ shipmentId: shipment.id, fieldName })
+  // Cell editing helper functions
+  const handleCellClick = (shipmentId: string, fieldName: string, currentValue: string, displayValue?: string) => {
+    // Capture column widths before entering edit mode
+    if (tableRef.current && !editingCell) {
+      const headers = tableRef.current.querySelectorAll('thead th')
+      const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
+      setColumnWidths(widths)
     }
+    const editValue = displayValue !== undefined ? displayValue : currentValue
+    setTempValue(editValue || "")
+    setEditingCell({ shipmentId, fieldName })
+  }
 
-    const handleBlur = () => {
-      // Compare against displayValue if available, otherwise use raw value
-      const originalValue = displayValue !== undefined ? displayValue : value
-      if (tempValue !== originalValue && !isSaving) {
-        handleSave(shipment.id, fieldName, tempValue)
-      } else {
-        setEditingCell(null)
-        setTempValue("")
-      }
+  const handleCellSave = () => {
+    if (!editingCell) return
+    handleSave(editingCell.shipmentId, editingCell.fieldName, tempValue)
+  }
+
+  const handleCellCancel = () => {
+    setEditingCell(null)
+    setTempValue("")
+  }
+
+  const handleCellKeyDown = (e: React.KeyboardEvent, isTextarea: boolean = false) => {
+    if (e.key === "Enter" && !isTextarea) {
+      e.preventDefault()
+      handleCellSave()
+    } else if (e.key === "Escape") {
+      handleCellCancel()
     }
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && type !== "textarea") {
-        e.preventDefault()
-        // Compare against displayValue if available, otherwise use raw value
-        const originalValue = displayValue !== undefined ? displayValue : value
-        if (tempValue !== originalValue) {
-          handleSave(shipment.id, fieldName, tempValue)
-        } else {
-          setEditingCell(null)
-          setTempValue("")
-        }
-      } else if (e.key === "Escape") {
-        setEditingCell(null)
-        setTempValue("")
-      }
-    }
-
-    // Get cell color - use custom if provided, otherwise use standard logic
-    const cellColor = customCellColor || (value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900")
-
-    if (isEditing) {
-      if (type === "dropdown") {
-        return (
-          <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
-            <Select
-              value={tempValue}
-              onValueChange={(val) => {
-                setTempValue(val)
-                handleSave(shipment.id, fieldName, val)
-              }}
-            >
-              <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
-                <SelectValue placeholder="Select..." />
-              </SelectTrigger>
-              <SelectContent>
-                {options.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </td>
-        )
-      }
-
-      if (type === "textarea") {
-        return (
-          <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
-            <textarea
-              ref={textareaRef}
-              value={tempValue}
-              onChange={(e) => setTempValue(e.target.value)}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              className="w-full min-h-[60px] max-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
-              rows={3}
-            />
-          </td>
-        )
-      }
-
-      return (
-        <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={tempValue}
-            onChange={(e) => setTempValue(e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-            placeholder={type === "date" ? "DD/MM/YY" : ""}
-          />
-        </td>
-      )
-    }
-
-    return (
-      <td
-        className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${cellColor}`}
-        onClick={handleClick}
-        data-testid={`cell-${fieldName}-${shipment.jobRef}`}
-      >
-        {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName ? (
-          <Loader2 className="h-3 w-3 animate-spin mx-auto" />
-        ) : (
-          <span className={type === "textarea" ? "whitespace-pre-wrap block text-xs leading-tight" : "text-xs"}>
-            {displayValue !== undefined ? displayValue : value || ""}
-          </span>
-        )}
-      </td>
-    )
   }
 
   // Editable Status Timestamp Cell Component
@@ -1015,114 +894,280 @@ export default function Dashboard() {
                               </button>
                             </td>
                             {/* Job Date - EDITABLE DATE (Booking Date) */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="bookingDate"
-                              value={formatDate(shipment.bookingDate)}
-                              type="date"
-                              customCellColor={clearanceColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "bookingDate" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  placeholder="DD/MM/YY"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                onClick={() => handleCellClick(shipment.id, "bookingDate", formatDate(shipment.bookingDate))}
+                              >
+                                <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
+                              </td>
+                            )}
                             {/* Consignee - read only */}
                             <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
                               {getCustomerName(shipment.importCustomerId)}
                             </td>
                             {/* Container no. */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="trailerOrContainerNumber"
-                              value={shipment.trailerOrContainerNumber || ""}
-                              customCellColor={clearanceColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "trailerOrContainerNumber" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                onClick={() => handleCellClick(shipment.id, "trailerOrContainerNumber", shipment.trailerOrContainerNumber || "")}
+                              >
+                                <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
+                              </td>
+                            )}
                             {/* Ship Line */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="shippingLine"
-                              value={shipment.shippingLine || ""}
-                              type="dropdown"
-                              options={shippingLines.map(s => ({ value: s.shippingLineName || '', label: s.shippingLineName || '' }))}
-                              customCellColor={clearanceColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "shippingLine" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                                <Select
+                                  value={tempValue}
+                                  onValueChange={(value) => {
+                                    setTempValue(value)
+                                    handleSave(shipment.id, "shippingLine", value)
+                                  }}
+                                >
+                                  <SelectTrigger className="h-auto min-h-0 w-full text-xs border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {shippingLines.map(s => (
+                                      <SelectItem key={s.id} value={s.shippingLineName || ''}>{s.shippingLineName || ''}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                onClick={() => handleCellClick(shipment.id, "shippingLine", shipment.shippingLine || "")}
+                              >
+                                <span className="block text-xs">{shipment.shippingLine || ""}</span>
+                              </td>
+                            )}
                             {/* Poa */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="portOfArrival"
-                              value={shipment.portOfArrival || ""}
-                              customCellColor={clearanceColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "portOfArrival" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                onClick={() => handleCellClick(shipment.id, "portOfArrival", shipment.portOfArrival || "")}
+                              >
+                                <span className="block text-xs">{shipment.portOfArrival || ""}</span>
+                              </td>
+                            )}
                             {/* Vessel */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="vesselName"
-                              value={shipment.vesselName || ""}
-                              customCellColor={clearanceColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "vesselName" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                onClick={() => handleCellClick(shipment.id, "vesselName", shipment.vesselName || "")}
+                              >
+                                <span className="block text-xs">{shipment.vesselName || ""}</span>
+                              </td>
+                            )}
                             {/* Eta Port */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="importDateEtaPort"
-                              value={shipment.importDateEtaPort || ""}
-                              displayValue={formatDate(shipment.importDateEtaPort)}
-                              type="date"
-                              customCellColor={clearanceColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "importDateEtaPort" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  placeholder="DD/MM/YY"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                onClick={() => handleCellClick(shipment.id, "importDateEtaPort", shipment.importDateEtaPort || "", formatDate(shipment.importDateEtaPort))}
+                              >
+                                <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
+                              </td>
+                            )}
                             {/* References */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="customerReferenceNumber"
-                              value={shipment.customerReferenceNumber || ""}
-                              displayValue={shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}
-                              customCellColor={clearanceColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "customerReferenceNumber" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                onClick={() => handleCellClick(shipment.id, "customerReferenceNumber", shipment.customerReferenceNumber || "", shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || ""))}
+                              >
+                                <span className="block text-xs">{shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}</span>
+                              </td>
+                            )}
                             {/* Delivery Date - read only */}
                             <td className={`px-1 text-center border-r border-border align-middle ${shipment.handoverContainerAtPort ? 'bg-green-100 dark:bg-green-900' : deliveryBookedColor}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
                               {shipment.handoverContainerAtPort ? 'N/A' : (shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : '')}
                             </td>
                             {/* Rls */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="deliveryRelease"
-                              value={shipment.deliveryRelease || ""}
-                              customCellColor={releaseColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryRelease" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${releaseColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${releaseColor}`}
+                                onClick={() => handleCellClick(shipment.id, "deliveryRelease", shipment.deliveryRelease || "")}
+                              >
+                                <span className="block text-xs">{shipment.deliveryRelease || ""}</span>
+                              </td>
+                            )}
                             {/* Delivery Address - read only when handover enabled */}
                             {shipment.handoverContainerAtPort ? (
                               <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900" data-testid={`cell-delivery-address-${shipment.jobRef}`}>
                                 N/A
                               </td>
+                            ) : editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryAddress" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${addressColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
                             ) : (
-                              <EditableCell
-                                shipment={shipment}
-                                fieldName="deliveryAddress"
-                                value={shipment.deliveryAddress || ""}
-                                customCellColor={addressColor}
-                              />
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${addressColor}`}
+                                onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "")}
+                              >
+                                <span className="block text-xs">{shipment.deliveryAddress || ""}</span>
+                              </td>
                             )}
                             {/* Rate In */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="haulierFreightRateIn"
-                              value={shipment.haulierFreightRateIn || ""}
-                              displayValue={shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}
-                              type="number"
-                              customCellColor={rateInOutColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "haulierFreightRateIn" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${rateInOutColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${rateInOutColor}`}
+                                onClick={() => handleCellClick(shipment.id, "haulierFreightRateIn", shipment.haulierFreightRateIn || "", shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : "")}
+                              >
+                                <span className="block text-xs">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
+                              </td>
+                            )}
                             {/* Rate Out */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="freightRateOut"
-                              value={shipment.freightRateOut || ""}
-                              displayValue={shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}
-                              type="number"
-                              customCellColor={rateInOutColor}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "freightRateOut" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${rateInOutColor}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${rateInOutColor}`}
+                                onClick={() => handleCellClick(shipment.id, "freightRateOut", shipment.freightRateOut || "", shipment.freightRateOut ? `£${shipment.freightRateOut}` : "")}
+                              >
+                                <span className="block text-xs">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
+                              </td>
+                            )}
                             {/* Notes */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="additionalNotes"
-                              value={shipment.additionalNotes || ""}
-                              type="textarea"
-                              customCellColor="bg-green-100 dark:bg-green-900"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "additionalNotes" ? (
+                              <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900">
+                                <textarea
+                                  ref={textareaRef}
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e, true)}
+                                  onBlur={handleCellSave}
+                                  className="w-full min-h-[60px] max-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
+                                  rows={3}
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className="px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900"
+                                onClick={() => handleCellClick(shipment.id, "additionalNotes", shipment.additionalNotes || "")}
+                              >
+                                <span className="whitespace-pre-wrap block text-xs leading-tight">
+                                  {shipment.additionalNotes || ""}
+                                </span>
+                              </td>
+                            )}
                           </tr>
                         )
                       })
@@ -1263,102 +1308,278 @@ export default function Dashboard() {
                             </td>
                             
                             {/* Ligentia Ref - EDITABLE TEXT */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="customerReferenceNumber"
-                              value={shipment.customerReferenceNumber || ""}
-                              type="text"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "customerReferenceNumber" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}
+                                onClick={() => handleCellClick(shipment.id, "customerReferenceNumber", shipment.customerReferenceNumber || "")}
+                              >
+                                <span className="block text-xs">{shipment.customerReferenceNumber || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Job Date - EDITABLE DATE (Booking Date) */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="bookingDate"
-                              value={formatDate(shipment.bookingDate)}
-                              type="date"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "bookingDate" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.bookingDate)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  placeholder="DD/MM/YY"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.bookingDate)}`}
+                                onClick={() => handleCellClick(shipment.id, "bookingDate", formatDate(shipment.bookingDate))}
+                              >
+                                <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
+                              </td>
+                            )}
                             
                             {/* Haulier - EDITABLE DROPDOWN */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="haulierName"
-                              value={shipment.haulierName || ""}
-                              type="dropdown"
-                              options={haulierOptions}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "haulierName" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.haulierName)}`}>
+                                <Select
+                                  value={tempValue}
+                                  onValueChange={(value) => {
+                                    setTempValue(value)
+                                    handleSave(shipment.id, "haulierName", value)
+                                  }}
+                                >
+                                  <SelectTrigger className="h-auto min-h-0 w-full text-xs border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {haulierOptions.map(h => (
+                                      <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.haulierName)}`}
+                                onClick={() => handleCellClick(shipment.id, "haulierName", shipment.haulierName || "")}
+                              >
+                                <span className="block text-xs">{shipment.haulierName || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Supplier - EDITABLE TEXT */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="supplierName"
-                              value={shipment.supplierName || ""}
-                              type="text"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "supplierName" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.supplierName)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.supplierName)}`}
+                                onClick={() => handleCellClick(shipment.id, "supplierName", shipment.supplierName || "")}
+                              >
+                                <span className="block text-xs">{shipment.supplierName || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Country - EDITABLE TEXT */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="departureCountry"
-                              value={shipment.departureCountry || ""}
-                              type="text"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "departureCountry" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.departureCountry)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.departureCountry)}`}
+                                onClick={() => handleCellClick(shipment.id, "departureCountry", shipment.departureCountry || "")}
+                              >
+                                <span className="block text-xs">{shipment.departureCountry || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Destination - EDITABLE TEXT (full deliveryAddress) */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="deliveryAddress"
-                              value={shipment.deliveryAddress || ""}
-                              displayValue={destination}
-                              type="text"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryAddress" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.deliveryAddress)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.deliveryAddress)}`}
+                                onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "", destination)}
+                              >
+                                <span className="block text-xs">{destination}</span>
+                              </td>
+                            )}
                             
                             {/* Departure Date - EDITABLE DATE */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="dispatchDate"
-                              value={formatDate(shipment.dispatchDate)}
-                              type="date"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "dispatchDate" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.dispatchDate)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  placeholder="DD/MM/YY"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.dispatchDate)}`}
+                                onClick={() => handleCellClick(shipment.id, "dispatchDate", formatDate(shipment.dispatchDate))}
+                              >
+                                <span className="block text-xs">{formatDate(shipment.dispatchDate)}</span>
+                              </td>
+                            )}
                             
                             {/* Truck Number - EDITABLE TEXT */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="trailerOrContainerNumber"
-                              value={shipment.trailerOrContainerNumber || ""}
-                              type="text"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "trailerOrContainerNumber" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}
+                                onClick={() => handleCellClick(shipment.id, "trailerOrContainerNumber", shipment.trailerOrContainerNumber || "")}
+                              >
+                                <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Port - EDITABLE TEXT */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="portOfArrival"
-                              value={shipment.portOfArrival || ""}
-                              type="text"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "portOfArrival" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.portOfArrival)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.portOfArrival)}`}
+                                onClick={() => handleCellClick(shipment.id, "portOfArrival", shipment.portOfArrival || "")}
+                              >
+                                <span className="block text-xs">{shipment.portOfArrival || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Eta UK Port - EDITABLE DATE */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="importDateEtaPort"
-                              value={formatDate(shipment.importDateEtaPort)}
-                              type="date"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "importDateEtaPort" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.importDateEtaPort)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  placeholder="DD/MM/YY"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.importDateEtaPort)}`}
+                                onClick={() => handleCellClick(shipment.id, "importDateEtaPort", formatDate(shipment.importDateEtaPort))}
+                              >
+                                <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
+                              </td>
+                            )}
                             
                             {/* Total Package - EDITABLE NUMBER */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="numberOfPieces"
-                              value={shipment.numberOfPieces || ""}
-                              type="number"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "numberOfPieces" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.numberOfPieces)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.numberOfPieces)}`}
+                                onClick={() => handleCellClick(shipment.id, "numberOfPieces", shipment.numberOfPieces || "")}
+                              >
+                                <span className="block text-xs">{shipment.numberOfPieces || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Weight - EDITABLE NUMBER */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="weight"
-                              value={shipment.weight || ""}
-                              type="number"
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "weight" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.weight)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.weight)}`}
+                                onClick={() => handleCellClick(shipment.id, "weight", shipment.weight || "")}
+                              >
+                                <span className="block text-xs">{shipment.weight || ""}</span>
+                              </td>
+                            )}
                             
                             {/* Details Sent to Ligentia - EDITABLE STATUS TIMESTAMP */}
                             <EditableStatusTimestampCell
@@ -1379,13 +1600,27 @@ export default function Dashboard() {
                             />
                             
                             {/* Delivery Booked Date - EDITABLE DATE */}
-                            <EditableCell
-                              shipment={shipment}
-                              fieldName="deliveryDate"
-                              value={formatDate(shipment.deliveryDate)}
-                              type="date"
-                              customCellColor={getNisbetsDeliveryBookedDateColor(shipment)}
-                            />
+                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryDate" ? (
+                              <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsDeliveryBookedDateColor(shipment)}`}>
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={tempValue}
+                                  onChange={(e) => setTempValue(e.target.value)}
+                                  onKeyDown={(e) => handleCellKeyDown(e)}
+                                  onBlur={handleCellSave}
+                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  placeholder="DD/MM/YY"
+                                />
+                              </td>
+                            ) : (
+                              <td
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsDeliveryBookedDateColor(shipment)}`}
+                                onClick={() => handleCellClick(shipment.id, "deliveryDate", formatDate(shipment.deliveryDate))}
+                              >
+                                <span className="block text-xs">{formatDate(shipment.deliveryDate)}</span>
+                              </td>
+                            )}
                             
                             {/* Net Cost - READ ONLY */}
                             <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border w-32 ${getNisbetsCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
