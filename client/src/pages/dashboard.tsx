@@ -845,7 +845,7 @@ export default function Dashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table ref={tableRef} className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
+                <table ref={tableRef} className={`w-full border-collapse text-sm ${editingCell ? 'table-fixed' : ''}`}>
                   <thead className="sticky top-0 bg-background z-10">
                     <tr className="border-b-2">
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Ref</th>
@@ -865,7 +865,7 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Notes</th>
                     </tr>
                   </thead>
-                  <tbody className="text-xs">
+                  <tbody className="text-sm">
                     {containerShipments.length === 0 ? (
                       <tr>
                         <td colSpan={15} className="p-4 text-center text-muted-foreground">
@@ -882,7 +882,7 @@ export default function Dashboard() {
                         const rateInOutColor = getRateInOutColor(shipment.adviseCustomsArrivalStatusIndicator)
 
                         return (
-                          <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-container-${shipment.jobRef}`}>
+                          <tr key={shipment.id} className="border-b-2 hover-elevate h-24" data-testid={`row-container-${shipment.jobRef}`}>
                             {/* Ref - not editable, just a link */}
                             <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
@@ -903,7 +903,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                   placeholder="DD/MM/YY"
                                 />
                               </td>
@@ -912,7 +912,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "bookingDate", formatDate(shipment.bookingDate))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
+                                <span className="block text-sm">{formatDate(shipment.bookingDate)}</span>
                               </td>
                             )}
                             {/* Consignee - read only */}
@@ -929,7 +929,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -937,7 +937,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "trailerOrContainerNumber", shipment.trailerOrContainerNumber || "")}
                               >
-                                <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
+                                <span className="block text-sm">{shipment.trailerOrContainerNumber || ""}</span>
                               </td>
                             )}
                             {/* Ship Line */}
@@ -950,7 +950,7 @@ export default function Dashboard() {
                                     handleSave(shipment.id, "shippingLine", value)
                                   }}
                                 >
-                                  <SelectTrigger className="h-auto min-h-0 w-full text-xs border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
+                                  <SelectTrigger className="h-auto min-h-0 w-full text-sm border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -965,7 +965,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "shippingLine", shipment.shippingLine || "")}
                               >
-                                <span className="block text-xs">{shipment.shippingLine || ""}</span>
+                                <span className="block text-sm">{shipment.shippingLine || ""}</span>
                               </td>
                             )}
                             {/* Poa */}
@@ -978,7 +978,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -986,7 +986,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "portOfArrival", shipment.portOfArrival || "")}
                               >
-                                <span className="block text-xs">{shipment.portOfArrival || ""}</span>
+                                <span className="block text-sm">{shipment.portOfArrival || ""}</span>
                               </td>
                             )}
                             {/* Vessel */}
@@ -999,7 +999,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -1007,7 +1007,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "vesselName", shipment.vesselName || "")}
                               >
-                                <span className="block text-xs">{shipment.vesselName || ""}</span>
+                                <span className="block text-sm">{shipment.vesselName || ""}</span>
                               </td>
                             )}
                             {/* Eta Port */}
@@ -1020,7 +1020,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                   placeholder="DD/MM/YY"
                                 />
                               </td>
@@ -1029,7 +1029,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "importDateEtaPort", shipment.importDateEtaPort || "", formatDate(shipment.importDateEtaPort))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
+                                <span className="block text-sm">{formatDate(shipment.importDateEtaPort)}</span>
                               </td>
                             )}
                             {/* References */}
@@ -1042,7 +1042,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -1050,7 +1050,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "customerReferenceNumber", shipment.customerReferenceNumber || "", shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || ""))}
                               >
-                                <span className="block text-xs">{shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}</span>
+                                <span className="block text-sm">{shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}</span>
                               </td>
                             )}
                             {/* Delivery Date - read only */}
@@ -1067,7 +1067,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -1075,7 +1075,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${releaseColor}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryRelease", shipment.deliveryRelease || "")}
                               >
-                                <span className="block text-xs">{shipment.deliveryRelease || ""}</span>
+                                <span className="block text-sm">{shipment.deliveryRelease || ""}</span>
                               </td>
                             )}
                             {/* Delivery Address - read only when handover enabled */}
@@ -1092,7 +1092,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -1100,7 +1100,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${addressColor}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "")}
                               >
-                                <span className="block text-xs">{shipment.deliveryAddress || ""}</span>
+                                <span className="block text-sm">{shipment.deliveryAddress || ""}</span>
                               </td>
                             )}
                             {/* Rate In */}
@@ -1113,7 +1113,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -1121,7 +1121,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${rateInOutColor}`}
                                 onClick={() => handleCellClick(shipment.id, "haulierFreightRateIn", shipment.haulierFreightRateIn || "", shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : "")}
                               >
-                                <span className="block text-xs">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
+                                <span className="block text-sm">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
                               </td>
                             )}
                             {/* Rate Out */}
@@ -1134,7 +1134,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e)}
                                   onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                 />
                               </td>
                             ) : (
@@ -1142,7 +1142,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${rateInOutColor}`}
                                 onClick={() => handleCellClick(shipment.id, "freightRateOut", shipment.freightRateOut || "", shipment.freightRateOut ? `£${shipment.freightRateOut}` : "")}
                               >
-                                <span className="block text-xs">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
+                                <span className="block text-sm">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
                               </td>
                             )}
                             {/* Notes */}
@@ -1154,7 +1154,7 @@ export default function Dashboard() {
                                   onChange={(e) => setTempValue(e.target.value)}
                                   onKeyDown={(e) => handleCellKeyDown(e, true)}
                                   onBlur={handleCellSave}
-                                  className="w-full min-h-[60px] max-h-[60px] text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
+                                  className="w-full min-h-[60px] max-h-[60px] text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
                                   rows={3}
                                 />
                               </td>
@@ -1163,7 +1163,7 @@ export default function Dashboard() {
                                 className="px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900"
                                 onClick={() => handleCellClick(shipment.id, "additionalNotes", shipment.additionalNotes || "")}
                               >
-                                <span className="whitespace-pre-wrap block text-xs leading-tight">
+                                <span className="whitespace-pre-wrap block text-sm leading-tight">
                                   {shipment.additionalNotes || ""}
                                 </span>
                               </td>
