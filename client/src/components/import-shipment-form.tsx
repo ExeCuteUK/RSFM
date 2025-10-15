@@ -81,7 +81,6 @@ const importShipmentFormSchema = insertImportShipmentSchema.superRefine((data: a
     { field: 'numberOfPieces', label: 'Number of pieces' },
     { field: 'cube', label: 'Cube' },
     { field: 'invoiceValue', label: 'Invoice value' },
-    { field: 'freightCharge', label: 'Freight charge' },
     { field: 'exportCustomsClearanceCharge', label: 'Export customs clearance charge' },
     { field: 'freightRateOut', label: 'Freight rate out' },
     { field: 'additionalCommodityCodeCharge', label: 'Additional commodity code charge' },

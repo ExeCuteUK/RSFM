@@ -650,6 +650,7 @@ export default function Dashboard() {
   }) => {
     const inputRef = useRef<HTMLInputElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const cursorPosRef = useRef<number>(0)
     const isEditing = editingCell?.shipmentId === shipment.id && editingCell?.fieldName === fieldName
     const isSaving = updateShipmentMutation.isPending
 
@@ -658,11 +659,13 @@ export default function Dashboard() {
         // Just focus, don't select - selection happens on click
         if (type === "textarea" && textareaRef.current) {
           textareaRef.current.focus()
+          textareaRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current)
         } else if (inputRef.current) {
           inputRef.current.focus()
+          inputRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current)
         }
       }
-    }, [isEditing, type])
+    }, [isEditing, type, tempValue])
 
     const handleClick = () => {
       // Capture column widths before entering edit mode
@@ -675,6 +678,8 @@ export default function Dashboard() {
       // Use displayValue if available (formatted), otherwise use raw value
       const editValue = displayValue !== undefined ? displayValue : value
       setTempValue(editValue)
+      // Reset cursor position to end of text when entering edit mode
+      cursorPosRef.current = editValue.length
     }
 
     const handleBlur = () => {
@@ -736,14 +741,8 @@ export default function Dashboard() {
 
       if (type === "textarea") {
         const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-          const cursorPosition = e.target.selectionStart
+          cursorPosRef.current = e.target.selectionStart
           setTempValue(e.target.value)
-          // Restore cursor position after state update
-          requestAnimationFrame(() => {
-            if (textareaRef.current) {
-              textareaRef.current.setSelectionRange(cursorPosition, cursorPosition)
-            }
-          })
         }
 
         return (
@@ -767,7 +766,10 @@ export default function Dashboard() {
             ref={inputRef}
             type="text"
             value={tempValue}
-            onChange={(e) => setTempValue(e.target.value)}
+            onChange={(e) => {
+              cursorPosRef.current = e.target.selectionStart
+              setTempValue(e.target.value)
+            }}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"

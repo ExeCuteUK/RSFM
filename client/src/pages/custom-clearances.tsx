@@ -1251,7 +1251,13 @@ export default function CustomClearances() {
       // Add VAT info for import clearances
       if (clearance.jobType === "import") {
         // Only show VAT Payment Method if NOT VAT Zero Rated
-        if (!clearance.vatZeroRated) {
+        // Explicitly check for truthy values representing VAT Zero Rated
+        const isVatZeroRated = clearance.vatZeroRated === true || 
+                               clearance.vatZeroRated === 1 || 
+                               clearance.vatZeroRated === "1" || 
+                               clearance.vatZeroRated === "true"
+        
+        if (!isVatZeroRated) {
           const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
           body += `\nVAT Payment Method : ${displayVatMethod}\n`
         } else {
@@ -1373,7 +1379,13 @@ export default function CustomClearances() {
       // Add VAT info for import clearances
       if (clearance.jobType === "import") {
         // Only show VAT Payment Method if NOT VAT Zero Rated
-        if (!clearance.vatZeroRated) {
+        // Explicitly check for truthy values representing VAT Zero Rated
+        const isVatZeroRated = clearance.vatZeroRated === true || 
+                               clearance.vatZeroRated === 1 || 
+                               clearance.vatZeroRated === "1" || 
+                               clearance.vatZeroRated === "true"
+        
+        if (!isVatZeroRated) {
           const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
           body += `\nVAT Payment Method : ${displayVatMethod}\n`
         } else {
