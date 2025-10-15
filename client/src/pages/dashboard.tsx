@@ -887,18 +887,15 @@ export default function Dashboard() {
                           <tr key={shipment.id} className="border-b-2 hover-elevate h-24" data-testid={`row-container-${shipment.jobRef}`}>
                             {/* Hold */}
                             <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-hold-${shipment.jobRef}`}>
-                              {shipment.jobHold && shipment.holdDescription && (
+                              {shipment.jobHold && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mx-auto" />
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>{shipment.holdDescription}</p>
+                                    <p>{shipment.holdDescription || "Job on hold"}</p>
                                   </TooltipContent>
                                 </Tooltip>
-                              )}
-                              {shipment.jobHold && !shipment.holdDescription && (
-                                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mx-auto" title="Job on hold" />
                               )}
                             </td>
                             {/* Ref - not editable, just a link */}

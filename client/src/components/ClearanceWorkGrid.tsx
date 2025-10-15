@@ -3,9 +3,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { type CustomClearance, type ImportCustomer, type ExportCustomer, type ImportShipment, type ExportShipment, type ClearanceAgent } from "@shared/schema"
-import { Search, X, Link2 } from "lucide-react"
+import { Search, X, Link2, AlertCircle } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
@@ -629,6 +630,7 @@ export function ClearanceWorkGrid() {
             <table ref={tableRef} className="w-full border-collapse text-xs table-fixed">
               <thead className="bg-muted sticky top-0 z-10">
                 <tr>
+                  <th className="border px-2 py-1 text-center font-medium w-12">Hold</th>
                   <th className="border px-2 py-1 text-center font-medium w-12">Link</th>
                   <th className="border px-2 py-1 text-center font-medium w-16">REF</th>
                   <th className="border px-2 py-1 text-center font-medium w-20">IMP/EXP</th>
@@ -640,7 +642,6 @@ export function ClearanceWorkGrid() {
                   <th className="border px-2 py-1 text-center font-medium w-44">Clearance Agent</th>
                   <th className="border px-2 py-1 text-center font-medium">Agent & Haulier Advised</th>
                   <th className="border px-2 py-1 text-center font-medium">Notes</th>
-                  <th className="border px-2 py-1 text-center font-medium">Hold</th>
                 </tr>
               </thead>
               <tbody>
@@ -649,24 +650,29 @@ export function ClearanceWorkGrid() {
                   
                   return (
                     <tr key={clearance.id}>
-                      {renderCell(clearance, "link", null, columnWidths[0])}
-                      {renderCell(clearance, "jobRef", clearance.jobRef, columnWidths[1])}
-                      {renderCell(clearance, "jobType", clearance.jobType === "import" ? "Import" : "Export", columnWidths[2])}
-                      {renderCell(clearance, "clearanceType", clearance.clearanceType, columnWidths[3])}
-                      {renderCell(clearance, "customerName", customerName, columnWidths[4])}
-                      {renderCell(clearance, "etaPort", formatDate(clearance.etaPort), columnWidths[5])}
-                      {renderCell(clearance, "trailerOrContainerNumber", clearance.trailerOrContainerNumber, columnWidths[6])}
-                      {renderCell(clearance, "mrn", clearance.mrn, columnWidths[7])}
-                      {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[8])}
-                      {renderCell(clearance, "agentAdvised", formatDate(getAgentAdvisedTimestamp(clearance)), columnWidths[9])}
-                      {renderCell(clearance, "additionalNotes", clearance.additionalNotes, columnWidths[10])}
                       <td className="border px-2 py-1 text-center align-middle" data-testid={`cell-hold-${clearance.jobRef}`}>
                         {clearance.jobHold && (
-                          <span className="text-red-600 dark:text-red-400 font-semibold" title={clearance.holdDescription || "Job on hold"}>
-                            {clearance.holdDescription || "Yes"}
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mx-auto" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{clearance.holdDescription || "Job on hold"}</p>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </td>
+                      {renderCell(clearance, "link", null, columnWidths[1])}
+                      {renderCell(clearance, "jobRef", clearance.jobRef, columnWidths[2])}
+                      {renderCell(clearance, "jobType", clearance.jobType === "import" ? "Import" : "Export", columnWidths[3])}
+                      {renderCell(clearance, "clearanceType", clearance.clearanceType, columnWidths[4])}
+                      {renderCell(clearance, "customerName", customerName, columnWidths[5])}
+                      {renderCell(clearance, "etaPort", formatDate(clearance.etaPort), columnWidths[6])}
+                      {renderCell(clearance, "trailerOrContainerNumber", clearance.trailerOrContainerNumber, columnWidths[7])}
+                      {renderCell(clearance, "mrn", clearance.mrn, columnWidths[8])}
+                      {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[9])}
+                      {renderCell(clearance, "agentAdvised", formatDate(getAgentAdvisedTimestamp(clearance)), columnWidths[10])}
+                      {renderCell(clearance, "additionalNotes", clearance.additionalNotes, columnWidths[11])}
                     </tr>
                   )
                 })}
