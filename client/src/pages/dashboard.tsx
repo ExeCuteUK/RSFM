@@ -71,6 +71,8 @@ export default function Dashboard() {
   const [tempValue, setTempValue] = useState("")
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const tableRef = useRef<HTMLTableElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Pagination state for Container Management
   const [containerCurrentPage, setContainerCurrentPage] = useState(1)
@@ -102,6 +104,17 @@ export default function Dashboard() {
   useEffect(() => {
     if (!editingCell) {
       setColumnWidths([])
+    }
+  }, [editingCell])
+
+  // Focus input/textarea when entering edit mode
+  useEffect(() => {
+    if (editingCell) {
+      if (inputRef.current) {
+        inputRef.current.focus()
+      } else if (textareaRef.current) {
+        textareaRef.current.focus()
+      }
     }
   }, [editingCell])
 
