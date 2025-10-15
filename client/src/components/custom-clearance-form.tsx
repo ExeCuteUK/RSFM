@@ -53,7 +53,6 @@ const customClearanceFormSchema = insertCustomClearanceSchema.superRefine((data:
     { field: 'numberOfPieces', label: 'Number of pieces' },
     { field: 'cube', label: 'Cube' },
     { field: 'invoiceValue', label: 'Invoice value' },
-    { field: 'transportCosts', label: 'Transport costs' },
     { field: 'clearanceCharge', label: 'Clearance charge' },
   ];
 
