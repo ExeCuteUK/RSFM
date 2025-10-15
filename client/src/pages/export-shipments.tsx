@@ -1580,11 +1580,21 @@ Hope all is OK.`
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 px-2"
-                                onClick={() => openWindow({ 
-                                  type: 'customer-invoice', 
-                                  id: `invoice-${shipment.id}-${Date.now()}`, 
-                                  payload: { job: shipment, jobType: 'export' } 
-                                })}
+                                onClick={() => {
+                                  if (!shipment.dispatchDate) {
+                                    toast({
+                                      title: "Dispatch Date Required",
+                                      description: "Please add the Dispatch Date to this job before creating an invoice.",
+                                      variant: "destructive"
+                                    })
+                                    return
+                                  }
+                                  openWindow({ 
+                                    type: 'customer-invoice', 
+                                    id: `invoice-${shipment.id}-${Date.now()}`, 
+                                    payload: { job: shipment, jobType: 'export' } 
+                                  })
+                                }}
                                 data-testid={`button-create-invoice-${shipment.id}`}
                               >
                                 <Plus className="h-3 w-3 mr-1" />
