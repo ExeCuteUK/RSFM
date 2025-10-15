@@ -767,7 +767,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                 />
               )}
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="customerReferenceNumber"
@@ -782,37 +782,39 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="jobHold"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between space-y-0 pt-7">
-                      <FormLabel>Job Hold</FormLabel>
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value || false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-job-hold"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid gap-4 grid-cols-[auto_1fr]">
+                  <FormField
+                    control={form.control}
+                    name="jobHold"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center gap-1 space-y-0 pt-7">
+                        <FormLabel className="mb-0">Job Hold</FormLabel>
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-job-hold"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="holdDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hold Description</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-hold-description" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="holdDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hold Description</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-hold-description" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
