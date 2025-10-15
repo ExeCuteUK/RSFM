@@ -1,0 +1,46 @@
+~/workspace$ git push origin main --force
+Enumerating objects: 722, done.
+Counting objects: 100% (722/722), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (77/77), done.
+Writing objects: 100% (701/701), 13.79 MiB | 5.67 MiB/s, done.
+Total 701 (delta 115), reused 648 (delta 73), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (115/115), completed with 20 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:      (?) This repository does not have Secret Scanning enabled, but is eligible. Enable Secret Scanning to view and manage detected secrets.
+remote:      Visit the repository settings page, https://github.com/ExeCuteUK/RSFM/settings/security_analysis
+remote:     
+remote:     
+remote:       —— Google OAuth Access Token —————————————————————————
+remote:        locations:
+remote:          - commit: d1d62e444253173ef0394b70658059f983511cac
+remote:            path: backups/temp_restore_2025-10-15T10-13-45/extracted/users_backup.sql:6
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/ExeCuteUK/RSFM/security/secret-scanning/unblock-secret/346TIwUpJcgK2pkr35RaEqgW1hN
+remote:     
+remote:     
+remote:       —— Google OAuth Refresh Token ————————————————————————
+remote:        locations:
+remote:          - commit: d1d62e444253173ef0394b70658059f983511cac
+remote:            path: backups/temp_restore_2025-10-15T10-13-45/extracted/users_backup.sql:6
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/ExeCuteUK/RSFM/security/secret-scanning/unblock-secret/346TJ1MGc0lndfrGgPaqsSLGvNe
+remote:     
+remote: 
+remote: 
+To https://github.com/ExeCuteUK/RSFM
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/ExeCuteUK/RSFM'
