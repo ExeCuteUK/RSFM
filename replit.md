@@ -64,9 +64,10 @@ The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for r
     - Custom Clearance MRN upload now allows updates without requiring invoiceValue/currency fields
     - ContainerCheckDialog date formatting now safely handles invalid dates to prevent "Invalid time value" runtime errors
     - Clearance Management grid cells now maintain correct background colors during inline editing
-  - **UI Improvements:** Customer names increased to match container number size; clearance status badges moved inline with To-Do List; shipping line/haulier names reduced to match vessel name formatting
+  - **UI Improvements:** Customer names increased to match container number size; clearance status badges moved inline with To-Do List; shipping line/haulier names reduced to match vessel name formatting; Dashboard headers renamed: "Container Management Sheet", "Nisbets Management Sheet"; Nisbets fields: "Identifier", "QTY"; Added "Job Date" column to Import/Export Work grid
   - **Form Validation:** Incoterms field made optional across Import Shipments, Export Shipments, and Custom Clearances
   - **UX Enhancement:** Added "Uploading..." toast notifications to all file upload mutations for immediate user feedback
+  - **Sticky Footer Implementation:** Import/Export/Clearance form dialogs now feature sticky footers with Cancel/Save buttons that remain visible while content scrolls. Pattern: Window components render forms directly (no padding wrapper), forms use `h-full` layout with scrollable content area (`flex-1 overflow-auto p-6`) and sticky footer (`sticky bottom-0 px-6 py-4 border-t bg-background`)
   - **Email Template Updates:**
     - "Advise Clearance To Agent" email: Added Transport Costs line (when value exists), conditional VAT Payment Method display (hidden when VAT Zero Rated), removed "Kind Regards," signature
     - "Send Invoice/Credit to Customer" (clearances): Changed body text to "Please find attached Invoice & Import Entry for this arrival.", includes clearance documents in attachments
