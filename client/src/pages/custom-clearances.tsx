@@ -1229,21 +1229,24 @@ export default function CustomClearances() {
       const weightText = clearance.weight ? `${clearance.weight} kgs` : ""
       body += `${weightText}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
       
+      // Add Transport Costs if it exists
+      if (clearance.transportCosts) {
+        body += `Transport Costs : ${clearance.transportCosts}\n`
+      }
+      
       // Add VAT info for import clearances
       if (clearance.jobType === "import") {
-        const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
-        body += `\nVAT Payment Method : ${displayVatMethod}\n`
-        
-        if (clearance.vatZeroRated) {
-          body += `VAT Zero Rated\n`
+        // Only show VAT Payment Method if NOT VAT Zero Rated
+        if (!clearance.vatZeroRated) {
+          const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
+          body += `\nVAT Payment Method : ${displayVatMethod}\n`
+        } else {
+          body += `\nVAT Zero Rated\n`
         }
         
         // Add clearance type only for imports
         body += `Clearance Type : ${clearance.clearanceType || "N/A"}\n`
       }
-      
-      // Add closing signature
-      body += `\nKind Regards,`
       
       // Get agent's email based on job type
       const agentEmail = clearance.jobType === "import" 
@@ -1348,21 +1351,24 @@ export default function CustomClearances() {
       const invoiceValueText = currencyText ? `Invoice value ${currencyText}` : ""
       body += `${weightText}${weightText && invoiceValueText ? ", " : ""}${invoiceValueText}\n`
       
+      // Add Transport Costs if it exists
+      if (clearance.transportCosts) {
+        body += `Transport Costs : ${clearance.transportCosts}\n`
+      }
+      
       // Add VAT info for import clearances
       if (clearance.jobType === "import") {
-        const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
-        body += `\nVAT Payment Method : ${displayVatMethod}\n`
-        
-        if (clearance.vatZeroRated) {
-          body += `VAT Zero Rated\n`
+        // Only show VAT Payment Method if NOT VAT Zero Rated
+        if (!clearance.vatZeroRated) {
+          const displayVatMethod = vatPaymentMethod === "R.S Deferment" ? "Via Your Deferment" : vatPaymentMethod
+          body += `\nVAT Payment Method : ${displayVatMethod}\n`
+        } else {
+          body += `\nVAT Zero Rated\n`
         }
         
         // Add clearance type only for imports
         body += `Clearance Type : ${clearance.clearanceType || "N/A"}\n`
       }
-      
-      // Add closing signature
-      body += `\nKind Regards,`
       
       // Lookup agent email based on clearance agent name
       let agentEmail = ""
