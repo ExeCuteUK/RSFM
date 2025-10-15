@@ -862,7 +862,7 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Delivery Address</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Rate In</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Rate Out</th>
-                      <th className="p-1 text-center font-semibold bg-background w-96" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Notes</th>
+                      <th className="p-1 text-center font-semibold bg-background w-48" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Notes</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
@@ -1147,7 +1147,7 @@ export default function Dashboard() {
                             )}
                             {/* Notes */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "additionalNotes" ? (
-                              <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900 w-96">
+                              <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900 w-48">
                                 <textarea
                                   ref={textareaRef}
                                   value={tempValue}
@@ -1160,7 +1160,7 @@ export default function Dashboard() {
                               </td>
                             ) : (
                               <td
-                                className="px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900 w-96"
+                                className="px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900 w-48"
                                 onClick={() => handleCellClick(shipment.id, "additionalNotes", shipment.additionalNotes || "")}
                               >
                                 <span className="whitespace-pre-wrap block text-sm leading-tight">
