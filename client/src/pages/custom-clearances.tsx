@@ -573,21 +573,25 @@ export default function CustomClearances() {
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
-      // Build custom clearance email body
-      const body = `${greeting},\n\nPlease find attached Invoice & Import Entry for this arrival.\n\nAny issues please let me know,`
+      // Get clearance document paths first to determine body text
+      const clearanceDocObjects = clearance.clearanceDocuments || []
+      const clearanceFiles = clearanceDocObjects.map(file => ({
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        name: getFileName(file)
+      })).filter(doc => doc.url)
+      
+      // Build custom clearance email body - conditional based on clearance documents
+      const hasClearanceDocs = clearanceFiles.length > 0
+      const bodyText = hasClearanceDocs 
+        ? "Please find attached Invoice & Import Entry for this arrival."
+        : "Please find attached invoice for this customs clearance."
+      const body = `${greeting},\n\n${bodyText}\n\nAny issues please let me know,`
       
       // Get invoice PDF paths with proper filenames
       const invoiceFiles = clearanceInvoices.map(invoice => ({
         url: `/api/invoices/${invoice.id}/pdf`,
         name: `${invoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'} - ${invoice.jobRef}.pdf`
       }))
-      
-      // Get clearance document paths with proper filenames
-      const clearanceDocObjects = clearance.clearanceDocuments || []
-      const clearanceFiles = clearanceDocObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
-        name: getFileName(file)
-      })).filter(doc => doc.url)
       
       // Combine invoice and clearance documents
       const allAttachments = [...invoiceFiles, ...clearanceFiles]
