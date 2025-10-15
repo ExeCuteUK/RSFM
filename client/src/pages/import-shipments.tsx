@@ -728,16 +728,18 @@ export default function ImportShipments() {
   }
 
   const getClearanceStatusBadgeClass = (status: string) => {
-    if (status === "Request CC") {
-      return "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300"
-    } else if (status === "Fully Cleared") {
-      return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-    } else if (status === "Awaiting Arrival") {
-      return "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
-    } else if (status === "P.H Hold" || status === "Customs Issue") {
-      return "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-    } else {
-      return "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+    switch (status) {
+      case "Request CC":
+      case "Awaiting Entry":
+      case "Awaiting Arrival":
+        return "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700"
+      case "Fully Cleared":
+        return "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700"
+      case "P.H Hold":
+      case "Customs Issue":
+        return "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700"
+      default:
+        return "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
     }
   }
 
