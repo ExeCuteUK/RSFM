@@ -852,7 +852,7 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[1] ? { width: `${columnWidths[1]}px` } : undefined}>Job Date</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Consignee</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Container no.</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Ship Line</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-background w-20" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Ship Line</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>POA</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>Vessel</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>ETA Port</th>
@@ -862,7 +862,7 @@ export default function Dashboard() {
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Delivery Address</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Rate In</th>
                       <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Rate Out</th>
-                      <th className="p-1 text-center font-semibold bg-background" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Notes</th>
+                      <th className="p-1 text-center font-semibold bg-background w-96" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Notes</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
@@ -942,7 +942,7 @@ export default function Dashboard() {
                             )}
                             {/* Ship Line */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "shippingLine" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`}>
+                              <td className={`px-1 text-center border-r border-border align-middle w-20 ${clearanceColor}`}>
                                 <Select
                                   value={tempValue}
                                   onValueChange={(value) => {
@@ -962,7 +962,7 @@ export default function Dashboard() {
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary w-20 ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "shippingLine", shipment.shippingLine || "")}
                               >
                                 <span className="block text-sm">{shipment.shippingLine || ""}</span>
@@ -1147,7 +1147,7 @@ export default function Dashboard() {
                             )}
                             {/* Notes */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "additionalNotes" ? (
-                              <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900">
+                              <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900 w-96">
                                 <textarea
                                   ref={textareaRef}
                                   value={tempValue}
@@ -1160,7 +1160,7 @@ export default function Dashboard() {
                               </td>
                             ) : (
                               <td
-                                className="px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900"
+                                className="px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900 w-96"
                                 onClick={() => handleCellClick(shipment.id, "additionalNotes", shipment.additionalNotes || "")}
                               >
                                 <span className="whitespace-pre-wrap block text-sm leading-tight">
