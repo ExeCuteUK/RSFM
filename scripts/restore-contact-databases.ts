@@ -145,7 +145,10 @@ async function restoreContactDatabases() {
             messages: { jsonb: ['attachments'] },
             import_shipments: { jsonb: ['proof_of_delivery', 'expenses_to_charge_out', 'additional_expenses_in', 'attachments'] },
             export_shipments: { jsonb: ['proof_of_delivery', 'expenses_to_charge_out', 'additional_expenses_in', 'attachments', 'transport_documents', 'clearance_documents'] },
-            custom_clearances: { jsonb: ['transport_documents', 'clearance_documents'] },
+            custom_clearances: { 
+              jsonb: ['transport_documents', 'clearance_documents', 'expenses_to_charge_out'],
+              textArray: ['job_contact_name', 'job_contact_email', 'haulier_contact_name', 'haulier_email']
+            },
             invoices: { jsonb: ['line_items'] },
             import_customers: { textArray: ['contact_name', 'email', 'accounts_email', 'agent_contact_name', 'agent_email', 'agent_accounts_email'] },
             export_customers: { textArray: ['contact_name', 'email', 'accounts_email', 'agent_contact_name', 'agent_email', 'agent_accounts_email'] },

@@ -1028,8 +1028,17 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="GBP">GBP (£)</SelectItem>
-                          <SelectItem value="USD">USD ($)</SelectItem>
                           <SelectItem value="EUR">EUR (€)</SelectItem>
+                          <SelectItem value="USD">USD ($)</SelectItem>
+                          <SelectItem value="PLN">PLN (zł) - Polish Zloty</SelectItem>
+                          <SelectItem value="CHF">CHF (Fr) - Swiss Franc</SelectItem>
+                          <SelectItem value="SEK">SEK (kr) - Swedish Krona</SelectItem>
+                          <SelectItem value="NOK">NOK (kr) - Norwegian Krone</SelectItem>
+                          <SelectItem value="DKK">DKK (kr) - Danish Krone</SelectItem>
+                          <SelectItem value="CZK">CZK (Kč) - Czech Koruna</SelectItem>
+                          <SelectItem value="HUF">HUF (Ft) - Hungarian Forint</SelectItem>
+                          <SelectItem value="RON">RON (lei) - Romanian Leu</SelectItem>
+                          <SelectItem value="TRY">TRY (₺) - Turkish Lira</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
