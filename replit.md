@@ -60,10 +60,16 @@ The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for r
 - **Calendar Events:** Timezone (Europe/London) automatically added to timed events (create/update) to prevent server-side timezone errors
 - **Version:** Updated to 4.2.7 Beta
   - **Engine Revisions:** ERIC 1.1 (container tracking), FOCR 1.2 (OCR system), T49T 1.2 (Terminal49 integration)
-  - **Critical Bug Fix:** Custom Clearance MRN upload now allows updates without requiring invoiceValue/currency fields
+  - **Critical Bug Fixes:** 
+    - Custom Clearance MRN upload now allows updates without requiring invoiceValue/currency fields
+    - ContainerCheckDialog date formatting now safely handles invalid dates to prevent "Invalid time value" runtime errors
+    - Clearance Management grid cells now maintain correct background colors during inline editing
   - **UI Improvements:** Customer names increased to match container number size; clearance status badges moved inline with To-Do List; shipping line/haulier names reduced to match vessel name formatting
   - **Form Validation:** Incoterms field made optional across Import Shipments, Export Shipments, and Custom Clearances
   - **UX Enhancement:** Added "Uploading..." toast notifications to all file upload mutations for immediate user feedback
+  - **Email Template Updates:**
+    - "Advise Clearance To Agent" email: Added Transport Costs line (when value exists), conditional VAT Payment Method display (hidden when VAT Zero Rated), removed "Kind Regards," signature
+    - "Send Invoice/Credit to Customer" (clearances): Changed body text to "Please find attached Invoice & Import Entry for this arrival.", includes clearance documents in attachments
 
 ### Backend Architecture
 
