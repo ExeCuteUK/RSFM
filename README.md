@@ -1,19 +1,19 @@
 # R.S Freight Manager - Freight Management Suite
 
-**Version:** 4.1.2 alpha
+**Version:** 4.2.6c Beta
 
 A comprehensive web-based enterprise solution for logistics operations, designed to manage import/export shipments, customs clearances, customer records, invoicing, and freight rate calculations. This application replaces the legacy VB6 RSFM system with a modern, scalable web platform.
 
 ## Overview
 
-R.S International Freight Manager is a complete freight management system featuring unified job referencing (starting at #26001) across Import Shipments, Export Shipments, and Custom Clearances. The system automatically generates Custom Clearance jobs for Import Shipments marked "R.S To Clear", sharing the same job reference for seamless tracking.
+R.S International Freight Manager is a complete freight management system featuring unified job referencing (starting at #48000) across Import Shipments, Export Shipments, and Custom Clearances. The system automatically generates Custom Clearance jobs for Import Shipments marked "R.S To Clear", sharing the same job reference for seamless tracking.
 
 ### Key Features
 
 - **Job Management**
   - Import/Export Shipments tracking
   - Custom Clearances with automatic generation
-  - Unified job referencing system (#26001+)
+  - Unified job referencing system (#48000+)
   - Multi-currency financial fields
   - Status-based workflows with visual indicators
   - Container tracking via Terminal49 API integration
