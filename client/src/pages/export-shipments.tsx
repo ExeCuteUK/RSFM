@@ -956,7 +956,7 @@ Hope all is OK.`
       body += `${shipment.goodsDescription || ""}\n`
       
       // Add weight with "kgs" suffix if weight exists
-      const weightText = shipment.weight ? `${shipment.weight} kgs` : ""
+      const weightText = shipment.weight ? `${shipment.weight}kgs` : ""
       body += `${weightText}\n\n`
       
       body += `Kind Regards`
@@ -1309,7 +1309,7 @@ Hope all is OK.`
                     )}
                     {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
                       <p className="text-muted-foreground" data-testid={`text-weight-pieces-${shipment.id}`}>
-                        {shipment.weight && <>Weight: {shipment.weight} kgs</>}
+                        {shipment.weight && <>Weight: {shipment.weight}kgs</>}
                         {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
                         {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
                       </p>
@@ -2053,7 +2053,7 @@ Hope all is OK.`
                         {viewingShipment.weight && (
                           <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
                             <p className="text-xs text-muted-foreground mb-1">Weight</p>
-                            <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.weight} kgs</p>
+                            <p className="font-semibold text-sm text-green-900 dark:text-green-100">{viewingShipment.weight}kgs</p>
                           </div>
                         )}
                         {viewingShipment.cube && (

@@ -1806,7 +1806,7 @@ Hope all is OK.`
       body += `${shipment.goodsDescription || ""}\n`
       
       // Add weight with "kgs" suffix and formatted currency
-      const weightText = shipment.weight ? `${shipment.weight} kgs` : ""
+      const weightText = shipment.weight ? `${shipment.weight}kgs` : ""
       const currencyText = formatCurrency(shipment.currency, shipment.invoiceValue)
       const invoiceValueText = currencyText ? `Invoice value ${currencyText}` : ""
       body += `${weightText}${weightText && invoiceValueText ? ", " : ""}${invoiceValueText}\n`
@@ -2204,7 +2204,7 @@ Hope all is OK.`
                     )}
                     {(shipment.weight || (shipment.numberOfPieces && shipment.packaging)) && (
                       <p className="text-muted-foreground" data-testid={`text-weight-pieces-${shipment.id}`}>
-                        {shipment.weight && <>Weight: {shipment.weight} kgs</>}
+                        {shipment.weight && <>Weight: {shipment.weight}kgs</>}
                         {shipment.weight && shipment.numberOfPieces && shipment.packaging && ', '}
                         {shipment.numberOfPieces && shipment.packaging && `${shipment.numberOfPieces} ${shipment.packaging}`}
                       </p>
@@ -3383,7 +3383,7 @@ Hope all is OK.`
                         {viewingShipment.weight && (
                           <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                             <p className="text-xs text-muted-foreground mb-1">Weight</p>
-                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.weight} kgs</p>
+                            <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">{viewingShipment.weight}kgs</p>
                           </div>
                         )}
                         {viewingShipment.cube && (
@@ -3429,7 +3429,7 @@ Hope all is OK.`
                           <p className="text-xs text-muted-foreground mb-1">Hauliers Email</p>
                           <div className="flex flex-col gap-1">
                             {viewingShipment.haulierEmail.map((email, idx) => {
-                              const subject = `Our Ref : ${viewingShipment.jobRef} / Your Ref : ${viewingShipment.haulierReference || ''} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''} kgs`;
+                              const subject = `Our Ref : ${viewingShipment.jobRef} / Your Ref : ${viewingShipment.haulierReference || ''} / ${getCustomerName(viewingShipment.importCustomerId)} / ${viewingShipment.numberOfPieces || ''} ${viewingShipment.packaging || ''}, ${viewingShipment.weight || ''}kgs`;
                               return (
                                 <a 
                                   key={idx} 

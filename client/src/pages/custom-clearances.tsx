@@ -1240,7 +1240,7 @@ export default function CustomClearances() {
       body += `${clearance.goodsDescription || ""}\n`
       
       // Add weight with "kgs" suffix if weight exists
-      const weightText = clearance.weight ? `${clearance.weight} kgs` : ""
+      const weightText = clearance.weight ? `${clearance.weight}kgs` : ""
       body += `${weightText}, Invoice value ${clearance.currency || ""} ${clearance.invoiceValue || ""}\n`
       
       // Add Transport Costs if it exists
@@ -1360,7 +1360,7 @@ export default function CustomClearances() {
       }
       
       // Add weight with "kgs" suffix and formatted currency
-      const weightText = clearance.weight ? `${clearance.weight} kgs` : ""
+      const weightText = clearance.weight ? `${clearance.weight}kgs` : ""
       const currencyText = formatCurrency(clearance.currency, clearance.invoiceValue)
       const invoiceValueText = currencyText ? `Invoice value ${currencyText}` : ""
       body += `${weightText}${weightText && invoiceValueText ? ", " : ""}${invoiceValueText}\n`
