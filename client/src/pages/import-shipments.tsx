@@ -2067,11 +2067,16 @@ Hope all is OK.`
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {shipments.map((shipment) => (
+          {shipments.map((shipment) => {
+            const linkedClearance = shipment.linkedClearanceId ? getLinkedClearance(shipment.linkedClearanceId) : null
+            const hasHoldStatus = linkedClearance && (linkedClearance.status === "P.H Hold" || linkedClearance.status === "Customs Issue")
+            const shouldShowRedBackground = shipment.jobHold || hasHoldStatus
+            
+            return (
             <Card 
               key={shipment.id} 
               data-testid={`card-shipment-${shipment.id}`}
-              className={shipment.jobHold ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900" : ""}
+              className={shouldShowRedBackground ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900" : ""}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -2810,7 +2815,8 @@ Hope all is OK.`
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )
+          })}
         </div>
       )}
       
