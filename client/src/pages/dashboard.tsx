@@ -1103,48 +1103,14 @@ export default function Dashboard() {
                                 <span className="block text-sm">{shipment.deliveryAddress || ""}</span>
                               </td>
                             )}
-                            {/* Rate In */}
-                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "haulierFreightRateIn" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle ${rateInOutColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
-                              </td>
-                            ) : (
-                              <td
-                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${rateInOutColor}`}
-                                onClick={() => handleCellClick(shipment.id, "haulierFreightRateIn", shipment.haulierFreightRateIn || "", shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : "")}
-                              >
-                                <span className="block text-sm">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
-                              </td>
-                            )}
-                            {/* Rate Out */}
-                            {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "freightRateOut" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle ${rateInOutColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
-                              </td>
-                            ) : (
-                              <td
-                                className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${rateInOutColor}`}
-                                onClick={() => handleCellClick(shipment.id, "freightRateOut", shipment.freightRateOut || "", shipment.freightRateOut ? `£${shipment.freightRateOut}` : "")}
-                              >
-                                <span className="block text-sm">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
-                              </td>
-                            )}
+                            {/* Rate In - read only */}
+                            <td className={`px-1 text-center border-r border-border align-middle ${rateInOutColor}`}>
+                              <span className="block text-sm">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
+                            </td>
+                            {/* Rate Out - read only */}
+                            <td className={`px-1 text-center border-r border-border align-middle ${rateInOutColor}`}>
+                              <span className="block text-sm">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
+                            </td>
                             {/* Notes */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "additionalNotes" ? (
                               <td className="px-1 text-center border-r border-border align-middle bg-green-100 dark:bg-green-900 w-48">
