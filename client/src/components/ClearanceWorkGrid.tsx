@@ -648,16 +648,34 @@ export function ClearanceWorkGrid() {
                 {paginatedClearances.map((clearance) => {
                   const customerName = getCustomerName(clearance)
                   
+                  const statusHasHold = clearance.status === "P.H Hold" || clearance.status === "Customs Issue"
+                  const showHoldIcon = clearance.jobHold || statusHasHold
+                  const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900"
+                  
+                  // Build combined tooltip message
+                  let holdTooltip = ""
+                  if (clearance.jobHold) {
+                    holdTooltip = clearance.holdDescription || "Job on hold"
+                  }
+                  if (statusHasHold) {
+                    const statusMessage = clearance.status === "P.H Hold" ? "Port Health Hold" : "Customs Examination / Query"
+                    if (holdTooltip) {
+                      holdTooltip = `${holdTooltip}. ${statusMessage}`
+                    } else {
+                      holdTooltip = statusMessage
+                    }
+                  }
+                  
                   return (
                     <tr key={clearance.id}>
-                      <td className="border px-2 py-1 text-center align-middle" data-testid={`cell-hold-${clearance.jobRef}`}>
-                        {clearance.jobHold && (
+                      <td className={`border px-2 py-1 text-center align-middle ${holdBgColor}`} data-testid={`cell-hold-${clearance.jobRef}`}>
+                        {showHoldIcon && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mx-auto" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>{clearance.holdDescription || "Job on hold"}</p>
+                              <p>{holdTooltip}</p>
                             </TooltipContent>
                           </Tooltip>
                         )}
