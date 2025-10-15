@@ -792,7 +792,7 @@ export default function Dashboard() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="container-management" data-testid="tab-container-management">
             <Container className="h-4 w-4 mr-2" />
-            Container Management
+            Container Management Sheet
           </TabsTrigger>
           <TabsTrigger value="nisbets" data-testid="tab-nisbets">
             <Package className="h-4 w-4 mr-2" />
@@ -811,7 +811,7 @@ export default function Dashboard() {
         <TabsContent value="container-management" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Container Management</CardTitle>
+              <CardTitle>Container Management Sheet</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Search and Filter Bar */}
@@ -1195,7 +1195,7 @@ export default function Dashboard() {
         <TabsContent value="nisbets" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Nisbets Shipment Card</CardTitle>
+              <CardTitle>Nisbets Management Sheet</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Search Bar */}
