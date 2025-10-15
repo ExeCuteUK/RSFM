@@ -36,6 +36,16 @@ import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { ContactCombobox } from "@/components/ContactCombobox"
 import { MRNConfirmationDialog } from "@/components/mrn-confirmation-dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface CustomClearanceFormProps {
   onSubmit: (data: InsertCustomClearance) => void
@@ -91,6 +101,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const [newHaulierEmail, setNewHaulierEmail] = useState("")
   const [newJobContactName, setNewJobContactName] = useState("")
   const [newJobContactEmail, setNewJobContactEmail] = useState("")
+  const [showJobHoldConfirmation, setShowJobHoldConfirmation] = useState(false)
+  const [pendingSubmitData, setPendingSubmitData] = useState<InsertCustomClearance | null>(null)
   
   const form = useForm<InsertCustomClearance>({
     resolver: zodResolver(customClearanceFormSchema),
@@ -365,7 +377,21 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       clearanceDocuments: normalizedClearanceDocuments,
     };
 
-    onSubmit(finalData);
+    // Check if Job Hold is ticked - show confirmation
+    if (finalData.jobHold) {
+      setPendingSubmitData(finalData);
+      setShowJobHoldConfirmation(true);
+    } else {
+      onSubmit(finalData);
+    }
+  };
+
+  const handleConfirmJobHoldSave = () => {
+    if (pendingSubmitData) {
+      onSubmit(pendingSubmitData);
+      setPendingSubmitData(null);
+      setShowJobHoldConfirmation(false);
+    }
   };
 
   const handleValidationError = (errors: typeof form.formState.errors) => {
@@ -1711,6 +1737,23 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
         onConfirm={handleConfirmMRN}
         onCancel={handleCancelMRN}
       />
+
+      <AlertDialog open={showJobHoldConfirmation} onOpenChange={setShowJobHoldConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Job Hold Confirmation</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to save this job with a Job Hold. This will flag the job as on hold. Do you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-job-hold">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmJobHoldSave} data-testid="button-confirm-job-hold">
+              Save with Job Hold
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Form>
   )
 }

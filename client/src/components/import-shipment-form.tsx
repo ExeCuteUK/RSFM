@@ -123,6 +123,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [newJobContactName, setNewJobContactName] = useState("")
   const [newJobContactEmail, setNewJobContactEmail] = useState("")
   const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
+  const [showJobHoldConfirmation, setShowJobHoldConfirmation] = useState(false)
+  const [pendingSubmitData, setPendingSubmitData] = useState<InsertImportShipment | null>(null)
 
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(importShipmentFormSchema),
@@ -471,7 +473,21 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       attachments: normalizedAttachments,
     };
 
-    onSubmit(finalData);
+    // Check if Job Hold is ticked - show confirmation
+    if (finalData.jobHold) {
+      setPendingSubmitData(finalData);
+      setShowJobHoldConfirmation(true);
+    } else {
+      onSubmit(finalData);
+    }
+  };
+
+  const handleConfirmJobHoldSave = () => {
+    if (pendingSubmitData) {
+      onSubmit(pendingSubmitData);
+      setPendingSubmitData(null);
+      setShowJobHoldConfirmation(false);
+    }
   };
 
   const handleValidationError = (errors: typeof form.formState.errors) => {
@@ -2321,6 +2337,23 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             <AlertDialogCancel data-testid="button-go-back">Go Back</AlertDialogCancel>
             <AlertDialogAction onClick={handleContinueWithoutSaving} data-testid="button-continue">
               Continue Without Saving
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showJobHoldConfirmation} onOpenChange={setShowJobHoldConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Job Hold Confirmation</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to save this job with a Job Hold. This will flag the job as on hold. Do you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-job-hold">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmJobHoldSave} data-testid="button-confirm-job-hold">
+              Save with Job Hold
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
