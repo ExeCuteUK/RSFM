@@ -1529,6 +1529,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                           <SelectItem value="CZK">CZK (Kč) - Czech Koruna</SelectItem>
                           <SelectItem value="HUF">HUF (Ft) - Hungarian Forint</SelectItem>
                           <SelectItem value="RON">RON (lei) - Romanian Leu</SelectItem>
+                          <SelectItem value="RUB">RUB (₽) - Russian Ruble</SelectItem>
                           <SelectItem value="TRY">TRY (₺) - Turkish Lira</SelectItem>
                         </SelectContent>
                       </Select>
