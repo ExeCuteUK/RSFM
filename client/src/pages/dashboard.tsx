@@ -883,17 +883,36 @@ export default function Dashboard() {
                         const invoiceColor = getInvoiceStatusColor(shipment.invoiceCustomerStatusIndicator)
                         const rateInOutColor = getRateInOutColor(shipment.adviseCustomsArrivalStatusIndicator)
 
+                        const linkedClearance = getLinkedClearance(shipment.jobRef)
+                        const clearanceHasHoldStatus = linkedClearance && (linkedClearance.status === "P.H Hold" || linkedClearance.status === "Customs Issue")
+                        const showHoldIcon = shipment.jobHold || clearanceHasHoldStatus
+                        const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900"
+                        
+                        // Build combined tooltip message
+                        let holdTooltip = ""
+                        if (shipment.jobHold) {
+                          holdTooltip = shipment.holdDescription || "Job on hold"
+                        }
+                        if (clearanceHasHoldStatus) {
+                          const statusMessage = linkedClearance.status === "P.H Hold" ? "Port Health Hold" : "Customs Examination / Query"
+                          if (holdTooltip) {
+                            holdTooltip = `${holdTooltip}. ${statusMessage}`
+                          } else {
+                            holdTooltip = statusMessage
+                          }
+                        }
+
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate h-24" data-testid={`row-container-${shipment.jobRef}`}>
                             {/* Hold */}
-                            <td className="px-1 text-center border-r border-border align-middle" data-testid={`cell-hold-${shipment.jobRef}`}>
-                              {shipment.jobHold && (
+                            <td className={`px-1 text-center border-r border-border align-middle ${holdBgColor}`} data-testid={`cell-hold-${shipment.jobRef}`}>
+                              {showHoldIcon && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mx-auto" />
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>{shipment.holdDescription || "Job on hold"}</p>
+                                    <p>{holdTooltip}</p>
                                   </TooltipContent>
                                 </Tooltip>
                               )}
