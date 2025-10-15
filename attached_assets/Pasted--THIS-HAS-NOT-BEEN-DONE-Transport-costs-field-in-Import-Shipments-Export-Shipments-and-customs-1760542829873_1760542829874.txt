@@ -1,0 +1,13 @@
+- THIS HAS NOT BEEN DONE ? > Transport costs field in Import Shipments, Export Shipments and customs clearance is set to number validation still this was requested to Set to text.
+
+- THIS HAS NOT BEEN DONE ? > When Advise Clearance To Agent Icon is selected in Customs Clearance do the following :-
+	IF Transport Costs field (in financial details card of the custom clearance) has a value then add a line saying "Transport Costs : " {Transport Costs} in the email body underneath "Clearance Type :" line.
+	If VAT Zero Rated field is 1 or True then do along with showing the VAT Zero Rated addition in the message body do not show "VAT Payment Method :" line as its not required as goods are not subject to VAT payment.
+
+- When Send Invoice/Credit to Customer Icon is selected, if there is no clearance documents attached to the job, then adjust the language used in the email composer message body auto fill to change "Please find attached Invoice & Import Entry for this arrival." to "Please find attached invoice for this customs clearance." Ensure the other message remains if there is a clearance document attached.
+
+- text being entered in the notes field of the container management column in Dashboard is still having the same issue. the curser keeps being placed to the left when clicked and every type of keyboard its still placing the curser to the left of the character entered thus making the user type words backwards
+
+- Transport costs field in Import Shipments, Export Shipments and customs clearance is set to number validation still this was requested to Set to text.
+
+- The Weight & Quantity is not being displayed in Custom Clearance cards underneath the goods description field. For example on the Import Shipment card you can see "Weight: 2000 kgs, 23 Pallets" in the line underneath the goods description. I need this adding to the customs clearances card display. Also if possible remove the gap between the Value of the weight and "kgs" also apply this gap fix on the Import Shipments and Export Shipments cards.
