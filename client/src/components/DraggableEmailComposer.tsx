@@ -424,7 +424,7 @@ export function DraggableEmailComposer() {
                   {recentEmails.length > 0 && (
                     <CommandGroup heading="Recent">
                       {recentEmails
-                        .filter(email => !data.to || email.toLowerCase().includes(data.to.toLowerCase()))
+                        .filter(email => !data.to || (typeof data.to === 'string' && email.toLowerCase().includes(data.to.toLowerCase())))
                         .map((email) => (
                         <CommandItem
                           key={`recent-${email}`}
@@ -449,9 +449,9 @@ export function DraggableEmailComposer() {
                   {contactEmails.length > 0 && (
                     <CommandGroup heading="Contacts">
                       {contactEmails
-                        .filter(contact => !data.to || 
+                        .filter(contact => !data.to || (typeof data.to === 'string' && (
                           contact.email.toLowerCase().includes(data.to.toLowerCase()) ||
-                          contact.name.toLowerCase().includes(data.to.toLowerCase()))
+                          contact.name.toLowerCase().includes(data.to.toLowerCase()))))
                         .slice(0, 30)
                         .map((contact) => (
                         <CommandItem
