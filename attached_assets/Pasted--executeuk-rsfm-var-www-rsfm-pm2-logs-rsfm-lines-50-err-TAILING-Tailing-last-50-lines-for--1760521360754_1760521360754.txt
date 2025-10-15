@@ -1,0 +1,53 @@
+
+executeuk@rsfm:/var/www/rsfm$ pm2 logs rsfm --lines 50 --err
+[TAILING] Tailing last 50 lines for [rsfm] process (change the value with --lines option)
+/home/executeuk/.pm2/logs/rsfm-error-0.log last 50 lines:
+0|rsfm     |       'grant_type' => '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+0|rsfm     |       'redirect_uri' => 'https://rs.mycustomsclearance.co.uk/api/gmail/callback',
+0|rsfm     |       'client_secret' => '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.' },
+0|rsfm     |     validateStatus: [Function: validateStatus],
+0|rsfm     |     responseType: 'unknown',
+0|rsfm     |     errorRedactor: [Function: defaultErrorRedactor],
+0|rsfm     |     duplex: 'half'
+0|rsfm     |   },
+0|rsfm     |   response: Response {
+0|rsfm     |     size: 0,
+0|rsfm     |     data: { error: 'invalid_client', error_description: 'Unauthorized' },
+0|rsfm     |     config: {
+0|rsfm     |       retry: true,
+0|rsfm     |       retryConfig: [Object],
+0|rsfm     |       method: 'POST',
+0|rsfm     |       url: URL {},
+0|rsfm     |       data: [Object],
+0|rsfm     |       headers: Headers {
+0|rsfm     |         'x-goog-api-client': 'gl-node/20.19.5',
+0|rsfm     |         'User-Agent': 'google-api-nodejs-client/10.4.0'
+0|rsfm     |       },
+0|rsfm     |       body: [Object],
+0|rsfm     |       validateStatus: [Function: validateStatus],
+0|rsfm     |       responseType: 'unknown',
+0|rsfm     |       errorRedactor: [Function: defaultErrorRedactor],
+0|rsfm     |       duplex: 'half'
+0|rsfm     |     },
+0|rsfm     |     [Symbol(Body internals)]: {
+0|rsfm     |       body: [Gunzip],
+0|rsfm     |       stream: [Gunzip],
+0|rsfm     |       boundary: null,
+0|rsfm     |       disturbed: true,
+0|rsfm     |       error: null
+0|rsfm     |     },
+0|rsfm     |     [Symbol(Response internals)]: {
+0|rsfm     |       type: 'default',
+0|rsfm     |       url: 'https://oauth2.googleapis.com/token',
+0|rsfm     |       status: 401,
+0|rsfm     |       statusText: 'Unauthorized',
+0|rsfm     |       headers: [Object],
+0|rsfm     |       counter: 0,
+0|rsfm     |       highWaterMark: 16384
+0|rsfm     |     }
+0|rsfm     |   },
+0|rsfm     |   code: 401,
+0|rsfm     |   status: 401,
+0|rsfm     |   error: undefined,
+0|rsfm     |   [Symbol(gaxios-gaxios-error)]: '7.1.2',
+0|rsfm     |   [cause]: { message: 'invalid_client', code: 401, status: 'Unauthorized' }

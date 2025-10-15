@@ -1,0 +1,205 @@
+executeuk@rsfm:/var/www/rsfm$ pm2 logs rsfm --lines 100
+[TAILING] Tailing last 100 lines for [rsfm] process (change the value with --lines option)
+/home/executeuk/.pm2/logs/rsfm-error-0.log last 100 lines:
+0|rsfm     | Calendar list events error: Error: Calendar fetch failed: Failed to fetch team calendar: invalid_client; Failed to fetch UK holidays: invalid_client
+0|rsfm     |     at listCalendarEvents (file:///var/www/rsfm/dist/index.js:994:11)
+0|rsfm     |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|rsfm     |     at async file:///var/www/rsfm/dist/index.js:7336:22
+0|rsfm     | Gmail callback error: GaxiosError: invalid_client
+0|rsfm     |     at Gaxios._request (/var/www/rsfm/node_modules/googleapis-common/node_modules/gaxios/build/cjs/src/gaxios.js:154:23)
+0|rsfm     |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|rsfm     |     at async OAuth2Client.getTokenAsync (/var/www/rsfm/node_modules/googleapis-common/node_modules/google-auth-library/build/src/auth/oauth2client.js:205:21)
+0|rsfm     |     at async file:///var/www/rsfm/dist/index.js:6802:26 {
+0|rsfm     |   config: {
+0|rsfm     |     retry: true,
+0|rsfm     |     retryConfig: {
+0|rsfm     |       httpMethodsToRetry: [Array],
+0|rsfm     |       currentRetryAttempt: 0,
+0|rsfm     |       retry: 3,
+0|rsfm     |       noResponseRetries: 2,
+0|rsfm     |       retryDelayMultiplier: 2,
+0|rsfm     |       timeOfFirstRequest: 1760520235052,
+0|rsfm     |       totalTimeout: 9007199254740991,
+0|rsfm     |       maxRetryDelay: 9007199254740991,
+0|rsfm     |       statusCodesToRetry: [Array]
+0|rsfm     |     },
+0|rsfm     |     method: 'POST',
+0|rsfm     |     url: URL {
+0|rsfm     |       href: 'https://oauth2.googleapis.com/token',
+0|rsfm     |       origin: 'https://oauth2.googleapis.com',
+0|rsfm     |       protocol: 'https:',
+0|rsfm     |       username: '',
+0|rsfm     |       password: '',
+0|rsfm     |       host: 'oauth2.googleapis.com',
+0|rsfm     |       hostname: 'oauth2.googleapis.com',
+0|rsfm     |       port: '',
+0|rsfm     |       pathname: '/token',
+0|rsfm     |       search: '',
+0|rsfm     |       searchParams: URLSearchParams {},
+0|rsfm     |       hash: ''
+0|rsfm     |     },
+0|rsfm     |     data: URLSearchParams {
+0|rsfm     |       'client_id' => '1016015336453-4njm29h7ee1jlo7bd7lanj2s40ur1bm4.apps.googleusercontent.com',
+0|rsfm     |       'code' => '4/0AVGzR1Buv0ygUIlUBhi6bDmt7Q5-WxXlv0gdJ5qR1q5g_mp1cPLhHp8lT_PiKHE-ctWrjg',
+0|rsfm     |       'grant_type' => '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+0|rsfm     |       'redirect_uri' => 'https://rs.mycustomsclearance.co.uk/api/gmail/callback',
+0|rsfm     |       'client_secret' => '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.' },
+0|rsfm     |     headers: Headers {
+0|rsfm     |       'x-goog-api-client': 'gl-node/20.19.5',
+0|rsfm     |       'User-Agent': 'google-api-nodejs-client/10.4.0'
+0|rsfm     |     },
+0|rsfm     |     body: URLSearchParams {
+0|rsfm     |       'client_id' => '1016015336453-4njm29h7ee1jlo7bd7lanj2s40ur1bm4.apps.googleusercontent.com',
+0|rsfm     |       'code' => '4/0AVGzR1Buv0ygUIlUBhi6bDmt7Q5-WxXlv0gdJ5qR1q5g_mp1cPLhHp8lT_PiKHE-ctWrjg',
+0|rsfm     |       'grant_type' => '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+0|rsfm     |       'redirect_uri' => 'https://rs.mycustomsclearance.co.uk/api/gmail/callback',
+0|rsfm     |       'client_secret' => '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.' },
+0|rsfm     |     validateStatus: [Function: validateStatus],
+0|rsfm     |     responseType: 'unknown',
+0|rsfm     |     errorRedactor: [Function: defaultErrorRedactor],
+0|rsfm     |     duplex: 'half'
+0|rsfm     |   },
+0|rsfm     |   response: Response {
+0|rsfm     |     size: 0,
+0|rsfm     |     data: { error: 'invalid_client', error_description: 'Unauthorized' },
+0|rsfm     |     config: {
+0|rsfm     |       retry: true,
+0|rsfm     |       retryConfig: [Object],
+0|rsfm     |       method: 'POST',
+0|rsfm     |       url: URL {},
+0|rsfm     |       data: [Object],
+0|rsfm     |       headers: Headers {
+0|rsfm     |         'x-goog-api-client': 'gl-node/20.19.5',
+0|rsfm     |         'User-Agent': 'google-api-nodejs-client/10.4.0'
+0|rsfm     |       },
+0|rsfm     |       body: [Object],
+0|rsfm     |       validateStatus: [Function: validateStatus],
+0|rsfm     |       responseType: 'unknown',
+0|rsfm     |       errorRedactor: [Function: defaultErrorRedactor],
+0|rsfm     |       duplex: 'half'
+0|rsfm     |     },
+0|rsfm     |     [Symbol(Body internals)]: {
+0|rsfm     |       body: [Gunzip],
+0|rsfm     |       stream: [Gunzip],
+0|rsfm     |       boundary: null,
+0|rsfm     |       disturbed: true,
+0|rsfm     |       error: null
+0|rsfm     |     },
+0|rsfm     |     [Symbol(Response internals)]: {
+0|rsfm     |       type: 'default',
+0|rsfm     |       url: 'https://oauth2.googleapis.com/token',
+0|rsfm     |       status: 401,
+0|rsfm     |       statusText: 'Unauthorized',
+0|rsfm     |       headers: [Object],
+0|rsfm     |       counter: 0,
+0|rsfm     |       highWaterMark: 16384
+0|rsfm     |     }
+0|rsfm     |   },
+0|rsfm     |   code: 401,
+0|rsfm     |   status: 401,
+0|rsfm     |   error: undefined,
+0|rsfm     |   [Symbol(gaxios-gaxios-error)]: '7.1.2',
+0|rsfm     |   [cause]: { message: 'invalid_client', code: 401, status: 'Unauthorized' }
+0|rsfm     | }
+
+/home/executeuk/.pm2/logs/rsfm-out-0.log last 100 lines:
+0|rsfm     | 9:16:13 AM [express] GET /api/calendar/events 500 in 72ms :: {"error":"Failed to fetch calendar even…
+0|rsfm     | 9:16:13 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:16:13 AM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"f6ec8b73-01e0-48d4-ab62-4af13cde7…
+0|rsfm     | 9:16:13 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:16:13 AM [express] GET /api/calendar/events 500 in 67ms :: {"error":"Failed to fetch calendar even…
+0|rsfm     | 9:16:13 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:16:14 AM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"f6ec8b73-01e0-48d4-ab62-4af13cde7…
+0|rsfm     | 9:16:14 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:16:14 AM [express] GET /api/calendar/events 500 in 53ms :: {"error":"Failed to fetch calendar even…
+0|rsfm     | 9:16:14 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:16:24 AM [express] GET /api/presence/online-users 200 in 2ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:16:34 AM [express] GET /api/presence/online-users 304 in 5ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:16:40 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 9:16:40 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:16:44 AM [express] GET /api/messages/unread-count 304 in 5ms :: {"count":"0"}
+0|rsfm     | 9:16:44 AM [express] POST /api/presence/heartbeat 200 in 5ms :: {"success":true}
+0|rsfm     | 9:16:44 AM [express] GET /api/presence/online-users 304 in 3ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:16:50 AM [express] GET /api/auth/me 200 in 2ms :: {"user":null}
+0|rsfm     | 9:16:50 AM [express] GET /api/auth/registration-allowed 200 in 2ms :: {"allowed":false}
+0|rsfm     | 9:16:53 AM [express] POST /api/auth/login 200 in 121ms :: {"user":{"id":"f6ec8b73-01e0-48d4-ab62-4af…
+0|rsfm     | 9:16:53 AM [express] GET /api/messages/unread-count 200 in 6ms :: {"count":"0"}
+0|rsfm     | 9:16:53 AM [express] GET /api/users 200 in 3ms :: [{"id":"4f3d74d9-a69d-41d0-98b0-fd5842b57d7d","use…
+0|rsfm     | 9:16:53 AM [express] GET /api/presence/online-users 200 in 2ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:16:53 AM [express] GET /api/export-shipments 200 in 9ms :: []
+0|rsfm     | 9:16:53 AM [express] GET /api/import-shipments 200 in 11ms :: [{"id":"5b69d0b2-f093-4b30-aa79-ece03f…
+0|rsfm     | 9:16:53 AM [express] GET /api/custom-clearances 200 in 8ms :: [{"id":"567e154d-6560-4f2b-88a4-17b370…
+0|rsfm     | 9:16:53 AM [express] GET /api/import-customers 200 in 60ms :: [{"id":"d941a341-c7f7-4649-9292-f59759…
+0|rsfm     | 9:16:53 AM [express] GET /api/hauliers 200 in 10ms :: [{"id":"8892e03a-08ad-47f9-a54e-a016c3484cc6",…
+0|rsfm     | 9:16:53 AM [express] GET /api/shipping-lines 200 in 5ms :: [{"id":"27664faa-e1d1-4a9a-aefa-86d651ced…
+0|rsfm     | 9:16:53 AM [express] POST /api/presence/heartbeat 200 in 5ms :: {"success":true}
+0|rsfm     | 9:16:53 AM [express] GET /api/terminal49/check-all-containers 200 in 599ms :: {"discrepancies":[],"m…
+0|rsfm     | 9:16:56 AM [express] GET /api/calendar/events 500 in 76ms :: {"error":"Failed to fetch calendar even…
+0|rsfm     | 9:16:59 AM [express] GET /api/gmail/status 200 in 4ms :: {"connected":true,"email":"paul@rs-internat…
+0|rsfm     | 9:16:59 AM [express] GET /api/settings 200 in 6ms :: {"id":"a38f38f1-88d5-4c1d-b078-53a0d9c651e8","i…
+0|rsfm     | 9:17:03 AM [express] GET /api/presence/online-users 304 in 2ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:17:04 AM [express] POST /api/gmail/disconnect 200 in 3ms :: {"success":true}
+0|rsfm     | 9:17:04 AM [express] GET /api/auth/me 200 in 1ms :: {"user":{"id":"f6ec8b73-01e0-48d4-ab62-4af13cde7…
+0|rsfm     | 9:17:04 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:17:05 AM [express] GET /api/gmail/auth-url 200 in 5ms :: {"authUrl":"https://accounts.google.com/o…
+0|rsfm     | 9:17:14 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 9:17:29 AM [express] GET /api/gmail/callback 500 in 55ms
+0|rsfm     | 9:17:34 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:17:40 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:17:40 AM [express] POST /api/presence/heartbeat 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm     | 9:17:44 AM [express] POST /api/presence/heartbeat 200 in 5ms :: {"success":true}
+0|rsfm     | 9:18:04 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:18:13 AM [express] GET /api/presence/online-users 304 in 2ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:18:14 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:18:23 AM [express] GET /api/messages/unread-count 304 in 4ms :: {"count":"0"}
+0|rsfm     | 9:18:23 AM [express] GET /api/presence/online-users 304 in 3ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:18:33 AM [express] GET /api/presence/online-users 304 in 2ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:18:34 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:18:40 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 9:18:40 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:18:43 AM [express] GET /api/presence/online-users 200 in 5ms :: ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 9:18:44 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 9:18:53 AM [express] GET /api/messages/unread-count 304 in 2ms :: {"count":"0"}
+0|rsfm     | 9:18:53 AM [express] GET /api/presence/online-users 200 in 3ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:19:02 AM [express] GET /api/gmail/auth-url 304 in 5ms :: {"authUrl":"https://accounts.google.com/o…
+0|rsfm     | 9:19:04 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:19:34 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:19:37 AM [express] GET /api/gmail/callback 500 in 61ms
+0|rsfm     | 9:19:37 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:19:40 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 9:19:40 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:19:56 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:19:56 AM [express] GET /api/presence/online-users 304 in 2ms :: ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 9:19:56 AM [express] GET /api/import-shipments 304 in 4ms :: [{"id":"5b69d0b2-f093-4b30-aa79-ece03fc…
+0|rsfm     | 9:19:57 AM [express] GET /api/calendar/events 500 in 100ms :: {"error":"Failed to fetch calendar eve…
+0|rsfm     | 9:20:02 AM [express] GET /api/messages/unread-count 304 in 4ms :: {"count":"0"}
+0|rsfm     | 9:20:13 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:20:36 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:20:37 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:20:40 AM [express] POST /api/presence/heartbeat 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm     | 9:20:43 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 9:20:57 AM [express] GET /api/presence/online-users 200 in 3ms :: ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 9:21:04 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:21:07 AM [express] GET /api/presence/online-users 200 in 2ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:21:17 AM [express] GET /api/presence/online-users 304 in 2ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:21:23 AM [express] GET /api/messages/unread-count 304 in 5ms :: {"count":"0"}
+0|rsfm     | 9:21:27 AM [express] GET /api/presence/online-users 304 in 4ms :: ["d0aba207-0936-423c-8c9b-ccd58546…
+0|rsfm     | 9:21:34 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:21:37 AM [express] GET /api/gmail/auth-url 304 in 2ms :: {"authUrl":"https://accounts.google.com/o…
+0|rsfm     | 9:21:37 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 9:21:40 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 9:21:40 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:22:04 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:22:34 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:22:37 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:22:40 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:22:40 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 9:23:36 AM [express] POST /api/presence/heartbeat 200 in 2ms :: {"success":true}
+0|rsfm     | 9:23:37 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 9:23:40 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:23:40 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 9:23:55 AM [express] GET /api/gmail/callback 500 in 72ms
+0|rsfm     | 9:24:37 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 9:24:37 AM [express] POST /api/presence/heartbeat 200 in 3ms :: {"success":true}
+0|rsfm     | 9:24:40 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
+0|rsfm     | 9:24:40 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
