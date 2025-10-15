@@ -230,7 +230,7 @@ export class MemStorage implements IStorage {
     this.importShipments = new Map();
     this.exportShipments = new Map();
     this.customClearances = new Map();
-    this.jobRefCounter = 26001;
+    this.jobRefCounter = 48000;
     
     const MemoryStore = createMemoryStore(session);
     this.sessionStore = new MemoryStore({
