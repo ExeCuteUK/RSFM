@@ -23,7 +23,7 @@ export function ObjectStorageUploader({
   onChange,
   pendingFiles: externalPendingFiles,
   onPendingFilesChange,
-  maxFiles = 10,
+  maxFiles = 25,
   accept,
   testId = "object-storage-uploader",
   label = "Attached Files:",
@@ -72,13 +72,8 @@ export function ObjectStorageUploader({
 
         const data = await response.json();
         
-        // For job-aware uploads, store file objects {filename, path}
-        // For generic uploads, store just the path (backward compatibility)
-        if (useJobAwareUpload) {
-          uploadedPaths.push(JSON.stringify({ filename: data.filename, path: data.objectPath }));
-        } else {
-          uploadedPaths.push(data.objectPath);
-        }
+        // Always store file objects {filename, path} for proper display
+        uploadedPaths.push(JSON.stringify({ filename: data.filename, path: data.objectPath }));
       }
 
       console.log('[UPLOADER DEBUG] Upload complete, uploadedPaths:', uploadedPaths);

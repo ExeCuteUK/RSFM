@@ -83,7 +83,8 @@ export default function ExportShipments() {
 
   const { data: allShipments = [], isLoading } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
-    refetchInterval: 15000,
+    refetchInterval: 5000,
+    staleTime: 0,
   })
 
   const { data: exportReceivers = [] } = useQuery<ExportReceiver[]>({
@@ -424,8 +425,9 @@ export default function ExportShipments() {
     const files = Array.from(e.dataTransfer.files)
     if (files.length === 0) return
 
+    // Upload files sequentially to avoid race condition
     for (const file of files) {
-      uploadFile.mutate({ id: shipmentId, file, fileType: type })
+      await uploadFile.mutateAsync({ id: shipmentId, file, fileType: type })
     }
   }
 

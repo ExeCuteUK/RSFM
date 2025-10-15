@@ -78,7 +78,8 @@ export default function CustomClearances() {
 
   const { data: clearances = [], isLoading } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
-    refetchInterval: 15000,
+    refetchInterval: 5000,
+    staleTime: 0,
   })
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
@@ -960,8 +961,9 @@ export default function CustomClearances() {
     const files = Array.from(e.dataTransfer.files)
     if (files.length === 0) return
 
+    // Upload files sequentially to avoid race condition
     for (const file of files) {
-      uploadFile.mutate({ id: clearanceId, file, fileType: type })
+      await uploadFile.mutateAsync({ id: clearanceId, file, fileType: type })
     }
   }
 
