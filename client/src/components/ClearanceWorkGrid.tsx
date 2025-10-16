@@ -76,7 +76,7 @@ export function ClearanceWorkGrid() {
 
   const { data: customClearances = [] } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
-    refetchInterval: 5000,
+    refetchInterval: 10000,
     refetchOnWindowFocus: true,
   })
 

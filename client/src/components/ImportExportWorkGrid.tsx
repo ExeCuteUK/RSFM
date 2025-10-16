@@ -94,13 +94,13 @@ export function ImportExportWorkGrid() {
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
-    refetchInterval: 5000,
+    refetchInterval: 10000,
     refetchOnWindowFocus: true,
   })
 
   const { data: exportShipments = [] } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
-    refetchInterval: 5000,
+    refetchInterval: 10000,
     refetchOnWindowFocus: true,
   })
 

@@ -126,19 +126,19 @@ export default function Dashboard() {
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
-    refetchInterval: editingCell ? false : 5000,
+    refetchInterval: editingCell ? false : 10000,
     refetchOnWindowFocus: !editingCell,
   })
 
   const { data: exportShipments = [] } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
-    refetchInterval: editingCell ? false : 5000,
+    refetchInterval: editingCell ? false : 10000,
     refetchOnWindowFocus: !editingCell,
   })
 
   const { data: customClearances = [] } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
-    refetchInterval: editingCell ? false : 5000,
+    refetchInterval: editingCell ? false : 10000,
     refetchOnWindowFocus: !editingCell,
   })
 
