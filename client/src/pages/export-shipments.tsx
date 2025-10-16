@@ -32,6 +32,7 @@ import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustom
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { useEmail } from "@/contexts/EmailContext"
+import { PDFViewer } from "@/components/pdf-viewer"
 
 // Helper functions for file objects
 const getFileName = (file: any): string => {
@@ -60,6 +61,7 @@ export default function ExportShipments() {
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
   const [invoiceSelectionDialog, setInvoiceSelectionDialog] = useState<{ shipment: ExportShipment; invoices: Invoice[] } | null>(null)
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const { toast} = useToast()
   const [location, setLocation] = useLocation()
   
@@ -599,7 +601,7 @@ export default function ExportShipments() {
       // Build personalized greeting
       const jobContactNameArray = Array.isArray(shipment.jobContactName)
         ? shipment.jobContactName.filter(Boolean)
-        : (shipment.jobContactName ? shipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
+        : (shipment.jobContactName ? shipment.jobContactName.split('/').map((n: string) => n.trim()).filter(Boolean) : [])
       
       let greeting = "Hi there"
       if (jobContactNameArray.length === 1) {
@@ -636,13 +638,18 @@ export default function ExportShipments() {
       // Build body with agent information if present
       let body = `${greeting},\n\nPlease find attached our ${documentText}.`
       
-      // Add agent information if present
-      const agentContactNameArray = Array.isArray(shipment.agentContactName)
-        ? shipment.agentContactName.filter(Boolean)
-        : (shipment.agentContactName ? shipment.agentContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
-      const agentEmailArray = Array.isArray(shipment.agentEmail)
-        ? shipment.agentEmail.filter(Boolean)
-        : (shipment.agentEmail ? shipment.agentEmail.split(',').map(e => e.trim()).filter(Boolean) : [])
+      // Add agent information if present (get from customer, not shipment)
+      const customer = exportCustomers.find(c => c.id === shipment.destinationCustomerId)
+      const agentContactNameArray = customer?.agentContactName
+        ? (Array.isArray(customer.agentContactName)
+          ? customer.agentContactName.filter(Boolean)
+          : customer.agentContactName.split('/').map((n: string) => n.trim()).filter(Boolean))
+        : []
+      const agentEmailArray = customer?.agentEmail
+        ? (Array.isArray(customer.agentEmail)
+          ? customer.agentEmail.filter(Boolean)
+          : customer.agentEmail.split(',').map((e: string) => e.trim()).filter(Boolean))
+        : []
       
       if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
         body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
@@ -705,7 +712,7 @@ export default function ExportShipments() {
       const agentAccountsEmail = customer.agentAccountsEmail?.[0]
       const customerAccountsEmail = customer.accountsEmail?.[0]
       const agentEmailArray = Array.isArray(customer.agentEmail) ? customer.agentEmail : (customer.agentEmail ? [customer.agentEmail] : [])
-      const customerEmailArray = Array.isArray(customer.email) ? customer.email : (customer.email ? customer.email.split(',').map(e => e.trim()) : [])
+      const customerEmailArray = Array.isArray(customer.email) ? customer.email : (customer.email ? customer.email.split(',').map((e: string) => e.trim()) : [])
       
       if (agentAccountsEmail) {
         toEmail = agentAccountsEmail
@@ -751,10 +758,10 @@ export default function ExportShipments() {
     
     const contactNameArray = Array.isArray(contactNameField)
       ? contactNameField.filter(Boolean)
-      : (contactNameField ? contactNameField.split('/').map(n => n.trim()).filter(Boolean) : [])
+      : (contactNameField ? contactNameField.split('/').map((n: string) => n.trim()).filter(Boolean) : [])
     
     // Extract first names only
-    const firstNames = contactNameArray.map(name => name.split(' ')[0])
+    const firstNames = contactNameArray.map((name: string) => name.split(' ')[0])
     
     let greeting = "Hi there"
     if (firstNames.length === 1) {
@@ -1591,7 +1598,8 @@ Hope all is OK.`
                                   }
                                   openWindow({ 
                                     type: 'customer-invoice', 
-                                    id: `invoice-${shipment.id}-${Date.now()}`, 
+                                    id: `invoice-${shipment.id}-${Date.now()}`,
+                                    title: `New Invoice - Job #${shipment.jobRef}`,
                                     payload: { job: shipment, jobType: 'export' } 
                                   })
                                 }}
@@ -1626,7 +1634,8 @@ Hope all is OK.`
                                       <button
                                         onClick={() => openWindow({ 
                                           type: 'customer-invoice', 
-                                          id: `invoice-edit-${invoice.id}-${Date.now()}`, 
+                                          id: `invoice-edit-${invoice.id}-${Date.now()}`,
+                                          title: `Edit Invoice #${invoice.invoiceNumber}`,
                                           payload: { job: shipment, jobType: 'export', existingInvoice: invoice } 
                                         })}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity"
@@ -2376,6 +2385,22 @@ Hope all is OK.`
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PDF Viewer Dialog */}
+      <Dialog open={!!viewingPdf} onOpenChange={(open) => !open && setViewingPdf(null)}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0" aria-describedby="pdf-viewer-description">
+          <DialogHeader className="px-6 pt-6 pb-4">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {viewingPdf?.name}
+            </DialogTitle>
+            <p id="pdf-viewer-description" className="sr-only">PDF document viewer</p>
+          </DialogHeader>
+          <div className="flex-1 px-6 pb-6 overflow-hidden">
+            {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} onClose={() => setViewingPdf(null)} />}
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   )
