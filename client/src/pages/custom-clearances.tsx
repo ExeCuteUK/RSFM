@@ -79,7 +79,7 @@ export default function CustomClearances() {
 
   const { data: clearances = [], isLoading } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
-    refetchInterval: 5000,
+    refetchInterval: 10000,
     staleTime: 0,
   })
 
