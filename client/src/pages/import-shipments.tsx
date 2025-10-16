@@ -166,6 +166,7 @@ export default function ImportShipments() {
       return map
     },
     enabled: jobRefs.length > 0,
+    refetchInterval: 10000,
   })
 
   const getCustomerName = (customerId: string | null) => {

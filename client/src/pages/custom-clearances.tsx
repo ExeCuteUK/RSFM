@@ -144,6 +144,7 @@ export default function CustomClearances() {
       return map
     },
     enabled: jobRefs.length > 0,
+    refetchInterval: 10000,
   })
 
   const createClearance = useMutation({
