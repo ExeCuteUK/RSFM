@@ -375,6 +375,8 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       ...data,
       transportDocuments: normalizedTransportDocuments,
       clearanceDocuments: normalizedClearanceDocuments,
+      // Auto-fill Trailer/Container Number with "TBC" if blank
+      trailerOrContainerNumber: data.trailerOrContainerNumber?.trim() || "TBC",
     };
 
     // Check if Job Hold is ticked - show confirmation

@@ -471,6 +471,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       ...data,
       proofOfDelivery: normalizedProofOfDelivery,
       attachments: normalizedAttachments,
+      // Auto-fill Trailer Number with "TBC" if blank
+      trailerNumber: data.trailerNumber?.trim() || "TBC",
     };
 
     // Check if Job Hold is ticked - show confirmation

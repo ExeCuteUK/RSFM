@@ -67,7 +67,6 @@ interface ContainerCheckResponse {
 
 export function ContainerTrackingNotification() {
   const [, setLocation] = useLocation()
-  const [isDismissed, setIsDismissed] = useState(false)
   const { user } = useAuth()
 
   // Load check data - only refetch when explicitly triggered
@@ -77,6 +76,27 @@ export function ContainerTrackingNotification() {
     refetchOnMount: false, // Don't auto-refetch on mount
     staleTime: Infinity, // Keep data fresh indefinitely (only refetch on explicit invalidation)
   })
+
+  // Generate a hash of discrepancies to detect changes
+  const discrepanciesHash = useMemo(() => {
+    if (!data?.discrepancies || data.discrepancies.length === 0) {
+      return 'all-good'
+    }
+    // Create a stable hash from discrepancy details
+    const hashString = data.discrepancies.map(d => 
+      `${d.containerNumber}|${JSON.stringify(d.etaDiscrepancy)}|${JSON.stringify(d.portDiscrepancy)}|${JSON.stringify(d.vesselDiscrepancy)}|${JSON.stringify(d.dispatchDiscrepancy)}|${JSON.stringify(d.deliveryDiscrepancy)}`
+    ).join('::')
+    return hashString
+  }, [data?.discrepancies])
+
+  // Get today's date as a key
+  const todayKey = useMemo(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  }, [])
+
+  // Check if this notification was dismissed today - start as false until data loads
+  const [isDismissed, setIsDismissed] = useState(false)
 
   // Extract first name from user's full name
   const firstName = user?.fullName?.split(' ')[0] || ''
@@ -113,15 +133,26 @@ export function ContainerTrackingNotification() {
     return signOffs[Math.floor(Math.random() * signOffs.length)]
   }, [data?.allGood, data?.discrepancies?.length])
 
-  // Reset dismissal when data changes (after updates)
+  // Handle dismissal state when data loads or changes
   useEffect(() => {
-    if (data) {
-      setIsDismissed(false)
+    if (data && discrepanciesHash) {
+      const storageKey = `container-tracking-dismissed-${todayKey}`
+      const dismissedHash = localStorage.getItem(storageKey)
+      
+      // If the stored hash matches current hash, keep it dismissed
+      if (dismissedHash === discrepanciesHash) {
+        setIsDismissed(true)
+      } else {
+        // If discrepancies changed or no match, show the notification
+        setIsDismissed(false)
+      }
     }
-  }, [data?.allGood, data?.discrepancies?.length])
+  }, [data, discrepanciesHash, todayKey])
 
   const handleDismiss = () => {
-    // Only dismiss for current session - will re-appear on next dashboard visit
+    // Save dismissal to localStorage with today's date and current discrepancy hash
+    const storageKey = `container-tracking-dismissed-${todayKey}`
+    localStorage.setItem(storageKey, discrepanciesHash)
     setIsDismissed(true)
   }
 

@@ -436,6 +436,8 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
       ...data,
       proofOfDelivery: normalizedProofOfDelivery,
       attachments: normalizedAttachments,
+      // Auto-fill Trailer/Container Number with "TBC" if blank
+      trailerContainerNumber: data.trailerContainerNumber?.trim() || "TBC",
     };
 
     onSubmit(finalData);
