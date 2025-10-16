@@ -303,16 +303,16 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
     if (selectedCustomer && (!defaultValues?.jobContactName || defaultValues.jobContactName.length === 0) && (!defaultValues?.jobContactEmail || defaultValues.jobContactEmail.length === 0)) {
       // Prioritize agent contact name if available, otherwise use contact name
       if (selectedCustomer.agentContactName && selectedCustomer.agentContactName.length > 0) {
-        form.setValue("jobContactName", [selectedCustomer.agentContactName[0]])
+        form.setValue("jobContactName", selectedCustomer.agentContactName)
       } else if (selectedCustomer.contactName && selectedCustomer.contactName.length > 0) {
-        form.setValue("jobContactName", [selectedCustomer.contactName[0]])
+        form.setValue("jobContactName", selectedCustomer.contactName)
       }
 
       // Prioritize agent email if agent name is present, otherwise use contact email
       if (selectedCustomer.agentName && selectedCustomer.agentEmail && selectedCustomer.agentEmail.length > 0) {
-        form.setValue("jobContactEmail", [selectedCustomer.agentEmail[0]])
+        form.setValue("jobContactEmail", selectedCustomer.agentEmail)
       } else if (selectedCustomer.email && selectedCustomer.email.length > 0) {
-        form.setValue("jobContactEmail", [selectedCustomer.email[0]])
+        form.setValue("jobContactEmail", selectedCustomer.email)
       }
     }
   }, [selectedCustomer, defaultValues?.jobContactName, defaultValues?.jobContactEmail, form])
