@@ -102,6 +102,7 @@ export default function CustomClearances() {
   // Fetch all invoices
   const { data: allInvoices = [] } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
+    refetchInterval: 10000,
   })
 
   const { data: hauliers = [] } = useQuery<any[]>({

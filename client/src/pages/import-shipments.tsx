@@ -136,6 +136,7 @@ export default function ImportShipments() {
   // Fetch all invoices
   const { data: allInvoices = [] } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
+    refetchInterval: 10000,
   })
 
   // Fetch shared documents for all import shipments

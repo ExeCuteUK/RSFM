@@ -108,6 +108,7 @@ export default function ExportShipments() {
   // Fetch all invoices
   const { data: allInvoices = [] } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
+    refetchInterval: 10000,
   })
 
   const { data: hauliers = [] } = useQuery<Haulier[]>({
