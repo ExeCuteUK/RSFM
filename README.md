@@ -1,6 +1,6 @@
 # R.S Freight Manager - Freight Management Suite
 
-**Version:** 4.2.7 Beta
+**Version:** 4.2.7b Beta
 
 A comprehensive web-based enterprise solution for logistics operations, designed to manage import/export shipments, customs clearances, customer records, invoicing, and freight rate calculations. This application replaces the legacy VB6 RSFM system with a modern, scalable web platform.
 
