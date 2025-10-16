@@ -24,7 +24,7 @@ export function UserMenu() {
 
   const { data: unreadCount = 0 } = useQuery<number>({
     queryKey: ["/api/messages/unread-count"],
-    refetchInterval: 30000,
+    refetchInterval: 10000,
   });
 
   if (!user) {

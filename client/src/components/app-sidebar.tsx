@@ -106,7 +106,7 @@ export function AppSidebar() {
   
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread-count"],
-    refetchInterval: 30000,
+    refetchInterval: 10000,
   })
   
   const unreadCount = unreadData?.count || 0
