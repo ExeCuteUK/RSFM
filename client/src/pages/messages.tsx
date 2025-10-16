@@ -68,6 +68,7 @@ export default function Messages() {
 
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
+    refetchInterval: 10000,
   });
 
   const form = useForm<MessageFormData>({

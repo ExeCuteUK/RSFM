@@ -25,6 +25,7 @@ export function OtherUsersMenu() {
 
   const { data: allUsers = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
+    refetchInterval: 10000,
   });
 
   const { data: onlineUserIds = [] } = useQuery<string[]>({
