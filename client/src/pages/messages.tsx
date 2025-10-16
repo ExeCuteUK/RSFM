@@ -63,6 +63,7 @@ export default function Messages() {
 
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
+    refetchInterval: 10000,
   });
 
   const { data: users = [] } = useQuery<User[]>({
