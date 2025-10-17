@@ -579,7 +579,7 @@ export default function CustomClearances() {
       // Get clearance document paths first to determine body text
       const clearanceDocObjects = clearance.clearanceDocuments || []
       const clearanceFiles = clearanceDocObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
         name: getFileName(file)
       })).filter(doc => doc.url)
       
@@ -680,7 +680,7 @@ export default function CustomClearances() {
       
       // Get clearance document paths with proper filenames
       const clearanceFiles = clearance.clearanceDocuments.map(doc => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}&filename=${encodeURIComponent(getFileName(doc))}`,
         name: getFileName(doc)
       }))
       
@@ -887,7 +887,7 @@ export default function CustomClearances() {
 
     // Only attach clearance documents (exclude transport docs), formatted with url and name properties
     const clearanceFiles = clearance.clearanceDocuments?.map(doc => ({
-      url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}`,
+      url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}&filename=${encodeURIComponent(getFileName(doc))}`,
       name: getFileName(doc)
     })) || []
 
@@ -1274,7 +1274,7 @@ export default function CustomClearances() {
       // Get transport documents with original filenames - work directly with file objects
       const transportDocObjects = clearance.transportDocuments || []
       const transportDocs = transportDocObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
         name: getFileName(file)
       })).filter(doc => doc.url)
       
@@ -1403,7 +1403,7 @@ export default function CustomClearances() {
       // Get transport documents with original filenames - work directly with file objects
       const attachmentObjects = clearance.transportDocuments || []
       const transportDocs = attachmentObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
         name: getFileName(file)
       })).filter(doc => doc.url)
       

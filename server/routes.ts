@@ -4855,18 +4855,30 @@ ${messageText}
           
           fileBuffer = Buffer.from(await fileResponse.arrayBuffer());
           
-          // Extract filename from URL - handle Google Drive download URLs with path parameter
+          // Extract filename from URL
           try {
             const url = new URL(attachmentUrl, 'http://dummy.com');
-            const pathParam = url.searchParams.get('path');
             
-            if (pathParam) {
-              // Path parameter contains JSON with filename
-              const pathData = JSON.parse(pathParam);
-              filename = pathData.filename || 'attachment';
+            // First, check for explicit filename parameter
+            const filenameParam = url.searchParams.get('filename');
+            if (filenameParam) {
+              filename = filenameParam;
             } else {
-              // Fallback to last segment of URL path
-              filename = attachmentUrl.split('/').pop()?.split('?')[0] || 'attachment';
+              // Try path parameter (may contain JSON)
+              const pathParam = url.searchParams.get('path');
+              if (pathParam) {
+                try {
+                  // Attempt to parse as JSON (legacy format)
+                  const pathData = JSON.parse(pathParam);
+                  filename = pathData.filename || 'attachment';
+                } catch {
+                  // Not JSON, just a path string - extract filename from path
+                  filename = pathParam.split('/').pop() || 'attachment';
+                }
+              } else {
+                // Fallback to last segment of URL path
+                filename = attachmentUrl.split('/').pop()?.split('?')[0] || 'attachment';
+              }
             }
           } catch (error) {
             // If parsing fails, use simple extraction

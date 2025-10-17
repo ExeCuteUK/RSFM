@@ -1401,7 +1401,7 @@ Hope all is OK.`
       // Get POD files with original filenames - work directly with file objects
       const podFileObjects = shipment.proofOfDelivery || []
       const podFiles = podFileObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
         name: getFileName(file)
       })).filter(doc => doc.url)
       
@@ -1849,7 +1849,7 @@ Hope all is OK.`
       // Get transport documents with original filenames - work directly with file objects
       const attachmentObjects = shipment.attachments || []
       const transportDocs = attachmentObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}`,
+        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
         name: getFileName(file)
       })).filter(doc => doc.url)
       
