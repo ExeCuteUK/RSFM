@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, Truck, RefreshCw, Paperclip, StickyNote, X, Search, ChevronDown, CalendarCheck, PackageCheck, FileCheck, DollarSign, FileText, Container, Plane, Package, User, Ship, Calendar, Box, MapPin, PoundSterling, ClipboardList, ClipboardCheck, Download, FileArchive, Send, Shield, ChevronLeft, ChevronRight, Receipt, Check, Mail } from "lucide-react"
 import { ExportShipmentForm } from "@/components/export-shipment-form"
+import { StatusToggleButton } from "@/components/StatusToggleButton"
 import type { ExportShipment, InsertExportShipment, ExportReceiver, ExportCustomer, CustomClearance, ClearanceAgent, Haulier, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
@@ -553,12 +554,28 @@ export default function ExportShipments() {
     updateAdviseClearanceToAgentStatus.mutate({ id, status })
   }
 
+  const handleAdviseClearanceToAgentStatusToggle = (id: string, currentStatus: number | null) => {
+    // If green (3) or blocked (2), clear to yellow (1). Otherwise toggle to green (3)
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateAdviseClearanceToAgentStatus.mutate({ id, status: newStatus })
+  }
+
   const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
     updateInvoiceCustomerStatus.mutate({ id, status })
   }
 
+  const handleInvoiceCustomerStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateInvoiceCustomerStatus.mutate({ id, status: newStatus })
+  }
+
   const handleSendPodToCustomerStatusUpdate = (id: string, status: number) => {
     updateSendPodToCustomerStatus.mutate({ id, status })
+  }
+
+  const handleSendPodToCustomerStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateSendPodToCustomerStatus.mutate({ id, status: newStatus })
   }
 
   const handleSendInvoiceToCustomerEmail = (shipment: ExportShipment) => {
@@ -1366,28 +1383,11 @@ Hope all is OK.`
                             {shipment.adviseClearanceToAgentStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleAdviseClearanceToAgentStatusUpdate(shipment.id, 1)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.adviseClearanceToAgentStatusIndicator === 1 || shipment.adviseClearanceToAgentStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover:bg-green-300 hover:border-green-400 transition-colors'
-                            }`}
-                            data-testid={`button-advise-clearance-status-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <button
-                            onClick={() => handleAdviseClearanceToAgentStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.adviseClearanceToAgentStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover:bg-green-300 hover:border-green-400 transition-colors'
-                            }`}
-                            data-testid={`button-advise-clearance-status-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.adviseClearanceToAgentStatusIndicator}
+                          onToggle={() => handleAdviseClearanceToAgentStatusToggle(shipment.id, shipment.adviseClearanceToAgentStatusIndicator)}
+                          testId={`button-advise-clearance-toggle-${shipment.id}`}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1411,28 +1411,11 @@ Hope all is OK.`
                           {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 1 || shipment.invoiceCustomerStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover:bg-green-300 hover:border-green-400 transition-colors'
-                          }`}
-                          data-testid={`button-invoice-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.invoiceCustomerStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover:bg-green-300 hover:border-green-400 transition-colors'
-                          }`}
-                          data-testid={`button-invoice-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
-                      </div>
+                      <StatusToggleButton
+                        currentStatus={shipment.invoiceCustomerStatusIndicator}
+                        onToggle={() => handleInvoiceCustomerStatusToggle(shipment.id, shipment.invoiceCustomerStatusIndicator)}
+                        testId={`button-invoice-toggle-${shipment.id}`}
+                      />
                     </div>
                   </div>
                   <div className="mt-1">
@@ -1451,28 +1434,11 @@ Hope all is OK.`
                           {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === 1 || shipment.sendPodToCustomerStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover:bg-green-300 hover:border-green-400 transition-colors'
-                          }`}
-                          data-testid={`button-send-pod-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <button
-                          onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.sendPodToCustomerStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover:bg-green-300 hover:border-green-400 transition-colors'
-                          }`}
-                          data-testid={`button-send-pod-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
-                      </div>
+                      <StatusToggleButton
+                        currentStatus={shipment.sendPodToCustomerStatusIndicator}
+                        onToggle={() => handleSendPodToCustomerStatusToggle(shipment.id, shipment.sendPodToCustomerStatusIndicator)}
+                        testId={`button-send-pod-toggle-${shipment.id}`}
+                      />
                     </div>
                   </div>
                   {(() => {

@@ -762,7 +762,8 @@ export default function ImportShipments() {
   }
 
   const handleClearanceStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    // If green (3) or blocked (2), clear to yellow (1). Otherwise toggle to green (3)
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateClearanceStatus.mutate({ id, status: newStatus })
   }
 
@@ -771,7 +772,7 @@ export default function ImportShipments() {
   }
 
   const handleDeliveryBookedStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateDeliveryBookedStatus.mutate({ id, status: newStatus })
   }
 
@@ -780,7 +781,7 @@ export default function ImportShipments() {
   }
 
   const handleHaulierBookingStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateHaulierBookingStatus.mutate({ id, status: newStatus })
   }
 
@@ -789,7 +790,7 @@ export default function ImportShipments() {
   }
 
   const handleContainerReleaseStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateContainerReleaseStatus.mutate({ id, status: newStatus })
   }
 
@@ -798,7 +799,7 @@ export default function ImportShipments() {
   }
 
   const handleInvoiceCustomerStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateInvoiceCustomerStatus.mutate({ id, status: newStatus })
   }
 
@@ -807,7 +808,7 @@ export default function ImportShipments() {
   }
 
   const handleSendPodToCustomerStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateSendPodToCustomerStatus.mutate({ id, status: newStatus })
   }
 
@@ -816,7 +817,7 @@ export default function ImportShipments() {
   }
 
   const handleSendHaulierEadStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateSendHaulierEadStatus.mutate({ id, status: newStatus })
   }
 
@@ -825,7 +826,7 @@ export default function ImportShipments() {
   }
 
   const handleSendCustomerGvmsStatusToggle = (id: string, currentStatus: number | null) => {
-    const newStatus = currentStatus === 3 ? 1 : 3
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
     updateSendCustomerGvmsStatus.mutate({ id, status: newStatus })
   }
 

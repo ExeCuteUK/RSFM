@@ -39,7 +39,8 @@ export function StatusToggleButton({
 }: StatusToggleButtonProps) {
   const [isAnimating, setIsAnimating] = useState(false)
 
-  // Determine current status (default to 1 if null)
+  // Determine current status: treat anything except 3 as "to do" (yellow)
+  // This handles status 1, 2 (blocked/orange), and null correctly
   const status: StatusValue = (currentStatus === 3 ? 3 : 1) as StatusValue
   const config = STATUS_CONFIG[status]
 

@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CustomClearanceForm } from "@/components/custom-clearance-form"
+import { StatusToggleButton } from "@/components/StatusToggleButton"
 import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCustomer, ExportReceiver, JobFileGroup, ClearanceAgent, ExportShipment, Invoice } from "@shared/schema"
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
@@ -490,6 +491,48 @@ export default function CustomClearances() {
 
   const handleSendHaulierClearanceDocStatusUpdate = (id: string, status: number) => {
     updateSendHaulierClearanceDocStatus.mutate({ id, status })
+  }
+
+  // Toggle handlers for status indicators
+  const handleAdviseAgentStatusToggle = (id: string, currentStatus: number | null) => {
+    // If green (3) or blocked (2), clear to yellow (1). Otherwise toggle to green (3)
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateAdviseAgentStatus.mutate({ id, status: newStatus })
+  }
+
+  const handleSendHaulierEadStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateSendHaulierEadStatus.mutate({ id, status: newStatus })
+  }
+
+  const handleSendCustomerGvmsStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateSendCustomerGvmsStatus.mutate({ id, status: newStatus })
+  }
+
+  const handleSendCustomerEadStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateSendCustomerEadStatus.mutate({ id, status: newStatus })
+  }
+
+  const handleSendHaulierClearanceDocStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateSendHaulierClearanceDocStatus.mutate({ id, status: newStatus })
+  }
+
+  const handleSendEntryToCustomerStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateSendEntryToCustomerStatus.mutate({ id, status: newStatus })
+  }
+
+  const handleInvoiceCustomerStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateInvoiceStatus.mutate({ id, status: newStatus })
+  }
+
+  const handleSendClearedEntryStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = (currentStatus === 3 || currentStatus === 2) ? 1 : 3
+    updateSendClearedEntryStatus.mutate({ id, status: newStatus })
   }
 
   const handleSendInvoiceToCustomerEmail = (clearance: CustomClearance) => {
@@ -1942,28 +1985,11 @@ export default function CustomClearances() {
                               {clearance.adviseAgentStatusIndicator === 3 && <Check className="h-3 w-3" />}
                             </p>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 1)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.adviseAgentStatusIndicator === 1 || clearance.adviseAgentStatusIndicator === null
-                                  ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                  : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                              }`}
-                              data-testid={`button-advise-yellow-${clearance.id}`}
-                              title="To Do"
-                            />
-                            <button
-                              onClick={() => handleAdviseAgentStatusUpdate(clearance.id, 3)}
-                              className={`h-5 w-5 rounded border-2 transition-all ${
-                                clearance.adviseAgentStatusIndicator === 3
-                                  ? 'bg-green-400 border-green-500 scale-110'
-                                  : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                              }`}
-                              data-testid={`button-advise-green-${clearance.id}`}
-                              title="Completed"
-                            />
-                          </div>
+                          <StatusToggleButton
+                            currentStatus={clearance.adviseAgentStatusIndicator}
+                            onToggle={() => handleAdviseAgentStatusToggle(clearance.id, clearance.adviseAgentStatusIndicator)}
+                            testId={`button-advise-agent-toggle-${clearance.id}`}
+                          />
                         </div>
 
                         {clearance.jobType === 'export' && clearance.clearanceType !== 'Inventory Linked' && (
@@ -1981,28 +2007,11 @@ export default function CustomClearances() {
                                 {clearance.sendHaulierEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 1)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendHaulierEadStatusIndicator === 1 || clearance.sendHaulierEadStatusIndicator === null
-                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                    : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-send-haulier-ead-yellow-${clearance.id}`}
-                                title="To Do"
-                              />
-                              <button
-                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 3)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendHaulierEadStatusIndicator === 3
-                                    ? 'bg-green-400 border-green-500 scale-110'
-                                    : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-send-haulier-ead-green-${clearance.id}`}
-                                title="Completed"
-                              />
-                            </div>
+                            <StatusToggleButton
+                              currentStatus={clearance.sendHaulierEadStatusIndicator}
+                              onToggle={() => handleSendHaulierEadStatusToggle(clearance.id, clearance.sendHaulierEadStatusIndicator)}
+                              testId={`button-send-haulier-ead-toggle-${clearance.id}`}
+                            />
                           </div>
                         )}
 
@@ -2021,28 +2030,11 @@ export default function CustomClearances() {
                                 {clearance.sendHaulierEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 1)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendHaulierEadStatusIndicator === 1 || clearance.sendHaulierEadStatusIndicator === null
-                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                    : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-send-haulier-gvms-yellow-${clearance.id}`}
-                                title="To Do"
-                              />
-                              <button
-                                onClick={() => handleSendHaulierEadStatusUpdate(clearance.id, 3)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendHaulierEadStatusIndicator === 3
-                                    ? 'bg-green-400 border-green-500 scale-110'
-                                    : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-send-haulier-gvms-green-${clearance.id}`}
-                                title="Completed"
-                              />
-                            </div>
+                            <StatusToggleButton
+                              currentStatus={clearance.sendHaulierEadStatusIndicator}
+                              onToggle={() => handleSendHaulierEadStatusToggle(clearance.id, clearance.sendHaulierEadStatusIndicator)}
+                              testId={`button-send-haulier-gvms-toggle-${clearance.id}`}
+                            />
                           </div>
                         )}
 
@@ -2062,28 +2054,11 @@ export default function CustomClearances() {
                                 {clearance.sendCustomerGvmsStatusIndicator === 3 && <Check className="h-3 w-3" />}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleSendCustomerGvmsStatusUpdate(clearance.id, 1)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendCustomerGvmsStatusIndicator === 1 || clearance.sendCustomerGvmsStatusIndicator === null
-                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                    : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-send-customer-gvms-yellow-${clearance.id}`}
-                                title="To Do"
-                              />
-                              <button
-                                onClick={() => handleSendCustomerGvmsStatusUpdate(clearance.id, 3)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.sendCustomerGvmsStatusIndicator === 3
-                                    ? 'bg-green-400 border-green-500 scale-110'
-                                    : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-send-customer-gvms-green-${clearance.id}`}
-                                title="Completed"
-                              />
-                            </div>
+                            <StatusToggleButton
+                              currentStatus={clearance.sendCustomerGvmsStatusIndicator}
+                              onToggle={() => handleSendCustomerGvmsStatusToggle(clearance.id, clearance.sendCustomerGvmsStatusIndicator)}
+                              testId={`button-send-customer-gvms-toggle-${clearance.id}`}
+                            />
                           </div>
                         )}
 
@@ -2106,28 +2081,11 @@ export default function CustomClearances() {
                                 {clearance.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 1)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.invoiceCustomerStatusIndicator === 1 || clearance.invoiceCustomerStatusIndicator === null
-                                    ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                    : 'bg-yellow-200 border-yellow-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-invoice-yellow-${clearance.id}`}
-                                title="To Do"
-                              />
-                              <button
-                                onClick={() => handleInvoiceStatusUpdate(clearance.id, 3)}
-                                className={`h-5 w-5 rounded border-2 transition-all ${
-                                  clearance.invoiceCustomerStatusIndicator === 3
-                                    ? 'bg-green-400 border-green-500 scale-110'
-                                    : 'bg-green-200 border-green-300 hover:bg-purple-300 hover:border-purple-400 transition-colors'
-                                }`}
-                                data-testid={`button-invoice-green-${clearance.id}`}
-                                title="Completed"
-                              />
-                            </div>
+                            <StatusToggleButton
+                              currentStatus={clearance.invoiceCustomerStatusIndicator}
+                              onToggle={() => handleInvoiceCustomerStatusToggle(clearance.id, clearance.invoiceCustomerStatusIndicator)}
+                              testId={`button-invoice-customer-toggle-${clearance.id}`}
+                            />
                           </div>
                         )}
                       </div>
