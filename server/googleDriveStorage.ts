@@ -296,7 +296,7 @@ export class GoogleDriveStorageService {
   }
 
   // Download a file and stream it to response
-  async downloadObject(fileId: string, res: Response, cacheTtlSec: number = 3600) {
+  async downloadObject(fileId: string, res: Response, cacheTtlSec: number = 3600, customFilename?: string) {
     try {
       const drive = await getGoogleDriveClient();
 
@@ -307,11 +307,18 @@ export class GoogleDriveStorageService {
         supportsAllDrives: true
       });
 
-      res.set({
+      const headers: Record<string, string> = {
         'Content-Type': metadata.data.mimeType || 'application/octet-stream',
         'Content-Length': metadata.data.size || '0',
         'Cache-Control': `private, max-age=${cacheTtlSec}`,
-      });
+      };
+
+      // Set Content-Disposition with filename if provided
+      if (customFilename) {
+        headers['Content-Disposition'] = `attachment; filename="${customFilename}"`;
+      }
+
+      res.set(headers);
 
       // Download file content
       const response = await drive.files.get(

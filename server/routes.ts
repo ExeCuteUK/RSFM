@@ -3117,7 +3117,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract fileId from path (format: /objects/fileId)
       const fileId = decodedPath.replace('/objects/', '');
       
-      await storageService.downloadObject(fileId, res);
+      // Check for optional filename query parameter
+      const customFilename = req.query.filename as string | undefined;
+      
+      await storageService.downloadObject(fileId, res, 3600, customFilename);
     } catch (error) {
       console.error("Error downloading object:", error);
       if (error instanceof ObjectNotFoundError) {
