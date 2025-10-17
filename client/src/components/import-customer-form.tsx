@@ -48,7 +48,19 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
   const [newAgentAccountsEmail, setNewAgentAccountsEmail] = useState("")
   const [newContactName, setNewContactName] = useState("")
   const [newAgentContactName, setNewAgentContactName] = useState("")
+  const [newSupplier, setNewSupplier] = useState("")
   const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
+  
+  // Normalize defaultValues to handle legacy string data
+  const normalizedDefaults = defaultValues ? {
+    ...defaultValues,
+    // Convert legacy string supplier to array
+    defaultSuppliersName: defaultValues.defaultSuppliersName 
+      ? (Array.isArray(defaultValues.defaultSuppliersName) 
+          ? defaultValues.defaultSuppliersName 
+          : [defaultValues.defaultSuppliersName])
+      : undefined
+  } : undefined
   
   const form = useForm<InsertImportCustomer>({
     resolver: zodResolver(insertImportCustomerSchema),
@@ -72,9 +84,9 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
       vatPaymentMethod: "",
       clearanceAgentDetails: "",
       defaultDeliveryAddress: "",
-      defaultSuppliersName: "",
+      defaultSuppliersName: [],
       bookingInDetails: "",
-      ...defaultValues
+      ...normalizedDefaults
     },
   })
 
@@ -85,6 +97,9 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
   const agentAccountsEmails = form.watch("agentAccountsEmail") || []
   const contactNames = form.watch("contactName") || []
   const agentContactNames = form.watch("agentContactName") || []
+  const rawSuppliers = form.watch("defaultSuppliersName")
+  // Handle both string (old data) and array (after migration) formats
+  const suppliers = Array.isArray(rawSuppliers) ? rawSuppliers : (rawSuppliers ? [rawSuppliers] : [])
 
   const addContactName = () => {
     if (!newContactName.trim()) return
@@ -170,6 +185,24 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
     form.setValue("agentAccountsEmail", currentEmails.filter(e => e !== email))
   }
 
+  const addSupplier = () => {
+    if (!newSupplier.trim()) return
+    const rawSuppliers = form.getValues("defaultSuppliersName")
+    // Handle both string (old data) and array (after migration) formats
+    const currentSuppliers = Array.isArray(rawSuppliers) ? rawSuppliers : (rawSuppliers ? [rawSuppliers] : [])
+    if (!currentSuppliers.includes(newSupplier.trim())) {
+      form.setValue("defaultSuppliersName", [...currentSuppliers, newSupplier.trim()])
+      setNewSupplier("")
+    }
+  }
+
+  const removeSupplier = (supplier: string) => {
+    const rawSuppliers = form.getValues("defaultSuppliersName")
+    // Handle both string (old data) and array (after migration) formats
+    const currentSuppliers = Array.isArray(rawSuppliers) ? rawSuppliers : (rawSuppliers ? [rawSuppliers] : [])
+    form.setValue("defaultSuppliersName", currentSuppliers.filter(s => s !== supplier))
+  }
+
   const hasUnsavedFields = () => {
     return (
       newContactName.trim() !== "" ||
@@ -177,7 +210,8 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
       newEmail.trim() !== "" ||
       newAccountsEmail.trim() !== "" ||
       newAgentEmail.trim() !== "" ||
-      newAgentAccountsEmail.trim() !== ""
+      newAgentAccountsEmail.trim() !== "" ||
+      newSupplier.trim() !== ""
     )
   }
 
@@ -785,12 +819,57 @@ export function ImportCustomerForm({ onSubmit, onCancel, defaultValues }: Import
             <FormField
               control={form.control}
               name="defaultSuppliersName"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>Default Suppliers Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value || ""} data-testid="input-default-suppliers-name" />
-                  </FormControl>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter supplier name"
+                        value={newSupplier}
+                        onChange={(e) => setNewSupplier(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addSupplier()
+                          }
+                        }}
+                        data-testid="input-new-supplier"
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        onClick={addSupplier}
+                        data-testid="button-add-supplier"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {suppliers.length > 0 && (
+                      <div className="flex flex-wrap gap-2" data-testid="list-suppliers">
+                        {suppliers.map((supplier) => (
+                          <Badge
+                            key={supplier}
+                            variant="secondary"
+                            className="gap-1"
+                            data-testid={`badge-supplier-${supplier}`}
+                          >
+                            {supplier}
+                            <button
+                              type="button"
+                              onClick={() => removeSupplier(supplier)}
+                              className="hover:bg-destructive/20 rounded-sm"
+                              data-testid={`button-remove-supplier-${supplier}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

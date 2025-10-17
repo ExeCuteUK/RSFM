@@ -1091,6 +1091,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Import Shipments Routes ==========
   
+  // Helper function to add new supplier to customer's default suppliers list
+  async function addSupplierToCustomer(
+    importCustomerId: string | null | undefined, 
+    supplierName: string | null | undefined
+  ) {
+    if (!importCustomerId || !supplierName || !supplierName.trim()) return;
+    
+    try {
+      const customer = await storage.getImportCustomer(importCustomerId);
+      if (!customer) return;
+      
+      // Handle both string (old data) and array (after migration) formats
+      const rawSuppliers = customer.defaultSuppliersName;
+      const currentSuppliers = Array.isArray(rawSuppliers) 
+        ? rawSuppliers 
+        : (rawSuppliers ? [rawSuppliers] : []);
+      
+      // Check if supplier already exists (case-insensitive)
+      const supplierExists = currentSuppliers.some(
+        s => s.toLowerCase() === supplierName.trim().toLowerCase()
+      );
+      
+      if (!supplierExists) {
+        await storage.updateImportCustomer(importCustomerId, {
+          defaultSuppliersName: [...currentSuppliers, supplierName.trim()]
+        });
+      }
+    } catch (error) {
+      console.error('Failed to add supplier to customer:', error);
+    }
+  }
+  
   // Get all import shipments
   app.get("/api/import-shipments", async (_req, res) => {
     try {
@@ -1136,6 +1168,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           rsInvoices: [],
         });
       }
+      
+      // Auto-save new supplier to customer's default suppliers list
+      await addSupplierToCustomer(shipment.importCustomerId, shipment.supplierName);
       
       res.status(201).json(shipment);
     } catch (error: any) {
@@ -1269,6 +1304,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       console.log('[SYNC-DEBUG] syncedToClearance:', syncedToClearance);
+      
+      // Auto-save new supplier to customer's default suppliers list
+      await addSupplierToCustomer(shipment.importCustomerId, shipment.supplierName);
       
       res.json({ ...shipment, _syncedToClearance: syncedToClearance });
     } catch (error: any) {
@@ -2015,6 +2053,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Auto-save new supplier to customer's default suppliers list
+      await addSupplierToCustomer(clearance.importCustomerId, clearance.supplierName);
+      
       res.status(201).json(clearance);
     } catch (error) {
       res.status(400).json({ error: "Invalid custom clearance data" });
@@ -2256,6 +2297,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       console.log('[SYNC-DEBUG] syncedToShipment:', syncedToShipment);
+      
+      // Auto-save new supplier to customer's default suppliers list
+      await addSupplierToCustomer(clearance.importCustomerId, clearance.supplierName);
       
       res.json({ ...clearance, _syncedToShipment: syncedToShipment });
     } catch (error) {

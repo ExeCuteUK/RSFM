@@ -51,6 +51,7 @@ import { CalendarIcon, Plus, FileText, X, Download } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ImportCustomerForm } from "./import-customer-form"
 import { ContactCombobox } from "./ContactCombobox"
+import { SupplierCombobox } from "./SupplierCombobox"
 import { apiRequest, queryClient } from "@/lib/queryClient"
 import { useToast } from "@/hooks/use-toast"
 
@@ -338,7 +339,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
       }
       form.setValue("customsClearanceAgent", selectedCustomer.agentInDover || "")
       form.setValue("deliveryAddress", selectedCustomer.defaultDeliveryAddress || "")
-      form.setValue("supplierName", selectedCustomer.defaultSuppliersName || "")
     }
   }, [selectedCustomer, form, defaultValues?.rsToClear])
 
@@ -1546,7 +1546,11 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   <FormItem>
                     <FormLabel>Supplier Name</FormLabel>
                     <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-supplier-name" />
+                      <SupplierCombobox
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        importCustomerId={selectedCustomerId}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -132,7 +132,7 @@ export const importCustomers = pgTable("import_customers", {
   vatPaymentMethod: text("vat_payment_method"),
   clearanceAgentDetails: text("clearance_agent_details"),
   defaultDeliveryAddress: text("default_delivery_address"),
-  defaultSuppliersName: text("default_suppliers_name"),
+  defaultSuppliersName: text("default_suppliers_name").array(),
   bookingInDetails: text("booking_in_details"),
 });
 

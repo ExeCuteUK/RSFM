@@ -35,6 +35,7 @@ import { FileText, Download } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { ContactCombobox } from "@/components/ContactCombobox"
+import { SupplierCombobox } from "@/components/SupplierCombobox"
 import { MRNConfirmationDialog } from "@/components/mrn-confirmation-dialog"
 import {
   AlertDialog,
@@ -761,7 +762,11 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     <FormItem>
                       <FormLabel>Supplier Name</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-supplier-name" />
+                        <SupplierCombobox
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          importCustomerId={importCustomerId}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
