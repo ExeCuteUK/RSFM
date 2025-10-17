@@ -308,54 +308,52 @@ export function ClearanceWorkGrid() {
   }
 
   const getCellColor = (clearance: CustomClearance, fieldName: string, value: any) => {
+    const greenBg = "bg-green-100 dark:bg-green-900"
+    const yellowBg = "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-50"
+    
     // Link column, Job Ref, and Notes always green
     if (fieldName === "link" || fieldName === "jobRef" || fieldName === "additionalNotes") {
-      return "bg-green-100 dark:bg-green-900"
+      return greenBg
     }
 
     // Agent Advised column: check parent shipment status for linked jobs
     if (fieldName === "agentAdvised") {
+      let isCompleted = false
+      
       // If clearance is linked to an import/export shipment
       if (clearance.createdFromId) {
         if (clearance.jobType === "import") {
           const parentShipment = importShipments.find(s => s.id === clearance.createdFromId)
           if (parentShipment) {
-            // Check clearanceStatusIndicator: 1=yellow, 3=green
-            if (parentShipment.clearanceStatusIndicator === 3) {
-              return "bg-green-100 dark:bg-green-900"
-            }
-            return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+            isCompleted = parentShipment.clearanceStatusIndicator === 3
           }
         } else if (clearance.jobType === "export") {
           const parentShipment = exportShipments.find(s => s.id === clearance.createdFromId)
           if (parentShipment) {
-            // Check adviseClearanceToAgentStatusIndicator: 1=yellow, 3=green
-            if (parentShipment.adviseClearanceToAgentStatusIndicator === 3) {
-              return "bg-green-100 dark:bg-green-900"
-            }
-            return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+            isCompleted = parentShipment.adviseClearanceToAgentStatusIndicator === 3
           }
         }
+      } else {
+        // For non-linked clearances: green if BOTH adviseAgent and sendHaulierEad are 3
+        isCompleted = clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3
       }
       
-      // For non-linked clearances: green if BOTH adviseAgent and sendHaulierEad are 3
-      if (clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3) {
-        return "bg-green-100 dark:bg-green-900"
-      }
-      return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+      return isCompleted ? greenBg : yellowBg
     }
 
     // MRN Number column: yellow if empty, green if has value
     if (fieldName === "mrn") {
-      if (value && value.toString().trim()) {
-        return "bg-green-100 dark:bg-green-900"
-      }
-      return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+      return (value && value.toString().trim()) ? greenBg : yellowBg
+    }
+
+    // Clearance Agent column: yellow if empty, green if has value
+    if (fieldName === "clearanceAgent") {
+      return (value && value.toString().trim()) ? greenBg : yellowBg
     }
 
     // Other cells green if has value
     if (value && value.toString().trim()) {
-      return "bg-green-100 dark:bg-green-900"
+      return greenBg
     }
 
     return ""

@@ -713,6 +713,24 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   />
                 </div>
               </div>
+
+              <FormField
+                control={form.control}
+                name="supplierName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Supplier Name</FormLabel>
+                    <FormControl>
+                      <SupplierCombobox
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        importCustomerId={selectedCustomerId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
@@ -1533,24 +1551,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     <FormLabel>Goods Description</FormLabel>
                     <FormControl>
                       <Textarea {...field} value={field.value || ""} data-testid="input-goods-description" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="supplierName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Supplier Name</FormLabel>
-                    <FormControl>
-                      <SupplierCombobox
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        importCustomerId={selectedCustomerId}
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
