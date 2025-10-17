@@ -300,7 +300,8 @@ function generateInsertSQL(tableName: string, data: any[]): string {
       accountsEmail: 'text[]',
       agentContactName: 'text[]',
       agentEmail: 'text[]',
-      agentAccountsEmail: 'text[]'
+      agentAccountsEmail: 'text[]',
+      defaultSuppliersName: 'text[]'
     },
     export_customers: {
       contactName: 'text[]',
