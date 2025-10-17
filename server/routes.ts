@@ -1404,7 +1404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/import-shipments/:id/invoice-customer-status", async (req, res) => {
     try {
       const invoiceStatusSchema = z.object({
-        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+        status: z.union([z.literal(1), z.literal(2), z.literal(3), z.null()]).optional()
       });
       const { status } = invoiceStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
@@ -1418,7 +1418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
-          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          error: "Invalid status value. Must be 1 (yellow), 2 (blocked), 3 (green), or null", 
           details: error.errors 
         });
       }
@@ -1430,7 +1430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/import-shipments/:id/send-pod-to-customer-status", async (req, res) => {
     try {
       const sendPodStatusSchema = z.object({
-        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+        status: z.union([z.literal(1), z.literal(2), z.literal(3), z.null()]).optional()
       });
       const { status } = sendPodStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
@@ -1444,7 +1444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
-          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          error: "Invalid status value. Must be 1 (yellow), 2 (blocked), 3 (green), or null", 
           details: error.errors 
         });
       }
@@ -1456,7 +1456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/import-shipments/:id/send-haulier-ead-status", async (req, res) => {
     try {
       const sendHaulierEadStatusSchema = z.object({
-        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+        status: z.union([z.literal(1), z.literal(2), z.literal(3), z.null()]).optional()
       });
       const { status } = sendHaulierEadStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
@@ -1470,7 +1470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
-          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          error: "Invalid status value. Must be 1 (yellow), 2 (blocked), 3 (green), or null", 
           details: error.errors 
         });
       }
@@ -1482,7 +1482,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/import-shipments/:id/send-customer-gvms-status", async (req, res) => {
     try {
       const sendCustomerGvmsStatusSchema = z.object({
-        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+        status: z.union([z.literal(1), z.literal(2), z.literal(3), z.null()]).optional()
       });
       const { status } = sendCustomerGvmsStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
@@ -1496,7 +1496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
-          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          error: "Invalid status value. Must be 1 (yellow), 2 (blocked), 3 (green), or null", 
           details: error.errors 
         });
       }
@@ -1899,7 +1899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/export-shipments/:id/send-customer-ead-status", async (req, res) => {
     try {
       const sendCustomerEadStatusSchema = z.object({
-        status: z.union([z.literal(2), z.literal(3), z.null()]).optional()
+        status: z.union([z.literal(1), z.literal(2), z.literal(3), z.null()]).optional()
       });
       const { status } = sendCustomerEadStatusSchema.parse(req.body);
       const shipment = await storage.updateExportShipment(req.params.id, { 
@@ -1913,7 +1913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
-          error: "Invalid status value. Must be 2 (yellow), 3 (green), or null", 
+          error: "Invalid status value. Must be 1 (yellow), 2 (blocked), 3 (green), or null", 
           details: error.errors 
         });
       }
