@@ -578,10 +578,14 @@ export default function CustomClearances() {
       
       // Get clearance document paths first to determine body text
       const clearanceDocObjects = clearance.clearanceDocuments || []
-      const clearanceFiles = clearanceDocObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
-        name: getFileName(file)
-      })).filter(doc => doc.url)
+      const clearanceFiles = clearanceDocObjects.map(file => {
+        const filePath = getFilePath(file)
+        const fileId = filePath.replace('/objects/', '')
+        return {
+          url: `/objects/${fileId}?filename=${encodeURIComponent(getFileName(file))}`,
+          name: getFileName(file)
+        }
+      }).filter(doc => doc.url)
       
       // Build custom clearance email body - conditional based on clearance documents
       const hasClearanceDocs = clearanceFiles.length > 0
@@ -679,10 +683,14 @@ export default function CustomClearances() {
       const body = `${greeting},\n\nPlease find attached ${attachmentText} for this shipment.\n\nAny issues please let me know.`
       
       // Get clearance document paths with proper filenames
-      const clearanceFiles = clearance.clearanceDocuments.map(doc => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}&filename=${encodeURIComponent(getFileName(doc))}`,
-        name: getFileName(doc)
-      }))
+      const clearanceFiles = clearance.clearanceDocuments.map(doc => {
+        const filePath = getFilePath(doc)
+        const fileId = filePath.replace('/objects/', '')
+        return {
+          url: `/objects/${fileId}?filename=${encodeURIComponent(getFileName(doc))}`,
+          name: getFileName(doc)
+        }
+      })
       
       // Determine metadata source based on clearance type
       const metadataSource = isExport ? 'send-customer-ead' : 'send-customer-gvms'
@@ -886,10 +894,14 @@ export default function CustomClearances() {
     const body = `${greeting},\n\nPlease find attached ${attachmentText} for this shipment.\n\nHope all is OK.`
 
     // Only attach clearance documents (exclude transport docs), formatted with url and name properties
-    const clearanceFiles = clearance.clearanceDocuments?.map(doc => ({
-      url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(doc))}&filename=${encodeURIComponent(getFileName(doc))}`,
-      name: getFileName(doc)
-    })) || []
+    const clearanceFiles = clearance.clearanceDocuments?.map(doc => {
+      const filePath = getFilePath(doc)
+      const fileId = filePath.replace('/objects/', '')
+      return {
+        url: `/objects/${fileId}?filename=${encodeURIComponent(getFileName(doc))}`,
+        name: getFileName(doc)
+      }
+    }) || []
 
     // Open email composer with clearance documents only
     openEmailComposer({
@@ -1273,10 +1285,14 @@ export default function CustomClearances() {
       
       // Get transport documents with original filenames - work directly with file objects
       const transportDocObjects = clearance.transportDocuments || []
-      const transportDocs = transportDocObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
-        name: getFileName(file)
-      })).filter(doc => doc.url)
+      const transportDocs = transportDocObjects.map(file => {
+        const filePath = getFilePath(file)
+        const fileId = filePath.replace('/objects/', '')
+        return {
+          url: `/objects/${fileId}?filename=${encodeURIComponent(getFileName(file))}`,
+          name: getFileName(file)
+        }
+      }).filter(doc => doc.url)
       
       // Open email composer
       openEmailComposer({
@@ -1402,10 +1418,14 @@ export default function CustomClearances() {
       
       // Get transport documents with original filenames - work directly with file objects
       const attachmentObjects = clearance.transportDocuments || []
-      const transportDocs = attachmentObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
-        name: getFileName(file)
-      })).filter(doc => doc.url)
+      const transportDocs = attachmentObjects.map(file => {
+        const filePath = getFilePath(file)
+        const fileId = filePath.replace('/objects/', '')
+        return {
+          url: `/objects/${fileId}?filename=${encodeURIComponent(getFileName(file))}`,
+          name: getFileName(file)
+        }
+      }).filter(doc => doc.url)
       
       // Open email composer with auto-populated TO field (or empty if no agent found)
       openEmailComposer({

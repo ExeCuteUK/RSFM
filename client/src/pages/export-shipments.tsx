@@ -878,10 +878,14 @@ Hope all is OK.`
       }
       // Get POD files with original filenames - work directly with file objects
       const podFileObjects = shipment.proofOfDelivery || []
-      const podFiles = podFileObjects.map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
-        name: getFileName(file)
-      })).filter(doc => doc.url)
+      const podFiles = podFileObjects.map(file => {
+        const filePath = getFilePath(file)
+        const fileId = filePath.replace('/objects/', '')
+        return {
+          url: `/objects/${fileId}?filename=${encodeURIComponent(getFileName(file))}`,
+          name: getFileName(file)
+        }
+      }).filter(doc => doc.url)
       
       // Open email composer
       openEmailComposer({
@@ -971,10 +975,14 @@ Hope all is OK.`
       
       // Get transport documents with original filenames
       const attachmentObjects = shipment.attachments || []
-      const transportDocs = (Array.isArray(attachmentObjects) ? attachmentObjects : []).map(file => ({
-        url: `/api/file-storage/download?path=${encodeURIComponent(getFilePath(file))}&filename=${encodeURIComponent(getFileName(file))}`,
-        name: getFileName(file)
-      })).filter(doc => doc.url)
+      const transportDocs = (Array.isArray(attachmentObjects) ? attachmentObjects : []).map(file => {
+        const filePath = getFilePath(file)
+        const fileId = filePath.replace('/objects/', '')
+        return {
+          url: `/objects/${fileId}?filename=${encodeURIComponent(getFileName(file))}`,
+          name: getFileName(file)
+        }
+      }).filter(doc => doc.url)
       
       openEmailComposer({
         id: `email-${Date.now()}`,
