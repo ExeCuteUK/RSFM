@@ -4854,7 +4854,24 @@ ${messageText}
           }
           
           fileBuffer = Buffer.from(await fileResponse.arrayBuffer());
-          filename = attachmentUrl.split('/').pop() || 'attachment';
+          
+          // Extract filename from URL - handle Google Drive download URLs with path parameter
+          try {
+            const url = new URL(attachmentUrl, 'http://dummy.com');
+            const pathParam = url.searchParams.get('path');
+            
+            if (pathParam) {
+              // Path parameter contains JSON with filename
+              const pathData = JSON.parse(pathParam);
+              filename = pathData.filename || 'attachment';
+            } else {
+              // Fallback to last segment of URL path
+              filename = attachmentUrl.split('/').pop()?.split('?')[0] || 'attachment';
+            }
+          } catch (error) {
+            // If parsing fails, use simple extraction
+            filename = attachmentUrl.split('/').pop()?.split('?')[0] || 'attachment';
+          }
           
           if (filename.toLowerCase().endsWith('.pdf')) {
             contentType = 'application/pdf';
