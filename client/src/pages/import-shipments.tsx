@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Pencil, Trash2, Package, RefreshCw, Paperclip, StickyNote, X, FileText, Truck, Container, Plane, User, Ship, Calendar, Box, MapPin, PoundSterling, Shield, ClipboardList, ClipboardCheck, CalendarCheck, Unlock, Receipt, Send, Search, ChevronDown, MapPinned, Check, ChevronLeft, ChevronRight, Mail, Download, AlertCircle } from "lucide-react"
 import { ImportShipmentForm } from "@/components/import-shipment-form"
+import { StatusToggleButton } from "@/components/StatusToggleButton"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { OCRDialog } from "@/components/ocr-dialog"
 import { ContainerCheckDialog } from "@/components/ContainerCheckDialog"
@@ -760,32 +761,72 @@ export default function ImportShipments() {
     updateClearanceStatus.mutate({ id, status })
   }
 
+  const handleClearanceStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateClearanceStatus.mutate({ id, status: newStatus })
+  }
+
   const handleDeliveryBookedStatusUpdate = (id: string, status: number) => {
     updateDeliveryBookedStatus.mutate({ id, status })
+  }
+
+  const handleDeliveryBookedStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateDeliveryBookedStatus.mutate({ id, status: newStatus })
   }
 
   const handleHaulierBookingStatusUpdate = (id: string, status: number) => {
     updateHaulierBookingStatus.mutate({ id, status })
   }
 
+  const handleHaulierBookingStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateHaulierBookingStatus.mutate({ id, status: newStatus })
+  }
+
   const handleContainerReleaseStatusUpdate = (id: string, status: number) => {
     updateContainerReleaseStatus.mutate({ id, status })
+  }
+
+  const handleContainerReleaseStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateContainerReleaseStatus.mutate({ id, status: newStatus })
   }
 
   const handleInvoiceCustomerStatusUpdate = (id: string, status: number) => {
     updateInvoiceCustomerStatus.mutate({ id, status })
   }
 
+  const handleInvoiceCustomerStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateInvoiceCustomerStatus.mutate({ id, status: newStatus })
+  }
+
   const handleSendPodToCustomerStatusUpdate = (id: string, status: number) => {
     updateSendPodToCustomerStatus.mutate({ id, status })
+  }
+
+  const handleSendPodToCustomerStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateSendPodToCustomerStatus.mutate({ id, status: newStatus })
   }
 
   const handleSendHaulierEadStatusUpdate = (id: string, status: number) => {
     updateSendHaulierEadStatus.mutate({ id, status })
   }
 
+  const handleSendHaulierEadStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateSendHaulierEadStatus.mutate({ id, status: newStatus })
+  }
+
   const handleSendCustomerGvmsStatusUpdate = (id: string, status: number) => {
     updateSendCustomerGvmsStatus.mutate({ id, status })
+  }
+
+  const handleSendCustomerGvmsStatusToggle = (id: string, currentStatus: number | null) => {
+    const newStatus = currentStatus === 3 ? 1 : 3
+    updateSendCustomerGvmsStatus.mutate({ id, status: newStatus })
   }
 
   const handleSendHaulierGvmsEmail = (shipment: ImportShipment) => {
@@ -2298,33 +2339,11 @@ Hope all is OK.`
                           {shipment.clearanceStatusIndicator === 3 && <Check className="h-3 w-3" />}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleClearanceStatusUpdate(shipment.id, 1)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.clearanceStatusIndicator === 1 || shipment.clearanceStatusIndicator === null
-                              ? 'bg-yellow-400 border-yellow-500 scale-110'
-                              : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-status-yellow-${shipment.id}`}
-                          title="To Do"
-                        />
-                        <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleClearanceStatusUpdate(shipment.id, 3)}
-                          className={`h-5 w-5 rounded border-2 transition-all ${
-                            shipment.clearanceStatusIndicator === 3
-                              ? 'bg-green-400 border-green-500 scale-110'
-                              : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                          }`}
-                          data-testid={`button-status-green-${shipment.id}`}
-                          title="Completed"
-                        />
-                      </div>
+                      <StatusToggleButton
+                        currentStatus={shipment.clearanceStatusIndicator}
+                        onToggle={() => handleClearanceStatusToggle(shipment.id, shipment.clearanceStatusIndicator)}
+                        testId={`button-clearance-status-toggle-${shipment.id}`}
+                      />
                     </div>
                   </div>
                   {shipment.containerShipment === "Road Shipment" && !shipment.rsToClear && (
@@ -2341,33 +2360,11 @@ Hope all is OK.`
                             {shipment.sendHaulierEadStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 2)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendHaulierEadStatusIndicator === 2 || shipment.sendHaulierEadStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-send-haulier-gvms-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleSendHaulierEadStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendHaulierEadStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-send-haulier-gvms-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.sendHaulierEadStatusIndicator}
+                          onToggle={() => handleSendHaulierEadStatusToggle(shipment.id, shipment.sendHaulierEadStatusIndicator)}
+                          testId={`button-send-haulier-gvms-toggle-${shipment.id}`}
+                        />
                       </div>
                     </div>
                   )}
@@ -2385,33 +2382,11 @@ Hope all is OK.`
                             {shipment.sendCustomerGvmsStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleSendCustomerGvmsStatusUpdate(shipment.id, 2)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendCustomerGvmsStatusIndicator === 2 || shipment.sendCustomerGvmsStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-send-customer-gvms-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleSendCustomerGvmsStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendCustomerGvmsStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-send-customer-gvms-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.sendCustomerGvmsStatusIndicator}
+                          onToggle={() => handleSendCustomerGvmsStatusToggle(shipment.id, shipment.sendCustomerGvmsStatusIndicator)}
+                          testId={`button-send-customer-gvms-toggle-${shipment.id}`}
+                        />
                       </div>
                     </div>
                   )}
@@ -2432,38 +2407,11 @@ Hope all is OK.`
                             {shipment.deliveryBookedStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 1)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.deliveryBookedStatusIndicator === 1 || shipment.deliveryBookedStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-delivery-status-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <button
-                            onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 2)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.deliveryBookedStatusIndicator === 2
-                                ? 'bg-orange-400 border-orange-500 scale-110'
-                                : 'bg-orange-200 border-orange-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-delivery-status-orange-${shipment.id}`}
-                            title="Waiting for Reply"
-                          />
-                          <button
-                            onClick={() => handleDeliveryBookedStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.deliveryBookedStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-delivery-status-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.deliveryBookedStatusIndicator}
+                          onToggle={() => handleDeliveryBookedStatusToggle(shipment.id, shipment.deliveryBookedStatusIndicator)}
+                          testId={`button-delivery-status-toggle-${shipment.id}`}
+                        />
                       </div>
                     </div>
                   )}
@@ -2480,38 +2428,11 @@ Hope all is OK.`
                                 : `Release Container to : ${shipment.deliveryRelease || "N/A"}`}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 1)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.containerReleaseStatusIndicator === 1 || shipment.containerReleaseStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-container-status-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <button
-                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 2)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.containerReleaseStatusIndicator === 2
-                                ? 'bg-orange-400 border-orange-500 scale-110'
-                                : 'bg-orange-200 border-orange-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-container-status-orange-${shipment.id}`}
-                            title="Waiting for Reply"
-                          />
-                          <button
-                            onClick={() => handleContainerReleaseStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.containerReleaseStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-container-status-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.containerReleaseStatusIndicator}
+                          onToggle={() => handleContainerReleaseStatusToggle(shipment.id, shipment.containerReleaseStatusIndicator)}
+                          testId={`button-container-status-toggle-${shipment.id}`}
+                        />
                       </div>
                     </div>
                   )}
@@ -2535,33 +2456,11 @@ Hope all is OK.`
                             {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => updateInvoiceCustomerStatus.mutate({ id: shipment.id, status: null })}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.invoiceCustomerStatusIndicator === 1 || shipment.invoiceCustomerStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-invoice-status-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleInvoiceCustomerStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.invoiceCustomerStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-invoice-status-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.invoiceCustomerStatusIndicator}
+                          onToggle={() => handleInvoiceCustomerStatusToggle(shipment.id, shipment.invoiceCustomerStatusIndicator)}
+                          testId={`button-invoice-status-toggle-${shipment.id}`}
+                        />
                       </div>
                     </div>
                   )}
@@ -2582,33 +2481,11 @@ Hope all is OK.`
                             {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => updateSendPodToCustomerStatus.mutate({ id: shipment.id, status: null })}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendPodToCustomerStatusIndicator === null
-                                ? 'bg-yellow-400 border-yellow-500 scale-110'
-                                : 'bg-yellow-200 border-yellow-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-send-pod-status-yellow-${shipment.id}`}
-                            title="To Do"
-                          />
-                          <div className="h-5 w-5 rounded border-2 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 relative" title="Not Available">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-full h-0.5 bg-red-500 rotate-45 origin-center"></div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleSendPodToCustomerStatusUpdate(shipment.id, 3)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
-                              shipment.sendPodToCustomerStatusIndicator === 3
-                                ? 'bg-green-400 border-green-500 scale-110'
-                                : 'bg-green-200 border-green-300 hover:bg-blue-300 hover:border-blue-400 transition-colors'
-                            }`}
-                            data-testid={`button-send-pod-status-green-${shipment.id}`}
-                            title="Completed"
-                          />
-                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.sendPodToCustomerStatusIndicator}
+                          onToggle={() => handleSendPodToCustomerStatusToggle(shipment.id, shipment.sendPodToCustomerStatusIndicator)}
+                          testId={`button-send-pod-status-toggle-${shipment.id}`}
+                        />
                       </div>
                     </div>
                   )}
