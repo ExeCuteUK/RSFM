@@ -2421,12 +2421,13 @@ Hope all is OK.`
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
                           <Unlock className="h-4 w-4 text-muted-foreground hover:text-blue-500 shrink-0 transition-colors" />
-                          <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)}`} data-testid={`text-container-release-${shipment.id}`}>
+                          <p className={`text-xs font-medium ${getContainerReleaseStatusColor(shipment.containerReleaseStatusIndicator)} flex items-center gap-1`} data-testid={`text-container-release-${shipment.id}`}>
                             {shipment.deliveryRelease === "Line" 
                               ? "Pay Line for Delivery" 
                               : shipment.handoverContainerToCustomerAtPort 
                                 ? `Release Container to : ${getCustomerName(shipment.importCustomerId)}`
                                 : `Release Container to : ${shipment.deliveryRelease || "N/A"}`}
+                            {shipment.containerReleaseStatusIndicator === 3 && <Check className="h-3 w-3" />}
                           </p>
                         </div>
                         <StatusToggleButton
