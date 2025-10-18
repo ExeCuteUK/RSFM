@@ -351,6 +351,11 @@ export function ClearanceWorkGrid() {
       return (value && value.toString().trim()) ? greenBg : yellowBg
     }
 
+    // ETA Port column: yellow if empty, green if has value
+    if (fieldName === "etaPort") {
+      return (value && value.toString().trim()) ? greenBg : yellowBg
+    }
+
     // Other cells green if has value
     if (value && value.toString().trim()) {
       return greenBg

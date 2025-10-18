@@ -808,20 +808,36 @@ export default function Dashboard() {
       <ContainerTrackingNotification />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="container-management" data-testid="tab-container-management">
+        <TabsList className="grid w-full grid-cols-4 h-auto bg-card border-b border-border rounded-none p-0">
+          <TabsTrigger 
+            value="container-management" 
+            data-testid="tab-container-management"
+            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+          >
             <Container className="h-4 w-4 mr-2" />
-            Container Job
+            Import Container Jobs
           </TabsTrigger>
-          <TabsTrigger value="nisbets" data-testid="tab-nisbets">
+          <TabsTrigger 
+            value="nisbets" 
+            data-testid="tab-nisbets"
+            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+          >
             <Package className="h-4 w-4 mr-2" />
             Nisbets Jobs
           </TabsTrigger>
-          <TabsTrigger value="import-export-work" data-testid="tab-import-export">
+          <TabsTrigger 
+            value="import-export-work" 
+            data-testid="tab-import-export"
+            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+          >
             <FileText className="h-4 w-4 mr-2" />
             Import / Export Jobs
           </TabsTrigger>
-          <TabsTrigger value="clearance-work" data-testid="tab-clearance">
+          <TabsTrigger 
+            value="clearance-work" 
+            data-testid="tab-clearance"
+            className="rounded-none data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+          >
             <Clipboard className="h-4 w-4 mr-2" />
             Customs Clearances
           </TabsTrigger>
