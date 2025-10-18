@@ -740,55 +740,32 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Job Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-job-status">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Awaiting Collection">Awaiting Collection</SelectItem>
-                          <SelectItem value="Dispatched">Dispatched</SelectItem>
-                          <SelectItem value="Delivered">Delivered</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Job Status</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-job-status">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Awaiting Collection">Awaiting Collection</SelectItem>
+                            <SelectItem value="Dispatched">Dispatched</SelectItem>
+                            <SelectItem value="Delivered">Delivered</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="containerShipment"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Shipment Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-shipment-type">
-                            <SelectValue placeholder="Select shipment type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Road Shipment">Road Shipment</SelectItem>
-                          <SelectItem value="Container Shipment">Container Shipment</SelectItem>
-                          <SelectItem value="Air Freight">Air Freight</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {containerShipment === "Container Shipment" && (
-                  <div className="space-y-4">
+                  {containerShipment === "Container Shipment" && (
                     <FormField
                       control={form.control}
                       name="handoverContainerAtPort"
@@ -807,6 +784,34 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         </FormItem>
                       )}
                     />
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="containerShipment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Shipment Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-shipment-type">
+                              <SelectValue placeholder="Select shipment type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Road Shipment">Road Shipment</SelectItem>
+                            <SelectItem value="Container Shipment">Container Shipment</SelectItem>
+                            <SelectItem value="Air Freight">Air Freight</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {containerShipment === "Container Shipment" && (
                     <FormField
                       control={form.control}
                       name="lclContainer"
@@ -825,8 +830,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                         </FormItem>
                       )}
                     />
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {(status === "Delivered" || status === "Completed") && (
                   <FormField
@@ -1177,13 +1182,13 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <CardTitle>Scheduling & Delivery</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-4">
                 <FormField
                   control={form.control}
                   name="bookingDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Booking Date</FormLabel>
+                      <FormLabel>Job Creation Date</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -1261,9 +1266,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="dispatchDate"
@@ -1369,7 +1372,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     </FormItem>
                   )}
                 />
-
               </div>
 
               {!handoverContainerAtPort && (
@@ -1505,7 +1507,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <CardTitle>Cargo Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <FormField
                   control={form.control}
                   name="numberOfPieces"
@@ -1584,7 +1586,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <CardTitle>Invoice Value & Additional Declaired Values</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <FormField
                   control={form.control}
                   name="currency"
@@ -1637,7 +1639,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   name="freightCharge"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Transport Costs</FormLabel>
+                      <FormLabel>Declaired Transport Costs</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-freight-charge" />
                       </FormControl>
@@ -1920,7 +1922,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               </div>
 
               <div className="border-t pt-4">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
                     name="currencyIn"
@@ -2059,174 +2061,39 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               <CardTitle>Haulier Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="haulierName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Haulier</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        const selectedHaulier = hauliers?.find(h => h.haulierName === value);
-                        if (selectedHaulier) {
-                          const contactNames = selectedHaulier.contacts?.map(c => c.contactName) || [];
-                          const contactEmails = selectedHaulier.contacts?.map(c => c.contactEmail) || [];
-                          form.setValue("haulierContactName", contactNames);
-                          form.setValue("haulierEmail", contactEmails);
-                          form.setValue("haulierTelephone", selectedHaulier.telephone || "");
-                        }
-                      }} 
-                      value={field.value || ""}
-                    >
-                      <FormControl>
-                        <SelectTrigger data-testid="select-haulier-name">
-                          <SelectValue placeholder="Select haulier" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {hauliers?.map((haulier) => (
-                          <SelectItem key={haulier.id} value={haulier.haulierName}>
-                            {haulier.haulierName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="haulierContactName"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Haulier Contact Name</FormLabel>
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter contact name"
-                          value={newHaulierContactName}
-                          onChange={(e) => setNewHaulierContactName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault()
-                              addHaulierContactName()
-                            }
-                          }}
-                          data-testid="input-new-haulier-contact-name"
-                        />
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="outline"
-                          onClick={addHaulierContactName}
-                          data-testid="button-add-haulier-contact-name"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      {haulierContactNames.length > 0 && (
-                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-contact-names">
-                          {haulierContactNames.map((name) => (
-                            <Badge
-                              key={name}
-                              variant="secondary"
-                              className="gap-1"
-                              data-testid={`badge-haulier-contact-name-${name}`}
-                            >
-                              {name}
-                              <button
-                                type="button"
-                                onClick={() => removeHaulierContactName(name)}
-                                className="hover:bg-destructive/20 rounded-sm"
-                                data-testid={`button-remove-haulier-contact-name-${name}`}
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="haulierEmail"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Haulier Contact Email For This Shipment</FormLabel>
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter email address"
-                          value={newHaulierEmail}
-                          onChange={(e) => setNewHaulierEmail(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault()
-                              addHaulierEmail()
-                            }
-                          }}
-                          type="email"
-                          data-testid="input-new-haulier-email"
-                        />
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="outline"
-                          onClick={addHaulierEmail}
-                          data-testid="button-add-haulier-email"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      {haulierEmails.length > 0 && (
-                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-emails">
-                          {haulierEmails.map((email) => (
-                            <Badge
-                              key={email}
-                              variant="secondary"
-                              className="gap-1"
-                              data-testid={`badge-haulier-email-${email}`}
-                            >
-                              {email}
-                              <button
-                                type="button"
-                                onClick={() => removeHaulierEmail(email)}
-                                className="hover:bg-destructive/20 rounded-sm"
-                                data-testid={`button-remove-haulier-email-${email}`}
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="grid gap-4 md:grid-cols-2">
-
                 <FormField
                   control={form.control}
-                  name="haulierTelephone"
+                  name="haulierName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telephone</FormLabel>
-                      <FormControl>
-                        <Input type="tel" {...field} value={field.value || ""} data-testid="input-haulier-telephone" />
-                      </FormControl>
+                      <FormLabel>Haulier</FormLabel>
+                      <Select 
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          const selectedHaulier = hauliers?.find(h => h.haulierName === value);
+                          if (selectedHaulier) {
+                            const contactNames = selectedHaulier.contacts?.map(c => c.contactName) || [];
+                            const contactEmails = selectedHaulier.contacts?.map(c => c.contactEmail) || [];
+                            form.setValue("haulierContactName", contactNames);
+                            form.setValue("haulierEmail", contactEmails);
+                          }
+                        }} 
+                        value={field.value || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-haulier-name">
+                            <SelectValue placeholder="Select haulier" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {hauliers?.map((haulier) => (
+                            <SelectItem key={haulier.id} value={haulier.haulierName}>
+                              {haulier.haulierName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -2241,6 +2108,127 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                       <FormControl>
                         <Input {...field} value={field.value || ""} data-testid="input-haulier-reference" />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="haulierContactName"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Haulier Contact Name</FormLabel>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Enter contact name"
+                            value={newHaulierContactName}
+                            onChange={(e) => setNewHaulierContactName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault()
+                                addHaulierContactName()
+                              }
+                            }}
+                            data-testid="input-new-haulier-contact-name"
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            onClick={addHaulierContactName}
+                            data-testid="button-add-haulier-contact-name"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        {haulierContactNames.length > 0 && (
+                          <div className="flex flex-wrap gap-2" data-testid="list-haulier-contact-names">
+                            {haulierContactNames.map((name) => (
+                              <Badge
+                                key={name}
+                                variant="secondary"
+                                className="gap-1"
+                                data-testid={`badge-haulier-contact-name-${name}`}
+                              >
+                                {name}
+                                <button
+                                  type="button"
+                                  onClick={() => removeHaulierContactName(name)}
+                                  className="hover:bg-destructive/20 rounded-sm"
+                                  data-testid={`button-remove-haulier-contact-name-${name}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="haulierEmail"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Haulier Contact Email For This Shipment</FormLabel>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Enter email address"
+                            value={newHaulierEmail}
+                            onChange={(e) => setNewHaulierEmail(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault()
+                                addHaulierEmail()
+                              }
+                            }}
+                            type="email"
+                            data-testid="input-new-haulier-email"
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            onClick={addHaulierEmail}
+                            data-testid="button-add-haulier-email"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        {haulierEmails.length > 0 && (
+                          <div className="flex flex-wrap gap-2" data-testid="list-haulier-emails">
+                            {haulierEmails.map((email) => (
+                              <Badge
+                                key={email}
+                                variant="secondary"
+                                className="gap-1"
+                                data-testid={`badge-haulier-email-${email}`}
+                              >
+                                {email}
+                                <button
+                                  type="button"
+                                  onClick={() => removeHaulierEmail(email)}
+                                  className="hover:bg-destructive/20 rounded-sm"
+                                  data-testid={`button-remove-haulier-email-${email}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

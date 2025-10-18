@@ -39,6 +39,7 @@ interface CalendarEvent {
 export default function TeamCalendar() {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -617,29 +618,39 @@ export default function TeamCalendar() {
                           {format(day, "d")}
                         </div>
                         <div className="relative min-w-0 space-y-0.5">
-                          {dayEvents.slice(0, 3).map((event) => (
-                            <div
-                              key={event.id}
-                              className={`min-w-0 text-[10px] px-1 py-0.5 rounded cursor-pointer ${
-                                event.isHoliday
-                                  ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                                  : "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30"
-                              }`}
-                              data-testid={`calendar-event-${event.id}`}
-                              title={event.summary}
-                              onClick={(e) => e.stopPropagation()}
-                              onDoubleClick={(e) => {
-                                e.stopPropagation();
-                                if (!event.isHoliday) {
-                                  handleEditEvent(event);
-                                }
-                              }}
-                            >
-                              <div className="truncate">
-                                {event.start.dateTime && format(parseISO(event.start.dateTime), "HH:mm")} {event.summary}
+                          {dayEvents.slice(0, 3).map((event) => {
+                            const isEventSelected = selectedEventId === event.id;
+                            return (
+                              <div
+                                key={event.id}
+                                className={`min-w-0 text-[10px] px-1 py-0.5 rounded cursor-pointer transition-all ${
+                                  isEventSelected
+                                    ? "ring-2 ring-primary shadow-lg shadow-primary/50"
+                                    : ""
+                                } ${
+                                  event.isHoliday
+                                    ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                                    : "bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30"
+                                }`}
+                                data-testid={`calendar-event-${event.id}`}
+                                title={event.summary}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEventId(event.id || null);
+                                }}
+                                onDoubleClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!event.isHoliday) {
+                                    handleEditEvent(event);
+                                  }
+                                }}
+                              >
+                                <div className="truncate">
+                                  {event.start.dateTime && format(parseISO(event.start.dateTime), "HH:mm")} {event.summary}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                           {dayEvents.length > 3 && (
                             <div className="text-[10px] text-muted-foreground pl-1">
                               +{dayEvents.length - 3} more
@@ -676,63 +687,77 @@ export default function TeamCalendar() {
             </p>
           ) : (
             <div className="space-y-2">
-              {getEventsForDate(selectedDate).map((event) => (
-                <Card key={event.id} data-testid={`event-detail-${event.id}`} className={event.isHoliday ? "border-amber-500/50 bg-amber-500/5" : "border-blue-500/50 bg-blue-500/5"}>
-                  <CardContent className="p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-sm" data-testid="text-event-title">
-                            {event.summary}
-                          </h4>
-                          {event.isHoliday && (
-                            <Badge variant="outline" className="text-xs border-amber-500/50" data-testid="badge-holiday">
-                              <Flag className="h-3 w-3 mr-1" />
-                              UK Holiday
-                            </Badge>
+              {getEventsForDate(selectedDate).map((event) => {
+                const isEventSelected = selectedEventId === event.id;
+                return (
+                  <Card 
+                    key={event.id} 
+                    data-testid={`event-detail-${event.id}`} 
+                    className={`cursor-pointer transition-all ${
+                      isEventSelected 
+                        ? "ring-2 ring-primary shadow-lg shadow-primary/50" 
+                        : ""
+                    } ${
+                      event.isHoliday ? "border-amber-500/50 bg-amber-500/5" : "border-blue-500/50 bg-blue-500/5"
+                    }`}
+                    onClick={() => setSelectedEventId(event.id || null)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-sm" data-testid="text-event-title">
+                              {event.summary}
+                            </h4>
+                            {event.isHoliday && (
+                              <Badge variant="outline" className="text-xs border-amber-500/50" data-testid="badge-holiday">
+                                <Flag className="h-3 w-3 mr-1" />
+                                UK Holiday
+                              </Badge>
+                            )}
+                          </div>
+                          {event.start.dateTime && (
+                            <p className="text-xs text-muted-foreground">
+                              {format(parseISO(event.start.dateTime), "h:mm a")} - {format(parseISO(event.end.dateTime!), "h:mm a")}
+                            </p>
+                          )}
+                          {event.description && (
+                            <p className="text-xs text-muted-foreground mt-1" data-testid="text-event-description">
+                              {event.description}
+                            </p>
+                          )}
+                          {event.creator?.displayName && !event.isHoliday && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Created by: {event.creator.displayName}
+                            </p>
                           )}
                         </div>
-                        {event.start.dateTime && (
-                          <p className="text-xs text-muted-foreground">
-                            {format(parseISO(event.start.dateTime), "h:mm a")} - {format(parseISO(event.end.dateTime!), "h:mm a")}
-                          </p>
-                        )}
-                        {event.description && (
-                          <p className="text-xs text-muted-foreground mt-1" data-testid="text-event-description">
-                            {event.description}
-                          </p>
-                        )}
-                        {event.creator?.displayName && !event.isHoliday && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Created by: {event.creator.displayName}
-                          </p>
+                        {!event.isHoliday && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditEvent(event)}
+                              data-testid="button-edit-event"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => event.id && handleDeleteEvent(event.id)}
+                              disabled={deleteMutation.isPending}
+                              data-testid="button-delete-event"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         )}
                       </div>
-                      {!event.isHoliday && (
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditEvent(event)}
-                            data-testid="button-edit-event"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => event.id && handleDeleteEvent(event.id)}
-                            disabled={deleteMutation.isPending}
-                            data-testid="button-delete-event"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </CardContent>

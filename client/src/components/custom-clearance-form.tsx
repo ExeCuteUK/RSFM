@@ -531,77 +531,99 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               <CardTitle>Customer &amp; Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="jobType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Job Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-job-type">
-                          <SelectValue placeholder="Select job type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="import">Import</SelectItem>
-                        <SelectItem value="export">Export</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-status">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Request CC">Request CC</SelectItem>
-                        <SelectItem value="Awaiting Entry">Awaiting Entry</SelectItem>
-                        <SelectItem value="Awaiting Arrival">Awaiting Arrival</SelectItem>
-                        <SelectItem value="P.H Hold">P.H Hold</SelectItem>
-                        <SelectItem value="Customs Issue">Customs Issue</SelectItem>
-                        <SelectItem value="Fully Cleared">Fully Cleared</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {jobType === "import" && (
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="importCustomerId"
+                  name="jobType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Import Customer</FormLabel>
-                      <FormControl>
-                        <ContactCombobox
-                          type="import-customer"
-                          value={field.value || ""}
-                          onValueChange={field.onChange}
-                          placeholder="Select import customer"
-                        />
-                      </FormControl>
+                      <FormLabel>Job Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-job-type">
+                            <SelectValue placeholder="Select job type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="import">Import</SelectItem>
+                          <SelectItem value="export">Export</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-status">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Request CC">Request CC</SelectItem>
+                          <SelectItem value="Awaiting Entry">Awaiting Entry</SelectItem>
+                          <SelectItem value="Awaiting Arrival">Awaiting Arrival</SelectItem>
+                          <SelectItem value="P.H Hold">P.H Hold</SelectItem>
+                          <SelectItem value="Customs Issue">Customs Issue</SelectItem>
+                          <SelectItem value="Fully Cleared">Fully Cleared</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {jobType === "import" && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="importCustomerId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Import Customer</FormLabel>
+                        <FormControl>
+                          <ContactCombobox
+                            type="import-customer"
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder="Select import customer"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="supplierName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Supplier Name</FormLabel>
+                        <FormControl>
+                          <SupplierCombobox
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            importCustomerId={importCustomerId}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
 
               {jobType === "export" && (
-                <>
+                <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="exportCustomerId"
@@ -639,7 +661,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                       </FormItem>
                     )}
                   />
-                </>
+                </div>
               )}
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -754,26 +776,6 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                 />
               </div>
 
-              {jobType === "import" && (
-                <FormField
-                  control={form.control}
-                  name="supplierName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Supplier Name</FormLabel>
-                      <FormControl>
-                        <SupplierCombobox
-                          value={field.value || ""}
-                          onChange={field.onChange}
-                          importCustomerId={importCustomerId}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -831,7 +833,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               <CardTitle>Shipment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <FormField
                   control={form.control}
                   name="etaPort"
@@ -868,95 +870,19 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                   )}
                 />
 
-                {jobType === "export" ? (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="departureFrom"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Departure From</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="trailerOrContainerNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Trailer / Container Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="portOfArrival"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Port of Arrival</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-port-arrival" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="portOfArrival"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Port of Arrival</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-port-arrival" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="trailerOrContainerNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Trailer / Container Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="departureFrom"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Departure From</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
+                <FormField
+                  control={form.control}
+                  name="portOfArrival"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Port of Arrival</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-port-arrival" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -966,7 +892,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                       <FormLabel>Shipment Type</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-shipment-type">
+                          <SelectTrigger data-testid="select-container-shipment">
                             <SelectValue placeholder="Select shipment type" />
                           </SelectTrigger>
                         </FormControl>
@@ -980,16 +906,50 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     </FormItem>
                   )}
                 />
+              </div>
 
-                {containerShipment === "Container Shipment" && (
+              <div className="grid gap-4 md:grid-cols-2">
+                {jobType === "export" && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="departureFrom"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Departure From</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="trailerOrContainerNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Trailer / Container Number</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+
+                {jobType === "import" && (
                   <FormField
                     control={form.control}
-                    name="vesselName"
+                    name="trailerOrContainerNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Vessel Name</FormLabel>
+                        <FormLabel>Trailer / Container Number</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-vessel-name" />
+                          <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1005,7 +965,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               <CardTitle>Cargo Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <FormField
                   control={form.control}
                   name="numberOfPieces"
@@ -1084,7 +1044,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               <CardTitle>Financial Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <FormField
                   control={form.control}
                   name="currency"
@@ -1138,7 +1098,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                     name="transportCosts"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Transport Costs</FormLabel>
+                        <FormLabel>Declaired Transport Costs</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-transport-costs" />
                         </FormControl>
@@ -1447,124 +1407,126 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="haulierContactName"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Haulier Contact Name</FormLabel>
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter contact name"
-                          value={newHaulierContactName}
-                          onChange={(e) => setNewHaulierContactName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              addHaulierContactName()
-                            }
-                          }}
-                          data-testid="input-new-haulier-contact-name"
-                        />
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="outline"
-                          onClick={addHaulierContactName}
-                          data-testid="button-add-haulier-contact-name"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      {haulierContactNames.length > 0 && (
-                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-contact-names">
-                          {haulierContactNames.map((name) => (
-                            <Badge
-                              key={name}
-                              variant="secondary"
-                              className="gap-1"
-                              data-testid={`badge-haulier-contact-name-${name}`}
-                            >
-                              {name}
-                              <button
-                                type="button"
-                                onClick={() => removeHaulierContactName(name)}
-                                className="ml-1 hover:text-destructive"
-                                data-testid={`button-remove-haulier-contact-name-${name}`}
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="haulierContactName"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Haulier Contact Name</FormLabel>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Enter contact name"
+                            value={newHaulierContactName}
+                            onChange={(e) => setNewHaulierContactName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addHaulierContactName()
+                              }
+                            }}
+                            data-testid="input-new-haulier-contact-name"
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            onClick={addHaulierContactName}
+                            data-testid="button-add-haulier-contact-name"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        
+                        {haulierContactNames.length > 0 && (
+                          <div className="flex flex-wrap gap-2" data-testid="list-haulier-contact-names">
+                            {haulierContactNames.map((name) => (
+                              <Badge
+                                key={name}
+                                variant="secondary"
+                                className="gap-1"
+                                data-testid={`badge-haulier-contact-name-${name}`}
+                              >
+                                {name}
+                                <button
+                                  type="button"
+                                  onClick={() => removeHaulierContactName(name)}
+                                  className="ml-1 hover:text-destructive"
+                                  data-testid={`button-remove-haulier-contact-name-${name}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="haulierEmail"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Haulier Email</FormLabel>
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <Input
-                          type="email"
-                          placeholder="Enter haulier email"
-                          value={newHaulierEmail}
-                          onChange={(e) => setNewHaulierEmail(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              addHaulierEmail()
-                            }
-                          }}
-                          data-testid="input-new-haulier-email"
-                        />
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="outline"
-                          onClick={addHaulierEmail}
-                          data-testid="button-add-haulier-email"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      {haulierEmails.length > 0 && (
-                        <div className="flex flex-wrap gap-2" data-testid="list-haulier-emails">
-                          {haulierEmails.map((email) => (
-                            <Badge
-                              key={email}
-                              variant="secondary"
-                              className="gap-1"
-                              data-testid={`badge-haulier-email-${email}`}
-                            >
-                              {email}
-                              <button
-                                type="button"
-                                onClick={() => removeHaulierEmail(email)}
-                                className="ml-1 hover:text-destructive"
-                                data-testid={`button-remove-haulier-email-${email}`}
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
+                <FormField
+                  control={form.control}
+                  name="haulierEmail"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Haulier Email</FormLabel>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            type="email"
+                            placeholder="Enter haulier email"
+                            value={newHaulierEmail}
+                            onChange={(e) => setNewHaulierEmail(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addHaulierEmail()
+                              }
+                            }}
+                            data-testid="input-new-haulier-email"
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            onClick={addHaulierEmail}
+                            data-testid="button-add-haulier-email"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        
+                        {haulierEmails.length > 0 && (
+                          <div className="flex flex-wrap gap-2" data-testid="list-haulier-emails">
+                            {haulierEmails.map((email) => (
+                              <Badge
+                                key={email}
+                                variant="secondary"
+                                className="gap-1"
+                                data-testid={`badge-haulier-email-${email}`}
+                              >
+                                {email}
+                                <button
+                                  type="button"
+                                  onClick={() => removeHaulierEmail(email)}
+                                  className="ml-1 hover:text-destructive"
+                                  data-testid={`button-remove-haulier-email-${email}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </CardContent>
           </Card>
 
