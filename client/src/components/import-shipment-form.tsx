@@ -788,24 +788,44 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 />
 
                 {containerShipment === "Container Shipment" && (
-                  <FormField
-                    control={form.control}
-                    name="handoverContainerAtPort"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox 
-                            checked={field.value || false} 
-                            onCheckedChange={field.onChange}
-                            data-testid="checkbox-handover-container"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>Handover Container to Customer at Port</FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="handoverContainerAtPort"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox 
+                              checked={field.value || false} 
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-handover-container"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>Handover Container to Customer at Port</FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lclContainer"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox 
+                              checked={field.value || false} 
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-lcl-container"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>LCL Container</FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 )}
 
                 {(status === "Delivered" || status === "Completed") && (
