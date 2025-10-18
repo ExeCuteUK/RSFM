@@ -308,8 +308,8 @@ export function ClearanceWorkGrid() {
   }
 
   const getCellColor = (clearance: CustomClearance, fieldName: string, value: any) => {
-    const greenBg = "bg-green-100 dark:bg-green-900"
-    const yellowBg = "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-50"
+    const greenBg = "bg-green-100 dark:bg-green-900 dark:text-white"
+    const yellowBg = "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
     
     // Link column, Job Ref, and Notes always green
     if (fieldName === "link" || fieldName === "jobRef" || fieldName === "additionalNotes") {
@@ -653,7 +653,7 @@ export function ClearanceWorkGrid() {
                   
                   const statusHasHold = clearance.status === "P.H Hold" || clearance.status === "Customs Issue"
                   const showHoldIcon = clearance.jobHold || statusHasHold
-                  const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900"
+                  const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900 dark:text-white"
                   
                   // Build combined tooltip message
                   let holdTooltip = ""

@@ -1596,12 +1596,12 @@ export default function CustomClearances() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Custom Clearances</h1>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">Clearance Job Manager</h1>
           <p className="text-muted-foreground">
             Manage customs clearance operations for import and export shipments
           </p>
         </div>
-        <Button data-testid="button-new-clearance" onClick={handleCreateNew} className="border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground">
+        <Button data-testid="button-new-clearance" onClick={handleCreateNew} className="border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground">
           <Plus className="h-4 w-4 mr-2" />
           New Customs Clearance
         </Button>
@@ -1628,7 +1628,7 @@ export default function CustomClearances() {
           <Button
             variant={selectedShipmentTypes.includes("Container Shipment") ? "default" : "outline"}
             size="sm"
-            className={selectedShipmentTypes.includes("Container Shipment") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+            className={selectedShipmentTypes.includes("Container Shipment") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Container Shipment") && prev.length === 1) {
@@ -1647,7 +1647,7 @@ export default function CustomClearances() {
           <Button
             variant={selectedShipmentTypes.includes("Road Shipment") ? "default" : "outline"}
             size="sm"
-            className={selectedShipmentTypes.includes("Road Shipment") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+            className={selectedShipmentTypes.includes("Road Shipment") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Road Shipment") && prev.length === 1) {
@@ -1666,7 +1666,7 @@ export default function CustomClearances() {
           <Button
             variant={selectedShipmentTypes.includes("Air Freight") ? "default" : "outline"}
             size="sm"
-            className={selectedShipmentTypes.includes("Air Freight") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+            className={selectedShipmentTypes.includes("Air Freight") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Air Freight") && prev.length === 1) {
@@ -1688,7 +1688,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.length === 0 ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.length === 0 ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          className={selectedStatuses.length === 0 ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
           onClick={handleAllClick}
           data-testid="filter-all"
         >
@@ -1697,7 +1697,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Request CC") ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.includes("Request CC") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          className={selectedStatuses.includes("Request CC") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
           onClick={() => handleStatusToggle("Request CC")}
           data-testid="filter-request-cc"
         >
@@ -1706,7 +1706,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Awaiting Entry") ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.includes("Awaiting Entry") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          className={selectedStatuses.includes("Awaiting Entry") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
           onClick={() => handleStatusToggle("Awaiting Entry")}
           data-testid="filter-awaiting-entry"
         >
@@ -1715,7 +1715,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Awaiting Arrival") ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.includes("Awaiting Arrival") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          className={selectedStatuses.includes("Awaiting Arrival") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
           onClick={() => handleStatusToggle("Awaiting Arrival")}
           data-testid="filter-awaiting-arrival"
         >
@@ -1724,7 +1724,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("P.H Hold") ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.includes("P.H Hold") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          className={selectedStatuses.includes("P.H Hold") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
           onClick={() => handleStatusToggle("P.H Hold")}
           data-testid="filter-ph-hold"
         >
@@ -1733,7 +1733,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Customs Issue") ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.includes("Customs Issue") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          className={selectedStatuses.includes("Customs Issue") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
           onClick={() => handleStatusToggle("Customs Issue")}
           data-testid="filter-customs-issue"
         >
@@ -1742,7 +1742,7 @@ export default function CustomClearances() {
         <Button
           variant={selectedStatuses.includes("Fully Cleared") ? "default" : "outline"}
           size="sm"
-          className={selectedStatuses.includes("Fully Cleared") ? "border border-border bg-purple-100 dark:bg-purple-950/20 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-black dark:text-foreground" : ""}
+          className={selectedStatuses.includes("Fully Cleared") ? "border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground" : ""}
           onClick={() => handleStatusToggle("Fully Cleared")}
           data-testid="filter-fully-cleared"
         >

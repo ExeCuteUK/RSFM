@@ -1931,7 +1931,7 @@ Hope all is OK.`
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Import Shipments</h1>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">Import Job Manager</h1>
           <p className="text-muted-foreground">
             Manage incoming shipments and customs clearances
           </p>
@@ -1948,7 +1948,7 @@ Hope all is OK.`
             <Container className="h-4 w-4 mr-2" />
             Check Current Containers
           </Button>
-          <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground">
+          <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground">
             <Plus className="h-4 w-4 mr-2" />
             New Import Shipment
           </Button>
@@ -1976,7 +1976,7 @@ Hope all is OK.`
           <Button
             variant={selectedShipmentTypes.includes("Container Shipment") ? "default" : "outline"}
             size="sm"
-            className={selectedShipmentTypes.includes("Container Shipment") ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedShipmentTypes.includes("Container Shipment") ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Container Shipment") && prev.length === 1) {
@@ -1995,7 +1995,7 @@ Hope all is OK.`
           <Button
             variant={selectedShipmentTypes.includes("Road Shipment") ? "default" : "outline"}
             size="sm"
-            className={selectedShipmentTypes.includes("Road Shipment") ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedShipmentTypes.includes("Road Shipment") ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Road Shipment") && prev.length === 1) {
@@ -2014,7 +2014,7 @@ Hope all is OK.`
           <Button
             variant={selectedShipmentTypes.includes("Air Freight") ? "default" : "outline"}
             size="sm"
-            className={selectedShipmentTypes.includes("Air Freight") ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedShipmentTypes.includes("Air Freight") ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedShipmentTypes(prev => {
                 if (prev.includes("Air Freight") && prev.length === 1) {
@@ -2036,7 +2036,7 @@ Hope all is OK.`
           <Button
             variant={selectedStatuses.length === 0 ? "default" : "outline"}
             size="sm"
-            className={selectedStatuses.length === 0 ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedStatuses.length === 0 ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => setSelectedStatuses([])}
             data-testid="filter-all"
           >
@@ -2045,7 +2045,7 @@ Hope all is OK.`
           <Button
             variant={selectedStatuses.includes("Awaiting Collection") ? "default" : "outline"}
             size="sm"
-            className={selectedStatuses.includes("Awaiting Collection") ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedStatuses.includes("Awaiting Collection") ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedStatuses(prev => 
                 prev.includes("Awaiting Collection") 
@@ -2060,7 +2060,7 @@ Hope all is OK.`
           <Button
             variant={selectedStatuses.includes("Dispatched") ? "default" : "outline"}
             size="sm"
-            className={selectedStatuses.includes("Dispatched") ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedStatuses.includes("Dispatched") ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedStatuses(prev => 
                 prev.includes("Dispatched") 
@@ -2075,7 +2075,7 @@ Hope all is OK.`
           <Button
             variant={selectedStatuses.includes("Delivered") ? "default" : "outline"}
             size="sm"
-            className={selectedStatuses.includes("Delivered") ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedStatuses.includes("Delivered") ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedStatuses(prev => 
                 prev.includes("Delivered") 
@@ -2090,7 +2090,7 @@ Hope all is OK.`
           <Button
             variant={selectedStatuses.includes("Completed") ? "default" : "outline"}
             size="sm"
-            className={selectedStatuses.includes("Completed") ? "border border-border bg-blue-100 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-black dark:text-foreground" : ""}
+            className={selectedStatuses.includes("Completed") ? "border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground" : ""}
             onClick={() => {
               setSelectedStatuses(prev => 
                 prev.includes("Completed") 

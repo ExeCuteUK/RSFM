@@ -540,7 +540,7 @@ export default function Dashboard() {
 
   // Helper to get cell color (green if populated, yellow if empty)
   const getNisbetsCellColor = (value: string | null | undefined): string => {
-    return value ? "bg-green-100 dark:bg-green-900" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+    return value ? "bg-green-100 dark:bg-green-900 dark:text-white" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get customer name
@@ -580,7 +580,7 @@ export default function Dashboard() {
     
     // Green only if both conditions are met
     if (hasDeliveryDate && isBookingStatusGreen) {
-      return "bg-green-100 dark:bg-green-900"
+      return "bg-green-100 dark:bg-green-900 dark:text-white"
     }
     
     // Yellow otherwise (empty date OR yellow status OR both)
@@ -591,14 +591,14 @@ export default function Dashboard() {
   const getClearanceStatusColor = (shipment: ImportShipment): string => {
     // If R.S To Clear is unticked (false), set first 8 columns to green
     if (shipment.rsToClear === false) {
-      return "bg-green-100 dark:bg-green-900"
+      return "bg-green-100 dark:bg-green-900 dark:text-white"
     }
     
     const adviseStatus = (shipment as any).adviseClearanceToAgentStatusIndicator
     
     // Check if Advise Clearance to Agent status is completed (green)
     if (adviseStatus === 3) {
-      return "bg-green-100 dark:bg-green-900"
+      return "bg-green-100 dark:bg-green-900 dark:text-white"
     }
     
     const clearance = getLinkedClearance(shipment.jobRef)
@@ -606,7 +606,7 @@ export default function Dashboard() {
     
     const status = clearance.status
     if (["Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Fully Cleared"].includes(status)) {
-      return "bg-green-100 dark:bg-green-900"
+      return "bg-green-100 dark:bg-green-900 dark:text-white"
     }
     if (status === "Request CC") {
       return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
@@ -616,35 +616,35 @@ export default function Dashboard() {
 
   // Helper to get delivery booked color
   const getDeliveryBookedColor = (indicator: number | null): string => {
-    if (indicator === 3) return "bg-green-100 dark:bg-green-900"
-    if (indicator === 2) return "bg-orange-300 dark:bg-orange-700"
+    if (indicator === 3) return "bg-green-100 dark:bg-green-900 dark:text-white"
+    if (indicator === 2) return "bg-orange-300 dark:bg-orange-700 dark:text-black"
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get container release color
   const getContainerReleaseColor = (indicator: number | null): string => {
-    if (indicator === 3) return "bg-green-100 dark:bg-green-900"
-    if (indicator === 2) return "bg-orange-300 dark:bg-orange-700"
+    if (indicator === 3) return "bg-green-100 dark:bg-green-900 dark:text-white"
+    if (indicator === 2) return "bg-orange-300 dark:bg-orange-700 dark:text-black"
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get delivery address color
   const getDeliveryAddressColor = (address: string | null): string => {
     if (address && address.trim().length > 0) {
-      return "bg-green-100 dark:bg-green-900"
+      return "bg-green-100 dark:bg-green-900 dark:text-white"
     }
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get invoice status color
   const getInvoiceStatusColor = (indicator: number | null): string => {
-    if (indicator === 3) return "bg-green-100 dark:bg-green-900"
+    if (indicator === 3) return "bg-green-100 dark:bg-green-900 dark:text-white"
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
   // Helper to get Rate In/Out color (green when Notify Customer of Arrival is completed)
   const getRateInOutColor = (adviseStatusIndicator: number | null): string => {
-    if (adviseStatusIndicator === 3) return "bg-green-100 dark:bg-green-900"
+    if (adviseStatusIndicator === 3) return "bg-green-100 dark:bg-green-900 dark:text-white"
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
@@ -815,7 +815,7 @@ export default function Dashboard() {
             className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
           >
             <Container className="h-4 w-4 mr-2" />
-            Import Container Jobs
+            Import Containers
           </TabsTrigger>
           <TabsTrigger 
             value="nisbets" 
@@ -823,7 +823,7 @@ export default function Dashboard() {
             className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
           >
             <Package className="h-4 w-4 mr-2" />
-            Nisbets Jobs
+            Nisbets
           </TabsTrigger>
           <TabsTrigger 
             value="import-export-work" 
@@ -831,7 +831,7 @@ export default function Dashboard() {
             className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
           >
             <FileText className="h-4 w-4 mr-2" />
-            Import / Export Jobs
+            Import & Export Work
           </TabsTrigger>
           <TabsTrigger 
             value="clearance-work" 
@@ -920,7 +920,7 @@ export default function Dashboard() {
                         const linkedClearance = getLinkedClearance(shipment.jobRef)
                         const clearanceHasHoldStatus = linkedClearance && (linkedClearance.status === "P.H Hold" || linkedClearance.status === "Customs Issue")
                         const showHoldIcon = shipment.jobHold || clearanceHasHoldStatus
-                        const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900"
+                        const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900 dark:text-white"
                         
                         // Build combined tooltip message
                         let holdTooltip = ""
