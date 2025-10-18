@@ -481,7 +481,7 @@ export default function JobJournals() {
     <div className="h-full flex flex-col p-6 gap-4 overflow-hidden">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Job Journals</h1>
+          <h1 className="text-3xl font-bold">Truck Journals</h1>
           <p className="text-muted-foreground mt-1">Financial tracking for all jobs</p>
         </div>
         <div className="flex gap-2">

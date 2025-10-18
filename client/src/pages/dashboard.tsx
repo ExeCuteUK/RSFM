@@ -799,9 +799,9 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">Dashboard</h1>
+        <h1 className="text-3xl font-bold" data-testid="text-page-title">Management Sheets</h1>
         <p className="text-muted-foreground">
-          Welcome back! Here's an overview of your freight operations.
+          Heres an overview of all Job Operations.
         </p>
       </div>
 
@@ -811,19 +811,19 @@ export default function Dashboard() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="container-management" data-testid="tab-container-management">
             <Container className="h-4 w-4 mr-2" />
-            Container Management Sheet
+            Container Job
           </TabsTrigger>
           <TabsTrigger value="nisbets" data-testid="tab-nisbets">
             <Package className="h-4 w-4 mr-2" />
-            Nisbets
+            Nisbets Jobs
           </TabsTrigger>
           <TabsTrigger value="import-export-work" data-testid="tab-import-export">
             <FileText className="h-4 w-4 mr-2" />
-            Import / Export Work Management Sheet
+            Import / Export Jobs
           </TabsTrigger>
           <TabsTrigger value="clearance-work" data-testid="tab-clearance">
             <Clipboard className="h-4 w-4 mr-2" />
-            Clearance Management Sheet
+            Customs Clearances
           </TabsTrigger>
         </TabsList>
 

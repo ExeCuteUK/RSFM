@@ -98,14 +98,6 @@ const secondaryItems = [
   },
 ]
 
-const betaTestingItems = [
-  {
-    title: "Emails",
-    url: "/emails",
-    icon: Mail,
-  },
-]
-
 export function AppSidebar() {
   const [location] = useLocation()
   const { openWindow } = useWindowManager()
@@ -158,7 +150,7 @@ export function AppSidebar() {
               R.S. Freight Manager
             </h2>
             <p className="text-[11px] text-muted-foreground" data-testid="text-app-version">
-              Version 4.2.8 Beta
+              Version 4.2.9 Beta
             </p>
           </div>
         </div>
@@ -257,29 +249,6 @@ export function AppSidebar() {
                           {unreadCount}
                         </Badge>
                       )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Alpha Testing</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {betaTestingItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                    data-active={location === item.url}
-                    className={location === item.url ? "bg-sidebar-accent" : ""}
-                  >
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
