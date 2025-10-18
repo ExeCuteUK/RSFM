@@ -33,14 +33,14 @@ import {
 
 const menuItems = [
   {
-    title: "Dashboard",
-    url: "/",
-    icon: BarChart3,
-  },
-  {
-    title: "Job Journals",
+    title: "Truck Journals",
     url: "/job-journals",
     icon: BookOpen,
+  },
+  {
+    title: "Management Sheets",
+    url: "/",
+    icon: BarChart3,
   },
   {
     title: "Import Shipments",

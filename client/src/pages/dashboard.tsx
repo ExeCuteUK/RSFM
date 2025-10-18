@@ -819,11 +819,11 @@ export default function Dashboard() {
           </TabsTrigger>
           <TabsTrigger value="import-export-work" data-testid="tab-import-export">
             <FileText className="h-4 w-4 mr-2" />
-            Import/Export Work
+            Import / Export Work Management Sheet
           </TabsTrigger>
           <TabsTrigger value="clearance-work" data-testid="tab-clearance">
             <Clipboard className="h-4 w-4 mr-2" />
-            Clearance Management
+            Clearance Management Sheet
           </TabsTrigger>
         </TabsList>
 
