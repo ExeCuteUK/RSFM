@@ -342,6 +342,7 @@ export const importShipments = pgTable("import_shipments", {
   departureCountry: text("departure_country"),
   containerShipment: text("container_shipment"),
   handoverContainerAtPort: boolean("handover_container_at_port").default(false),
+  lclContainer: boolean("lcl_container").default(false),
   vesselName: text("vessel_name"),
   shippingLine: text("shipping_line"),
   deliveryRelease: text("delivery_release"),
