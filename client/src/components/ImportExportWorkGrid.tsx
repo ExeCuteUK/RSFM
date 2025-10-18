@@ -124,7 +124,7 @@ export function ImportExportWorkGrid() {
     queryKey: ["/api/hauliers"],
   })
 
-  // Filter jobs: Exclude Container Shipments and manually excluded customers
+  // Filter jobs: Exclude Container Shipments (unless LCL) and manually excluded customers
   const filteredJobs = [
     ...importShipments
       .filter(job => {
@@ -137,7 +137,10 @@ export function ImportExportWorkGrid() {
           return customerName.includes(normalizedExcludedName)
         })
         
-        return job.containerShipment !== "Container Shipment" && !isExcluded
+        // Exclude Container Shipments UNLESS lclContainer is true
+        const isContainerButNotLCL = job.containerShipment === "Container Shipment" && !job.lclContainer
+        
+        return !isContainerButNotLCL && !isExcluded
       })
       .map(job => ({ ...job, _jobType: 'import' as const })),
     ...exportShipments
@@ -151,6 +154,7 @@ export function ImportExportWorkGrid() {
           return customerName.includes(normalizedExcludedName)
         })
         
+        // Exclude all Container Shipments from exports (no LCL field for exports)
         return job.containerShipment !== "Container Shipment" && !isExcluded
       })
       .map(job => ({ ...job, _jobType: 'export' as const }))
