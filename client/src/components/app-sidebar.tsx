@@ -1,11 +1,11 @@
 import { 
-  BarChart3, 
-  Package, 
+  Grid3x3, 
+  FolderInput, 
+  FolderOutput, 
   Users, 
-  Truck, 
   FileText, 
   Settings, 
-  FileCheck,
+  FolderCog,
   BookOpen,
   Database,
   MessageSquare,
@@ -31,7 +31,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar"
 
-const menuItems = [
+const operationsOverviewItems = [
   {
     title: "Truck Journals",
     url: "/job-journals",
@@ -40,32 +40,38 @@ const menuItems = [
   {
     title: "Management Sheets",
     url: "/",
-    icon: BarChart3,
+    icon: Grid3x3,
   },
+]
+
+const jobManagementItems = [
   {
-    title: "Import Shipments",
+    title: "Import Jobs",
     url: "/import-shipments",
-    icon: Package,
+    icon: FolderInput,
   },
   {
-    title: "Export Shipments",
+    title: "Export Jobs",
     url: "/export-shipments",
-    icon: Truck,
+    icon: FolderOutput,
   },
   {
-    title: "Custom Clearances",
+    title: "Clearance Jobs",
     url: "/custom-clearances",
-    icon: FileCheck,
+    icon: FolderCog,
   },
+]
+
+const archiveItems = [
   {
-    title: "Contacts", 
-    url: "/contacts",
-    icon: Users,
-  },
-  {
-    title: "Invoices",
+    title: "Invoice Archive",
     url: "/invoices",
     icon: FileText,
+  },
+  {
+    title: "Contact Database", 
+    url: "/contacts",
+    icon: Users,
   },
 ]
 
@@ -159,10 +165,10 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Operations Overview</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {operationsOverviewItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
@@ -170,7 +176,53 @@ export function AppSidebar() {
                     data-active={location === item.url}
                     className={location === item.url ? "bg-sidebar-accent" : ""}
                   >
-                    <Link href={item.url} onClick={item.title === "Contacts" ? handleContactsClick : undefined}>
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Job Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {jobManagementItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    data-active={location === item.url}
+                    className={location === item.url ? "bg-sidebar-accent" : ""}
+                  >
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Archive</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {archiveItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    data-active={location === item.url}
+                    className={location === item.url ? "bg-sidebar-accent" : ""}
+                  >
+                    <Link href={item.url} onClick={item.title === "Contact Database" ? handleContactsClick : undefined}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
