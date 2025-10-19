@@ -309,7 +309,7 @@ export function ClearanceWorkGrid() {
 
   const getCellColor = (clearance: CustomClearance, fieldName: string, value: any) => {
     const greenBg = "bg-green-100 dark:bg-green-900 dark:text-white"
-    const yellowBg = "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+    const yellowBg = "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black"
     
     // Link column, Job Ref, and Notes always green
     if (fieldName === "link" || fieldName === "jobRef" || fieldName === "additionalNotes") {
