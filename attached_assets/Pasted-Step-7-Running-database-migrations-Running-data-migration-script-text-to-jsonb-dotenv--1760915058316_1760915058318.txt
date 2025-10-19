@@ -1,0 +1,380 @@
+Step 7: Running database migrations...
+Running data migration script (text[] to jsonb)...
+[dotenv@17.2.3] injecting env (12) from .env -- tip: 👥 sync secrets across team                                                                          mates & machines: https://dotenvx.com/ops
+🚀 Starting attachment fields migration...
+
+📌 Database: localhost:5432
+
+============================================================
+📋 Table: messages
+============================================================
+
+  🔄 Migrating messages.attachments...
+  ❌ Error checking column type for messages.attachments: NeonDbError: Error con                                                                          necting to database: fetch failed
+    at execute (file:///var/www/rsfm/node_modules/@neondatabase/serverless/index                                                                          .mjs:1549:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-jso                                                                          nb.ts:49:20)
+    at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.t                                                                          s:83:21)
+    at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.ts                                                                          :174:9) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: TypeError: fetch failed
+      at node:internal/deps/undici/undici:13510:13
+      at process.processTicksAndRejections (node:internal/process/task_queues:95                                                                          :5)
+      at async execute (file:///var/www/rsfm/node_modules/@neondatabase/serverle                                                                          ss/index.mjs:1548:15)
+      at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-j                                                                          sonb.ts:49:20)
+      at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb                                                                          .ts:83:21)
+      at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.                                                                          ts:174:9) {
+    [cause]: Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match ce                                                                          rtificate's altnames: Host: localhost. is not in the cert's altnames: DNS:rs.myc                                                                          ustomsclearance.co.uk
+        at Object.checkServerIdentity (node:tls:316:12)
+        at TLSSocket.onConnectSecure (node:_tls_wrap:1687:27)
+        at TLSSocket.emit (node:events:524:28)
+        at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+        at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+      code: 'ERR_TLS_CERT_ALTNAME_INVALID',
+      reason: "Host: localhost. is not in the cert's altnames: DNS:rs.mycustomsc                                                                          learance.co.uk",
+      host: 'localhost',
+      cert: [Object]
+    }
+  }
+}
+  ✅ messages.attachments is already jsonb or doesn't need migration
+
+============================================================
+📋 Table: import_shipments
+============================================================
+
+  🔄 Migrating import_shipments.proof_of_delivery...
+  ❌ Error checking column type for import_shipments.proof_of_delivery: NeonDbEr                                                                          ror: Error connecting to database: fetch failed
+    at execute (file:///var/www/rsfm/node_modules/@neondatabase/serverless/index                                                                          .mjs:1549:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-jso                                                                          nb.ts:49:20)
+    at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.t                                                                          s:83:21)
+    at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.ts                                                                          :174:9) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: TypeError: fetch failed
+      at node:internal/deps/undici/undici:13510:13
+      at process.processTicksAndRejections (node:internal/process/task_queues:95                                                                          :5)
+      at async execute (file:///var/www/rsfm/node_modules/@neondatabase/serverle                                                                          ss/index.mjs:1548:15)
+      at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-j                                                                          sonb.ts:49:20)
+      at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb                                                                          .ts:83:21)
+      at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.                                                                          ts:174:9) {
+    [cause]: Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match ce                                                                          rtificate's altnames: Host: localhost. is not in the cert's altnames: DNS:rs.myc                                                                          ustomsclearance.co.uk
+        at Object.checkServerIdentity (node:tls:316:12)
+        at TLSSocket.onConnectSecure (node:_tls_wrap:1687:27)
+        at TLSSocket.emit (node:events:524:28)
+        at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+        at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+      code: 'ERR_TLS_CERT_ALTNAME_INVALID',
+      reason: "Host: localhost. is not in the cert's altnames: DNS:rs.mycustomsc                                                                          learance.co.uk",
+      host: 'localhost',
+      cert: [Object]
+    }
+  }
+}
+  ✅ import_shipments.proof_of_delivery is already jsonb or doesn't need migrati                                                                          on
+
+  🔄 Migrating import_shipments.attachments...
+  ❌ Error checking column type for import_shipments.attachments: NeonDbError: E                                                                          rror connecting to database: fetch failed
+    at execute (file:///var/www/rsfm/node_modules/@neondatabase/serverless/index                                                                          .mjs:1549:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-jso                                                                          nb.ts:49:20)
+    at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.t                                                                          s:83:21)
+    at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.ts                                                                          :174:9) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: TypeError: fetch failed
+      at node:internal/deps/undici/undici:13510:13
+      at process.processTicksAndRejections (node:internal/process/task_queues:95                                                                          :5)
+      at async execute (file:///var/www/rsfm/node_modules/@neondatabase/serverle                                                                          ss/index.mjs:1548:15)
+      at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-j                                                                          sonb.ts:49:20)
+      at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb                                                                          .ts:83:21)
+      at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.                                                                          ts:174:9) {
+    [cause]: Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match ce                                                                          rtificate's altnames: Host: localhost. is not in the cert's altnames: DNS:rs.myc                                                                          ustomsclearance.co.uk
+        at Object.checkServerIdentity (node:tls:316:12)
+        at TLSSocket.onConnectSecure (node:_tls_wrap:1687:27)
+        at TLSSocket.emit (node:events:524:28)
+        at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+        at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+      code: 'ERR_TLS_CERT_ALTNAME_INVALID',
+      reason: "Host: localhost. is not in the cert's altnames: DNS:rs.mycustomsc                                                                          learance.co.uk",
+      host: 'localhost',
+      cert: [Object]
+    }
+  }
+}
+  ✅ import_shipments.attachments is already jsonb or doesn't need migration
+
+============================================================
+📋 Table: export_shipments
+============================================================
+
+  🔄 Migrating export_shipments.proof_of_delivery...
+  ❌ Error checking column type for export_shipments.proof_of_delivery: NeonDbEr                                                                          ror: Error connecting to database: fetch failed
+    at execute (file:///var/www/rsfm/node_modules/@neondatabase/serverless/index                                                                          .mjs:1549:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-jso                                                                          nb.ts:49:20)
+    at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.t                                                                          s:83:21)
+    at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.ts                                                                          :174:9) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: TypeError: fetch failed
+      at node:internal/deps/undici/undici:13510:13
+      at process.processTicksAndRejections (node:internal/process/task_queues:95                                                                          :5)
+      at async execute (file:///var/www/rsfm/node_modules/@neondatabase/serverle                                                                          ss/index.mjs:1548:15)
+      at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-j                                                                          sonb.ts:49:20)
+      at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb                                                                          .ts:83:21)
+      at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.                                                                          ts:174:9) {
+    [cause]: Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match ce                                                                          rtificate's altnames: Host: localhost. is not in the cert's altnames: DNS:rs.myc                                                                          ustomsclearance.co.uk
+        at Object.checkServerIdentity (node:tls:316:12)
+        at TLSSocket.onConnectSecure (node:_tls_wrap:1687:27)
+        at TLSSocket.emit (node:events:524:28)
+        at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+        at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+      code: 'ERR_TLS_CERT_ALTNAME_INVALID',
+      reason: "Host: localhost. is not in the cert's altnames: DNS:rs.mycustomsc                                                                          learance.co.uk",
+      host: 'localhost',
+      cert: [Object]
+    }
+  }
+}
+  ✅ export_shipments.proof_of_delivery is already jsonb or doesn't need migrati                                                                          on
+
+  🔄 Migrating export_shipments.attachments...
+  ❌ Error checking column type for export_shipments.attachments: NeonDbError: E                                                                          rror connecting to database: fetch failed
+    at execute (file:///var/www/rsfm/node_modules/@neondatabase/serverless/index                                                                          .mjs:1549:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-jso                                                                          nb.ts:49:20)
+    at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.t                                                                          s:83:21)
+    at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.ts                                                                          :174:9) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: TypeError: fetch failed
+      at node:internal/deps/undici/undici:13510:13
+      at process.processTicksAndRejections (node:internal/process/task_queues:95                                                                          :5)
+      at async execute (file:///var/www/rsfm/node_modules/@neondatabase/serverle                                                                          ss/index.mjs:1548:15)
+      at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-j                                                                          sonb.ts:49:20)
+      at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb                                                                          .ts:83:21)
+      at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.                                                                          ts:174:9) {
+    [cause]: Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match ce                                                                          rtificate's altnames: Host: localhost. is not in the cert's altnames: DNS:rs.myc                                                                          ustomsclearance.co.uk
+        at Object.checkServerIdentity (node:tls:316:12)
+        at TLSSocket.onConnectSecure (node:_tls_wrap:1687:27)
+        at TLSSocket.emit (node:events:524:28)
+        at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+        at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+      code: 'ERR_TLS_CERT_ALTNAME_INVALID',
+      reason: "Host: localhost. is not in the cert's altnames: DNS:rs.mycustomsc                                                                          learance.co.uk",
+      host: 'localhost',
+      cert: [Object]
+    }
+  }
+}
+  ✅ export_shipments.attachments is already jsonb or doesn't need migration
+
+============================================================
+📋 Table: custom_clearances
+============================================================
+
+  🔄 Migrating custom_clearances.transport_documents...
+  ❌ Error checking column type for custom_clearances.transport_documents: NeonD                                                                          bError: Error connecting to database: fetch failed
+    at execute (file:///var/www/rsfm/node_modules/@neondatabase/serverless/index                                                                          .mjs:1549:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-jso                                                                          nb.ts:49:20)
+    at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.t                                                                          s:83:21)
+    at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.ts                                                                          :174:9) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: TypeError: fetch failed
+      at node:internal/deps/undici/undici:13510:13
+      at process.processTicksAndRejections (node:internal/process/task_queues:95                                                                          :5)
+      at async execute (file:///var/www/rsfm/node_modules/@neondatabase/serverle                                                                          ss/index.mjs:1548:15)
+      at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-j                                                                          sonb.ts:49:20)
+      at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb                                                                          .ts:83:21)
+      at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.                                                                          ts:174:9) {
+    [cause]: Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match ce                                                                          rtificate's altnames: Host: localhost. is not in the cert's altnames: DNS:rs.myc                                                                          ustomsclearance.co.uk
+        at Object.checkServerIdentity (node:tls:316:12)
+        at TLSSocket.onConnectSecure (node:_tls_wrap:1687:27)
+        at TLSSocket.emit (node:events:524:28)
+        at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+        at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+      code: 'ERR_TLS_CERT_ALTNAME_INVALID',
+      reason: "Host: localhost. is not in the cert's altnames: DNS:rs.mycustomsc                                                                          learance.co.uk",
+      host: 'localhost',
+      cert: [Object]
+    }
+  }
+}
+  ✅ custom_clearances.transport_documents is already jsonb or doesn't need migr                                                                          ation
+
+  🔄 Migrating custom_clearances.clearance_documents...
+  ❌ Error checking column type for custom_clearances.clearance_documents: NeonD                                                                          bError: Error connecting to database: fetch failed
+    at execute (file:///var/www/rsfm/node_modules/@neondatabase/serverless/index                                                                          .mjs:1549:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-jso                                                                          nb.ts:49:20)
+    at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.t                                                                          s:83:21)
+    at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.ts                                                                          :174:9) {
+  severity: undefined,
+  code: undefined,
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined,
+  sourceError: TypeError: fetch failed
+      at node:internal/deps/undici/undici:13510:13
+      at process.processTicksAndRejections (node:internal/process/task_queues:95                                                                          :5)
+      at async execute (file:///var/www/rsfm/node_modules/@neondatabase/serverle                                                                          ss/index.mjs:1548:15)
+      at async isTextArrayColumn (/var/www/rsfm/scripts/migrate-attachments-to-j                                                                          sonb.ts:49:20)
+      at async migrateColumn (/var/www/rsfm/scripts/migrate-attachments-to-jsonb                                                                          .ts:83:21)
+      at async runMigration (/var/www/rsfm/scripts/migrate-attachments-to-jsonb.                                                                          ts:174:9) {
+    [cause]: Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match ce                                                                          rtificate's altnames: Host: localhost. is not in the cert's altnames: DNS:rs.myc                                                                          ustomsclearance.co.uk
+        at Object.checkServerIdentity (node:tls:316:12)
+        at TLSSocket.onConnectSecure (node:_tls_wrap:1687:27)
+        at TLSSocket.emit (node:events:524:28)
+        at TLSSocket._finishInit (node:_tls_wrap:1076:8)
+        at ssl.onhandshakedone (node:_tls_wrap:862:12) {
+      code: 'ERR_TLS_CERT_ALTNAME_INVALID',
+      reason: "Host: localhost. is not in the cert's altnames: DNS:rs.mycustomsc                                                                          learance.co.uk",
+      host: 'localhost',
+      cert: [Object]
+    }
+  }
+}
+  ✅ custom_clearances.clearance_documents is already jsonb or doesn't need migr                                                                          ation
+
+============================================================
+📊 Migration Summary
+============================================================
+✅ Successful migrations: 7
+⚠️  Skipped (already jsonb): 0
+❌ Failed migrations: 0
+============================================================
+
+🎉 All migrations completed successfully!
+
+✅ Migration script finished successfully
+Pushing database schema changes...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push --force
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/var/www/rsfm/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+error: column "default_suppliers_name" cannot be cast automatically to type text                                                                          []
+    at /var/www/rsfm/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5                                                                          )
+    at async Object.query (/var/www/rsfm/node_modules/drizzle-kit/bin.cjs:80601:                                                                          26)
+    at async pgPush (/var/www/rsfm/node_modules/drizzle-kit/bin.cjs:84411:13)
+    at async Object.handler (/var/www/rsfm/node_modules/drizzle-kit/bin.cjs:9381                                                                          3:9)
+    at async run (/var/www/rsfm/node_modules/drizzle-kit/bin.cjs:93059:7) {
+  length: 213,
+  severity: 'ERROR',
+  code: '42804',
+  detail: undefined,
+  hint: 'You might need to specify "USING default_suppliers_name::text[]".',
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'tablecmds.c',
