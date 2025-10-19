@@ -721,8 +721,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   control={form.control}
                   name="jobHold"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center gap-1 space-y-0 pt-7">
-                      <FormLabel className="mb-0">Job Hold</FormLabel>
+                    <FormItem className="flex flex-col items-center gap-1 space-y-0 pt-1">
+                      <FormLabel className="mb-1">Job Hold</FormLabel>
                       <FormControl>
                         <Checkbox
                           checked={field.value || false}
