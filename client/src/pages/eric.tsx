@@ -500,7 +500,7 @@ export default function Eric() {
               <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-sm mb-1">
-                  Job Issues Detected
+                  Job Holds Detected
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {jobIssuesMessage}

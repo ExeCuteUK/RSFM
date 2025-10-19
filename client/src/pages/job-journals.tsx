@@ -154,7 +154,7 @@ export default function JobJournals() {
 
   // Set page header
   useEffect(() => {
-    setPageTitle("TRUCK JOURNALS")
+    setPageTitle("Truck Journals")
     setActionButtons(
       <div className="flex gap-2">
         <GeneralReferenceDialog />

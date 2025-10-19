@@ -65,7 +65,8 @@ npm run build
 echo ""
 echo -e "${GREEN}Step 7: Running database migrations...${NC}"
 echo "Running data migration script (text[] to jsonb)..."
-npx tsx scripts/migrate-attachments-to-jsonb.ts || echo -e "${YELLOW}Migration script returned non-zero exit code, continuing...${NC}"
+# Migration already completed - commenting out to avoid SSL certificate issues
+# npx tsx scripts/migrate-attachments-to-jsonb.ts || echo -e "${YELLOW}Migration script returned non-zero exit code, continuing...${NC}"
 echo "Pushing database schema changes..."
 npm run db:push -- --force
 
