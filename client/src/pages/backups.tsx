@@ -170,7 +170,7 @@ export default function BackupsPage() {
 
   // Set page header (after mutations are declared)
   useEffect(() => {
-    setPageTitle("System Backups");
+    setPageTitle("Backup / Restore");
     setActionButtons(
       <div className="flex gap-2">
         {isAdmin && (

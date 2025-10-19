@@ -101,7 +101,7 @@ export default function JobJournals() {
   const [selectedYear, setSelectedYear] = useState(prefs.selectedYear || currentDate.getFullYear().toString())
   const [startDate, setStartDate] = useState(prefs.startDate || "")
   const [endDate, setEndDate] = useState(prefs.endDate || "")
-  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(prefs.selectedJobTypes || ["General"])
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>(prefs.selectedJobTypes || [])
   const [searchText, setSearchText] = useState(prefs.searchText || "")
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null)
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
@@ -154,7 +154,7 @@ export default function JobJournals() {
 
   // Set page header
   useEffect(() => {
-    setPageTitle("Truck Journals")
+    setPageTitle("TRUCK JOURNALS")
     setActionButtons(
       <div className="flex gap-2">
         <GeneralReferenceDialog />
@@ -560,6 +560,10 @@ export default function JobJournals() {
                 </SelectContent>
               </Select>
             </div>
+            
+            <div className="text-sm font-medium text-center flex-1">
+              {getFilterLabel()}
+            </div>
           </>
         ) : (
           <>
@@ -653,11 +657,6 @@ export default function JobJournals() {
       </div>
 
       <Card className="flex-1 flex flex-col min-h-0">
-        <CardHeader className="flex-shrink-0">
-          <CardTitle>
-            {getFilterLabel()} - {journalEntries.length} {journalEntries.length === 1 ? 'Record' : 'Records'}
-          </CardTitle>
-        </CardHeader>
         <CardContent className="flex-1 overflow-auto p-0">
           <div className="overflow-auto h-full">
             <table className="w-full border-collapse">

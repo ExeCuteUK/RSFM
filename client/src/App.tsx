@@ -215,7 +215,7 @@ function AppContent() {
                 <SidebarTrigger data-testid="button-sidebar-toggle" />
                 <OtherUsersMenu />
                 {pageTitle && (
-                  <h1 className="text-xl font-semibold">{pageTitle}</h1>
+                  <h1 className={`text-xl ${pageTitle === 'TRUCK JOURNALS' ? 'font-bold' : 'font-semibold'}`}>{pageTitle}</h1>
                 )}
               </div>
               <div className="flex items-center gap-4">

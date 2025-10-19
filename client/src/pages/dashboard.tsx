@@ -908,14 +908,13 @@ export default function Dashboard() {
                       </tr>
                     ) : (
                       paginatedContainerShipments.map((shipment) => {
+                        const linkedClearance = getLinkedClearance(shipment.jobRef)
                         const clearanceColor = getClearanceStatusColor(shipment)
                         const deliveryBookedColor = getDeliveryBookedColor(shipment.deliveryBookedStatusIndicator)
                         const releaseColor = getContainerReleaseColor(shipment.containerReleaseStatusIndicator)
                         const addressColor = getDeliveryAddressColor(shipment.deliveryAddress)
                         const invoiceColor = getInvoiceStatusColor(shipment.invoiceCustomerStatusIndicator)
-                        const rateInOutColor = getRateInOutColor(shipment.adviseCustomsArrivalStatusIndicator)
-
-                        const linkedClearance = getLinkedClearance(shipment.jobRef)
+                        const rateInOutColor = getRateInOutColor(linkedClearance?.adviseAgentStatusIndicator || null)
                         const clearanceHasHoldStatus = linkedClearance && (linkedClearance.status === "P.H Hold" || linkedClearance.status === "Customs Issue")
                         const showHoldIcon = shipment.jobHold || clearanceHasHoldStatus
                         const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900 dark:text-white"
@@ -935,7 +934,7 @@ export default function Dashboard() {
                         }
 
                         return (
-                          <tr key={shipment.id} className="border-b-2 hover-elevate h-24" data-testid={`row-container-${shipment.jobRef}`}>
+                          <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
                             {/* Hold */}
                             <td className={`px-1 text-center border-r border-border align-middle ${holdBgColor}`} data-testid={`cell-hold-${shipment.jobRef}`}>
                               {showHoldIcon && (
@@ -1166,7 +1165,9 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${addressColor}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "")}
                               >
-                                <span className="block text-xs">{shipment.deliveryAddress || ""}</span>
+                                <span className="block text-xs whitespace-pre-wrap">
+                                  {shipment.deliveryAddress ? shipment.deliveryAddress.split(',').map(part => part.trim()).join('\n') : ""}
+                                </span>
                               </td>
                             )}
                             {/* Rate In - read only */}
@@ -1327,7 +1328,7 @@ export default function Dashboard() {
                         const countryOptions = commonCountries.map(c => ({ value: c, label: c }))
 
                         return (
-                          <tr key={shipment.id} className="border-b-2 hover-elevate h-auto" data-testid={`row-nisbets-${shipment.jobRef}`}>
+                          <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-nisbets-${shipment.jobRef}`}>
                             {/* Job Ref - READ ONLY */}
                             <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button

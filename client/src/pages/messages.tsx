@@ -64,8 +64,13 @@ export default function Messages() {
   const [urlSearchParams, setUrlSearchParams] = useState(window.location.search);
 
   useEffect(() => {
-    setPageTitle("Messages");
-    setActionButtons(null);
+    setPageTitle("Internal Messages");
+    setActionButtons(
+      <Button onClick={() => setIsComposerOpen(true)} data-testid="button-compose">
+        <Send className="h-4 w-4 mr-2" />
+        Compose
+      </Button>
+    );
 
     return () => {
       setPageTitle("");
@@ -298,12 +303,6 @@ export default function Messages() {
     <div className="h-full flex flex-col p-6 gap-6">
       <div className="flex items-center justify-end">
         <Dialog open={isComposerOpen} onOpenChange={handleComposerClose}>
-          <DialogTrigger asChild>
-            <Button data-testid="button-compose">
-              <Send className="h-4 w-4 mr-2" />
-              Compose
-            </Button>
-          </DialogTrigger>
           <DialogContent className="max-w-2xl" aria-describedby="new-message-description">
             <DialogHeader>
               <DialogTitle>New Message</DialogTitle>
