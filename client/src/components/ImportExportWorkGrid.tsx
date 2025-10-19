@@ -595,10 +595,10 @@ export function ImportExportWorkGrid() {
                 const haulierName = isImport ? importJob?.haulierName : exportJob?.haulierName
 
                 return (
-                  <tr key={job.id} className="border-b hover:bg-muted/50" style={{ minHeight: '5rem' }}>
+                  <tr key={job.id} className="border-b hover:bg-muted/50">
                     {/* Job Ref - Clickable to navigate to shipment page */}
                     <td 
-                      className={`p-1 text-center border-r border-border cursor-pointer hover:underline ${rowColor}`}
+                      className={`p-1 text-center border-r border-border min-h-28 cursor-pointer hover:underline ${rowColor}`}
                       onClick={() => handleJobRefClick(job.jobRef, job._jobType)}
                       data-testid={`link-job-ref-${job.jobRef}`}
                     >
@@ -606,13 +606,13 @@ export function ImportExportWorkGrid() {
                     </td>
                     
                     {/* Job Date - Read only */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>
+                    <td className={`p-1 text-center border-r border-border min-h-28 ${rowColor}`}>
                       {formatDate(job.bookingDate || null)}
                     </td>
                     
                     {/* Shipper Ref - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'customerReferenceNumber', isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'customerReferenceNumber' ? (
@@ -631,11 +631,11 @@ export function ImportExportWorkGrid() {
                     </td>
                     
                     {/* Customer Name - Not editable */}
-                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>{customerName}</td>
+                    <td className={`p-1 text-center border-r border-border min-h-28 ${rowColor}`}>{customerName}</td>
                     
                     {/* Departure Date - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'dispatchDate', isImport ? importJob?.dispatchDate : exportJob?.dispatchDate, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'dispatchDate' ? (
@@ -656,7 +656,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Destination / Port of Arrival - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'portOfArrival', portOfArrival, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'portOfArrival' ? (
@@ -676,7 +676,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Identifier - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', identifier, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === (isImport ? 'trailerOrContainerNumber' : 'trailerNo') ? (
@@ -696,7 +696,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Qty - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'numberOfPieces', qty, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'numberOfPieces' ? (
@@ -716,7 +716,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Weight - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'weight', weight, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'weight' ? (
@@ -736,7 +736,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* CBM - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'cube', cbm, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'cube' ? (
@@ -756,7 +756,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* ETA Port - Editable with data color */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(etaPort)}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDataColor(etaPort)}`}
                       onClick={() => handleCellClick(job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', etaPort, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === (isImport ? 'importDateEtaPort' : 'etaPortDate') ? (
@@ -777,7 +777,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Delivery Date - Editable with status color for imports, data color for exports */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${getDeliveryDateColor(job)}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDeliveryDateColor(job)}`}
                       onClick={() => handleCellClick(job.id, 'deliveryDate', deliveryDate, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'deliveryDate' ? (
@@ -798,7 +798,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Delivery Address - Editable textarea with data color */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(deliveryAddress)}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDataColor(deliveryAddress)}`}
                       onClick={() => handleCellClick(job.id, 'deliveryAddress', deliveryAddress, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'deliveryAddress' ? (
@@ -817,7 +817,7 @@ export function ImportExportWorkGrid() {
                     </td>
                     
                     {/* Quote Out / Net In - Not editable, status color */}
-                    <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
+                    <td className={`p-1 text-center border-r border-border min-h-28 ${getQuoteColor(job)}`}>
                       <div className="space-y-0.5">
                         <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
                         <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
@@ -826,7 +826,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Haulier - Editable dropdown with data color */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(haulierName)}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDataColor(haulierName)}`}
                       onClick={() => handleCellClick(job.id, 'haulierName', haulierName, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'haulierName' ? (
@@ -855,7 +855,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* POD Sent - Editable timestamp with status color */}
                     <td 
-                      className={`px-1 text-center border-r border-border cursor-pointer ${getPodSentColor(job)}`}
+                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getPodSentColor(job)}`}
                       onClick={() => handleCellClick(job.id, 'sendPodToCustomerStatusIndicatorTimestamp', podTimestamp, job._jobType)}
                     >
                       {isEditing && editingCell?.fieldName === 'sendPodToCustomerStatusIndicatorTimestamp' ? (
@@ -875,7 +875,7 @@ export function ImportExportWorkGrid() {
                     </td>
                     
                     {/* Booker - Not editable, data color */}
-                    <td className={`p-1 text-center ${getDataColor(bookerName)}`}>{bookerName}</td>
+                    <td className={`p-1 text-center min-h-28 ${getDataColor(bookerName)}`}>{bookerName}</td>
                   </tr>
                 )
               })}
