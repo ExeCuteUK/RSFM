@@ -774,7 +774,7 @@ export default function Dashboard() {
     if (isEditing) {
       return (
         <td className={`px-1 text-center border-r border-border ${cellColor}`}>
-          <div className="min-h-28 flex items-center justify-center w-full">
+          <div className="min-h-[84px] flex items-center justify-center w-full">
             <input
               ref={inputRef}
               type="text"
@@ -796,7 +796,7 @@ export default function Dashboard() {
         onClick={handleClick}
         data-testid={`cell-${timestampField}-${shipment.jobRef}`}
       >
-        <div className="min-h-28 flex items-center justify-center">
+        <div className="min-h-[84px] flex items-center justify-center">
           {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField ? (
             <Loader2 className="h-3 w-3 animate-spin mx-auto" />
           ) : (
@@ -941,7 +941,7 @@ export default function Dashboard() {
                           <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
                             {/* Hold */}
                             <td className={`px-1 text-center border-r border-border ${holdBgColor}`} data-testid={`cell-hold-${shipment.jobRef}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 {showHoldIcon && (
                                   <Tooltip>
                                     <TooltipTrigger asChild>
@@ -956,7 +956,7 @@ export default function Dashboard() {
                             </td>
                             {/* Ref - not editable, just a link */}
                             <td className={`px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 <button
                                   onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
                                   className={`hover:underline ${clearanceColor.includes('yellow') ? 'text-black dark:text-gray-900' : 'text-gray-900 dark:text-white'}`}
@@ -969,7 +969,7 @@ export default function Dashboard() {
                             {/* Job Date - EDITABLE DATE (Booking Date) */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "bookingDate" ? (
                               <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -987,21 +987,21 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "bookingDate", formatDate(shipment.bookingDate))}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
                                 </div>
                               </td>
                             )}
                             {/* Consignee - read only */}
                             <td className={`px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 {getCustomerName(shipment.importCustomerId)}
                               </div>
                             </td>
                             {/* Container no. */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "trailerOrContainerNumber" ? (
                               <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1018,7 +1018,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "trailerOrContainerNumber", shipment.trailerOrContainerNumber || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
                                 </div>
                               </td>
@@ -1026,7 +1026,7 @@ export default function Dashboard() {
                             {/* Ship Line */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "shippingLine" ? (
                               <td className={`px-1 text-center border-r border-border w-20 ${clearanceColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <Select
                                     value={tempValue}
                                     onValueChange={(value) => {
@@ -1050,7 +1050,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary w-20 ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "shippingLine", shipment.shippingLine || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.shippingLine || ""}</span>
                                 </div>
                               </td>
@@ -1058,7 +1058,7 @@ export default function Dashboard() {
                             {/* Poa */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "portOfArrival" ? (
                               <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1075,7 +1075,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "portOfArrival", shipment.portOfArrival || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.portOfArrival || ""}</span>
                                 </div>
                               </td>
@@ -1083,7 +1083,7 @@ export default function Dashboard() {
                             {/* Vessel */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "vesselName" ? (
                               <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1100,7 +1100,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "vesselName", shipment.vesselName || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.vesselName || ""}</span>
                                 </div>
                               </td>
@@ -1108,7 +1108,7 @@ export default function Dashboard() {
                             {/* Eta Port */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "importDateEtaPort" ? (
                               <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1126,7 +1126,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "importDateEtaPort", shipment.importDateEtaPort || "", formatDate(shipment.importDateEtaPort))}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
                                 </div>
                               </td>
@@ -1134,7 +1134,7 @@ export default function Dashboard() {
                             {/* References */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "customerReferenceNumber" ? (
                               <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1151,21 +1151,21 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "customerReferenceNumber", shipment.customerReferenceNumber || "", shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || ""))}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}</span>
                                 </div>
                               </td>
                             )}
                             {/* Delivery Date - read only */}
                             <td className={`px-1 text-center border-r border-border ${shipment.handoverContainerAtPort ? 'bg-green-100 dark:bg-green-900' : deliveryBookedColor}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 {shipment.handoverContainerAtPort ? 'N/A' : (shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : '')}
                               </div>
                             </td>
                             {/* Rls */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryRelease" ? (
                               <td className={`px-1 text-center border-r border-border ${releaseColor}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1182,7 +1182,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${releaseColor}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryRelease", shipment.deliveryRelease || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.deliveryRelease || ""}</span>
                                 </div>
                               </td>
@@ -1190,13 +1190,13 @@ export default function Dashboard() {
                             {/* Delivery Address - read only when handover enabled */}
                             {shipment.handoverContainerAtPort ? (
                               <td className="px-1 text-center border-r border-border bg-green-100 dark:bg-green-900" data-testid={`cell-delivery-address-${shipment.jobRef}`}>
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   N/A
                                 </div>
                               </td>
                             ) : editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryAddress" ? (
                               <td className={`px-1 text-center border-r border-border ${addressColor}`}>
-                                <div className="min-h-28 flex items-center justify-start w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1204,7 +1204,7 @@ export default function Dashboard() {
                                     onChange={(e) => setTempValue(e.target.value)}
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
-                                    className="w-full text-xs text-left bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                   />
                                 </div>
                               </td>
@@ -1213,7 +1213,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${addressColor}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-start w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <span className="block text-xs whitespace-pre-wrap">
                                     {shipment.deliveryAddress ? shipment.deliveryAddress.split(',').map(part => part.trim()).join('\n') : ""}
                                   </span>
@@ -1222,27 +1222,27 @@ export default function Dashboard() {
                             )}
                             {/* Rate In - read only */}
                             <td className={`px-1 text-center border-r border-border ${rateInOutColor}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 <span className="block text-xs">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
                               </div>
                             </td>
                             {/* Rate Out - read only */}
                             <td className={`px-1 text-center border-r border-border ${rateInOutColor}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 <span className="block text-xs">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
                               </div>
                             </td>
                             {/* Notes */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "additionalNotes" ? (
                               <td className="px-1 text-center border-r border-border bg-green-100 dark:bg-green-900 w-48">
-                                <div className="min-h-28 flex items-center justify-start w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <textarea
                                     ref={textareaRef}
                                     value={tempValue}
                                     onChange={(e) => setTempValue(e.target.value)}
                                     onKeyDown={(e) => handleCellKeyDown(e, true)}
                                     onBlur={handleCellSave}
-                                    className="w-full min-h-[60px] max-h-[60px] text-sm text-left bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
+                                    className="w-full min-h-[60px] max-h-[60px] text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
                                     rows={3}
                                   />
                                 </div>
@@ -1252,7 +1252,7 @@ export default function Dashboard() {
                                 className="px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900 w-48"
                                 onClick={() => handleCellClick(shipment.id, "additionalNotes", shipment.additionalNotes || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-start w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <span className="whitespace-pre-wrap block text-xs leading-tight">
                                     {shipment.additionalNotes || ""}
                                   </span>
@@ -1389,7 +1389,7 @@ export default function Dashboard() {
                           <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-nisbets-${shipment.jobRef}`}>
                             {/* Job Ref - READ ONLY */}
                             <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 <button
                                   onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
                                   className="text-blue-600 dark:text-blue-300 hover:underline"
@@ -1403,7 +1403,7 @@ export default function Dashboard() {
                             {/* Ligentia Ref - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "customerReferenceNumber" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1420,7 +1420,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}
                                 onClick={() => handleCellClick(shipment.id, "customerReferenceNumber", shipment.customerReferenceNumber || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.customerReferenceNumber || ""}</span>
                                 </div>
                               </td>
@@ -1429,7 +1429,7 @@ export default function Dashboard() {
                             {/* Job Date - EDITABLE DATE (Booking Date) */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "bookingDate" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.bookingDate)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1447,7 +1447,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.bookingDate)}`}
                                 onClick={() => handleCellClick(shipment.id, "bookingDate", formatDate(shipment.bookingDate))}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
                                 </div>
                               </td>
@@ -1456,7 +1456,7 @@ export default function Dashboard() {
                             {/* Haulier - EDITABLE DROPDOWN */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "haulierName" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.haulierName)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <Select
                                     value={tempValue}
                                     onValueChange={(value) => {
@@ -1480,7 +1480,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.haulierName)}`}
                                 onClick={() => handleCellClick(shipment.id, "haulierName", shipment.haulierName || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.haulierName || ""}</span>
                                 </div>
                               </td>
@@ -1489,7 +1489,7 @@ export default function Dashboard() {
                             {/* Supplier - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "supplierName" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.supplierName)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1506,7 +1506,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.supplierName)}`}
                                 onClick={() => handleCellClick(shipment.id, "supplierName", shipment.supplierName || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.supplierName || ""}</span>
                                 </div>
                               </td>
@@ -1515,7 +1515,7 @@ export default function Dashboard() {
                             {/* Country - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "departureCountry" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.departureCountry)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1532,7 +1532,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.departureCountry)}`}
                                 onClick={() => handleCellClick(shipment.id, "departureCountry", shipment.departureCountry || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.departureCountry || ""}</span>
                                 </div>
                               </td>
@@ -1541,7 +1541,7 @@ export default function Dashboard() {
                             {/* Destination - EDITABLE TEXT (full deliveryAddress) */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryAddress" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.deliveryAddress)}`}>
-                                <div className="min-h-28 flex items-center justify-start w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1549,7 +1549,7 @@ export default function Dashboard() {
                                     onChange={(e) => setTempValue(e.target.value)}
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
-                                    className="w-full text-xs text-left bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                   />
                                 </div>
                               </td>
@@ -1558,7 +1558,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.deliveryAddress)}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "", destination)}
                               >
-                                <div className="min-h-28 flex items-center justify-start w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <span className="block text-xs">{destination}</span>
                                 </div>
                               </td>
@@ -1567,7 +1567,7 @@ export default function Dashboard() {
                             {/* Departure Date - EDITABLE DATE */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "dispatchDate" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.dispatchDate)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1585,7 +1585,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.dispatchDate)}`}
                                 onClick={() => handleCellClick(shipment.id, "dispatchDate", formatDate(shipment.dispatchDate))}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{formatDate(shipment.dispatchDate)}</span>
                                 </div>
                               </td>
@@ -1594,7 +1594,7 @@ export default function Dashboard() {
                             {/* Truck Number - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "trailerOrContainerNumber" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1611,7 +1611,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}
                                 onClick={() => handleCellClick(shipment.id, "trailerOrContainerNumber", shipment.trailerOrContainerNumber || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
                                 </div>
                               </td>
@@ -1620,7 +1620,7 @@ export default function Dashboard() {
                             {/* Port - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "portOfArrival" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.portOfArrival)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1637,7 +1637,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.portOfArrival)}`}
                                 onClick={() => handleCellClick(shipment.id, "portOfArrival", shipment.portOfArrival || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.portOfArrival || ""}</span>
                                 </div>
                               </td>
@@ -1646,7 +1646,7 @@ export default function Dashboard() {
                             {/* Eta UK Port - EDITABLE DATE */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "importDateEtaPort" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.importDateEtaPort)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1664,7 +1664,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.importDateEtaPort)}`}
                                 onClick={() => handleCellClick(shipment.id, "importDateEtaPort", formatDate(shipment.importDateEtaPort))}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
                                 </div>
                               </td>
@@ -1673,7 +1673,7 @@ export default function Dashboard() {
                             {/* Total Package - EDITABLE NUMBER */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "numberOfPieces" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.numberOfPieces)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1690,7 +1690,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.numberOfPieces)}`}
                                 onClick={() => handleCellClick(shipment.id, "numberOfPieces", shipment.numberOfPieces || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.numberOfPieces || ""}</span>
                                 </div>
                               </td>
@@ -1699,7 +1699,7 @@ export default function Dashboard() {
                             {/* Weight - EDITABLE NUMBER */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "weight" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.weight)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1716,7 +1716,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.weight)}`}
                                 onClick={() => handleCellClick(shipment.id, "weight", shipment.weight || "")}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{shipment.weight || ""}</span>
                                 </div>
                               </td>
@@ -1734,7 +1734,7 @@ export default function Dashboard() {
                             {/* Entry to Haulier - CUSTOM CELL */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "sendHaulierEadStatusIndicatorTimestamp" ? (
                               <td className={`px-1 text-center border-r border-border ${(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1753,7 +1753,7 @@ export default function Dashboard() {
                                 onClick={() => handleCellClick(shipment.id, "sendHaulierEadStatusIndicatorTimestamp", (shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "" : (shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ""))}
                                 data-testid={`cell-entry-haulier-${shipment.jobRef}`}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "" : (shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : "")}</span>
                                 </div>
                               </td>
@@ -1762,7 +1762,7 @@ export default function Dashboard() {
                             {/* Delivery Booked Date - EDITABLE DATE */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryDate" ? (
                               <td className={`px-1 text-center border-r border-border ${getNisbetsDeliveryBookedDateColor(shipment)}`}>
-                                <div className="min-h-28 flex items-center justify-center w-full">
+                                <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
                                     type="text"
@@ -1780,7 +1780,7 @@ export default function Dashboard() {
                                 className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsDeliveryBookedDateColor(shipment)}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryDate", formatDate(shipment.deliveryDate))}
                               >
-                                <div className="min-h-28 flex items-center justify-center">
+                                <div className="min-h-[84px] flex items-center justify-center">
                                   <span className="block text-xs">{formatDate(shipment.deliveryDate)}</span>
                                 </div>
                               </td>
@@ -1788,14 +1788,14 @@ export default function Dashboard() {
                             
                             {/* Net Cost - READ ONLY */}
                             <td className={`px-1 text-center whitespace-pre-wrap border-r border-border w-32 ${getNisbetsCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 {netCost}
                               </div>
                             </td>
                             
                             {/* Price Out - READ ONLY */}
                             <td className={`px-1 text-center whitespace-pre-wrap border-r border-border w-32 ${getNisbetsCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
-                              <div className="min-h-28 flex items-center justify-center">
+                              <div className="min-h-[84px] flex items-center justify-center">
                                 {priceOut}
                               </div>
                             </td>

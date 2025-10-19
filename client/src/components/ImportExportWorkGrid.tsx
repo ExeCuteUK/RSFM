@@ -602,14 +602,14 @@ export function ImportExportWorkGrid() {
                       onClick={() => handleJobRefClick(job.jobRef, job._jobType)}
                       data-testid={`link-job-ref-${job.jobRef}`}
                     >
-                      <div className="min-h-28 flex items-center justify-center">
+                      <div className="min-h-[84px] flex items-center justify-center">
                         {job.jobRef}
                       </div>
                     </td>
                     
                     {/* Job Date - Read only */}
                     <td className={`p-1 text-center border-r border-border ${rowColor}`}>
-                      <div className="min-h-28 flex items-center justify-center">
+                      <div className="min-h-[84px] flex items-center justify-center">
                         {formatDate(job.bookingDate || null)}
                       </div>
                     </td>
@@ -619,7 +619,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'customerReferenceNumber', isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'customerReferenceNumber' ? (
                           <input
                             ref={inputRef}
@@ -638,7 +638,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Customer Name - Not editable */}
                     <td className={`p-1 text-center border-r border-border ${rowColor}`}>
-                      <div className="min-h-28 flex items-center justify-center">
+                      <div className="min-h-[84px] flex items-center justify-center">
                         {customerName}
                       </div>
                     </td>
@@ -648,7 +648,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'dispatchDate', isImport ? importJob?.dispatchDate : exportJob?.dispatchDate, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'dispatchDate' ? (
                           <input
                             ref={inputRef}
@@ -671,7 +671,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'portOfArrival', portOfArrival, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'portOfArrival' ? (
                           <input
                             ref={inputRef}
@@ -693,7 +693,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', identifier, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === (isImport ? 'trailerOrContainerNumber' : 'trailerNo') ? (
                           <input
                             ref={inputRef}
@@ -715,7 +715,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'numberOfPieces', qty, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'numberOfPieces' ? (
                           <input
                             ref={inputRef}
@@ -737,7 +737,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'weight', weight, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'weight' ? (
                           <input
                             ref={inputRef}
@@ -759,7 +759,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'cube', cbm, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'cube' ? (
                           <input
                             ref={inputRef}
@@ -781,7 +781,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(etaPort)}`}
                       onClick={() => handleCellClick(job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', etaPort, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === (isImport ? 'importDateEtaPort' : 'etaPortDate') ? (
                           <input
                             ref={inputRef}
@@ -804,7 +804,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${getDeliveryDateColor(job)}`}
                       onClick={() => handleCellClick(job.id, 'deliveryDate', deliveryDate, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'deliveryDate' ? (
                           <input
                             ref={inputRef}
@@ -827,7 +827,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(deliveryAddress)}`}
                       onClick={() => handleCellClick(job.id, 'deliveryAddress', deliveryAddress, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-start w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'deliveryAddress' ? (
                           <textarea
                             ref={textareaRef}
@@ -835,7 +835,7 @@ export function ImportExportWorkGrid() {
                             onChange={(e) => setTempValue(e.target.value)}
                             onBlur={() => handleBlur(job.id, 'deliveryAddress', job._jobType)}
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryAddress', job._jobType)}
-                            className="w-full min-h-[40px] bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-left leading-tight focus:outline-none resize-none"
+                            className="w-full min-h-[40px] bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-tight focus:outline-none resize-none"
                             rows={2}
                           />
                         ) : (
@@ -846,7 +846,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Quote Out / Net In - Not editable, status color */}
                     <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
-                      <div className="min-h-28 flex items-center justify-center">
+                      <div className="min-h-[84px] flex items-center justify-center">
                         <div className="space-y-0.5">
                           <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
                           <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
@@ -859,7 +859,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(haulierName)}`}
                       onClick={() => handleCellClick(job.id, 'haulierName', haulierName, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'haulierName' ? (
                           <Select
                             value={tempValue}
@@ -890,7 +890,7 @@ export function ImportExportWorkGrid() {
                       className={`px-1 text-center border-r border-border cursor-pointer ${getPodSentColor(job)}`}
                       onClick={() => handleCellClick(job.id, 'sendPodToCustomerStatusIndicatorTimestamp', podTimestamp, job._jobType)}
                     >
-                      <div className="min-h-28 flex items-center justify-center w-full">
+                      <div className="min-h-[84px] flex items-center justify-center w-full">
                         {isEditing && editingCell?.fieldName === 'sendPodToCustomerStatusIndicatorTimestamp' ? (
                           <input
                             ref={inputRef}
@@ -910,7 +910,7 @@ export function ImportExportWorkGrid() {
                     
                     {/* Booker - Not editable, data color */}
                     <td className={`p-1 text-center ${getDataColor(bookerName)}`}>
-                      <div className="min-h-28 flex items-center justify-center">
+                      <div className="min-h-[84px] flex items-center justify-center">
                         {bookerName}
                       </div>
                     </td>
