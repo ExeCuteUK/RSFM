@@ -2352,7 +2352,7 @@ Hope all is OK.`
                       />
                     </div>
                   </div>
-                  {shipment.containerShipment === "Road Shipment" && !shipment.rsToClear && (
+                  {shipment.containerShipment === "Road Shipment" && shipment.rsToClear && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">

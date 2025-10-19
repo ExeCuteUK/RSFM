@@ -1505,6 +1505,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
       }
+      
+      // Bidirectional sync: Update linked clearance if it exists
+      if (shipment.linkedClearanceId) {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+          sendHaulierEadStatusIndicator: status ?? null,
+          sendHaulierEadStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
+        });
+      }
+      
       res.json(shipment);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1526,11 +1535,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status } = sendCustomerGvmsStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
         sendCustomerGvmsStatusIndicator: status ?? null,
-        sendCustomerGvmsStatusIndicatorTimestamp: new Date().toISOString()
+        // Clear timestamp when changing to yellow (1), set timestamp when changing to green (3) or blocked (2)
+        sendCustomerGvmsStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
       }
+      
+      // Bidirectional sync: Update linked clearance if it exists
+      if (shipment.linkedClearanceId) {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+          sendCustomerGvmsStatusIndicator: status ?? null,
+          sendCustomerGvmsStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
+        });
+      }
+      
       res.json(shipment);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -2368,7 +2387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status } = req.body;
       const updateData: any = { 
         sendHaulierEadStatusIndicator: status,
-        sendHaulierEadStatusIndicatorTimestamp: new Date().toISOString()
+        sendHaulierEadStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
       };
       
       // If status is set to green (3), update job status to "Awaiting Arrival"
@@ -2380,6 +2399,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
+      
+      // Bidirectional sync: Update linked import shipment if it was created from import
+      if (clearance.createdFromType === "import" && clearance.createdFromId) {
+        await storage.updateImportShipment(clearance.createdFromId, {
+          sendHaulierEadStatusIndicator: status,
+          sendHaulierEadStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
+        });
+      }
+      
       res.json(clearance);
     } catch (error) {
       res.status(500).json({ error: "Failed to update status" });
@@ -2392,7 +2420,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status } = req.body;
       const updateData: any = { 
         sendCustomerGvmsStatusIndicator: status,
-        sendCustomerGvmsStatusIndicatorTimestamp: new Date().toISOString()
+        // Clear timestamp when changing to yellow (1), set timestamp when changing to green (3) or blocked (2)
+        sendCustomerGvmsStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
       };
       
       // If status is set to green (3), update job status to "Awaiting Arrival"
@@ -2404,6 +2433,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!clearance) {
         return res.status(404).json({ error: "Custom clearance not found" });
       }
+      
+      // Bidirectional sync: Update linked import shipment if it was created from import
+      if (clearance.createdFromType === "import" && clearance.createdFromId) {
+        await storage.updateImportShipment(clearance.createdFromId, {
+          sendCustomerGvmsStatusIndicator: status,
+          sendCustomerGvmsStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
+        });
+      }
+      
       res.json(clearance);
     } catch (error) {
       res.status(500).json({ error: "Failed to update status" });
