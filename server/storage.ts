@@ -57,7 +57,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db, pool } from "./db";
-import { eq, desc, sql, ilike, or } from "drizzle-orm";
+import { eq, desc, sql, ilike, or, inArray, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import createMemoryStore from "memorystore";
@@ -166,6 +166,7 @@ export interface IStorage {
   getCustomClearance(id: string): Promise<CustomClearance | undefined>;
   createCustomClearance(clearance: InsertCustomClearance): Promise<CustomClearance>;
   updateCustomClearance(id: string, clearance: Partial<InsertCustomClearance>): Promise<CustomClearance | undefined>;
+  updateCustomClearanceConditionally(id: string, updates: Partial<InsertCustomClearance>, currentStatusConditions: string[]): Promise<CustomClearance | undefined>;
   deleteCustomClearance(id: string): Promise<boolean>;
 
   // Job File Group methods (shared file storage for linked jobs)
@@ -1092,6 +1093,19 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
+  async updateCustomClearanceConditionally(id: string, updates: Partial<InsertCustomClearance>, currentStatusConditions: string[]): Promise<CustomClearance | undefined> {
+    const existing = this.customClearances.get(id);
+    if (!existing) return undefined;
+    
+    // Only update if current status is in the allowed list
+    if (!currentStatusConditions.includes(existing.status)) {
+      return undefined;
+    }
+    
+    // Perform the update
+    return this.updateCustomClearance(id, updates);
+  }
+
   async deleteCustomClearance(id: string): Promise<boolean> {
     return this.customClearances.delete(id);
   }
@@ -1977,6 +1991,21 @@ export class DatabaseStorage implements IStorage {
           .where(eq(exportShipments.id, updated.createdFromId));
       }
     }
+    
+    return updated;
+  }
+
+  async updateCustomClearanceConditionally(id: string, updates: Partial<InsertCustomClearance>, currentStatusConditions: string[]): Promise<CustomClearance | undefined> {
+    // Only update if the current status is in the allowed list
+    const [updated] = await db.update(customClearances)
+      .set(updates)
+      .where(
+        and(
+          eq(customClearances.id, id),
+          inArray(customClearances.status, currentStatusConditions)
+        )
+      )
+      .returning();
     
     return updated;
   }
