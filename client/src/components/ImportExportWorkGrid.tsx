@@ -598,284 +598,322 @@ export function ImportExportWorkGrid() {
                   <tr key={job.id} className="border-b hover:bg-muted/50">
                     {/* Job Ref - Clickable to navigate to shipment page */}
                     <td 
-                      className={`p-1 text-center border-r border-border min-h-28 cursor-pointer hover:underline ${rowColor}`}
+                      className={`p-1 text-center border-r border-border cursor-pointer hover:underline ${rowColor}`}
                       onClick={() => handleJobRefClick(job.jobRef, job._jobType)}
                       data-testid={`link-job-ref-${job.jobRef}`}
                     >
-                      {job.jobRef}
+                      <div className="min-h-28 flex items-center justify-center">
+                        {job.jobRef}
+                      </div>
                     </td>
                     
                     {/* Job Date - Read only */}
-                    <td className={`p-1 text-center border-r border-border min-h-28 ${rowColor}`}>
-                      {formatDate(job.bookingDate || null)}
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>
+                      <div className="min-h-28 flex items-center justify-center">
+                        {formatDate(job.bookingDate || null)}
+                      </div>
                     </td>
                     
                     {/* Shipper Ref - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'customerReferenceNumber', isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'customerReferenceNumber' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'customerReferenceNumber', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'customerReferenceNumber', job._jobType)}
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'customerReferenceNumber' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'customerReferenceNumber', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'customerReferenceNumber', job._jobType)}
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber
+                        )}
+                      </div>
                     </td>
                     
                     {/* Customer Name - Not editable */}
-                    <td className={`p-1 text-center border-r border-border min-h-28 ${rowColor}`}>{customerName}</td>
+                    <td className={`p-1 text-center border-r border-border ${rowColor}`}>
+                      <div className="min-h-28 flex items-center justify-center">
+                        {customerName}
+                      </div>
+                    </td>
                     
                     {/* Departure Date - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'dispatchDate', isImport ? importJob?.dispatchDate : exportJob?.dispatchDate, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'dispatchDate' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'dispatchDate', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'dispatchDate', job._jobType)}
-                          placeholder="DD/MM/YY"
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        formatDate(isImport ? importJob?.dispatchDate || null : exportJob?.dispatchDate || null)
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'dispatchDate' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'dispatchDate', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'dispatchDate', job._jobType)}
+                            placeholder="DD/MM/YY"
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          formatDate(isImport ? importJob?.dispatchDate || null : exportJob?.dispatchDate || null)
+                        )}
+                      </div>
                     </td>
                     
                     {/* Destination / Port of Arrival - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'portOfArrival', portOfArrival, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'portOfArrival' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'portOfArrival', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'portOfArrival', job._jobType)}
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        portOfArrival
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'portOfArrival' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'portOfArrival', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'portOfArrival', job._jobType)}
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          portOfArrival
+                        )}
+                      </div>
                     </td>
                     
                     {/* Identifier - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', identifier, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === (isImport ? 'trailerOrContainerNumber' : 'trailerNo') ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        identifier
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === (isImport ? 'trailerOrContainerNumber' : 'trailerNo') ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          identifier
+                        )}
+                      </div>
                     </td>
                     
                     {/* Qty - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'numberOfPieces', qty, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'numberOfPieces' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'numberOfPieces', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'numberOfPieces', job._jobType)}
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        qty
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'numberOfPieces' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'numberOfPieces', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'numberOfPieces', job._jobType)}
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          qty
+                        )}
+                      </div>
                     </td>
                     
                     {/* Weight - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'weight', weight, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'weight' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'weight', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'weight', job._jobType)}
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        weight
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'weight' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'weight', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'weight', job._jobType)}
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          weight
+                        )}
+                      </div>
                     </td>
                     
                     {/* CBM - Editable */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${rowColor}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${rowColor}`}
                       onClick={() => handleCellClick(job.id, 'cube', cbm, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'cube' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'cube', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'cube', job._jobType)}
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        cbm
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'cube' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'cube', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'cube', job._jobType)}
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          cbm
+                        )}
+                      </div>
                     </td>
                     
                     {/* ETA Port - Editable with data color */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDataColor(etaPort)}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(etaPort)}`}
                       onClick={() => handleCellClick(job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', etaPort, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === (isImport ? 'importDateEtaPort' : 'etaPortDate') ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', job._jobType)}
-                          placeholder="DD/MM/YY"
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        formatDate(etaPort || null)
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === (isImport ? 'importDateEtaPort' : 'etaPortDate') ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', job._jobType)}
+                            placeholder="DD/MM/YY"
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          formatDate(etaPort || null)
+                        )}
+                      </div>
                     </td>
                     
                     {/* Delivery Date - Editable with status color for imports, data color for exports */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDeliveryDateColor(job)}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDeliveryDateColor(job)}`}
                       onClick={() => handleCellClick(job.id, 'deliveryDate', deliveryDate, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'deliveryDate' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'deliveryDate', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryDate', job._jobType)}
-                          placeholder="DD/MM/YY"
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        formatDate(deliveryDate || null)
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'deliveryDate' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'deliveryDate', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryDate', job._jobType)}
+                            placeholder="DD/MM/YY"
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          formatDate(deliveryDate || null)
+                        )}
+                      </div>
                     </td>
                     
                     {/* Delivery Address - Editable textarea with data color */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDataColor(deliveryAddress)}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(deliveryAddress)}`}
                       onClick={() => handleCellClick(job.id, 'deliveryAddress', deliveryAddress, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'deliveryAddress' ? (
-                        <textarea
-                          ref={textareaRef}
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'deliveryAddress', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryAddress', job._jobType)}
-                          className="w-full min-h-[40px] bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-tight focus:outline-none resize-none"
-                          rows={2}
-                        />
-                      ) : (
-                        <div className="text-xs leading-tight">{formatAddress(deliveryAddress)}</div>
-                      )}
+                      <div className="min-h-28 flex items-center justify-start w-full">
+                        {isEditing && editingCell?.fieldName === 'deliveryAddress' ? (
+                          <textarea
+                            ref={textareaRef}
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'deliveryAddress', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryAddress', job._jobType)}
+                            className="w-full min-h-[40px] bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-left leading-tight focus:outline-none resize-none"
+                            rows={2}
+                          />
+                        ) : (
+                          <div className="text-xs leading-tight">{formatAddress(deliveryAddress)}</div>
+                        )}
+                      </div>
                     </td>
                     
                     {/* Quote Out / Net In - Not editable, status color */}
-                    <td className={`p-1 text-center border-r border-border min-h-28 ${getQuoteColor(job)}`}>
-                      <div className="space-y-0.5">
-                        <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
-                        <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
+                    <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
+                      <div className="min-h-28 flex items-center justify-center">
+                        <div className="space-y-0.5">
+                          <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
+                          <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
+                        </div>
                       </div>
                     </td>
                     
                     {/* Haulier - Editable dropdown with data color */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getDataColor(haulierName)}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getDataColor(haulierName)}`}
                       onClick={() => handleCellClick(job.id, 'haulierName', haulierName, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'haulierName' ? (
-                        <Select
-                          value={tempValue}
-                          onValueChange={(val) => {
-                            setTempValue(val)
-                            handleSave(job.id, 'haulierName', val, job._jobType)
-                          }}
-                        >
-                          <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
-                            <SelectValue placeholder="Select..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {hauliers.sort((a, b) => (a.haulierName || '').localeCompare(b.haulierName || '')).map((h) => (
-                              <SelectItem key={h.id} value={h.haulierName || ''}>
-                                {h.haulierName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        haulierName
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'haulierName' ? (
+                          <Select
+                            value={tempValue}
+                            onValueChange={(val) => {
+                              setTempValue(val)
+                              handleSave(job.id, 'haulierName', val, job._jobType)
+                            }}
+                          >
+                            <SelectTrigger className="h-auto min-h-6 text-xs text-center border-none focus:ring-0 bg-transparent shadow-none px-0 py-0">
+                              <SelectValue placeholder="Select..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hauliers.sort((a, b) => (a.haulierName || '').localeCompare(b.haulierName || '')).map((h) => (
+                                <SelectItem key={h.id} value={h.haulierName || ''}>
+                                  {h.haulierName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          haulierName
+                        )}
+                      </div>
                     </td>
                     
                     {/* POD Sent - Editable timestamp with status color */}
                     <td 
-                      className={`px-1 text-center border-r border-border min-h-28 cursor-pointer ${getPodSentColor(job)}`}
+                      className={`px-1 text-center border-r border-border cursor-pointer ${getPodSentColor(job)}`}
                       onClick={() => handleCellClick(job.id, 'sendPodToCustomerStatusIndicatorTimestamp', podTimestamp, job._jobType)}
                     >
-                      {isEditing && editingCell?.fieldName === 'sendPodToCustomerStatusIndicatorTimestamp' ? (
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleBlur(job.id, 'sendPodToCustomerStatusIndicatorTimestamp', job._jobType)}
-                          onKeyDown={(e) => handleKeyDown(e, job.id, 'sendPodToCustomerStatusIndicatorTimestamp', job._jobType)}
-                          placeholder="DD/MM/YY"
-                          className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-                        />
-                      ) : (
-                        formatDate(podTimestamp || null)
-                      )}
+                      <div className="min-h-28 flex items-center justify-center w-full">
+                        {isEditing && editingCell?.fieldName === 'sendPodToCustomerStatusIndicatorTimestamp' ? (
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            value={tempValue}
+                            onChange={(e) => setTempValue(e.target.value)}
+                            onBlur={() => handleBlur(job.id, 'sendPodToCustomerStatusIndicatorTimestamp', job._jobType)}
+                            onKeyDown={(e) => handleKeyDown(e, job.id, 'sendPodToCustomerStatusIndicatorTimestamp', job._jobType)}
+                            placeholder="DD/MM/YY"
+                            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                          />
+                        ) : (
+                          formatDate(podTimestamp || null)
+                        )}
+                      </div>
                     </td>
                     
                     {/* Booker - Not editable, data color */}
-                    <td className={`p-1 text-center min-h-28 ${getDataColor(bookerName)}`}>{bookerName}</td>
+                    <td className={`p-1 text-center ${getDataColor(bookerName)}`}>
+                      <div className="min-h-28 flex items-center justify-center">
+                        {bookerName}
+                      </div>
+                    </td>
                   </tr>
                 )
               })}

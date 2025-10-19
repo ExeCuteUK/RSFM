@@ -773,32 +773,36 @@ export default function Dashboard() {
 
     if (isEditing) {
       return (
-        <td className={`px-1 text-center border-r border-border align-middle ${cellColor}`}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={tempValue}
-            onChange={(e) => setTempValue(e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
-            placeholder="DD/MM/YY"
-          />
+        <td className={`px-1 text-center border-r border-border ${cellColor}`}>
+          <div className="min-h-28 flex items-center justify-center w-full">
+            <input
+              ref={inputRef}
+              type="text"
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+              placeholder="DD/MM/YY"
+            />
+          </div>
         </td>
       )
     }
 
     return (
       <td
-        className={`px-1 text-center border-r border-border align-middle cursor-pointer hover:ring-1 hover:ring-primary ${cellColor}`}
+        className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${cellColor}`}
         onClick={handleClick}
         data-testid={`cell-${timestampField}-${shipment.jobRef}`}
       >
-        {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField ? (
-          <Loader2 className="h-3 w-3 animate-spin mx-auto" />
-        ) : (
-          <span className="text-xs">{timestamp ? formatTimestampDDMMYY(timestamp) : ""}</span>
-        )}
+        <div className="min-h-28 flex items-center justify-center">
+          {isSaving && editingCell?.shipmentId === shipment.id && editingCell?.fieldName === timestampField ? (
+            <Loader2 className="h-3 w-3 animate-spin mx-auto" />
+          ) : (
+            <span className="text-xs">{timestamp ? formatTimestampDDMMYY(timestamp) : ""}</span>
+          )}
+        </div>
       </td>
     )
   }
@@ -936,269 +940,323 @@ export default function Dashboard() {
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
                             {/* Hold */}
-                            <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${holdBgColor}`} data-testid={`cell-hold-${shipment.jobRef}`}>
-                              {showHoldIcon && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mx-auto" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{holdTooltip}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
+                            <td className={`px-1 text-center border-r border-border ${holdBgColor}`} data-testid={`cell-hold-${shipment.jobRef}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                {showHoldIcon && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mx-auto" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{holdTooltip}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
                             </td>
                             {/* Ref - not editable, just a link */}
-                            <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
-                              <button
-                                onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
-                                className={`hover:underline ${clearanceColor.includes('yellow') ? 'text-black dark:text-gray-900' : 'text-gray-900 dark:text-white'}`}
-                                data-testid={`link-job-${shipment.jobRef}`}
-                              >
-                                {shipment.jobRef}
-                              </button>
+                            <td className={`px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                <button
+                                  onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
+                                  className={`hover:underline ${clearanceColor.includes('yellow') ? 'text-black dark:text-gray-900' : 'text-gray-900 dark:text-white'}`}
+                                  data-testid={`link-job-${shipment.jobRef}`}
+                                >
+                                  {shipment.jobRef}
+                                </button>
+                              </div>
                             </td>
                             {/* Job Date - EDITABLE DATE (Booking Date) */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "bookingDate" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                  placeholder="DD/MM/YY"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    placeholder="DD/MM/YY"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "bookingDate", formatDate(shipment.bookingDate))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
+                                </div>
                               </td>
                             )}
                             {/* Consignee - read only */}
-                            <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
-                              {getCustomerName(shipment.importCustomerId)}
+                            <td className={`px-1 text-center border-r border-border ${clearanceColor}`} data-testid={`cell-consignee-${shipment.jobRef}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                {getCustomerName(shipment.importCustomerId)}
+                              </div>
                             </td>
                             {/* Container no. */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "trailerOrContainerNumber" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "trailerOrContainerNumber", shipment.trailerOrContainerNumber || "")}
                               >
-                                <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
+                                </div>
                               </td>
                             )}
                             {/* Ship Line */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "shippingLine" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 w-20 ${clearanceColor}`}>
-                                <Select
-                                  value={tempValue}
-                                  onValueChange={(value) => {
-                                    setTempValue(value)
-                                    handleSave(shipment.id, "shippingLine", value)
-                                  }}
-                                >
-                                  <SelectTrigger className="h-auto min-h-0 w-full text-xs border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {shippingLines.map(s => (
-                                      <SelectItem key={s.id} value={s.shippingLineName || ''}>{s.shippingLineName || ''}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                              <td className={`px-1 text-center border-r border-border w-20 ${clearanceColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <Select
+                                    value={tempValue}
+                                    onValueChange={(value) => {
+                                      setTempValue(value)
+                                      handleSave(shipment.id, "shippingLine", value)
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-auto min-h-0 w-full text-xs border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {shippingLines.map(s => (
+                                        <SelectItem key={s.id} value={s.shippingLineName || ''}>{s.shippingLineName || ''}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary w-20 ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary w-20 ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "shippingLine", shipment.shippingLine || "")}
                               >
-                                <span className="block text-xs">{shipment.shippingLine || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.shippingLine || ""}</span>
+                                </div>
                               </td>
                             )}
                             {/* Poa */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "portOfArrival" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "portOfArrival", shipment.portOfArrival || "")}
                               >
-                                <span className="block text-xs">{shipment.portOfArrival || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.portOfArrival || ""}</span>
+                                </div>
                               </td>
                             )}
                             {/* Vessel */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "vesselName" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "vesselName", shipment.vesselName || "")}
                               >
-                                <span className="block text-xs">{shipment.vesselName || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.vesselName || ""}</span>
+                                </div>
                               </td>
                             )}
                             {/* Eta Port */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "importDateEtaPort" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                  placeholder="DD/MM/YY"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    placeholder="DD/MM/YY"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "importDateEtaPort", shipment.importDateEtaPort || "", formatDate(shipment.importDateEtaPort))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
+                                </div>
                               </td>
                             )}
                             {/* References */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "customerReferenceNumber" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${clearanceColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${clearanceColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${clearanceColor}`}
                                 onClick={() => handleCellClick(shipment.id, "customerReferenceNumber", shipment.customerReferenceNumber || "", shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || ""))}
                               >
-                                <span className="block text-xs">{shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.handoverContainerAtPort ? 'Handover' : (shipment.customerReferenceNumber || "")}</span>
+                                </div>
                               </td>
                             )}
                             {/* Delivery Date - read only */}
-                            <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${shipment.handoverContainerAtPort ? 'bg-green-100 dark:bg-green-900' : deliveryBookedColor}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
-                              {shipment.handoverContainerAtPort ? 'N/A' : (shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : '')}
+                            <td className={`px-1 text-center border-r border-border ${shipment.handoverContainerAtPort ? 'bg-green-100 dark:bg-green-900' : deliveryBookedColor}`} data-testid={`cell-delivery-date-${shipment.jobRef}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                {shipment.handoverContainerAtPort ? 'N/A' : (shipment.deliveryDate ? `${formatDate(shipment.deliveryDate)}${shipment.deliveryTime ? ` @ ${formatTime12Hour(shipment.deliveryTime)}` : ''}` : '')}
+                              </div>
                             </td>
                             {/* Rls */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryRelease" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${releaseColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${releaseColor}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${releaseColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${releaseColor}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryRelease", shipment.deliveryRelease || "")}
                               >
-                                <span className="block text-xs">{shipment.deliveryRelease || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.deliveryRelease || ""}</span>
+                                </div>
                               </td>
                             )}
                             {/* Delivery Address - read only when handover enabled */}
                             {shipment.handoverContainerAtPort ? (
-                              <td className="px-1 text-center border-r border-border align-middle min-h-28 bg-green-100 dark:bg-green-900" data-testid={`cell-delivery-address-${shipment.jobRef}`}>
-                                N/A
+                              <td className="px-1 text-center border-r border-border bg-green-100 dark:bg-green-900" data-testid={`cell-delivery-address-${shipment.jobRef}`}>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  N/A
+                                </div>
                               </td>
                             ) : editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryAddress" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${addressColor}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${addressColor}`}>
+                                <div className="min-h-28 flex items-center justify-start w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-left bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${addressColor}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${addressColor}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "")}
                               >
-                                <span className="block text-xs whitespace-pre-wrap">
-                                  {shipment.deliveryAddress ? shipment.deliveryAddress.split(',').map(part => part.trim()).join('\n') : ""}
-                                </span>
+                                <div className="min-h-28 flex items-center justify-start w-full">
+                                  <span className="block text-xs whitespace-pre-wrap">
+                                    {shipment.deliveryAddress ? shipment.deliveryAddress.split(',').map(part => part.trim()).join('\n') : ""}
+                                  </span>
+                                </div>
                               </td>
                             )}
                             {/* Rate In - read only */}
-                            <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${rateInOutColor}`}>
-                              <span className="block text-xs">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
+                            <td className={`px-1 text-center border-r border-border ${rateInOutColor}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                <span className="block text-xs">{shipment.haulierFreightRateIn ? `£${shipment.haulierFreightRateIn}` : ""}</span>
+                              </div>
                             </td>
                             {/* Rate Out - read only */}
-                            <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${rateInOutColor}`}>
-                              <span className="block text-xs">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
+                            <td className={`px-1 text-center border-r border-border ${rateInOutColor}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                <span className="block text-xs">{shipment.freightRateOut ? `£${shipment.freightRateOut}` : ""}</span>
+                              </div>
                             </td>
                             {/* Notes */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "additionalNotes" ? (
-                              <td className="px-1 text-center border-r border-border align-middle min-h-28 bg-green-100 dark:bg-green-900 w-48">
-                                <textarea
-                                  ref={textareaRef}
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e, true)}
-                                  onBlur={handleCellSave}
-                                  className="w-full min-h-[60px] max-h-[60px] text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
-                                  rows={3}
-                                />
+                              <td className="px-1 text-center border-r border-border bg-green-100 dark:bg-green-900 w-48">
+                                <div className="min-h-28 flex items-center justify-start w-full">
+                                  <textarea
+                                    ref={textareaRef}
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e, true)}
+                                    onBlur={handleCellSave}
+                                    className="w-full min-h-[60px] max-h-[60px] text-sm text-left bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
+                                    rows={3}
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className="px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900 w-48"
+                                className="px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary bg-green-100 dark:bg-green-900 w-48"
                                 onClick={() => handleCellClick(shipment.id, "additionalNotes", shipment.additionalNotes || "")}
                               >
-                                <span className="whitespace-pre-wrap block text-xs leading-tight">
-                                  {shipment.additionalNotes || ""}
-                                </span>
+                                <div className="min-h-28 flex items-center justify-start w-full">
+                                  <span className="whitespace-pre-wrap block text-xs leading-tight">
+                                    {shipment.additionalNotes || ""}
+                                  </span>
+                                </div>
                               </td>
                             )}
                           </tr>
@@ -1330,287 +1388,337 @@ export default function Dashboard() {
                         return (
                           <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-nisbets-${shipment.jobRef}`}>
                             {/* Job Ref - READ ONLY */}
-                            <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
-                              <button
-                                onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
-                                className="text-blue-600 dark:text-blue-300 hover:underline"
-                                data-testid={`link-job-${shipment.jobRef}`}
-                              >
-                                {shipment.jobRef}
-                              </button>
+                            <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                <button
+                                  onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
+                                  className="text-blue-600 dark:text-blue-300 hover:underline"
+                                  data-testid={`link-job-${shipment.jobRef}`}
+                                >
+                                  {shipment.jobRef}
+                                </button>
+                              </div>
                             </td>
                             
                             {/* Ligentia Ref - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "customerReferenceNumber" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.customerReferenceNumber)}`}
                                 onClick={() => handleCellClick(shipment.id, "customerReferenceNumber", shipment.customerReferenceNumber || "")}
                               >
-                                <span className="block text-xs">{shipment.customerReferenceNumber || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.customerReferenceNumber || ""}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Job Date - EDITABLE DATE (Booking Date) */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "bookingDate" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.bookingDate)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                  placeholder="DD/MM/YY"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.bookingDate)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    placeholder="DD/MM/YY"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.bookingDate)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.bookingDate)}`}
                                 onClick={() => handleCellClick(shipment.id, "bookingDate", formatDate(shipment.bookingDate))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{formatDate(shipment.bookingDate)}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Haulier - EDITABLE DROPDOWN */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "haulierName" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.haulierName)}`}>
-                                <Select
-                                  value={tempValue}
-                                  onValueChange={(value) => {
-                                    setTempValue(value)
-                                    handleSave(shipment.id, "haulierName", value)
-                                  }}
-                                >
-                                  <SelectTrigger className="h-auto min-h-0 w-full text-xs border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {haulierOptions.map(h => (
-                                      <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.haulierName)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <Select
+                                    value={tempValue}
+                                    onValueChange={(value) => {
+                                      setTempValue(value)
+                                      handleSave(shipment.id, "haulierName", value)
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-auto min-h-0 w-full text-xs border-0 ring-0 ring-offset-0 focus:ring-0 px-0 py-0">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {haulierOptions.map(h => (
+                                        <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.haulierName)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.haulierName)}`}
                                 onClick={() => handleCellClick(shipment.id, "haulierName", shipment.haulierName || "")}
                               >
-                                <span className="block text-xs">{shipment.haulierName || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.haulierName || ""}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Supplier - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "supplierName" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.supplierName)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.supplierName)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.supplierName)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.supplierName)}`}
                                 onClick={() => handleCellClick(shipment.id, "supplierName", shipment.supplierName || "")}
                               >
-                                <span className="block text-xs">{shipment.supplierName || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.supplierName || ""}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Country - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "departureCountry" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.departureCountry)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.departureCountry)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.departureCountry)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.departureCountry)}`}
                                 onClick={() => handleCellClick(shipment.id, "departureCountry", shipment.departureCountry || "")}
                               >
-                                <span className="block text-xs">{shipment.departureCountry || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.departureCountry || ""}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Destination - EDITABLE TEXT (full deliveryAddress) */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryAddress" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.deliveryAddress)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.deliveryAddress)}`}>
+                                <div className="min-h-28 flex items-center justify-start w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-left bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.deliveryAddress)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.deliveryAddress)}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryAddress", shipment.deliveryAddress || "", destination)}
                               >
-                                <span className="block text-xs">{destination}</span>
+                                <div className="min-h-28 flex items-center justify-start w-full">
+                                  <span className="block text-xs">{destination}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Departure Date - EDITABLE DATE */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "dispatchDate" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.dispatchDate)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                  placeholder="DD/MM/YY"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.dispatchDate)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    placeholder="DD/MM/YY"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.dispatchDate)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.dispatchDate)}`}
                                 onClick={() => handleCellClick(shipment.id, "dispatchDate", formatDate(shipment.dispatchDate))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.dispatchDate)}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{formatDate(shipment.dispatchDate)}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Truck Number - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "trailerOrContainerNumber" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.trailerOrContainerNumber)}`}
                                 onClick={() => handleCellClick(shipment.id, "trailerOrContainerNumber", shipment.trailerOrContainerNumber || "")}
                               >
-                                <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.trailerOrContainerNumber || ""}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Port - EDITABLE TEXT */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "portOfArrival" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.portOfArrival)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.portOfArrival)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.portOfArrival)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.portOfArrival)}`}
                                 onClick={() => handleCellClick(shipment.id, "portOfArrival", shipment.portOfArrival || "")}
                               >
-                                <span className="block text-xs">{shipment.portOfArrival || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.portOfArrival || ""}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Eta UK Port - EDITABLE DATE */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "importDateEtaPort" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.importDateEtaPort)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                  placeholder="DD/MM/YY"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.importDateEtaPort)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    placeholder="DD/MM/YY"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.importDateEtaPort)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.importDateEtaPort)}`}
                                 onClick={() => handleCellClick(shipment.id, "importDateEtaPort", formatDate(shipment.importDateEtaPort))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{formatDate(shipment.importDateEtaPort)}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Total Package - EDITABLE NUMBER */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "numberOfPieces" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.numberOfPieces)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.numberOfPieces)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.numberOfPieces)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.numberOfPieces)}`}
                                 onClick={() => handleCellClick(shipment.id, "numberOfPieces", shipment.numberOfPieces || "")}
                               >
-                                <span className="block text-xs">{shipment.numberOfPieces || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.numberOfPieces || ""}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Weight - EDITABLE NUMBER */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "weight" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsCellColor(shipment.weight)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.weight)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.weight)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.weight)}`}
                                 onClick={() => handleCellClick(shipment.id, "weight", shipment.weight || "")}
                               >
-                                <span className="block text-xs">{shipment.weight || ""}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{shipment.weight || ""}</span>
+                                </div>
                               </td>
                             )}
                             
@@ -1625,59 +1733,71 @@ export default function Dashboard() {
                             
                             {/* Entry to Haulier - CUSTOM CELL */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "sendHaulierEadStatusIndicatorTimestamp" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                  placeholder="DD/MM/YY"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    placeholder="DD/MM/YY"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}
                                 onClick={() => handleCellClick(shipment.id, "sendHaulierEadStatusIndicatorTimestamp", (shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "" : (shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ""))}
                                 data-testid={`cell-entry-haulier-${shipment.jobRef}`}
                               >
-                                <span className="block text-xs">{(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "" : (shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : "")}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "" : (shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : "")}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Delivery Booked Date - EDITABLE DATE */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "deliveryDate" ? (
-                              <td className={`px-1 text-center border-r border-border align-middle min-h-28 ${getNisbetsDeliveryBookedDateColor(shipment)}`}>
-                                <input
-                                  ref={inputRef}
-                                  type="text"
-                                  value={tempValue}
-                                  onChange={(e) => setTempValue(e.target.value)}
-                                  onKeyDown={(e) => handleCellKeyDown(e)}
-                                  onBlur={handleCellSave}
-                                  className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
-                                  placeholder="DD/MM/YY"
-                                />
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsDeliveryBookedDateColor(shipment)}`}>
+                                <div className="min-h-28 flex items-center justify-center w-full">
+                                  <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={tempValue}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    onKeyDown={(e) => handleCellKeyDown(e)}
+                                    onBlur={handleCellSave}
+                                    className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    placeholder="DD/MM/YY"
+                                  />
+                                </div>
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border align-middle min-h-28 cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsDeliveryBookedDateColor(shipment)}`}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsDeliveryBookedDateColor(shipment)}`}
                                 onClick={() => handleCellClick(shipment.id, "deliveryDate", formatDate(shipment.deliveryDate))}
                               >
-                                <span className="block text-xs">{formatDate(shipment.deliveryDate)}</span>
+                                <div className="min-h-28 flex items-center justify-center">
+                                  <span className="block text-xs">{formatDate(shipment.deliveryDate)}</span>
+                                </div>
                               </td>
                             )}
                             
                             {/* Net Cost - READ ONLY */}
-                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border min-h-28 w-32 ${getNisbetsCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
-                              {netCost}
+                            <td className={`px-1 text-center whitespace-pre-wrap border-r border-border w-32 ${getNisbetsCellColor(netCost)}`} data-testid={`cell-net-cost-${shipment.jobRef}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                {netCost}
+                              </div>
                             </td>
                             
                             {/* Price Out - READ ONLY */}
-                            <td className={`px-1 text-center align-top whitespace-pre-wrap border-r border-border min-h-28 w-32 ${getNisbetsCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
-                              {priceOut}
+                            <td className={`px-1 text-center whitespace-pre-wrap border-r border-border w-32 ${getNisbetsCellColor(priceOut)}`} data-testid={`cell-price-out-${shipment.jobRef}`}>
+                              <div className="min-h-28 flex items-center justify-center">
+                                {priceOut}
+                              </div>
                             </td>
                             
                             {/* POD Sent - EDITABLE STATUS TIMESTAMP */}
