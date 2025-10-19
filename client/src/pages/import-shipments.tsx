@@ -337,6 +337,7 @@ export default function ImportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
@@ -346,6 +347,7 @@ export default function ImportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
@@ -355,6 +357,7 @@ export default function ImportShipments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/import-shipments"] })
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-clearances"] })
     },
   })
 
