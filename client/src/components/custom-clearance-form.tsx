@@ -813,38 +813,40 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                 />
               </div>
 
-              <div className="grid gap-4 grid-cols-[auto_1fr_1fr]">
-                <FormField
-                  control={form.control}
-                  name="jobHold"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col items-center gap-1 space-y-0 pt-1">
-                      <FormLabel className="mb-1">Job Hold</FormLabel>
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value || false}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-job-hold"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="grid gap-4 grid-cols-2">
+                <div className="grid gap-4 grid-cols-[auto_1fr]">
+                  <FormField
+                    control={form.control}
+                    name="jobHold"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col items-center gap-1 space-y-0 pt-1">
+                        <FormLabel className="mb-1">Job Hold</FormLabel>
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-job-hold"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="holdDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hold Description</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-hold-description" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="holdDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hold Description</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ""} data-testid="input-hold-description" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
