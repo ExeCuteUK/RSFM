@@ -472,36 +472,76 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               <CardTitle>Customer Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="destinationCustomerId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Export Customer</FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <ContactCombobox
-                          type="export-customer"
-                          value={field.value || ""}
-                          onValueChange={field.onChange}
-                          placeholder="Select export customer"
-                          className="flex-1"
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setIsCustomerDialogOpen(true)}
-                        data-testid="button-create-export-customer"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="bookingDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Creation Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-booking-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="destinationCustomerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Export Customer</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <ContactCombobox
+                            type="export-customer"
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            placeholder="Select export customer"
+                            className="flex-1"
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setIsCustomerDialogOpen(true)}
+                          data-testid="button-create-export-customer"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div></div>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
@@ -920,42 +960,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="bookingDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Job Creation Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                              data-testid="button-booking-date"
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={field.value ? new Date(field.value) : undefined}
-                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="collectionDate"
