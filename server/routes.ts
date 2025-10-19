@@ -1499,7 +1499,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status } = sendHaulierEadStatusSchema.parse(req.body);
       const shipment = await storage.updateImportShipment(req.params.id, { 
         sendHaulierEadStatusIndicator: status ?? null,
-        sendHaulierEadStatusIndicatorTimestamp: new Date().toISOString()
+        // Clear timestamp when changing to yellow (1), set timestamp when changing to green (3) or blocked (2)
+        sendHaulierEadStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
       });
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
