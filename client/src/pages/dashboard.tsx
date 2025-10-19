@@ -1735,7 +1735,7 @@ export default function Dashboard() {
                             
                             {/* Entry to Haulier - CUSTOM CELL */}
                             {editingCell?.shipmentId === shipment.id && editingCell?.fieldName === "sendHaulierEadStatusIndicatorTimestamp" ? (
-                              <td className={`px-1 text-center border-r border-border ${(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}>
+                              <td className={`px-1 text-center border-r border-border ${getNisbetsCellColor(shipment.sendHaulierEadStatusIndicatorTimestamp)}`}>
                                 <div className="min-h-[84px] flex items-center justify-center w-full">
                                   <input
                                     ref={inputRef}
@@ -1751,12 +1751,12 @@ export default function Dashboard() {
                               </td>
                             ) : (
                               <td
-                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900" : (shipment.sendHaulierEadStatusIndicator === 3 ? "bg-green-100 dark:bg-green-900" : "")}`}
-                                onClick={() => handleCellClick(shipment.id, "sendHaulierEadStatusIndicatorTimestamp", (shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "" : (shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ""))}
+                                className={`px-1 text-center border-r border-border cursor-pointer hover:ring-1 hover:ring-primary ${getNisbetsCellColor(shipment.sendHaulierEadStatusIndicatorTimestamp)}`}
+                                onClick={() => handleCellClick(shipment.id, "sendHaulierEadStatusIndicatorTimestamp", shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : "")}
                                 data-testid={`cell-entry-haulier-${shipment.jobRef}`}
                               >
                                 <div className="min-h-[84px] flex items-center justify-center">
-                                  <span className="block text-xs">{(shipment.sendHaulierEadStatusIndicator === 2 || !shipment.sendHaulierEadStatusIndicator) ? "" : (shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : "")}</span>
+                                  <span className="block text-xs">{shipment.sendHaulierEadStatusIndicatorTimestamp ? formatTimestampDDMMYY(shipment.sendHaulierEadStatusIndicatorTimestamp) : ""}</span>
                                 </div>
                               </td>
                             )}
