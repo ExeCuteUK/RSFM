@@ -10,7 +10,8 @@ import {
   Database,
   MessageSquare,
   Mail,
-  Calendar
+  Calendar,
+  Bot
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 import { useQuery } from "@tanstack/react-query"
@@ -41,6 +42,11 @@ const operationsOverviewItems = [
     title: "Management Sheets",
     url: "/",
     icon: Grid3x3,
+  },
+  {
+    title: "Eric",
+    url: "/eric",
+    icon: Bot,
   },
 ]
 
@@ -260,7 +266,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-6">
         <div className="text-[11px] text-muted-foreground space-y-0.5">
           <p className="font-semibold">Engine Revisions</p>
-          <p className="leading-tight">- ERIC 1.1</p>
+          <p className="leading-tight">- ERIC 1.2</p>
           <p className="leading-tight">- FOCR 1.2</p>
           <p className="leading-tight">- T49T 1.2</p>
         </div>

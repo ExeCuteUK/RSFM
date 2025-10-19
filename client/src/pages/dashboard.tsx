@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { ImportExportWorkGrid } from "@/components/ImportExportWorkGrid"
 import { ClearanceWorkGrid } from "@/components/ClearanceWorkGrid"
-import { ContainerTrackingNotification } from "@/components/ContainerTrackingNotification"
 
 const DASHBOARD_STORAGE_KEY = 'dashboard_preferences'
 const CONTAINER_STORAGE_KEY = 'containerGrid_preferences'
@@ -118,11 +117,6 @@ export default function Dashboard() {
       }
     }
   }, [editingCell])
-
-  // Refresh container tracking when dashboard loads
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["/api/terminal49/check-all-containers"] })
-  }, [])
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -804,8 +798,6 @@ export default function Dashboard() {
           Heres an overview of all Job Operations.
         </p>
       </div>
-
-      <ContainerTrackingNotification />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 h-auto bg-card border-b border-border rounded-none p-0">

@@ -32,6 +32,7 @@ import { useRef, useEffect } from "react";
 
 // Pages
 import Dashboard from "@/pages/dashboard";
+import Eric from "@/pages/eric";
 import Shipments from "@/pages/shipments";
 import ImportShipments from "@/pages/import-shipments";
 import ExportShipments from "@/pages/export-shipments";
@@ -157,6 +158,13 @@ function Router() {
         {() => (
           <ProtectedRoute>
             <TeamCalendar />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/eric">
+        {() => (
+          <ProtectedRoute>
+            <Eric />
           </ProtectedRoute>
         )}
       </Route>
