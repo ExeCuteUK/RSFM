@@ -955,7 +955,7 @@ export default function Dashboard() {
                             <td className={`px-1 text-center border-r border-border align-middle ${clearanceColor}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
                                 onClick={() => setLocation(`/import-shipments?search=${shipment.jobRef}`)}
-                                className="text-blue-600 dark:text-blue-300 hover:underline"
+                                className={`hover:underline ${clearanceColor.includes('yellow') ? 'text-black dark:text-gray-900' : 'text-gray-900 dark:text-white'}`}
                                 data-testid={`link-job-${shipment.jobRef}`}
                               >
                                 {shipment.jobRef}
