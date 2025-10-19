@@ -547,7 +547,9 @@ export default function Dashboard() {
 
   // Helper to get cell color (green if populated, yellow if empty)
   const getNisbetsCellColor = (value: string | null | undefined): string => {
-    return value ? "bg-green-100 dark:bg-green-900 dark:text-white" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black"
+    // Check if value is empty (null, undefined, empty string, or only whitespace)
+    const isEmpty = !value || value.toString().trim() === ''
+    return isEmpty ? "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black" : "bg-green-100 dark:bg-green-900 dark:text-white"
   }
 
   // Helper to get customer name
