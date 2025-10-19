@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -183,8 +184,54 @@ export default function Customers() {
   })
   const { toast } = useToast()
   const { openWindow } = useWindowManager()
+  const { setPageTitle, setActionButtons } = usePageHeader()
 
   const ITEMS_PER_PAGE = 30
+
+  const handleCreateNew = () => {
+    const windowTypeMap: Record<CustomerType, string> = {
+      import: 'import-customer',
+      export: 'export-customer',
+      receiver: 'export-receiver',
+      haulier: 'haulier',
+      shippingline: 'shipping-line',
+      clearanceagent: 'clearance-agent'
+    }
+
+    const titleMap: Record<CustomerType, string> = {
+      import: 'Import Customer',
+      export: 'Export Customer',
+      receiver: 'Export Receiver',
+      haulier: 'Haulier',
+      shippingline: 'Shipping Line',
+      clearanceagent: 'Clearance Agent'
+    }
+
+    openWindow({
+      id: `${windowTypeMap[selectedTab]}-new-${Date.now()}`,
+      type: windowTypeMap[selectedTab],
+      title: `New ${titleMap[selectedTab]}`,
+      payload: {
+        mode: 'create' as const,
+        defaultValues: {}
+      }
+    })
+  }
+
+  useEffect(() => {
+    setPageTitle("Contact Databases")
+    setActionButtons(
+      <Button data-testid="button-new-customer" onClick={handleCreateNew}>
+        <Plus className="h-4 w-4 mr-2" />
+        New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : selectedTab === "receiver" ? "Receiver" : selectedTab === "shippingline" ? "Shipping Line" : selectedTab === "clearanceagent" ? "Clearance Agent" : "Haulier"}
+      </Button>
+    )
+
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons, selectedTab])
 
   // Helper to determine customer type from entity properties
   const getCustomerType = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent | null): CustomerType => {
@@ -283,36 +330,6 @@ export default function Customers() {
       toast({ title: "Clearance agent deleted successfully" })
     },
   })
-
-  const handleCreateNew = () => {
-    const windowTypeMap: Record<CustomerType, string> = {
-      import: 'import-customer',
-      export: 'export-customer',
-      receiver: 'export-receiver',
-      haulier: 'haulier',
-      shippingline: 'shipping-line',
-      clearanceagent: 'clearance-agent'
-    }
-
-    const titleMap: Record<CustomerType, string> = {
-      import: 'New Import Customer',
-      export: 'New Export Customer',
-      receiver: 'New Export Receiver',
-      haulier: 'New Haulier',
-      shippingline: 'New Shipping Line',
-      clearanceagent: 'New Clearance Agent'
-    }
-
-    openWindow({
-      id: `${selectedTab}-create-${Date.now()}`,
-      type: windowTypeMap[selectedTab] as any,
-      title: titleMap[selectedTab],
-      payload: {
-        mode: 'create',
-        defaultValues: {}
-      }
-    })
-  }
 
   const handleEdit = (customer: ImportCustomer | ExportCustomer | ExportReceiver | Haulier | ShippingLine | ClearanceAgent) => {
     const customerType = getCustomerType(customer)
@@ -452,19 +469,6 @@ export default function Customers() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Contacts</h1>
-          <p className="text-muted-foreground">
-            Manage import customers, export customers, export receivers, hauliers, shipping lines, and clearance agents
-          </p>
-        </div>
-        <Button data-testid="button-new-customer" onClick={handleCreateNew}>
-          <Plus className="h-4 w-4 mr-2" />
-          New {selectedTab === "import" ? "Import Customer" : selectedTab === "export" ? "Export Customer" : selectedTab === "receiver" ? "Receiver" : selectedTab === "shippingline" ? "Shipping Line" : selectedTab === "clearanceagent" ? "Clearance Agent" : "Haulier"}
-        </Button>
-      </div>
-
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as CustomerType)}>
         <TabsList className="grid w-full grid-cols-6 gap-3 p-1">
           <TabsTrigger value="import" data-testid="tab-import-customers" className="px-4">Import Customers</TabsTrigger>

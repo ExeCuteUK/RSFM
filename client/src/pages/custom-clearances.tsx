@@ -33,6 +33,7 @@ import type { CustomClearance, InsertCustomClearance, ImportCustomer, ExportCust
 import { useToast } from "@/hooks/use-toast"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 import { useEmail } from "@/contexts/EmailContext"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 
 // Helper functions for file object handling (supports both new {filename, path} and legacy string formats)
 const getFileName = (file: any): string => {
@@ -48,6 +49,7 @@ const getFilePath = (file: any): string => {
 export default function CustomClearances() {
   const { openWindow } = useWindowManager()
   const { openEmailComposer } = useEmail()
+  const { setPageTitle, setActionButtons } = usePageHeader()
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; clearanceId: string } | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue"])
@@ -68,6 +70,33 @@ export default function CustomClearances() {
   const [location, setLocation] = useLocation()
   
   const ITEMS_PER_PAGE = 30
+
+  const handleCreateNew = () => {
+    openWindow({
+      id: `custom-clearance-new-${Date.now()}`,
+      type: 'custom-clearance',
+      title: 'New Custom Clearance',
+      payload: {
+        mode: 'create' as const,
+        defaultValues: {}
+      }
+    })
+  }
+
+  useEffect(() => {
+    setPageTitle("Clearance Jobs")
+    setActionButtons(
+      <Button data-testid="button-new-clearance" onClick={handleCreateNew} className="border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground">
+        <Plus className="h-4 w-4 mr-2" />
+        New Customs Clearance
+      </Button>
+    )
+
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -1170,18 +1199,6 @@ export default function CustomClearances() {
     }
   }
 
-  const handleCreateNew = () => {
-    openWindow({
-      id: `custom-clearance-new-${Date.now()}`,
-      type: 'custom-clearance',
-      title: 'New Custom Clearance',
-      payload: {
-        mode: 'create' as const,
-        defaultValues: {}
-      }
-    })
-  }
-
   const handleEdit = (clearance: CustomClearance) => {
     openWindow({
       id: `custom-clearance-${clearance.id}`,
@@ -1594,19 +1611,6 @@ export default function CustomClearances() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Clearance Job Manager</h1>
-          <p className="text-muted-foreground">
-            Manage customs clearance operations for import and export shipments
-          </p>
-        </div>
-        <Button data-testid="button-new-clearance" onClick={handleCreateNew} className="border border-border bg-purple-100 dark:bg-purple-600/40 hover:bg-purple-50 dark:hover:bg-purple-600/50 text-black dark:text-foreground">
-          <Plus className="h-4 w-4 mr-2" />
-          New Customs Clearance
-        </Button>
-      </div>
-
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

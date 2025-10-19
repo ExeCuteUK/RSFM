@@ -4,9 +4,10 @@ import { AlertTriangle, CheckCircle2, Package, AlertCircle, PoundSterling } from
 import { useQuery } from "@tanstack/react-query"
 import { useLocation } from "wouter"
 import { useAuth } from "@/hooks/use-auth"
-import { useMemo } from "react"
+import { useMemo, useEffect } from "react"
 import { type ImportShipment, type CustomClearance, type ImportCustomer, type ExportShipment, type ExportCustomer, type JobFileGroup } from "@shared/schema"
 import { differenceInDays, parseISO } from "date-fns"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 
 interface ContainerDiscrepancy {
   shipmentId: string
@@ -70,6 +71,18 @@ interface ContainerCheckResponse {
 export default function Eric() {
   const [, setLocation] = useLocation()
   const { user } = useAuth()
+  const { setPageTitle, setActionButtons } = usePageHeader()
+
+  // Set page header
+  useEffect(() => {
+    setPageTitle("E.R.I.C")
+    setActionButtons(null)
+
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons])
 
   // Fetch container tracking data
   const { data: containerData } = useQuery<ContainerCheckResponse>({
@@ -438,11 +451,6 @@ export default function Eric() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Eric</h1>
-        <span className="text-sm text-muted-foreground">Eric 1.2</span>
-      </div>
-
       {/* Container Tracking Notification */}
       {containerTrackingMessage && hasTrackedContainers && (
         <Card 

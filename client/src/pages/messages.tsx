@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { usePageHeader } from "@/contexts/PageHeaderContext";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +53,7 @@ type MessageFormData = z.infer<typeof messageSchema>;
 export default function Messages() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { setPageTitle, setActionButtons } = usePageHeader();
   const [location] = useLocation();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -60,6 +62,16 @@ export default function Messages() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [urlSearchParams, setUrlSearchParams] = useState(window.location.search);
+
+  useEffect(() => {
+    setPageTitle("Messages");
+    setActionButtons(null);
+
+    return () => {
+      setPageTitle("");
+      setActionButtons(null);
+    };
+  }, [setPageTitle, setActionButtons]);
 
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
@@ -284,11 +296,7 @@ export default function Messages() {
 
   return (
     <div className="h-full flex flex-col p-6 gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Messages</h1>
-          <p className="text-muted-foreground">Internal communication system</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Dialog open={isComposerOpen} onOpenChange={handleComposerClose}>
           <DialogTrigger asChild>
             <Button data-testid="button-compose">

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageHeader } from "@/contexts/PageHeaderContext";
 import { Database, Download, Upload, AlertCircle, CheckCircle2, Trash2, Clock, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -39,6 +40,7 @@ interface Backup {
 export default function BackupsPage() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { setPageTitle, setActionButtons } = usePageHeader();
   const [showRestoreWarning, setShowRestoreWarning] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
@@ -166,6 +168,39 @@ export default function BackupsPage() {
     },
   });
 
+  // Set page header (after mutations are declared)
+  useEffect(() => {
+    setPageTitle("System Backups");
+    setActionButtons(
+      <div className="flex gap-2">
+        {isAdmin && (
+          <Button
+            onClick={() => diagnoseMutation.mutate()}
+            disabled={diagnoseMutation.isPending}
+            variant="outline"
+            data-testid="button-diagnose-drive"
+          >
+            <AlertCircle className="h-4 w-4 mr-2" />
+            {diagnoseMutation.isPending ? "Checking..." : "Check Drive Access"}
+          </Button>
+        )}
+        <Button
+          onClick={() => createBackupMutation.mutate()}
+          disabled={createBackupMutation.isPending}
+          data-testid="button-create-backup"
+        >
+          <Database className="h-4 w-4 mr-2" />
+          {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
+        </Button>
+      </div>
+    );
+
+    return () => {
+      setPageTitle("");
+      setActionButtons(null);
+    };
+  }, [setPageTitle, setActionButtons, isAdmin, diagnoseMutation.isPending, createBackupMutation.isPending]);
+
   const handleRestore = (fileId: string) => {
     setSelectedBackup(fileId);
     // Set all available tables for restore
@@ -253,36 +288,6 @@ export default function BackupsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Database Backups</h1>
-          <p className="text-muted-foreground">
-            {isAdmin ? "Manage backups for your contact databases" : "View and create database backups"}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {isAdmin && (
-            <Button
-              onClick={() => diagnoseMutation.mutate()}
-              disabled={diagnoseMutation.isPending}
-              variant="outline"
-              data-testid="button-diagnose-drive"
-            >
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {diagnoseMutation.isPending ? "Checking..." : "Check Drive Access"}
-            </Button>
-          )}
-          <Button
-            onClick={() => createBackupMutation.mutate()}
-            disabled={createBackupMutation.isPending}
-            data-testid="button-create-backup"
-          >
-            <Database className="h-4 w-4 mr-2" />
-            {createBackupMutation.isPending ? "Creating..." : "Create New Backup"}
-          </Button>
-        </div>
-      </div>
-
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>What gets backed up</AlertTitle>

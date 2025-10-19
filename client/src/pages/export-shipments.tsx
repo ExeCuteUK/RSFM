@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { useLocation } from "wouter"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
@@ -49,6 +50,7 @@ const getFilePath = (file: any): string => {
 export default function ExportShipments() {
   const { openWindow } = useWindowManager()
   const { openEmailComposer } = useEmail()
+  const { setPageTitle, setActionButtons } = usePageHeader()
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
   const [selectedShipmentTypes, setSelectedShipmentTypes] = useState<string[]>(["Container Shipment", "Road Shipment", "Air Freight"])
@@ -83,6 +85,22 @@ export default function ExportShipments() {
       localStorage.removeItem('shipmentSearchJobRef') // Clear after use
     }
   }, [location])
+
+  // Set page header
+  useEffect(() => {
+    setPageTitle("Export Jobs")
+    setActionButtons(
+      <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-green-100 dark:bg-green-600/40 hover:bg-green-50 dark:hover:bg-green-600/50 text-black dark:text-foreground">
+        <Plus className="h-4 w-4 mr-2" />
+        New Export Shipment
+      </Button>
+    )
+
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons])
 
   const { data: allShipments = [], isLoading } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
@@ -1026,19 +1044,6 @@ Hope all is OK.`
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Export Job Manager</h1>
-          <p className="text-muted-foreground">
-            Manage outgoing shipments and export clearances
-          </p>
-        </div>
-        <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-green-100 dark:bg-green-600/40 hover:bg-green-50 dark:hover:bg-green-600/50 text-black dark:text-foreground">
-          <Plus className="h-4 w-4 mr-2" />
-          New Export Shipment
-        </Button>
-      </div>
-
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

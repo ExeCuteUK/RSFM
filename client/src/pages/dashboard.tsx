@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { ImportExportWorkGrid } from "@/components/ImportExportWorkGrid"
 import { ClearanceWorkGrid } from "@/components/ClearanceWorkGrid"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 
 const DASHBOARD_STORAGE_KEY = 'dashboard_preferences'
 const CONTAINER_STORAGE_KEY = 'containerGrid_preferences'
@@ -65,6 +66,7 @@ export default function Dashboard() {
   const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(dashPrefs.jobStatusFilter || ["active", "completed"])
   const [, setLocation] = useLocation()
   const { toast } = useToast()
+  const { setPageTitle, setActionButtons } = usePageHeader()
 
   // Inline editing state
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string } | null>(null)
@@ -117,6 +119,17 @@ export default function Dashboard() {
       }
     }
   }, [editingCell])
+
+  // Set page header
+  useEffect(() => {
+    setPageTitle("Management Sheets")
+    setActionButtons(null)
+
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons])
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -792,13 +805,6 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">Management Sheets</h1>
-        <p className="text-muted-foreground">
-          Heres an overview of all Job Operations.
-        </p>
-      </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 h-auto bg-card border-b border-border rounded-none p-0">
           <TabsTrigger 

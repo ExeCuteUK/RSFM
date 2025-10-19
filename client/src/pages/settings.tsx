@@ -12,6 +12,7 @@ import { insertSettingsSchema, insertUserSchema, type Settings, type InsertSetti
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageHeader } from "@/contexts/PageHeaderContext";
 import { 
   Dialog, 
   DialogContent, 
@@ -32,6 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function SettingsPage() {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
+  const { setPageTitle, setActionButtons } = usePageHeader();
   const [activeTab, setActiveTab] = useState("financials");
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Omit<User, 'password'> | null>(null);
@@ -41,6 +43,16 @@ export default function SettingsPage() {
   const [useSignature, setUseSignature] = useState(currentUser?.useSignature || false);
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    setPageTitle("Settings");
+    setActionButtons(null);
+
+    return () => {
+      setPageTitle("");
+      setActionButtons(null);
+    };
+  }, [setPageTitle, setActionButtons]);
   
   // Update signature state when user changes
   useEffect(() => {
@@ -236,13 +248,6 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage system settings and configurations
-        </p>
-      </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="financials" data-testid="tab-financials">Financials & Charges</TabsTrigger>

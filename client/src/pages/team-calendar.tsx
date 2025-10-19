@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { usePageHeader } from "@/contexts/PageHeaderContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +39,7 @@ interface CalendarEvent {
 
 export default function TeamCalendar() {
   const { toast } = useToast();
+  const { setPageTitle, setActionButtons } = usePageHeader();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -53,6 +55,34 @@ export default function TeamCalendar() {
     endTime: "17:00",
     isAllDay: true,
   });
+
+  const resetForm = () => {
+    setNewEvent({
+      summary: "",
+      description: "",
+      startDate: format(new Date(), "yyyy-MM-dd"),
+      endDate: format(new Date(), "yyyy-MM-dd"),
+      startTime: "09:00",
+      endTime: "17:00",
+      isAllDay: true,
+    });
+    setEditingEvent(null);
+  };
+
+  useEffect(() => {
+    setPageTitle("R.S Calendar");
+    setActionButtons(
+      <Button onClick={() => setIsAddDialogOpen(true)} data-testid="button-add-event">
+        <Plus className="mr-2 h-4 w-4" />
+        Add Event
+      </Button>
+    );
+
+    return () => {
+      setPageTitle("");
+      setActionButtons(null);
+    };
+  }, [setPageTitle, setActionButtons]);
 
   // Fetch events for the current month (including adjacent days for week view)
   const monthStart = startOfMonth(currentMonth);
@@ -204,19 +234,6 @@ export default function TeamCalendar() {
     }
   };
 
-  const resetForm = () => {
-    setNewEvent({
-      summary: "",
-      description: "",
-      startDate: format(new Date(), "yyyy-MM-dd"),
-      endDate: format(new Date(), "yyyy-MM-dd"),
-      startTime: "09:00",
-      endTime: "17:00",
-      isAllDay: true,
-    });
-    setEditingEvent(null);
-  };
-
   // Get events for a specific date (including multi-day events)
   const getEventsForDate = (date: Date) => {
     return events.filter((event) => {
@@ -284,19 +301,11 @@ export default function TeamCalendar() {
 
   return (
     <div className="container mx-auto p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold" data-testid="text-page-title">R.S Calendar</h1>
-        <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-          setIsAddDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button data-testid="button-add-event">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Event
-            </Button>
-          </DialogTrigger>
-          <DialogContent data-testid="dialog-add-event">
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+        setIsAddDialogOpen(open);
+        if (!open) resetForm();
+      }}>
+        <DialogContent data-testid="dialog-add-event">
             <DialogHeader>
               <DialogTitle>Add Calendar Event</DialogTitle>
             </DialogHeader>
@@ -518,7 +527,6 @@ export default function TeamCalendar() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
 
       {error && (
         <Alert variant="destructive" data-testid="alert-error">

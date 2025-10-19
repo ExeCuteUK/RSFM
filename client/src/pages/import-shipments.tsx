@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { useLocation } from "wouter"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { Button } from "@/components/ui/button"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -55,6 +56,7 @@ const getFilePath = (file: any): string => {
 export default function ImportShipments() {
   const { openEmailComposer } = useEmail()
   const { openWindow } = useWindowManager()
+  const { setPageTitle, setActionButtons } = usePageHeader()
   const [deletingShipmentId, setDeletingShipmentId] = useState<string | null>(null)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Awaiting Collection", "Dispatched", "Delivered"])
   const [selectedShipmentTypes, setSelectedShipmentTypes] = useState<string[]>(["Container Shipment", "Road Shipment", "Air Freight"])
@@ -115,6 +117,35 @@ export default function ImportShipments() {
       setLocation(newUrl, { replace: true })
     }
   }, [location, setLocation])
+
+  // Set page header
+  useEffect(() => {
+    setPageTitle("Import Jobs")
+    setActionButtons(
+      <div className="flex items-center gap-2">
+        <Button 
+          data-testid="button-check-containers" 
+          onClick={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/terminal49/check-all-containers"] })
+            setContainerCheckDialogOpen(true)
+          }} 
+          variant="outline"
+        >
+          <Container className="h-4 w-4 mr-2" />
+          Check Current Containers
+        </Button>
+        <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground">
+          <Plus className="h-4 w-4 mr-2" />
+          New Import Shipment
+        </Button>
+      </div>
+    )
+
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons])
 
   const { data: allShipments = [], isLoading } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -1929,32 +1960,6 @@ Hope all is OK.`
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Import Job Manager</h1>
-          <p className="text-muted-foreground">
-            Manage incoming shipments and customs clearances
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            data-testid="button-check-containers" 
-            onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ["/api/terminal49/check-all-containers"] })
-              setContainerCheckDialogOpen(true)
-            }} 
-            variant="outline"
-          >
-            <Container className="h-4 w-4 mr-2" />
-            Check Current Containers
-          </Button>
-          <Button data-testid="button-new-shipment" onClick={handleCreateNew} className="border border-border bg-blue-100 dark:bg-primary/40 hover:bg-blue-50 dark:hover:bg-primary/50 text-black dark:text-foreground">
-            <Plus className="h-4 w-4 mr-2" />
-            New Import Shipment
-          </Button>
-        </div>
-      </div>
-
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

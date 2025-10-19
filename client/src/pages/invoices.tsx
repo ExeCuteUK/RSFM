@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { Link } from "wouter"
 import type { Invoice } from "@shared/schema"
@@ -8,6 +8,7 @@ import { Download, Search, Pencil, Trash2, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { apiRequest, queryClient } from "@/lib/queryClient"
 import { CustomerInvoiceForm } from "@/components/CustomerInvoiceForm"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,8 +44,24 @@ export default function Invoices() {
   const [toDate, setToDate] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const { toast } = useToast()
+  const { setPageTitle, setActionButtons } = usePageHeader()
   
   const itemsPerPage = 200
+
+  useEffect(() => {
+    setPageTitle("Invoice Archive")
+    setActionButtons(
+      <Button onClick={() => setShowNewInvoice(true)} data-testid="button-new-invoice">
+        <Plus className="h-4 w-4 mr-2" />
+        New Invoice
+      </Button>
+    )
+
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons])
 
   const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
@@ -103,19 +120,6 @@ export default function Invoices() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">R.S Invoice & Credit Management</h1>
-          <p className="text-muted-foreground">
-            View and download customer invoices and credit notes
-          </p>
-        </div>
-        <Button onClick={() => setShowNewInvoice(true)} data-testid="button-new-invoice">
-          <Plus className="h-4 w-4 mr-2" />
-          New Invoice
-        </Button>
-      </div>
-
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
