@@ -395,7 +395,7 @@ export function ImportExportWorkGrid() {
       return 'bg-green-100 dark:bg-green-900 dark:text-white'
     }
     
-    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black'
   }
 
   // Get cell color based on value (green if has data, yellow if empty)
@@ -403,7 +403,7 @@ export function ImportExportWorkGrid() {
     if (value) {
       return 'bg-green-100 dark:bg-green-900 dark:text-white'
     }
-    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black'
   }
 
   // Get delivery date color - yellow if empty, green if has value for both imports and exports
@@ -420,7 +420,7 @@ export function ImportExportWorkGrid() {
     if (job.invoiceCustomerStatusIndicator === 3) {
       return 'bg-green-100 dark:bg-green-900 dark:text-white'
     }
-    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black'
   }
 
   // Get POD sent color based on status
@@ -428,7 +428,7 @@ export function ImportExportWorkGrid() {
     if (job.sendPodToCustomerStatusIndicator === 3) {
       return 'bg-green-100 dark:bg-green-900 dark:text-white'
     }
-    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900'
+    return 'bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black'
   }
 
   // Handle Job Ref click to navigate to shipment page

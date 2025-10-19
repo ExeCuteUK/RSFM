@@ -540,7 +540,7 @@ export default function Dashboard() {
 
   // Helper to get cell color (green if populated, yellow if empty)
   const getNisbetsCellColor = (value: string | null | undefined): string => {
-    return value ? "bg-green-100 dark:bg-green-900 dark:text-white" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
+    return value ? "bg-green-100 dark:bg-green-900 dark:text-white" : "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black"
   }
 
   // Helper to get customer name
