@@ -1381,15 +1381,16 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Haulier</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="haulierName"
+          {form.watch("containerShipment") !== "Container Shipment" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Haulier</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="haulierName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Haulier</FormLabel>
@@ -1564,6 +1565,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               </div>
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>
