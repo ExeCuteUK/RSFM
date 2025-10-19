@@ -1478,6 +1478,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!shipment) {
         return res.status(404).json({ error: "Import shipment not found" });
       }
+      
+      // If status is green (3), update linked clearance status to Fully Cleared
+      if (status === 3 && shipment.linkedClearanceId) {
+        const linkedClearance = await storage.getCustomClearanceById(shipment.linkedClearanceId);
+        if (linkedClearance) {
+          await storage.updateCustomClearance(shipment.linkedClearanceId, {
+            status: "Fully Cleared"
+          });
+        }
+      }
+      
       res.json(shipment);
     } catch (error) {
       if (error instanceof z.ZodError) {
