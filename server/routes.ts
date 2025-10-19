@@ -1479,16 +1479,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Import shipment not found" });
       }
       
-      // If status is green (3), update linked clearance status to Fully Cleared
-      if (status === 3 && shipment.linkedClearanceId) {
-        const linkedClearance = await storage.getCustomClearanceById(shipment.linkedClearanceId);
-        if (linkedClearance) {
-          await storage.updateCustomClearance(shipment.linkedClearanceId, {
-            status: "Fully Cleared"
-          });
-        }
-      }
-      
       res.json(shipment);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1519,18 +1509,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked clearance if it exists
       if (shipment.linkedClearanceId) {
-        const linkedClearance = await storage.getCustomClearanceById(shipment.linkedClearanceId);
-        const updateData: any = {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
           sendHaulierEadStatusIndicator: status ?? null,
           sendHaulierEadStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
-        };
-        
-        // If status is green (3) and clearance status is Request CC or Awaiting Entry, update to Awaiting Arrival
-        if (status === 3 && linkedClearance && (linkedClearance.status === "Request CC" || linkedClearance.status === "Awaiting Entry")) {
-          updateData.status = "Awaiting Arrival";
-        }
-        
-        await storage.updateCustomClearance(shipment.linkedClearanceId, updateData);
+        });
       }
       
       res.json(shipment);
@@ -1563,18 +1545,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked clearance if it exists
       if (shipment.linkedClearanceId) {
-        const linkedClearance = await storage.getCustomClearanceById(shipment.linkedClearanceId);
-        const updateData: any = {
+        await storage.updateCustomClearance(shipment.linkedClearanceId, {
           sendCustomerGvmsStatusIndicator: status ?? null,
           sendCustomerGvmsStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
-        };
-        
-        // If status is green (3) and clearance status is Request CC or Awaiting Entry, update to Awaiting Arrival
-        if (status === 3 && linkedClearance && (linkedClearance.status === "Request CC" || linkedClearance.status === "Awaiting Entry")) {
-          updateData.status = "Awaiting Arrival";
-        }
-        
-        await storage.updateCustomClearance(shipment.linkedClearanceId, updateData);
+        });
       }
       
       res.json(shipment);
