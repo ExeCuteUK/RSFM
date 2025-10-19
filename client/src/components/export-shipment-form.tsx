@@ -540,7 +540,19 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                   )}
                 />
 
-                <div></div>
+                <FormField
+                  control={form.control}
+                  name="customerReferenceNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Exporters Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -681,20 +693,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="customerReferenceNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Customer Reference Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
