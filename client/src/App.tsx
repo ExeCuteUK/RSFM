@@ -14,6 +14,7 @@ import { OtherUsersMenu } from "@/components/other-users-menu";
 import { EmailProvider, useEmail } from "@/contexts/EmailContext";
 import { DraggableEmailComposer } from "@/components/DraggableEmailComposer";
 import { WindowManagerProvider, useWindowManager } from "@/contexts/WindowManagerContext";
+import { PageHeaderProvider, usePageHeader } from "@/contexts/PageHeaderContext";
 import { WindowTaskbar } from "@/components/WindowTaskbar";
 import { ImportShipmentWindow } from "@/components/ImportShipmentWindow";
 import { ExportShipmentWindow } from "@/components/ExportShipmentWindow";
@@ -178,6 +179,7 @@ function AppContent() {
   const { toast } = useToast();
   const previousUnreadCount = useRef<number>(0);
   const { windows, activeWindow } = useWindowManager();
+  const { pageTitle, actionButtons } = usePageHeader();
   
   const { data: unreadData } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread-count"],
@@ -212,8 +214,12 @@ function AppContent() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger data-testid="button-sidebar-toggle" />
                 <OtherUsersMenu />
+                {pageTitle && (
+                  <h1 className="text-xl font-semibold">{pageTitle}</h1>
+                )}
               </div>
               <div className="flex items-center gap-4">
+                {actionButtons}
                 <ThemeToggle />
                 <UserMenu />
               </div>
@@ -328,8 +334,10 @@ function App() {
           <AuthProvider>
             <WindowManagerProvider>
               <EmailProvider>
-                <AppContent />
-                <Toaster />
+                <PageHeaderProvider>
+                  <AppContent />
+                  <Toaster />
+                </PageHeaderProvider>
               </EmailProvider>
             </WindowManagerProvider>
           </AuthProvider>
