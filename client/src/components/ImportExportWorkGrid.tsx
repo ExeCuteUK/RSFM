@@ -595,7 +595,7 @@ export function ImportExportWorkGrid() {
                 const haulierName = isImport ? importJob?.haulierName : exportJob?.haulierName
 
                 return (
-                  <tr key={job.id} className="border-b hover:bg-muted/50">
+                  <tr key={job.id} className="border-b hover:bg-muted/50" style={{ minHeight: '5rem' }}>
                     {/* Job Ref - Clickable to navigate to shipment page */}
                     <td 
                       className={`p-1 text-center border-r border-border cursor-pointer hover:underline ${rowColor}`}

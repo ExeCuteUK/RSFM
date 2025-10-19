@@ -934,7 +934,7 @@ export default function Dashboard() {
                         }
 
                         return (
-                          <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-container-${shipment.jobRef}`}>
+                          <tr key={shipment.id} className="border-b-2 hover-elevate" style={{ minHeight: '5rem' }} data-testid={`row-container-${shipment.jobRef}`}>
                             {/* Hold */}
                             <td className={`px-1 text-center border-r border-border align-middle ${holdBgColor}`} data-testid={`cell-hold-${shipment.jobRef}`}>
                               {showHoldIcon && (
@@ -1328,7 +1328,7 @@ export default function Dashboard() {
                         const countryOptions = commonCountries.map(c => ({ value: c, label: c }))
 
                         return (
-                          <tr key={shipment.id} className="border-b-2 hover-elevate" data-testid={`row-nisbets-${shipment.jobRef}`}>
+                          <tr key={shipment.id} className="border-b-2 hover-elevate" style={{ minHeight: '5rem' }} data-testid={`row-nisbets-${shipment.jobRef}`}>
                             {/* Job Ref - READ ONLY */}
                             <td className={`px-1 text-center border-r border-border align-middle ${getNisbetsCellColor(shipment.jobRef?.toString())}`} data-testid={`cell-ref-${shipment.jobRef}`}>
                               <button
