@@ -443,92 +443,99 @@ export function ImportExportWorkGrid() {
         <CardTitle>Import / Export Work Sheet</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by job ref, customer, supplier, or container number..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="pl-9"
-            data-testid="input-search-import-export"
-          />
+        {/* Search Bar and Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by job ref, customer, supplier, or container number..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="pl-9"
+              data-testid="input-search-import-export"
+            />
+          </div>
+
+          <div className="h-8 w-px bg-border" />
+
+          <Button
+            variant={jobStatusFilter.includes("active") ? "default" : "outline"}
+            size="sm"
+            onClick={() => toggleJobStatusFilter("active")}
+            data-testid="button-filter-active"
+          >
+            Active Jobs
+          </Button>
+          <Button
+            variant={jobStatusFilter.includes("completed") ? "default" : "outline"}
+            size="sm"
+            onClick={() => toggleJobStatusFilter("completed")}
+            data-testid="button-filter-completed"
+          >
+            Completed Jobs
+          </Button>
+
+          <div className="h-8 w-px bg-border" />
+
+          <Button
+            variant={jobTypeFilter.includes("import") ? "default" : "outline"}
+            size="sm"
+            onClick={() => toggleJobTypeFilter("import")}
+            data-testid="button-filter-imports"
+          >
+            Imports
+          </Button>
+          <Button
+            variant={jobTypeFilter.includes("export") ? "default" : "outline"}
+            size="sm"
+            onClick={() => toggleJobTypeFilter("export")}
+            data-testid="button-filter-exports"
+          >
+            Exports
+          </Button>
         </div>
 
-        {/* Exclude Filter and Job Status Buttons */}
-        <div className="flex items-start gap-4">
-          <div className="flex-1 space-y-2">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add customer name to exclude..."
-                value={excludeInputValue}
-                onChange={(e) => setExcludeInputValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    addExcludedCustomer()
-                  }
-                }}
-                data-testid="input-exclude-customer"
-              />
-              <Button
-                onClick={addExcludedCustomer}
-                variant="outline"
-                size="icon"
-                data-testid="button-add-exclude"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+        {/* Exclude Customer Filter */}
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Add customer name to exclude..."
+              value={excludeInputValue}
+              onChange={(e) => setExcludeInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  addExcludedCustomer()
+                }
+              }}
+              data-testid="input-exclude-customer"
+            />
+            <Button
+              onClick={addExcludedCustomer}
+              variant="outline"
+              size="icon"
+              data-testid="button-add-exclude"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          {excludedCustomers.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {excludedCustomers.map((name) => (
+                <Badge key={name} variant="secondary" className="gap-1">
+                  {name}
+                  <button
+                    type="button"
+                    onClick={() => removeExcludedCustomer(name)}
+                    className="hover-elevate active-elevate-2 rounded-full"
+                    data-testid={`button-remove-${name}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
             </div>
-            {excludedCustomers.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {excludedCustomers.map((name) => (
-                  <Badge key={name} variant="secondary" className="gap-1">
-                    {name}
-                    <button
-                      type="button"
-                      onClick={() => removeExcludedCustomer(name)}
-                      className="hover-elevate active-elevate-2 rounded-full"
-                      data-testid={`button-remove-${name}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex gap-2 items-center">
-            <Button
-              variant={jobStatusFilter.includes("active") ? "default" : "outline"}
-              onClick={() => toggleJobStatusFilter("active")}
-              data-testid="button-filter-active"
-            >
-              Active Jobs
-            </Button>
-            <Button
-              variant={jobStatusFilter.includes("completed") ? "default" : "outline"}
-              onClick={() => toggleJobStatusFilter("completed")}
-              data-testid="button-filter-completed"
-            >
-              Completed Jobs
-            </Button>
-            <div className="h-8 w-px bg-border mx-1" />
-            <Button
-              variant={jobTypeFilter.includes("import") ? "default" : "outline"}
-              onClick={() => toggleJobTypeFilter("import")}
-              data-testid="button-filter-imports"
-            >
-              Imports
-            </Button>
-            <Button
-              variant={jobTypeFilter.includes("export") ? "default" : "outline"}
-              onClick={() => toggleJobTypeFilter("export")}
-              data-testid="button-filter-exports"
-            >
-              Exports
-            </Button>
-          </div>
+          )}
         </div>
 
         <div className="overflow-auto">

@@ -540,9 +540,9 @@ export function ClearanceWorkGrid() {
           <CardTitle>Clearance Management Sheet</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Search */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
+          {/* Search and Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search clearances..."
@@ -562,70 +562,63 @@ export function ClearanceWorkGrid() {
                 <X className="h-4 w-4" />
               </Button>
             )}
-          </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2">
-              <Button
-                variant={jobStatusFilter.includes("active") ? "default" : "outline"}
-                size="sm"
-                onClick={() => toggleJobStatusFilter("active")}
-                data-testid="filter-active-jobs"
-              >
-                Active Jobs
-              </Button>
-              <Button
-                variant={jobStatusFilter.includes("completed") ? "default" : "outline"}
-                size="sm"
-                onClick={() => toggleJobStatusFilter("completed")}
-                data-testid="filter-completed-jobs"
-              >
-                Completed Jobs
-              </Button>
-            </div>
+            <div className="h-8 w-px bg-border" />
 
-            <div className="h-6 w-px bg-border" />
+            <Button
+              variant={jobStatusFilter.includes("active") ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleJobStatusFilter("active")}
+              data-testid="filter-active-jobs"
+            >
+              Active Jobs
+            </Button>
+            <Button
+              variant={jobStatusFilter.includes("completed") ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleJobStatusFilter("completed")}
+              data-testid="filter-completed-jobs"
+            >
+              Completed Jobs
+            </Button>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant={jobTypeFilter.includes("import") ? "default" : "outline"}
-                size="sm"
-                onClick={() => toggleJobTypeFilter("import")}
-                data-testid="filter-imports"
-              >
-                Imports
-              </Button>
-              <Button
-                variant={jobTypeFilter.includes("export") ? "default" : "outline"}
-                size="sm"
-                onClick={() => toggleJobTypeFilter("export")}
-                data-testid="filter-exports"
-              >
-                Exports
-              </Button>
-            </div>
+            <div className="h-8 w-px bg-border" />
 
-            <div className="h-6 w-px bg-border" />
+            <Button
+              variant={jobTypeFilter.includes("import") ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleJobTypeFilter("import")}
+              data-testid="filter-imports"
+            >
+              Imports
+            </Button>
+            <Button
+              variant={jobTypeFilter.includes("export") ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleJobTypeFilter("export")}
+              data-testid="filter-exports"
+            >
+              Exports
+            </Button>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant={linkedFilter.includes("linked") ? "default" : "outline"}
-                size="sm"
-                onClick={() => toggleLinkedFilter("linked")}
-                data-testid="filter-linked"
-              >
-                Linked CC Jobs
-              </Button>
-              <Button
-                variant={linkedFilter.includes("dedicated") ? "default" : "outline"}
-                size="sm"
-                onClick={() => toggleLinkedFilter("dedicated")}
-                data-testid="filter-dedicated"
-              >
-                Dedicated CC Jobs
-              </Button>
-            </div>
+            <div className="h-8 w-px bg-border" />
+
+            <Button
+              variant={linkedFilter.includes("linked") ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleLinkedFilter("linked")}
+              data-testid="filter-linked"
+            >
+              Linked CC Jobs
+            </Button>
+            <Button
+              variant={linkedFilter.includes("dedicated") ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleLinkedFilter("dedicated")}
+              data-testid="filter-dedicated"
+            >
+              Dedicated CC Jobs
+            </Button>
           </div>
 
           {/* Grid */}
