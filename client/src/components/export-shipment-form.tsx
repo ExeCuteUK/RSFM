@@ -1760,15 +1760,16 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Haulier Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="haulierName"
+          {form.watch("containerShipment") !== "Container Shipment" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Haulier Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="haulierName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Haulier</FormLabel>
@@ -1940,6 +1941,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
               </div>
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>

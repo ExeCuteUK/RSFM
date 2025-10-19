@@ -2057,19 +2057,19 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
           </Card>
 
           {form.watch("containerShipment") !== "Container Shipment" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Haulier Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="haulierName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Haulier</FormLabel>
-                      <Select 
+            <Card>
+              <CardHeader>
+                <CardTitle>Haulier Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="haulierName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Haulier</FormLabel>
+                        <Select 
                         onValueChange={(value) => {
                           field.onChange(value);
                           const selectedHaulier = hauliers?.find(h => h.haulierName === value);
