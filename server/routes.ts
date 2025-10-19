@@ -1509,10 +1509,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked clearance if it exists
       if (shipment.linkedClearanceId) {
-        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+        const clearanceUpdates: any = {
           sendHaulierEadStatusIndicator: status ?? null,
           sendHaulierEadStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
-        });
+        };
+        
+        // If status is green (3), conditionally update clearance status to Awaiting Arrival
+        if (status === 3) {
+          await storage.updateCustomClearanceConditionally(
+            shipment.linkedClearanceId,
+            { ...clearanceUpdates, status: "Awaiting Arrival" },
+            ["Request CC", "Awaiting Entry"]
+          );
+          // If clearance wasn't in Request CC or Awaiting Entry, still sync the GVMS status
+          await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdates);
+        } else {
+          await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdates);
+        }
       }
       
       res.json(shipment);
@@ -1545,10 +1558,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked clearance if it exists
       if (shipment.linkedClearanceId) {
-        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+        const clearanceUpdates: any = {
           sendCustomerGvmsStatusIndicator: status ?? null,
           sendCustomerGvmsStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
-        });
+        };
+        
+        // If status is green (3), conditionally update clearance status to Awaiting Arrival
+        if (status === 3) {
+          await storage.updateCustomClearanceConditionally(
+            shipment.linkedClearanceId,
+            { ...clearanceUpdates, status: "Awaiting Arrival" },
+            ["Request CC", "Awaiting Entry"]
+          );
+          // If clearance wasn't in Request CC or Awaiting Entry, still sync the GVMS status
+          await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdates);
+        } else {
+          await storage.updateCustomClearance(shipment.linkedClearanceId, clearanceUpdates);
+        }
       }
       
       res.json(shipment);
