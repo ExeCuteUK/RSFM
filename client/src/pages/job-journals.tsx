@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Calendar, Plus, Eye, EyeOff } from "lucide-react"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
+import { usePageHeader } from "@/contexts/PageHeaderContext"
 import { InvoiceEditDialog } from "@/components/InvoiceEditDialog"
 import { GeneralReferenceDialog } from "@/components/GeneralReferenceDialog"
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, PurchaseInvoice, Invoice, GeneralReference } from "@shared/schema"
@@ -78,6 +79,7 @@ export default function JobJournals() {
   const currentDate = new Date()
   const [, setLocation] = useLocation()
   const { openWindow } = useWindowManager()
+  const { setPageTitle, setActionButtons } = usePageHeader()
 
   // Load preferences from localStorage
   const loadPreferences = () => {
@@ -149,6 +151,30 @@ export default function JobJournals() {
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
   }, [filterMode, selectedMonth, selectedYear, startDate, endDate, selectedJobTypes, searchText, showReserveColumns])
+
+  // Set page header
+  useEffect(() => {
+    setPageTitle("Truck Journals")
+    setActionButtons(
+      <div className="flex gap-2">
+        <GeneralReferenceDialog />
+        <Button
+          onClick={handleAddExpenseInvoices}
+          size="default"
+          data-testid="button-add-expense-invoices"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Expense Invoices
+        </Button>
+      </div>
+    )
+
+    // Clean up on unmount
+    return () => {
+      setPageTitle("")
+      setActionButtons(null)
+    }
+  }, [setPageTitle, setActionButtons])
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -479,24 +505,6 @@ export default function JobJournals() {
 
   return (
     <div className="h-full flex flex-col p-6 gap-4 overflow-hidden">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Truck Journals</h1>
-          <p className="text-muted-foreground mt-1">Financial tracking for all jobs</p>
-        </div>
-        <div className="flex gap-2">
-          <GeneralReferenceDialog />
-          <Button
-            onClick={handleAddExpenseInvoices}
-            size="default"
-            data-testid="button-add-expense-invoices"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Expense Invoices
-          </Button>
-        </div>
-      </div>
-
       <div className="flex gap-4 items-center">
         <div className="flex gap-2">
           <Button
