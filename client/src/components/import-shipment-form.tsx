@@ -2056,6 +2056,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             </CardContent>
           </Card>
 
+          {form.watch("containerShipment") !== "Container Shipment" && (
           <Card>
             <CardHeader>
               <CardTitle>Haulier Information</CardTitle>
@@ -2236,6 +2237,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
               </div>
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>
