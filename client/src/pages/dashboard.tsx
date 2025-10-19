@@ -880,25 +880,25 @@ export default function Dashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table ref={tableRef} className={`w-full border-collapse text-sm ${editingCell ? 'table-fixed' : ''}`}>
-                  <thead className="sticky top-0 bg-background z-10">
+                <table ref={tableRef} className={`w-full border-collapse text-xs ${editingCell ? 'table-fixed' : ''}`}>
+                  <thead className="sticky top-0 bg-muted z-10">
                     <tr className="border-b-2">
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background w-12" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Hold</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[1] ? { width: `${columnWidths[1]}px` } : undefined}>Ref</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Job Date</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Consignee</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Container no.</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background w-20" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Ship Line</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>POA</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>Vessel</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[8] ? { width: `${columnWidths[8]}px` } : undefined}>ETA Port</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>References</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>Delivery Date</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>RLS</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Delivery Address</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Rate In</th>
-                      <th className="p-1 text-center font-semibold border-r border-border bg-background" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Rate Out</th>
-                      <th className="p-1 text-center font-semibold bg-background w-48" style={editingCell && columnWidths[15] ? { width: `${columnWidths[15]}px` } : undefined}>Notes</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted w-12" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Hold</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[1] ? { width: `${columnWidths[1]}px` } : undefined}>Ref</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Job Date</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Consignee</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Container no.</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted w-20" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Ship Line</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>POA</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>Vessel</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[8] ? { width: `${columnWidths[8]}px` } : undefined}>ETA Port</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>References</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>Delivery Date</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>RLS</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Delivery Address</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Rate In</th>
+                      <th className="p-1 text-center font-semibold border-r border-border bg-muted" style={editingCell && columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Rate Out</th>
+                      <th className="p-1 text-center font-semibold bg-muted w-48" style={editingCell && columnWidths[15] ? { width: `${columnWidths[15]}px` } : undefined}>Notes</th>
                     </tr>
                   </thead>
                   <tbody className="text-xs">
