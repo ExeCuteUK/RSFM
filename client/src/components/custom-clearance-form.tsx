@@ -110,6 +110,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
     defaultValues: {
       jobType: "import",
       status: "Request CC",
+      createdAt: defaultValues?.createdAt || format(new Date(), "yyyy-MM-dd"),
       importCustomerId: "",
       exportCustomerId: "",
       receiverId: "",
@@ -531,7 +532,43 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               <CardTitle>Customer &amp; Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="createdAt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Creation Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-created-at"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(new Date(field.value), "dd/MM/yy") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="jobType"
@@ -776,54 +813,52 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
                 />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="customerReferenceNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Customer Reference Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid gap-4 grid-cols-[auto_1fr]">
                 <FormField
                   control={form.control}
-                  name="customerReferenceNumber"
+                  name="jobHold"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Customer Reference Number</FormLabel>
+                    <FormItem className="flex flex-row items-center gap-1 space-y-0 pt-7">
+                      <FormLabel className="mb-0">Job Hold</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
+                        <Checkbox
+                          checked={field.value || false}
+                          onCheckedChange={field.onChange}
+                          data-testid="checkbox-job-hold"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid gap-4 grid-cols-[auto_1fr]">
-                  <FormField
-                    control={form.control}
-                    name="jobHold"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center gap-1 space-y-0 pt-7">
-                        <FormLabel className="mb-0">Job Hold</FormLabel>
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value || false}
-                            onCheckedChange={field.onChange}
-                            data-testid="checkbox-job-hold"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="holdDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hold Description</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-hold-description" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="holdDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hold Description</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-hold-description" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
