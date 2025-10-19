@@ -1,11 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { type ImportShipment, type ExportShipment, type ImportCustomer, type ExportCustomer, type ExportReceiver, type User, type Haulier } from "@shared/schema"
-import { Search, X, Plus } from "lucide-react"
+import { Search } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
@@ -30,11 +29,6 @@ export function ImportExportWorkGrid() {
   const prefs = loadPreferences()
 
   const [searchText, setSearchText] = useState(prefs.searchText || "")
-  const [excludeInputValue, setExcludeInputValue] = useState("")
-  const [excludedCustomers, setExcludedCustomers] = useState<string[]>(() => {
-    const saved = localStorage.getItem('excludedCustomers')
-    return saved ? JSON.parse(saved) : []
-  })
   const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(prefs.jobStatusFilter || ["active", "completed"])
   const [jobTypeFilter, setJobTypeFilter] = useState<("import" | "export")[]>(prefs.jobTypeFilter || ["import", "export"])
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string; jobType: 'import' | 'export' } | null>(null)
@@ -48,12 +42,7 @@ export function ImportExportWorkGrid() {
   const { toast } = useToast()
   const [, setLocation] = useLocation()
 
-  // Save excluded customers to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('excludedCustomers', JSON.stringify(excludedCustomers))
-  }, [excludedCustomers])
-
-  // Save other preferences to localStorage
+  // Save preferences to localStorage
   useEffect(() => {
     const preferences = {
       searchText,
@@ -63,18 +52,6 @@ export function ImportExportWorkGrid() {
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
   }, [searchText, jobStatusFilter, jobTypeFilter, recordsPerPage])
-
-  const addExcludedCustomer = () => {
-    const name = excludeInputValue.trim()
-    if (name && !excludedCustomers.includes(name)) {
-      setExcludedCustomers([...excludedCustomers, name])
-      setExcludeInputValue("")
-    }
-  }
-
-  const removeExcludedCustomer = (name: string) => {
-    setExcludedCustomers(excludedCustomers.filter(n => n !== name))
-  }
 
   useEffect(() => {
     if (!editingCell) {
@@ -124,38 +101,32 @@ export function ImportExportWorkGrid() {
     queryKey: ["/api/hauliers"],
   })
 
-  // Filter jobs: Exclude Container Shipments (unless LCL) and manually excluded customers
+  // Filter jobs: Exclude Container Shipments (unless LCL) and Nisbets jobs
   const filteredJobs = [
     ...importShipments
       .filter(job => {
         const customer = importCustomers.find(c => c.id === job.importCustomerId)
-        const customerName = (customer?.companyName || '').toLowerCase().trim().replace(/\s+/g, ' ')
+        const customerName = (customer?.companyName || '').toLowerCase().trim()
         
-        // Check if customer matches any excluded name (case-insensitive substring match)
-        const isExcluded = excludedCustomers.some(excludedName => {
-          const normalizedExcludedName = excludedName.toLowerCase().trim().replace(/\s+/g, ' ')
-          return customerName.includes(normalizedExcludedName)
-        })
+        // Hard-coded: Exclude jobs with "Nisbets" in customer name (case-insensitive partial match)
+        const isNisbets = customerName.includes('nisbets')
         
         // Exclude Container Shipments UNLESS lclContainer is true
         const isContainerButNotLCL = job.containerShipment === "Container Shipment" && !job.lclContainer
         
-        return !isContainerButNotLCL && !isExcluded
+        return !isContainerButNotLCL && !isNisbets
       })
       .map(job => ({ ...job, _jobType: 'import' as const })),
     ...exportShipments
       .filter(job => {
         const customer = exportCustomers.find(c => c.id === job.destinationCustomerId)
-        const customerName = (customer?.companyName || '').toLowerCase().trim().replace(/\s+/g, ' ')
+        const customerName = (customer?.companyName || '').toLowerCase().trim()
         
-        // Check if customer matches any excluded name (case-insensitive substring match)
-        const isExcluded = excludedCustomers.some(excludedName => {
-          const normalizedExcludedName = excludedName.toLowerCase().trim().replace(/\s+/g, ' ')
-          return customerName.includes(normalizedExcludedName)
-        })
+        // Hard-coded: Exclude jobs with "Nisbets" in customer name (case-insensitive partial match)
+        const isNisbets = customerName.includes('nisbets')
         
         // Exclude all Container Shipments from exports (no LCL field for exports)
-        return job.containerShipment !== "Container Shipment" && !isExcluded
+        return job.containerShipment !== "Container Shipment" && !isNisbets
       })
       .map(job => ({ ...job, _jobType: 'export' as const }))
   ]
@@ -209,7 +180,7 @@ export function ImportExportWorkGrid() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchText, jobStatusFilter, jobTypeFilter, excludedCustomers])
+  }, [searchText, jobStatusFilter, jobTypeFilter])
 
   // Clamp currentPage to valid bounds when totalPages changes
   useEffect(() => {
@@ -493,49 +464,6 @@ export function ImportExportWorkGrid() {
           >
             Exports
           </Button>
-        </div>
-
-        {/* Exclude Customer Filter */}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Add customer name to exclude..."
-              value={excludeInputValue}
-              onChange={(e) => setExcludeInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  addExcludedCustomer()
-                }
-              }}
-              data-testid="input-exclude-customer"
-            />
-            <Button
-              onClick={addExcludedCustomer}
-              variant="outline"
-              size="icon"
-              data-testid="button-add-exclude"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          {excludedCustomers.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {excludedCustomers.map((name) => (
-                <Badge key={name} variant="secondary" className="gap-1">
-                  {name}
-                  <button
-                    type="button"
-                    onClick={() => removeExcludedCustomer(name)}
-                    className="hover-elevate active-elevate-2 rounded-full"
-                    data-testid={`button-remove-${name}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="overflow-auto">
