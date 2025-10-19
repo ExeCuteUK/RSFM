@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, CheckCircle2, Package, AlertCircle, DollarSign } from "lucide-react"
+import { AlertTriangle, CheckCircle2, Package, AlertCircle, PoundSterling } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { useLocation } from "wouter"
 import { useAuth } from "@/hooks/use-auth"
@@ -511,7 +511,7 @@ export default function Eric() {
         >
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
-              <DollarSign className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+              <PoundSterling className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-sm mb-1">
                   Overdue Invoicing
