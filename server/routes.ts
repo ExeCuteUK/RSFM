@@ -1508,10 +1508,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Bidirectional sync: Update linked clearance if it exists
       if (shipment.linkedClearanceId) {
-        await storage.updateCustomClearance(shipment.linkedClearanceId, {
+        const linkedClearance = await storage.getCustomClearanceById(shipment.linkedClearanceId);
+        const updateData: any = {
           sendHaulierEadStatusIndicator: status ?? null,
           sendHaulierEadStatusIndicatorTimestamp: status === 1 ? null : new Date().toISOString()
-        });
+        };
+        
+        // If status is green (3) and clearance status is Request CC or Awaiting Entry, update to Awaiting Arrival
+        if (status === 3 && linkedClearance && (linkedClearance.status === "Request CC" || linkedClearance.status === "Awaiting Entry")) {
+          updateData.status = "Awaiting Arrival";
+        }
+        
+        await storage.updateCustomClearance(shipment.linkedClearanceId, updateData);
       }
       
       res.json(shipment);
