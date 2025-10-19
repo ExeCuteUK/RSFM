@@ -589,7 +589,19 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                   )}
                 />
 
-                <div></div>
+                <FormField
+                  control={form.control}
+                  name="customerReferenceNumber"
+                  render={({ field}) => (
+                    <FormItem>
+                      <FormLabel>Importers Reference</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -704,21 +716,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="customerReferenceNumber"
-                render={({ field}) => (
-                  <FormItem>
-                    <FormLabel>Customer Reference Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} data-testid="input-customer-reference" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid gap-4 grid-cols-[auto_1fr]">
+              <div className="grid gap-4 grid-cols-[auto_1fr_1fr]">
                 <FormField
                   control={form.control}
                   name="jobHold"
@@ -750,25 +748,25 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <FormField
-                control={form.control}
-                name="supplierName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Supplier Name</FormLabel>
-                    <FormControl>
-                      <SupplierCombobox
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        importCustomerId={selectedCustomerId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="supplierName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Supplier Name</FormLabel>
+                      <FormControl>
+                        <SupplierCombobox
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          importCustomerId={selectedCustomerId}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </CardContent>
           </Card>
 
