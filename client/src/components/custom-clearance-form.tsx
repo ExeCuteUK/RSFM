@@ -190,6 +190,7 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
   const exportCustomerId = form.watch("exportCustomerId")
   const additionalCommodityCodes = form.watch("additionalCommodityCodes")
   const costPerAdditionalHsCode = form.watch("costPerAdditionalHsCode")
+  const clearanceType = form.watch("clearanceType")
   const haulierContactNames = form.watch("haulierContactName") || []
   const haulierEmails = form.watch("haulierEmail") || []
   const jobContactNames = form.watch("jobContactName") || []
@@ -269,6 +270,25 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
       ])
     }
   }, [additionalCommodityCodes, costPerAdditionalHsCode, form])
+
+  // Auto-add "Inventory Linked Fee" expense when clearance type is Inventory Linked
+  useEffect(() => {
+    if (!settings?.inventoryLinkedFee) return
+
+    const currentExpenses = (form.getValues("expensesToChargeOut") || []) as Array<{ description: string; amount: string }>
+    const inventoryFeeExists = currentExpenses.some((exp) => exp.description === "Inventory Linked Fee")
+
+    if (clearanceType === "Inventory Linked" && !inventoryFeeExists) {
+      form.setValue("expensesToChargeOut", [
+        ...currentExpenses,
+        { description: "Inventory Linked Fee", amount: settings.inventoryLinkedFee }
+      ])
+    } else if (clearanceType !== "Inventory Linked" && inventoryFeeExists) {
+      form.setValue("expensesToChargeOut", 
+        currentExpenses.filter((exp) => exp.description !== "Inventory Linked Fee")
+      )
+    }
+  }, [clearanceType, settings, form])
 
   // Helper functions for multi-add fields
   const addHaulierContactName = () => {
