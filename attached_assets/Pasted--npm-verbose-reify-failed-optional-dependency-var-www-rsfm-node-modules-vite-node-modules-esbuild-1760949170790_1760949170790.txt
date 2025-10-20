@@ -1,0 +1,37 @@
+
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/linux-ppc64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/linux-mips64el
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/linux-loong64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/linux-ia32
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/linux-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/linux-arm
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/freebsd-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/freebsd-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/darwin-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/darwin-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/android-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/android-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/android-arm
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/vite/node_modules/@esbuild/aix-ppc64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-ia32
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/win32-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/sunos-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/openbsd-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/netbsd-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-s390x
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-riscv64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ppc64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-mips64el
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-loong64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-ia32
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/linux-arm
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/freebsd-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/darwin-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-x64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm64
+npm verbose reify failed optional dependency /var/www/rsfm/node_modules/@esbuild-kit/core-utils/node_modules/@esbuild/android-arm
+⠴
