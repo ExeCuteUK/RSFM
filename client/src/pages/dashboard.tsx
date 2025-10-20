@@ -120,16 +120,55 @@ export default function Dashboard() {
     }
   }, [editingCell])
 
-  // Set page header
+  // Set page header with tab buttons
   useEffect(() => {
     setPageTitle("Management Sheets")
-    setActionButtons(null)
+    setActionButtons(
+      <div className="flex gap-0 h-auto bg-card border border-border rounded-md p-0">
+        <Button
+          variant={activeTab === "container-management" ? "default" : "ghost"}
+          onClick={() => setActiveTab("container-management")}
+          data-testid="tab-container-management"
+          className="rounded-l-md rounded-r-none border-r border-border py-2 px-4 font-semibold"
+        >
+          <Container className="h-4 w-4 mr-2" />
+          Import Containers
+        </Button>
+        <Button
+          variant={activeTab === "nisbets" ? "default" : "ghost"}
+          onClick={() => setActiveTab("nisbets")}
+          data-testid="tab-nisbets"
+          className="rounded-none border-r border-border py-2 px-4 font-semibold"
+        >
+          <Package className="h-4 w-4 mr-2" />
+          Nisbets
+        </Button>
+        <Button
+          variant={activeTab === "import-export-work" ? "default" : "ghost"}
+          onClick={() => setActiveTab("import-export-work")}
+          data-testid="tab-import-export"
+          className="rounded-none border-r border-border py-2 px-4 font-semibold"
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Import & Export Work
+        </Button>
+        <Button
+          variant={activeTab === "clearance-work" ? "default" : "ghost"}
+          onClick={() => setActiveTab("clearance-work")}
+          data-testid="tab-clearance"
+          className="rounded-r-md rounded-l-none py-2 px-4 font-semibold"
+        >
+          <Clipboard className="h-4 w-4 mr-2" />
+          Customs Clearances
+        </Button>
+      </div>
+    )
 
     return () => {
       setPageTitle("")
       setActionButtons(null)
     }
-  }, [setPageTitle, setActionButtons])
+  }, [setPageTitle, setActionButtons, activeTab])
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
@@ -811,43 +850,6 @@ export default function Dashboard() {
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="-mt-[72px] mb-4 flex items-center justify-end pr-6">
-        <TabsList className="flex gap-0 h-auto bg-card border border-border rounded-md p-0">
-          <TabsTrigger 
-            value="container-management" 
-            data-testid="tab-container-management"
-            className="rounded-l-md rounded-r-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
-          >
-            <Container className="h-4 w-4 mr-2" />
-            Import Containers
-          </TabsTrigger>
-          <TabsTrigger 
-            value="nisbets" 
-            data-testid="tab-nisbets"
-            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
-          >
-            <Package className="h-4 w-4 mr-2" />
-            Nisbets
-          </TabsTrigger>
-          <TabsTrigger 
-            value="import-export-work" 
-            data-testid="tab-import-export"
-            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Import & Export Work
-          </TabsTrigger>
-          <TabsTrigger 
-            value="clearance-work" 
-            data-testid="tab-clearance"
-            className="rounded-r-md rounded-l-none data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
-          >
-            <Clipboard className="h-4 w-4 mr-2" />
-            Customs Clearances
-          </TabsTrigger>
-        </TabsList>
-      </div>
-      
       <div className="p-6 space-y-6">
 
         <TabsContent value="container-management" className="mt-4">
