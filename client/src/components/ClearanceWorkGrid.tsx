@@ -316,34 +316,10 @@ export function ClearanceWorkGrid() {
       return greenBg
     }
 
-    // Agent Advised column: check parent shipment status for linked jobs
+    // Agent Advised column: green only if BOTH statuses are 3
     if (fieldName === "agentAdvised") {
-      // Inventory Linked clearances are always green
-      if (clearance.clearanceType === "Inventory Linked") {
-        return greenBg
-      }
-      
-      let isCompleted = false
-      
-      // If clearance is linked to an import/export shipment
-      if (clearance.createdFromId) {
-        if (clearance.jobType === "import") {
-          const parentShipment = importShipments.find(s => s.id === clearance.createdFromId)
-          if (parentShipment) {
-            isCompleted = parentShipment.clearanceStatusIndicator === 3
-          }
-        } else if (clearance.jobType === "export") {
-          const parentShipment = exportShipments.find(s => s.id === clearance.createdFromId)
-          if (parentShipment) {
-            isCompleted = parentShipment.adviseClearanceToAgentStatusIndicator === 3
-          }
-        }
-      } else {
-        // For non-linked clearances: green if BOTH adviseAgent and sendHaulierEad are 3
-        isCompleted = clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3
-      }
-      
-      return isCompleted ? greenBg : yellowBg
+      const bothComplete = clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3
+      return bothComplete ? greenBg : yellowBg
     }
 
     // MRN Number column: yellow if empty, green if has value
