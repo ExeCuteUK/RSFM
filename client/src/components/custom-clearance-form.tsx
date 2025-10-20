@@ -946,53 +946,33 @@ export function CustomClearanceForm({ onSubmit, onCancel, defaultValues }: Custo
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                {jobType === "export" && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="departureFrom"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Departure From</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <FormField
+                  control={form.control}
+                  name="departureFrom"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Departure From</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-departure-from" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                    <FormField
-                      control={form.control}
-                      name="trailerOrContainerNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Trailer / Container Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-
-                {jobType === "import" && (
-                  <FormField
-                    control={form.control}
-                    name="trailerOrContainerNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Trailer / Container Number</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                <FormField
+                  control={form.control}
+                  name="trailerOrContainerNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Trailer / Container Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} data-testid="input-trailer-container" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
