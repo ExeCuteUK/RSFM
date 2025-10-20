@@ -408,6 +408,24 @@ export function ClearanceWorkGrid() {
       )
     }
 
+    if (fieldName === "agentAdvised") {
+      const ccAgentText = clearance.adviseAgentStatusIndicator === 3 ? "CC Agent : Yes" : "CC Agent : No"
+      const haulierText = clearance.sendHaulierEadStatusIndicator === 3 ? "Haulier : Yes" : "Haulier : No"
+      
+      return (
+        <td 
+          key={fieldName} 
+          className={`border px-2 py-1 text-center ${cellColor}`}
+          style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+        >
+          <div className="text-xs leading-tight">
+            <div>{ccAgentText}</div>
+            <div>{haulierText}</div>
+          </div>
+        </td>
+      )
+    }
+
     if (fieldName === "allComplete") {
       const displayValue = clearance.status === "Fully Cleared" ? "Yes" : ""
       return (
