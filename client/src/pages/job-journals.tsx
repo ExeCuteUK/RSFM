@@ -561,8 +561,8 @@ export default function JobJournals() {
               </Select>
             </div>
             
-            <div className="text-sm font-medium text-center flex-1">
-              {getFilterLabel()}
+            <div className="text-xl font-semibold text-center flex-1">
+              Currently Viewing : {getFilterLabel()}
             </div>
           </>
         ) : (

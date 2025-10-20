@@ -810,13 +810,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-auto bg-card border-b border-border rounded-none p-0">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <div className="-mt-[72px] mb-4 flex items-center justify-end pr-6">
+        <TabsList className="flex gap-0 h-auto bg-card border border-border rounded-md p-0">
           <TabsTrigger 
             value="container-management" 
             data-testid="tab-container-management"
-            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+            className="rounded-l-md rounded-r-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
           >
             <Container className="h-4 w-4 mr-2" />
             Import Containers
@@ -824,7 +824,7 @@ export default function Dashboard() {
           <TabsTrigger 
             value="nisbets" 
             data-testid="tab-nisbets"
-            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
           >
             <Package className="h-4 w-4 mr-2" />
             Nisbets
@@ -832,7 +832,7 @@ export default function Dashboard() {
           <TabsTrigger 
             value="import-export-work" 
             data-testid="tab-import-export"
-            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+            className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
           >
             <FileText className="h-4 w-4 mr-2" />
             Import & Export Work
@@ -840,12 +840,15 @@ export default function Dashboard() {
           <TabsTrigger 
             value="clearance-work" 
             data-testid="tab-clearance"
-            className="rounded-none data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-3 font-semibold"
+            className="rounded-r-md rounded-l-none data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none py-2 px-4 font-semibold"
           >
             <Clipboard className="h-4 w-4 mr-2" />
             Customs Clearances
           </TabsTrigger>
         </TabsList>
+      </div>
+      
+      <div className="p-6 space-y-6">
 
         <TabsContent value="container-management" className="mt-4">
           <Card>
@@ -1875,7 +1878,7 @@ export default function Dashboard() {
         <TabsContent value="clearance-work" className="mt-4">
           <ClearanceWorkGrid />
         </TabsContent>
-      </Tabs>
-    </div>
+      </div>
+    </Tabs>
   )
 }
