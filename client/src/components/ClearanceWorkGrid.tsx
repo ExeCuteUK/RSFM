@@ -318,6 +318,11 @@ export function ClearanceWorkGrid() {
 
     // Agent Advised column: check parent shipment status for linked jobs
     if (fieldName === "agentAdvised") {
+      // Inventory Linked clearances are always green
+      if (clearance.clearanceType === "Inventory Linked") {
+        return greenBg
+      }
+      
       let isCompleted = false
       
       // If clearance is linked to an import/export shipment
