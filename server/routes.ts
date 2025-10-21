@@ -3461,6 +3461,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to detect if OCR output is gibberish
+  function isGibberish(text: string): boolean {
+    if (!text || text.length < 20) return true;
+    
+    // Count letters, digits, and special characters
+    const letters = (text.match(/[a-zA-Z]/g) || []).length;
+    const digits = (text.match(/[0-9]/g) || []).length;
+    const alphanumeric = letters + digits;
+    const specialChars = text.length - alphanumeric;
+    
+    // If more than 40% special characters, it's likely gibberish
+    const specialCharRatio = specialChars / text.length;
+    if (specialCharRatio > 0.4) return true;
+    
+    // If very few actual words (less than 5% letters), it's gibberish
+    const letterRatio = letters / text.length;
+    if (letterRatio < 0.05) return true;
+    
+    return false;
+  }
+
   // Invoice matching with OCR
   app.post("/api/ocr/match-invoice", requireAuth, upload.single('file'), async (req, res) => {
     try {
@@ -3482,9 +3503,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const fileBuffer = file.buffer;
       let extractedText = "";
+      let usedFallback = false;
 
       if (isPDF) {
-        // Use Scribe.js for PDF OCR
+        // Use Scribe.js for PDF OCR first
         const scribe = (await import("scribe.js-ocr")).default;
         const fs = await import("fs");
         const path = await import("path");
@@ -3496,7 +3518,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           fs.writeFileSync(tempFilePath, fileBuffer);
           const result = await scribe.extractText([tempFilePath]);
-          fs.unlinkSync(tempFilePath);
 
           if (typeof result === 'string') {
             extractedText = result;
@@ -3509,6 +3530,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
               extractedText = result.map((p: any) => p.text || '').join('\n');
             }
           }
+
+          // Check if the extracted text is gibberish
+          if (isGibberish(extractedText)) {
+            console.log('Scribe.js returned gibberish, falling back to image-based OCR...');
+            usedFallback = true;
+
+            // Convert PDF to images and use Tesseract.js
+            const poppler = await import("pdf-poppler");
+            const outputDir = path.join(tempDir, `invoice-images-${Date.now()}`);
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            try {
+              // Convert PDF pages to PNG images
+              const opts = {
+                format: 'png',
+                out_dir: outputDir,
+                out_prefix: 'page',
+                page: null, // Convert all pages
+              };
+
+              await poppler.convert(tempFilePath, opts);
+
+              // Find all generated PNG files
+              const imageFiles = fs.readdirSync(outputDir)
+                .filter((f: string) => f.endsWith('.png'))
+                .map((f: string) => path.join(outputDir, f))
+                .sort();
+
+              // Use Tesseract.js to OCR each image
+              const { createWorker } = await import("tesseract.js");
+              const worker = await createWorker('eng');
+              const pageTexts: string[] = [];
+
+              for (const imagePath of imageFiles) {
+                const imageBuffer = fs.readFileSync(imagePath);
+                const { data: { text } } = await worker.recognize(imageBuffer);
+                pageTexts.push(text);
+              }
+
+              await worker.terminate();
+              extractedText = pageTexts.join('\n\n');
+
+              // Clean up image files
+              for (const imagePath of imageFiles) {
+                fs.unlinkSync(imagePath);
+              }
+              fs.rmdirSync(outputDir);
+            } catch (fallbackError) {
+              console.error('Fallback OCR error:', fallbackError);
+              // Clean up on error
+              if (fs.existsSync(outputDir)) {
+                const files = fs.readdirSync(outputDir);
+                for (const f of files) {
+                  fs.unlinkSync(path.join(outputDir, f));
+                }
+                fs.rmdirSync(outputDir);
+              }
+              throw fallbackError;
+            }
+          }
+
+          // Clean up temp PDF
+          fs.unlinkSync(tempFilePath);
         } catch (error) {
           if (fs.existsSync(tempFilePath)) {
             fs.unlinkSync(tempFilePath);
@@ -3582,6 +3666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         filename: file.originalname,
         analysis,
+        usedFallback,
       });
     } catch (error) {
       console.error("Error matching invoice:", error);

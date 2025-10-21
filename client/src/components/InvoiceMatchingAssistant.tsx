@@ -72,6 +72,15 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
       const result = await response.json();
       setAnalysis(result.analysis);
 
+      // Show toast if fallback OCR was used
+      if (result.usedFallback) {
+        toast({
+          title: 'Enhanced Scanning Used',
+          description: 'PDF converted to images for better text extraction.',
+          variant: 'default',
+        });
+      }
+
       if (result.analysis.matches.length === 0) {
         toast({
           title: 'No Matches Found',
