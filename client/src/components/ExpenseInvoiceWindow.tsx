@@ -464,16 +464,16 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
       return
     }
     
-    // Validate all amounts are valid numbers
+    // Validate all amounts are valid numbers (allow negative for credit notes)
     const invalidAmounts = validInvoices.filter(inv => {
       const amount = parseFloat(inv.invoiceAmount)
-      return isNaN(amount) || amount <= 0
+      return isNaN(amount) || amount === 0
     })
     
     if (invalidAmounts.length > 0) {
       toast({
         title: 'Invalid Amount',
-        description: 'All invoice amounts must be valid positive numbers',
+        description: 'All invoice amounts must be valid numbers (negative amounts allowed for credit notes)',
         variant: 'destructive'
       })
       return
