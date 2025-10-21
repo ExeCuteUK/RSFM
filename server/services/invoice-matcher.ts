@@ -546,9 +546,10 @@ export class InvoiceMatchingEngine {
 
   /**
    * Filter jobs by date range relative to invoice date
-   * Only includes jobs where jobDate is within:
+   * Only includes jobs where bookingDate is within:
    * - 3 months before invoice date
    * - 1 month after invoice date
+   * Jobs without bookingDate are included (treated as potential matches)
    */
   private filterJobsByDate<T extends ImportShipment | ExportShipment | CustomClearance>(
     jobs: T[],
@@ -565,15 +566,38 @@ export class InvoiceMatchingEngine {
     const oneMonthAfter = new Date(invoiceDate);
     oneMonthAfter.setMonth(oneMonthAfter.getMonth() + 1);
 
-    return jobs.filter(job => {
-      const jobDate = (job as any).jobDate;
-      if (!jobDate) return false;
+    const passed: T[] = [];
+    const failed: string[] = [];
 
-      const date = new Date(jobDate);
-      if (isNaN(date.getTime())) return false;
+    jobs.forEach(job => {
+      const bookingDate = (job as any).bookingDate;
+      const jobRef = (job as any).jobRef;
+      
+      // Include jobs without bookingDate (legacy/incomplete records)
+      if (!bookingDate) {
+        passed.push(job);
+        return;
+      }
 
-      return date >= threeMonthsBefore && date <= oneMonthAfter;
+      const date = new Date(bookingDate);
+      if (isNaN(date.getTime())) {
+        // Invalid date format - include to be safe
+        passed.push(job);
+        return;
+      }
+
+      if (date >= threeMonthsBefore && date <= oneMonthAfter) {
+        passed.push(job);
+      } else {
+        failed.push(`${jobRef} (${bookingDate})`);
+      }
     });
+
+    if (failed.length > 0) {
+      console.log(`  Jobs excluded by date filter: ${failed.join(', ')}`);
+    }
+
+    return passed;
   }
 
   /**
