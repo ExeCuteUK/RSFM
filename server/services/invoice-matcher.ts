@@ -771,9 +771,9 @@ export class InvoiceMatchingEngine {
       /(?:invoice\s*)?total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // UK invoice formats: "TOTAL GBP 207.50", "Sterling Equivalent TOTAL GBP 207.50"
       /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+(-?[\d,]+[\.,]?\d{0,2})/gi,
-      // Amount after "All:" at document end (word boundary ensures "All" is standalone)
-      // Uses [\s\S] instead of . with s flag for ES compatibility
-      /(?:^|\n)\s*all\s*:[\s\S]*?(?:gbp|eur|usd)\s*[\|]?\s*(-?[\d,]+[\.,]\d{2})/gi,
+      // Amount BEFORE "All:" at document end - Transmec format: "GBP | 140,00" then "All:"
+      // Matches currency followed by amount, then any separators, then "All:" on next line
+      /(?:gbp|eur|usd|£|\$|€)\s*[\|]?\s*(-?[\d,]+[\.,]\d{2})\s*[\|\s\-]*\s*\n[\s\-]*\n?\s*all\s*:/gi,
     ];
     
     // Generic amount patterns
