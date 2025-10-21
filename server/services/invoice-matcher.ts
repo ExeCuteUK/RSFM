@@ -531,17 +531,25 @@ export class InvoiceMatchingEngine {
     // **NEW**: Improved supplier selection logic with database cross-referencing and priority
     let supplierName: string | undefined;
     
-    // Strategy 1: Check ALL companies (including excluded ones) for database matches first
-    // Shipping lines/agents/hauliers take priority over exclusion rules
+    // Strategy 1: Check ALL companies for database matches and find the BEST match
+    // (not just the first one with highest priority)
     const companiesSortedByPriority = [...companiesWithContext].sort((a, b) => b.priority - a.priority);
     
+    let bestMatch: { name: string; dbName: string; score: number } | undefined;
+    
     for (const company of companiesSortedByPriority) {
-      const matchedServiceProvider = this.crossReferenceSupplierName(company.name);
-      if (matchedServiceProvider) {
-        // Found a database match - use it regardless of exclusion headers
-        supplierName = matchedServiceProvider;
-        break;
+      const result = this.crossReferenceSupplierNameWithScore(company.name);
+      if (result) {
+        // Found a database match - but keep checking to find the best one
+        if (!bestMatch || result.score > bestMatch.score) {
+          bestMatch = { name: company.name, dbName: result.dbName, score: result.score };
+        }
       }
+    }
+    
+    if (bestMatch) {
+      // Use the best database match found
+      supplierName = bestMatch.dbName;
     }
     
     // Strategy 2: If no database match, pick highest priority company NOT under exclusion headers
@@ -555,9 +563,9 @@ export class InvoiceMatchingEngine {
       
       // Still try to improve the name via cross-referencing (in case it's a partial match)
       if (supplierName) {
-        const improvedName = this.crossReferenceSupplierName(supplierName);
-        if (improvedName) {
-          supplierName = improvedName;
+        const result = this.crossReferenceSupplierNameWithScore(supplierName);
+        if (result) {
+          supplierName = result.dbName;
         }
       }
     }
@@ -570,37 +578,109 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Cross-reference extracted supplier name against clearance agents and hauliers
-   * Returns the official database name if a match is found, undefined otherwise
+   * Normalize company name for better fuzzy matching
+   * Removes common prefixes, legal suffixes, and country codes
    */
-  private crossReferenceSupplierName(extractedName: string): string | undefined {
-    const normalizedExtracted = extractedName.toLowerCase().trim();
+  private normalizeCompanyName(name: string): string {
+    let normalized = name.trim();
+    
+    // Remove parenthetical qualifiers BEFORE lowercasing (case-insensitive)
+    normalized = normalized.replace(/\s*\([^)]*\)/gi, '');
+    
+    // Now lowercase
+    normalized = normalized.toLowerCase();
+    
+    // Remove common shipping line prefixes (handle multi-word and repeated)
+    // Keep removing until no more matches
+    let previousLength = 0;
+    while (normalized.length !== previousLength) {
+      previousLength = normalized.length;
+      normalized = normalized
+        .replace(/^msc\s+/i, '')
+        .replace(/^cma\s+cgm\s+/i, '')
+        .replace(/^cma\s+/i, '')
+        .replace(/^cgm\s+/i, '')
+        .replace(/^maersk\s+/i, '')
+        .replace(/^hapag[\s-]lloyd\s+/i, '')
+        .replace(/^hapag\s+/i, '')
+        .replace(/^lloyd\s+/i, '')
+        .trim();
+    }
+    
+    // Remove legal suffixes - keep removing until no more matches
+    const suffixPatterns = [
+      /\s+ltd\.?$/i,
+      /\s+limited$/i,
+      /\s+inc\.?$/i,
+      /\s+corp\.?$/i,
+      /\s+corporation$/i,
+      /\s+plc\.?$/i,
+      /\s+llc\.?$/i,
+      /\s+co\.?$/i,
+      /\s+gmbh$/i,
+      /\s+s\.a\.?$/i,
+      /\s+sa$/i,
+      /\s+srl$/i,
+      /\s+bv$/i,
+      /\s+ag$/i,
+    ];
+    
+    previousLength = 0;
+    while (normalized.length !== previousLength) {
+      previousLength = normalized.length;
+      suffixPatterns.forEach(pattern => {
+        normalized = normalized.replace(pattern, '').trim();
+      });
+    }
+    
+    return normalized.trim();
+  }
+
+  /**
+   * Cross-reference extracted supplier name with score
+   * Returns the official database name and match score if a match is found
+   */
+  private crossReferenceSupplierNameWithScore(extractedName: string): { dbName: string; score: number } | undefined {
+    const normalizedExtracted = this.normalizeCompanyName(extractedName);
+    let bestMatch: { dbName: string; score: number } | undefined;
     
     // Check clearance agents
     for (const agent of this.jobData.clearanceAgents || []) {
-      const score = this.fuzzySearchScore(normalizedExtracted, agent.agentName);
-      if (score > 0.7) {  // High confidence threshold
-        return agent.agentName;
+      const normalizedAgent = this.normalizeCompanyName(agent.agentName);
+      const score = this.fuzzySearchScore(normalizedExtracted, normalizedAgent);
+      if (score > 0.65 && (!bestMatch || score > bestMatch.score)) {
+        bestMatch = { dbName: agent.agentName, score };
       }
     }
     
     // Check hauliers
     for (const haulier of this.jobData.hauliers || []) {
-      const score = this.fuzzySearchScore(normalizedExtracted, haulier.haulierName);
-      if (score > 0.7) {  // High confidence threshold
-        return haulier.haulierName;
+      const normalizedHaulier = this.normalizeCompanyName(haulier.haulierName);
+      const score = this.fuzzySearchScore(normalizedExtracted, normalizedHaulier);
+      if (score > 0.65 && (!bestMatch || score > bestMatch.score)) {
+        bestMatch = { dbName: haulier.haulierName, score };
       }
     }
     
     // Check shipping lines
     for (const shippingLine of this.jobData.shippingLines || []) {
-      const score = this.fuzzySearchScore(normalizedExtracted, shippingLine.shippingLineName);
-      if (score > 0.7) {  // High confidence threshold
-        return shippingLine.shippingLineName;
+      const normalizedShippingLine = this.normalizeCompanyName(shippingLine.shippingLineName);
+      const score = this.fuzzySearchScore(normalizedExtracted, normalizedShippingLine);
+      if (score > 0.65 && (!bestMatch || score > bestMatch.score)) {
+        bestMatch = { dbName: shippingLine.shippingLineName, score };
       }
     }
     
-    return undefined;  // No match found, keep original
+    return bestMatch;
+  }
+
+  /**
+   * Cross-reference extracted supplier name against clearance agents and hauliers
+   * Returns the official database name if a match is found, undefined otherwise
+   */
+  private crossReferenceSupplierName(extractedName: string): string | undefined {
+    const result = this.crossReferenceSupplierNameWithScore(extractedName);
+    return result?.dbName;
   }
 
   /**
