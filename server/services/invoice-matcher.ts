@@ -1171,11 +1171,12 @@ export class InvoiceMatchingEngine {
       let matchedSupplierName: string | undefined;
 
       // Extract matched supplier name from company matches (exclude customers)
-      // Only use shipping line, clearance agent, or haulier matches
+      // Only use shipping line, clearance agent, haulier, or supplier matches
       const supplierMatch = fieldMatches.find(m => 
-        m.field === 'Company: Shipping Line' || 
-        m.field === 'Company: Clearance Agent' || 
-        m.field === 'Company: Haulier'
+        m.field === 'Shipping Line' || 
+        m.field === 'Clearance Agent' || 
+        m.field === 'Haulier' ||
+        m.field === 'Supplier'
       );
       if (supplierMatch) {
         matchedSupplierName = supplierMatch.value;
@@ -1309,7 +1310,7 @@ export class InvoiceMatchingEngine {
       const score = this.fuzzySearchScore(normalizedText, companyName);
       if (score > 0.7) {  // High confidence threshold for company names
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, `Company: ${job.fieldName}`, job.originalValue, score);
+          addMatch(job.jobRef, job.jobType, job.fieldName, job.originalValue, score);
           companyMatches++;
         });
       }
