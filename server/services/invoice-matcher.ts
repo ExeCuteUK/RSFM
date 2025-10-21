@@ -650,9 +650,12 @@ export class InvoiceMatchingEngine {
 
       if (jobType === 'import') {
         job = filteredImports.find(j => j.jobRef === jobRef);
-        if (job && job.importCustomerId) {
-          const customer = importCustomers.find(c => c.id === job.importCustomerId);
-          customerName = customer?.companyName;
+        if (job) {
+          const importJob = job as ImportShipment;
+          if (importJob.importCustomerId) {
+            const customer = importCustomers.find(c => c.id === importJob.importCustomerId);
+            customerName = customer?.companyName;
+          }
         }
       } else if (jobType === 'export') {
         job = filteredExports.find(j => j.jobRef === jobRef);
@@ -665,9 +668,12 @@ export class InvoiceMatchingEngine {
         }
       } else if (jobType === 'clearance') {
         job = filteredClearances.find(j => j.jobRef === jobRef);
-        if (job && job.importCustomerId) {
-          const customer = [...importCustomers, ...exportCustomers].find(c => c.id === job.importCustomerId);
-          customerName = customer?.companyName;
+        if (job) {
+          const clearanceJob = job as CustomClearance;
+          if (clearanceJob.importCustomerId) {
+            const customer = [...importCustomers, ...exportCustomers].find(c => c.id === clearanceJob.importCustomerId);
+            customerName = customer?.companyName;
+          }
         }
       }
 
