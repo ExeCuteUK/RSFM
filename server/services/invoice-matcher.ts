@@ -770,8 +770,10 @@ export class InvoiceMatchingEngine {
       // Highest priority: "Total Payable Amount", "Total Net Amount"
       /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
-      // ZIM invoice format: "TOTAL DEBIT GBP 355.00" or "TOTAL CREDIT GBP 100.00"
-      /total\s+(?:debit|credit)\s+(?:gbp|eur|usd)\s+(-?[\d,]+[\.,]?\d{0,2})/gi,
+      // ZIM invoice format: "TOTAL DEBIT               GBP                    355.00" (with excessive whitespace)
+      // Also matches "TOTAL CREDIT GBP 100.00" - use \s+ to handle any amount of spaces/tabs
+      // Allow optional newline between DEBIT/CREDIT and currency for multi-line formats
+      /total\s+(?:debit|credit)\s*\n?\s*(?:gbp|eur|usd)\s+(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // Gondrand format: "Total      (GBP) :        295.00"
       /total\s*\([^\)]+\)\s*[:]*\s*(-?[\d,]+\.?\d{0,2})/gi,
@@ -1270,6 +1272,20 @@ export class InvoiceMatchingEngine {
     });
 
     console.log('--- END JOB MATCHING ---\n');
+
+    // Filter to show only jobs with the highest number of matched fields
+    // If multiple jobs have the same highest count, show all of them
+    if (matches.length > 1) {
+      const maxMatchCount = Math.max(...matches.map(m => m.matchedFields.length));
+      const filteredMatches = matches.filter(m => m.matchedFields.length === maxMatchCount);
+      
+      if (filteredMatches.length < matches.length) {
+        console.log(`--- FILTERED TO HIGHEST MATCH COUNT ---`);
+        console.log(`  Showing ${filteredMatches.length} job(s) with ${maxMatchCount} matched fields`);
+        console.log(`  Filtered out ${matches.length - filteredMatches.length} job(s) with fewer matches`);
+        return filteredMatches;
+      }
+    }
 
     return matches;
   }
