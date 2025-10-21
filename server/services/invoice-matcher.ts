@@ -21,6 +21,13 @@ export interface InvoiceMatchResult {
   customerName?: string;
 }
 
+interface ExtractedAmounts {
+  netTotal?: string;
+  vat?: string;
+  grossTotal?: string;
+  allAmounts: string[];
+}
+
 export interface InvoiceAnalysis {
   isCreditNote: boolean;
   extractedData: {
@@ -29,8 +36,10 @@ export interface InvoiceAnalysis {
     truckNumbers: string[];
     customerReferences: string[];
     companyNames: string[];
+    supplierName?: string;  // Invoice FROM company
+    customerName?: string;  // Invoice TO company
     weights: string[];
-    amounts: string[];
+    amounts: ExtractedAmounts;
     invoiceNumbers: string[];
     dates: string[];
   };
@@ -49,8 +58,11 @@ export class InvoiceMatchingEngine {
    * Main entry point: analyzes OCR text and returns matched jobs
    */
   public analyzeInvoice(ocrText: string): InvoiceAnalysis {
-    const isCreditNote = this.detectCreditNote(ocrText);
-    const extractedData = this.extractData(ocrText);
+    // Apply OCR character corrections before processing
+    const correctedText = this.correctOCRErrors(ocrText);
+    
+    const isCreditNote = this.detectCreditNote(correctedText);
+    const extractedData = this.extractData(correctedText);
     const matches = this.findMatches(extractedData);
 
     return {
@@ -59,6 +71,41 @@ export class InvoiceMatchingEngine {
       matches: matches.sort((a, b) => b.confidence - a.confidence),
       rawText: ocrText,
     };
+  }
+
+  /**
+   * Correct common OCR character misreads
+   * IMPORTANT: Preserve $ when it's a currency symbol (followed by amount pattern)
+   */
+  private correctOCRErrors(text: string): string {
+    let corrected = text;
+    
+    // Fix $ → S in reference numbers but preserve currency symbols
+    // Strategy: Identify reference numbers by specific patterns
+    // Reference pattern: $<8+ chars starting with 0> e.g., $02038515 or $<has letters> e.g., $A1234567
+    // Currency pattern: $<short number> or $<formatted amount> e.g., $500, $1,234.56
+    
+    corrected = corrected.replace(/\$([0-9A-Z]{6,})/g, (match, capture) => {
+      // Replace if it's a long string starting with 0 (reference number pattern)
+      if (capture.startsWith('0') && capture.length >= 8) {
+        return 'S' + capture;
+      }
+      // Replace if it contains letters (mixed alphanumeric reference)
+      if (/[A-Z]/.test(capture)) {
+        return 'S' + capture;
+      }
+      // Replace if it's very long (10+ digits, unlikely to be a currency amount)
+      if (capture.length >= 10 && /^\d+$/.test(capture)) {
+        return 'S' + capture;
+      }
+      return match; // Keep original for normal currency amounts
+    });
+    
+    // Common OCR errors in reference numbers
+    corrected = corrected.replace(/\b0(?=[A-Z]{2,})/g, 'O'); // 0 before letters → O
+    corrected = corrected.replace(/\bl(?=[0-9]{2,})/gi, 'I'); // l before numbers → I
+    
+    return corrected;
   }
 
   /**
@@ -79,12 +126,16 @@ export class InvoiceMatchingEngine {
    * Extract all relevant data from OCR text
    */
   private extractData(text: string) {
+    const { supplierName, customerName, allCompanies } = this.extractCompaniesWithContext(text);
+    
     return {
       jobReferences: this.extractJobReferences(text),
       containerNumbers: this.extractContainerNumbers(text),
       truckNumbers: this.extractTruckNumbers(text),
       customerReferences: this.extractCustomerReferences(text),
-      companyNames: this.extractCompanyNames(text),
+      companyNames: allCompanies,
+      supplierName,
+      customerName,
       weights: this.extractWeights(text),
       amounts: this.extractAmounts(text),
       invoiceNumbers: this.extractInvoiceNumbers(text),
@@ -120,9 +171,25 @@ export class InvoiceMatchingEngine {
    * Extract container numbers (standard format: 4 letters + 7 digits)
    */
   private extractContainerNumbers(text: string): string[] {
-    const pattern = /\b[A-Z]{4}\s?\d{7}\b/g;
-    const matches = Array.from(text.matchAll(pattern));
-    return matches.map(m => m[0].replace(/\s/g, ''));
+    const patterns = [
+      /\b[A-Z]{4}\s?\d{7}\b/g,  // Standard container format
+      /container\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{4,20})/gi,
+      /vehicle\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
+      /trailer\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
+    ];
+    
+    const containers = new Set<string>();
+    patterns.forEach(pattern => {
+      const matches = Array.from(text.matchAll(pattern));
+      for (const match of matches) {
+        const value = (match[1] || match[0]).replace(/\s/g, '').toUpperCase();
+        if (value.length >= 4 && value.length <= 20) {
+          containers.add(value);
+        }
+      }
+    });
+    
+    return Array.from(containers);
   }
 
   /**
@@ -154,10 +221,10 @@ export class InvoiceMatchingEngine {
    * Extract customer reference numbers
    */
   private extractCustomerReferences(text: string): string[] {
-    // Use non-newline whitespace and limit capture length to avoid over-matching
+    // Handle OCR spelling errors: Refersice, Referance, Referense, etc.
     const patterns = [
-      /customer\s*ref(?:erence)?[:\s]+([A-Z0-9 -]{3,30})/gi,
-      /your\s*ref(?:erence)?[:\s]+([A-Z0-9 -]{3,30})/gi,
+      /customer\s*ref(?:erence|ersice|eranse|erence|ernce)?[:\s]+([A-Z0-9 -]{3,30})/gi,
+      /your\s*ref(?:erence|ersice|eranse|erence|ernce)?[:\s]+([A-Z0-9 -]{3,30})/gi,
       /po\s*#?\s*([A-Z0-9 -]{3,30})/gi,
       /order\s*#?\s*([A-Z0-9 -]{3,30})/gi,
     ];
@@ -178,29 +245,82 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Extract company names from text
+   * Extract companies with context to identify supplier (FROM) vs customer (TO)
    */
-  private extractCompanyNames(text: string): string[] {
+  private extractCompaniesWithContext(text: string): { supplierName?: string; customerName?: string; allCompanies: string[] } {
     const lines = text.split('\n');
-    const names = new Set<string>();
+    const allCompanies = new Set<string>();
+    let supplierName: string | undefined;
+    let customerName: string | undefined;
 
-    // Look for lines with Ltd, Limited, Inc, Corp, etc.
-    const companyPatterns = [
+    // Company name patterns - with AND without suffixes
+    const companyPatternsWithSuffix = [
       /^(.+?\s+(?:ltd|limited|inc|corp|corporation|plc|llc|co))\.?$/i,
       /^(.+?\s+(?:gmbh|sa|srl|bv))\.?$/i,
     ];
+    
+    // Pattern for capitalized names (likely company names) - relaxed to allow short names like "Dell", "B&Q"
+    const capitalizedNamePattern = /^([A-Z][A-Za-z0-9&\s]{1,80})$/;
 
-    lines.forEach(line => {
-      const trimmed = line.trim();
-      companyPatterns.forEach(pattern => {
-        const match = trimmed.match(pattern);
-        if (match && match[1].length >= 5 && match[1].length <= 100) {
-          names.add(match[1].trim());
+    // Context patterns for supplier (FROM)
+    const supplierContext = /(?:invoice\s*from|supplier|consignor|exporter|shipper|from)[:\s]*/i;
+    
+    // Context patterns for customer (TO)
+    const customerContext = /(?:invoice\s*to|customer|importer|consignee|buyer|to|bill\s*to)[:\s]*/i;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Check if this line has context markers
+      const hasSupplierContext = supplierContext.test(line);
+      const hasCustomerContext = customerContext.test(line);
+      
+      // Look for company names in current line and next few lines
+      for (let j = 0; j < 3 && i + j < lines.length; j++) {
+        const checkLine = lines[i + j].trim();
+        
+        // First try to match companies with legal suffixes
+        companyPatternsWithSuffix.forEach(pattern => {
+          const match = checkLine.match(pattern);
+          if (match && match[1].length >= 2 && match[1].length <= 100) {
+            const companyName = match[1].trim();
+            allCompanies.add(companyName);
+            
+            // Assign to supplier or customer based on context
+            if (hasSupplierContext && !supplierName) {
+              supplierName = companyName;
+            } else if (hasCustomerContext && !customerName) {
+              customerName = companyName;
+            }
+          }
+        });
+        
+        // If we have context but no match yet, try capitalized names
+        // Skip j=0 to avoid matching the context line itself (e.g., "Invoice To")
+        if (j > 0 && ((hasSupplierContext && !supplierName) || (hasCustomerContext && !customerName))) {
+          const capMatch = checkLine.match(capitalizedNamePattern);
+          if (capMatch) {
+            const companyName = capMatch[1].trim();
+            // Minimum length of 2 to capture names like "Dell", "B&Q"
+            if (companyName.length >= 2) {
+              allCompanies.add(companyName);
+              
+              if (hasSupplierContext && !supplierName) {
+                supplierName = companyName;
+              } else if (hasCustomerContext && !customerName) {
+                customerName = companyName;
+              }
+            }
+          }
         }
-      });
-    });
+      }
+    }
 
-    return Array.from(names);
+    return {
+      supplierName,
+      customerName,
+      allCompanies: Array.from(allCompanies),
+    };
   }
 
   /**
@@ -211,8 +331,9 @@ export class InvoiceMatchingEngine {
       /(\d+[,.]?\d*)\s*(?:kg|kgs|kilograms?)/gi,
       /(\d+[,.]?\d*)\s*(?:t|tonnes?|tons?)/gi,
       /(\d+[,.]?\d*)\s*(?:lbs?|pounds?)/gi,
-      /weight[:\s]+(\d+[,.]?\d*)/gi,
-      /gross[:\s]+(\d+[,.]?\d*)/gi,
+      /(?:weight|wt)[:\s]+(\d+[,.]?\d*)/gi,
+      /(?:gross|net)\s*(?:weight|wt|kgs?)[:\s]*(\d+[,.]?\d*)/gi,
+      /(?:total|overall)\s*(?:weight|kgs?)[:\s]*(\d+[,.]?\d*)/gi,
     ];
 
     const weights = new Set<string>();
@@ -231,27 +352,96 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Extract monetary amounts
+   * Extract monetary amounts with labels (Net Total, VAT, Gross Total, etc.)
    */
-  private extractAmounts(text: string): string[] {
-    const patterns = [
-      /[£$€]\s?(\d+[,.]?\d*\.?\d{0,2})/g,
-      /(?:total|amount|subtotal)[:\s]+[£$€]?\s?(\d+[,.]?\d*\.?\d{0,2})/gi,
+  private extractAmounts(text: string): ExtractedAmounts {
+    let netTotal: string | undefined;
+    let vat: string | undefined;
+    let grossTotal: string | undefined;
+    const allAmounts = new Set<string>();
+
+    // Net total patterns
+    const netPatterns = [
+      /(?:net|sub)\s*total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      /subtotal[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+    ];
+    
+    // VAT patterns
+    const vatPatterns = [
+      /vat[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      /tax[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+    ];
+    
+    // Gross/Grand total patterns - including plain "Total:" and "Invoice Total:"
+    const grossPatterns = [
+      /(?:gross|grand)\s*total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      /(?:invoice\s*)?total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+    ];
+    
+    // Generic amount patterns
+    const genericPatterns = [
+      /[£$€]\s?([\d,]+\.?\d{0,2})/g,
+      /total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
     ];
 
-    const amounts = new Set<string>();
-    patterns.forEach(pattern => {
+    // Extract net total
+    netPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        const value = match[1].replace(',', '');
+        const value = match[1].replace(/,/g, '');
         const num = parseFloat(value);
-        if (!isNaN(num) && num > 0) {
-          amounts.add(num.toFixed(2));
+        if (!isNaN(num) && num > 0 && !netTotal) {
+          netTotal = num.toFixed(2);
+          allAmounts.add(netTotal);
         }
       }
     });
 
-    return Array.from(amounts);
+    // Extract VAT
+    vatPatterns.forEach(pattern => {
+      const matches = Array.from(text.matchAll(pattern));
+      for (const match of matches) {
+        const value = match[1].replace(/,/g, '');
+        const num = parseFloat(value);
+        if (!isNaN(num) && num >= 0 && !vat) {
+          vat = num.toFixed(2);
+          allAmounts.add(vat);
+        }
+      }
+    });
+
+    // Extract gross total
+    grossPatterns.forEach(pattern => {
+      const matches = Array.from(text.matchAll(pattern));
+      for (const match of matches) {
+        const value = match[1].replace(/,/g, '');
+        const num = parseFloat(value);
+        if (!isNaN(num) && num > 0 && !grossTotal) {
+          grossTotal = num.toFixed(2);
+          allAmounts.add(grossTotal);
+        }
+      }
+    });
+
+    // Collect all other amounts
+    genericPatterns.forEach(pattern => {
+      const matches = Array.from(text.matchAll(pattern));
+      for (const match of matches) {
+        const value = match[1].replace(/,/g, '');
+        const num = parseFloat(value);
+        if (!isNaN(num) && num > 0) {
+          allAmounts.add(num.toFixed(2));
+        }
+      }
+    });
+
+    return {
+      netTotal,
+      vat,
+      grossTotal,
+      allAmounts: Array.from(allAmounts),
+    };
   }
 
   /**
@@ -259,8 +449,9 @@ export class InvoiceMatchingEngine {
    */
   private extractInvoiceNumbers(text: string): string[] {
     const patterns = [
-      /invoice\s*#?\s*([A-Z0-9\s-]+)/gi,
-      /inv\s*#?\s*([A-Z0-9\s-]+)/gi,
+      /invoice\s*(?:no|number|#)?[:\s]*(\d+)/gi,
+      /inv\s*(?:no|number|#)?[:\s]*(\d+)/gi,
+      /(?:no|number)[:\s]*(\d{6,})/gi,  // Generic long number sequences
     ];
 
     const numbers = new Set<string>();
@@ -268,7 +459,7 @@ export class InvoiceMatchingEngine {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
         const value = match[1].trim();
-        if (value.length >= 3 && value.length <= 30) {
+        if (value.length >= 5 && value.length <= 20) {
           numbers.add(value);
         }
       }
@@ -392,11 +583,15 @@ export class InvoiceMatchingEngine {
     }
 
     // Check if any container/trailer value matches extracted data
+    // Strip all spaces and dashes for flexible matching
+    const normalize = (str: string) => str.replace(/[\s-]/g, '').toUpperCase();
+    
     for (const { value, field } of containerTrailerValues) {
+      const normalizedJobValue = normalize(value);
       const matches = extractedData.containerNumbers.some(
-        c => c.replace(/\s/g, '').toUpperCase() === value.replace(/\s/g, '').toUpperCase()
+        c => normalize(c) === normalizedJobValue
       ) || extractedData.truckNumbers.some(
-        t => t.replace(/\s/g, '').toUpperCase() === value.replace(/\s/g, '').toUpperCase()
+        t => normalize(t) === normalizedJobValue
       );
       
       if (debug) {
@@ -478,8 +673,7 @@ export class InvoiceMatchingEngine {
       if (customer) {
         customerName = customer.companyName;
         const companyMatch = extractedData.companyNames.some(c => {
-          const similarity = this.stringSimilarity(c.toLowerCase(), customer.companyName.toLowerCase());
-          return similarity > 0.6;
+          return this.fuzzyCompanyMatch(c, customer.companyName);
         });
         if (debug) {
           console.log(`    Company Name ${customer.companyName} matches extracted companies ${JSON.stringify(extractedData.companyNames)}? ${companyMatch}`);
@@ -503,6 +697,33 @@ export class InvoiceMatchingEngine {
       job,
       customerName,
     };
+  }
+
+  /**
+   * Fuzzy company name matching - handles Ltd/PLC variations and partial matching
+   */
+  private fuzzyCompanyMatch(extracted: string, jobCompany: string): boolean {
+    // Normalize both names: lowercase, strip suffixes, remove extra spaces
+    const normalize = (name: string) => {
+      return name
+        .toLowerCase()
+        .replace(/\b(ltd|limited|plc|llc|inc|corp|corporation|co|gmbh|sa|srl|bv)\.?\b/gi, '')
+        .replace(/[^\w\s]/g, ' ')  // Replace punctuation with spaces
+        .replace(/\s+/g, ' ')       // Normalize multiple spaces
+        .trim();
+    };
+    
+    const normalizedExtracted = normalize(extracted);
+    const normalizedJob = normalize(jobCompany);
+    
+    // Check if one is a substring of the other (partial match)
+    if (normalizedExtracted.includes(normalizedJob) || normalizedJob.includes(normalizedExtracted)) {
+      return true;
+    }
+    
+    // Check similarity for close matches
+    const similarity = this.stringSimilarity(normalizedExtracted, normalizedJob);
+    return similarity > 0.6;
   }
 
   /**

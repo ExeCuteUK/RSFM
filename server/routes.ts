@@ -3700,7 +3700,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('  Truck Numbers:', analysis.extractedData.truckNumbers);
       console.log('  Customer References:', analysis.extractedData.customerReferences);
       console.log('  Company Names:', analysis.extractedData.companyNames);
+      console.log('  Supplier Name:', analysis.extractedData.supplierName || '(not detected)');
+      console.log('  Customer Name:', analysis.extractedData.customerName || '(not detected)');
       console.log('  Weights:', analysis.extractedData.weights);
+      console.log('  Amounts:', analysis.extractedData.amounts);
       console.log('  Invoice Numbers:', analysis.extractedData.invoiceNumbers);
       console.log('  Dates:', analysis.extractedData.dates);
       console.log('\nJobs Checked:');
@@ -3718,10 +3721,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.log('=== END DEBUG ===\n');
 
+      // Extract key invoice metadata for easy system integration
+      const invoiceMetadata = {
+        supplierName: analysis.extractedData.supplierName || null,
+        invoiceNumber: analysis.extractedData.invoiceNumbers[0] || null,
+        invoiceDate: analysis.extractedData.dates[0] || null,
+        netTotal: analysis.extractedData.amounts.netTotal || null,
+        vat: analysis.extractedData.amounts.vat || null,
+        grossTotal: analysis.extractedData.amounts.grossTotal || null,
+        allAmounts: analysis.extractedData.amounts.allAmounts,
+        matchedJobRef: analysis.matches.length > 0 ? analysis.matches[0].jobRef : null,
+        matchedJobType: analysis.matches.length > 0 ? analysis.matches[0].jobType : null,
+        confidence: analysis.matches.length > 0 ? analysis.matches[0].confidence : 0,
+      };
+
       res.json({
         success: true,
         filename: file.originalname,
         analysis,
+        invoiceMetadata,
         usedFallback,
       });
     } catch (error) {
