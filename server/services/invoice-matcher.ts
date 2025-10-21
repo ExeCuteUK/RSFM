@@ -514,7 +514,7 @@ export class InvoiceMatchingEngine {
     const normalizedExtracted = extractedName.toLowerCase().trim();
     
     // Check clearance agents
-    for (const agent of this.jobData.clearanceAgents) {
+    for (const agent of this.jobData.clearanceAgents || []) {
       const score = this.fuzzySearchScore(normalizedExtracted, agent.agentName);
       if (score > 0.7) {  // High confidence threshold
         return agent.agentName;
@@ -522,7 +522,7 @@ export class InvoiceMatchingEngine {
     }
     
     // Check hauliers
-    for (const haulier of this.jobData.hauliers) {
+    for (const haulier of this.jobData.hauliers || []) {
       const score = this.fuzzySearchScore(normalizedExtracted, haulier.haulierName);
       if (score > 0.7) {  // High confidence threshold
         return haulier.haulierName;
@@ -530,7 +530,7 @@ export class InvoiceMatchingEngine {
     }
     
     // Check shipping lines
-    for (const shippingLine of this.jobData.shippingLines) {
+    for (const shippingLine of this.jobData.shippingLines || []) {
       const score = this.fuzzySearchScore(normalizedExtracted, shippingLine.shippingLineName);
       if (score > 0.7) {  // High confidence threshold
         return shippingLine.shippingLineName;
