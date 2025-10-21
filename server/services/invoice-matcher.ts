@@ -486,8 +486,8 @@ export class InvoiceMatchingEngine {
    */
   private extractDates(text: string): string[] {
     const patterns = [
-      /\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b/g,
-      /\b(\d{4}[/-]\d{1,2}[/-]\d{1,2})\b/g,
+      /\b(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4})\b/g,  // DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
+      /\b(\d{4}[/.-]\d{1,2}[/.-]\d{1,2})\b/g,    // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
     ];
 
     const dates = new Set<string>();
@@ -506,19 +506,21 @@ export class InvoiceMatchingEngine {
    */
   private parseDate(dateStr: string): Date | null {
     try {
-      // Try DD/MM/YYYY or DD-MM-YYYY
-      const dmyMatch = dateStr.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+      // Try DD/MM/YYYY, DD-MM-YYYY, or DD.MM.YYYY
+      const dmyMatch = dateStr.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
       if (dmyMatch) {
         const [, day, month, year] = dmyMatch;
         const fullYear = year.length === 2 ? `20${year}` : year;
-        return new Date(`${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        const parsed = new Date(`${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        return isNaN(parsed.getTime()) ? null : parsed;
       }
 
-      // Try YYYY/MM/DD or YYYY-MM-DD
-      const ymdMatch = dateStr.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+      // Try YYYY/MM/DD, YYYY-MM-DD, or YYYY.MM.DD
+      const ymdMatch = dateStr.match(/^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})$/);
       if (ymdMatch) {
         const [, year, month, day] = ymdMatch;
-        return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        const parsed = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        return isNaN(parsed.getTime()) ? null : parsed;
       }
 
       // Try ISO format or other parseable formats
@@ -552,8 +554,8 @@ export class InvoiceMatchingEngine {
     jobs: T[],
     invoiceDate: Date | null
   ): T[] {
-    if (!invoiceDate) {
-      // No invoice date found, return all jobs
+    if (!invoiceDate || isNaN(invoiceDate.getTime())) {
+      // No valid invoice date found, return all jobs
       return jobs;
     }
 
@@ -585,11 +587,11 @@ export class InvoiceMatchingEngine {
     const invoiceDate = this.getInvoiceDate(extractedData.dates);
     
     console.log('\n--- CHECKING JOBS FOR MATCHES ---');
-    if (invoiceDate) {
+    if (invoiceDate && !isNaN(invoiceDate.getTime())) {
       console.log(`Invoice date detected: ${invoiceDate.toISOString().split('T')[0]}`);
       console.log(`Filtering jobs to date range: ${this.getDateRangeString(invoiceDate)}`);
     } else {
-      console.log('No invoice date detected - checking all jobs');
+      console.log('No valid invoice date detected - checking all jobs');
     }
 
     // Filter jobs by date range (3 months before to 1 month after invoice date)
@@ -678,6 +680,10 @@ export class InvoiceMatchingEngine {
    * Get a readable date range string for logging
    */
   private getDateRangeString(invoiceDate: Date): string {
+    if (isNaN(invoiceDate.getTime())) {
+      return 'Invalid date';
+    }
+
     const threeMonthsBefore = new Date(invoiceDate);
     threeMonthsBefore.setMonth(threeMonthsBefore.getMonth() - 3);
 
