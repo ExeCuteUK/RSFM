@@ -367,50 +367,44 @@ export class InvoiceMatchingEngine {
     }
 
     // Container/Trailer number matches (high confidence)
-    // Check trailerOrContainerNumber (import/clearance)
-    if ('trailerOrContainerNumber' in job && job.trailerOrContainerNumber) {
-      const jobContainer = String(job.trailerOrContainerNumber);
-      const containerMatch = extractedData.containerNumbers.some(
-        c => c.replace(/\s/g, '').toUpperCase() === jobContainer.replace(/\s/g, '').toUpperCase()
-      ) || extractedData.truckNumbers.some(
-        t => t.replace(/\s/g, '').toUpperCase() === jobContainer.replace(/\s/g, '').toUpperCase()
-      );
-      if (debug) {
-        console.log(`    Trailer/Container ${jobContainer} in extracted? ${containerMatch}`);
-      }
-      if (containerMatch) {
-        matchedFields.push({ field: 'Trailer/Container Number', value: jobContainer, score: 40 });
-        totalScore += 40;
-      }
-    }
+    // Collect all possible container/trailer values from job (same field, different names per job type)
+    const containerTrailerValues: Array<{ value: string; field: string }> = [];
     
-    // Check trailerNo (export)
+    if ('trailerOrContainerNumber' in job && job.trailerOrContainerNumber) {
+      containerTrailerValues.push({ 
+        value: String(job.trailerOrContainerNumber), 
+        field: 'Trailer/Container Number' 
+      });
+    }
     if ('trailerNo' in job && job.trailerNo) {
-      const jobTrailer = String(job.trailerNo);
-      const trailerMatch = extractedData.truckNumbers.some(
-        t => t.replace(/\s/g, '').toUpperCase() === jobTrailer.replace(/\s/g, '').toUpperCase()
-      );
-      if (debug) {
-        console.log(`    Trailer No ${jobTrailer} in extracted trucks? ${trailerMatch}`);
-      }
-      if (trailerMatch) {
-        matchedFields.push({ field: 'Trailer Number', value: jobTrailer, score: 40 });
-        totalScore += 40;
-      }
+      containerTrailerValues.push({ 
+        value: String(job.trailerNo), 
+        field: 'Trailer Number' 
+      });
+    }
+    if ('containerShipment' in job && job.containerShipment) {
+      containerTrailerValues.push({ 
+        value: String(job.containerShipment), 
+        field: 'Container Shipment' 
+      });
     }
 
-    // Check containerShipment (export - may contain container number)
-    if ('containerShipment' in job && job.containerShipment) {
-      const jobContainer = String(job.containerShipment);
-      const containerMatch = extractedData.containerNumbers.some(
-        c => c.replace(/\s/g, '').toUpperCase() === jobContainer.replace(/\s/g, '').toUpperCase()
+    // Check if any container/trailer value matches extracted data
+    for (const { value, field } of containerTrailerValues) {
+      const matches = extractedData.containerNumbers.some(
+        c => c.replace(/\s/g, '').toUpperCase() === value.replace(/\s/g, '').toUpperCase()
+      ) || extractedData.truckNumbers.some(
+        t => t.replace(/\s/g, '').toUpperCase() === value.replace(/\s/g, '').toUpperCase()
       );
+      
       if (debug) {
-        console.log(`    Container Shipment ${jobContainer} in extracted? ${containerMatch}`);
+        console.log(`    ${field} ${value} in extracted? ${matches}`);
       }
-      if (containerMatch) {
-        matchedFields.push({ field: 'Container Shipment', value: jobContainer, score: 40 });
+      
+      if (matches) {
+        matchedFields.push({ field, value, score: 40 });
         totalScore += 40;
+        break; // Only count one container/trailer match to avoid double-scoring
       }
     }
 
