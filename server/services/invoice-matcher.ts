@@ -489,17 +489,109 @@ export class InvoiceMatchingEngine {
   }
 
   /**
+   * Parse a date string to Date object (handles various formats)
+   */
+  private parseDate(dateStr: string): Date | null {
+    try {
+      // Try DD/MM/YYYY or DD-MM-YYYY
+      const dmyMatch = dateStr.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+      if (dmyMatch) {
+        const [, day, month, year] = dmyMatch;
+        const fullYear = year.length === 2 ? `20${year}` : year;
+        return new Date(`${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+      }
+
+      // Try YYYY/MM/DD or YYYY-MM-DD
+      const ymdMatch = dateStr.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+      if (ymdMatch) {
+        const [, year, month, day] = ymdMatch;
+        return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+      }
+
+      // Try ISO format or other parseable formats
+      const parsed = new Date(dateStr);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Get the most likely invoice date from extracted dates
+   * Returns the earliest valid date found (invoice date usually appears first)
+   */
+  private getInvoiceDate(dates: string[]): Date | null {
+    const parsedDates = dates
+      .map(d => this.parseDate(d))
+      .filter((d): d is Date => d !== null)
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    return parsedDates.length > 0 ? parsedDates[0] : null;
+  }
+
+  /**
+   * Filter jobs by date range relative to invoice date
+   * Only includes jobs where jobDate is within:
+   * - 3 months before invoice date
+   * - 1 month after invoice date
+   */
+  private filterJobsByDate<T extends ImportShipment | ExportShipment | CustomClearance>(
+    jobs: T[],
+    invoiceDate: Date | null
+  ): T[] {
+    if (!invoiceDate) {
+      // No invoice date found, return all jobs
+      return jobs;
+    }
+
+    const threeMonthsBefore = new Date(invoiceDate);
+    threeMonthsBefore.setMonth(threeMonthsBefore.getMonth() - 3);
+
+    const oneMonthAfter = new Date(invoiceDate);
+    oneMonthAfter.setMonth(oneMonthAfter.getMonth() + 1);
+
+    return jobs.filter(job => {
+      const jobDate = (job as any).jobDate;
+      if (!jobDate) return false;
+
+      const date = new Date(jobDate);
+      if (isNaN(date.getTime())) return false;
+
+      return date >= threeMonthsBefore && date <= oneMonthAfter;
+    });
+  }
+
+  /**
    * Find matching jobs based on extracted data
    */
   private findMatches(extractedData: InvoiceAnalysis['extractedData']): InvoiceMatchResult[] {
     const matches: InvoiceMatchResult[] = [];
     const { importShipments, exportShipments, customClearances, importCustomers, exportCustomers } = this.jobData;
 
+    // Get invoice date and filter jobs by date range
+    const invoiceDate = this.getInvoiceDate(extractedData.dates);
+    
     console.log('\n--- CHECKING JOBS FOR MATCHES ---');
+    if (invoiceDate) {
+      console.log(`Invoice date detected: ${invoiceDate.toISOString().split('T')[0]}`);
+      console.log(`Filtering jobs to date range: ${this.getDateRangeString(invoiceDate)}`);
+    } else {
+      console.log('No invoice date detected - checking all jobs');
+    }
 
-    // Check import shipments
-    console.log(`\nChecking ${importShipments.length} import shipments...`);
-    importShipments.forEach(job => {
+    // Filter jobs by date range (3 months before to 1 month after invoice date)
+    const filteredImports = this.filterJobsByDate(importShipments, invoiceDate);
+    const filteredExports = this.filterJobsByDate(exportShipments, invoiceDate);
+    const filteredClearances = this.filterJobsByDate(customClearances, invoiceDate);
+
+    console.log(`\nDate filtering results:`);
+    console.log(`  Import Shipments: ${importShipments.length} → ${filteredImports.length}`);
+    console.log(`  Export Shipments: ${exportShipments.length} → ${filteredExports.length}`);
+    console.log(`  Custom Clearances: ${customClearances.length} → ${filteredClearances.length}`);
+
+    // Check filtered import shipments
+    console.log(`\nChecking ${filteredImports.length} filtered import shipments...`);
+    filteredImports.forEach(job => {
       const result = this.scoreJob(job, 'import', extractedData, importCustomers, true);
       if (result.confidence > 0) {
         matches.push(result);
@@ -507,9 +599,9 @@ export class InvoiceMatchingEngine {
       }
     });
 
-    // Check export shipments
-    console.log(`\nChecking ${exportShipments.length} export shipments...`);
-    exportShipments.forEach(job => {
+    // Check filtered export shipments
+    console.log(`\nChecking ${filteredExports.length} filtered export shipments...`);
+    filteredExports.forEach(job => {
       const result = this.scoreJob(job, 'export', extractedData, exportCustomers, true);
       if (result.confidence > 0) {
         matches.push(result);
@@ -517,9 +609,9 @@ export class InvoiceMatchingEngine {
       }
     });
 
-    // Check custom clearances
-    console.log(`\nChecking ${customClearances.length} custom clearances...`);
-    customClearances.forEach(job => {
+    // Check filtered custom clearances
+    console.log(`\nChecking ${filteredClearances.length} filtered custom clearances...`);
+    filteredClearances.forEach(job => {
       const result = this.scoreJob(job, 'clearance', extractedData, [...importCustomers, ...exportCustomers], true);
       if (result.confidence > 0) {
         matches.push(result);
@@ -530,6 +622,19 @@ export class InvoiceMatchingEngine {
     console.log('--- END JOB MATCHING ---\n');
 
     return matches;
+  }
+
+  /**
+   * Get a readable date range string for logging
+   */
+  private getDateRangeString(invoiceDate: Date): string {
+    const threeMonthsBefore = new Date(invoiceDate);
+    threeMonthsBefore.setMonth(threeMonthsBefore.getMonth() - 3);
+
+    const oneMonthAfter = new Date(invoiceDate);
+    oneMonthAfter.setMonth(oneMonthAfter.getMonth() + 1);
+
+    return `${threeMonthsBefore.toISOString().split('T')[0]} to ${oneMonthAfter.toISOString().split('T')[0]}`;
   }
 
   /**
