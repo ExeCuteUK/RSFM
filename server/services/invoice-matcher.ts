@@ -640,29 +640,31 @@ export class InvoiceMatchingEngine {
     let grossTotal: string | undefined;
     const allAmounts = new Set<string>();
 
-    // Net total patterns
+    // Net total patterns - handle both positive and negative amounts
     const netPatterns = [
-      /(?:net|sub)\s*total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
-      /subtotal[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      /(?:net|sub)\s*total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
+      /subtotal[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
       // UK invoice formats: "SUB TOTAL GBP 207.50"
-      /sub\s*total\s+(?:gbp|eur|usd)\s+([\d,]+\.?\d{0,2})/gi,
+      /sub\s*total\s+(?:gbp|eur|usd)\s+(-?[\d,]+\.?\d{0,2})/gi,
+      // Credit note format: amount before currency "-400.00 GBP"
+      /(-[\d,]+\.?\d{0,2})\s+(?:gbp|eur|usd)/gi,
     ];
     
     // VAT patterns
     const vatPatterns = [
-      /vat[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
-      /tax[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      /vat[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
+      /tax[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
       // UK invoice formats: "VAT GBP 0.00"
-      /vat\s+(?:gbp|eur|usd)\s+([\d,]+\.?\d{0,2})/gi,
+      /vat\s+(?:gbp|eur|usd)\s+(-?[\d,]+\.?\d{0,2})/gi,
     ];
     
     // Gross/Grand total patterns - including plain "Total:" and "Invoice Total:"
     const grossPatterns = [
-      /(?:gross|grand)\s*total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
-      /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
-      /(?:invoice\s*)?total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
+      /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
+      /(?:invoice\s*)?total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
       // UK invoice formats: "TOTAL GBP 207.50", "Sterling Equivalent TOTAL GBP 207.50"
-      /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+([\d,]+\.?\d{0,2})/gi,
+      /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+(-?[\d,]+\.?\d{0,2})/gi,
     ];
     
     // Generic amount patterns
@@ -671,15 +673,15 @@ export class InvoiceMatchingEngine {
       /total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
     ];
 
-    // Extract net total
+    // Extract net total (allow negative for credit notes)
     netPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
         const value = match[1].replace(/,/g, '');
         const num = parseFloat(value);
-        if (!isNaN(num) && num > 0 && !netTotal) {
+        if (!isNaN(num) && !netTotal) {
           netTotal = num.toFixed(2);
-          allAmounts.add(netTotal);
+          allAmounts.add(Math.abs(num).toFixed(2)); // Store absolute value in allAmounts
         }
       }
     });
@@ -697,15 +699,15 @@ export class InvoiceMatchingEngine {
       }
     });
 
-    // Extract gross total
+    // Extract gross total (allow negative for credit notes)
     grossPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
         const value = match[1].replace(/,/g, '');
         const num = parseFloat(value);
-        if (!isNaN(num) && num > 0 && !grossTotal) {
+        if (!isNaN(num) && !grossTotal) {
           grossTotal = num.toFixed(2);
-          allAmounts.add(grossTotal);
+          allAmounts.add(Math.abs(num).toFixed(2)); // Store absolute value in allAmounts
         }
       }
     });
