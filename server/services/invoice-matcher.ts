@@ -703,6 +703,7 @@ export class InvoiceMatchingEngine {
     }>();
 
     const normalizedText = ocrText.toLowerCase();
+    const normalizedTextNoSpaces = this.normalizeIdentifier(ocrText);
 
     // Helper to add match to results
     const addMatch = (jobRef: number, jobType: string, field: string, value: string, score: number) => {
@@ -714,7 +715,7 @@ export class InvoiceMatchingEngine {
 
     console.log('\n--- SEARCHING OCR TEXT FOR DATABASE VALUES ---');
 
-    // Search for company names
+    // Search for company names (use fuzzy matching with spaces preserved)
     let companyMatches = 0;
     searchDb.companyNames.forEach((jobs, companyName) => {
       const score = this.fuzzySearchScore(normalizedText, companyName);
@@ -727,36 +728,36 @@ export class InvoiceMatchingEngine {
     });
     console.log(`  Company name matches: ${companyMatches}`);
 
-    // Search for container numbers (exact match required)
+    // Search for container numbers (normalized match handles "34 FBY 664" vs "34FBY664")
     let containerMatches = 0;
-    searchDb.containerNumbers.forEach((jobs, containerNumber) => {
-      if (normalizedText.includes(containerNumber)) {
+    searchDb.containerNumbers.forEach((jobs, normalizedContainer) => {
+      if (normalizedTextNoSpaces.includes(normalizedContainer)) {
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', containerNumber, 1.0);
+          addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', normalizedContainer, 1.0);
           containerMatches++;
         });
       }
     });
     console.log(`  Container/vehicle matches: ${containerMatches}`);
 
-    // Search for job references (exact match required)
+    // Search for job references (normalized match handles spaced numbers)
     let jobRefMatches = 0;
-    searchDb.jobReferences.forEach((jobs, jobRef) => {
-      if (normalizedText.includes(jobRef)) {
+    searchDb.jobReferences.forEach((jobs, normalizedJobRef) => {
+      if (normalizedTextNoSpaces.includes(normalizedJobRef)) {
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, 'Job Reference', jobRef, 1.0);
+          addMatch(job.jobRef, job.jobType, 'Job Reference', normalizedJobRef, 1.0);
           jobRefMatches++;
         });
       }
     });
     console.log(`  Job reference matches: ${jobRefMatches}`);
 
-    // Search for customer references
+    // Search for customer references (normalized match handles spaced references)
     let custRefMatches = 0;
-    searchDb.customerReferences.forEach((jobs, custRef) => {
-      if (normalizedText.includes(custRef)) {
+    searchDb.customerReferences.forEach((jobs, normalizedCustRef) => {
+      if (normalizedTextNoSpaces.includes(normalizedCustRef)) {
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, job.fieldName, custRef, 1.0);
+          addMatch(job.jobRef, job.jobType, job.fieldName, normalizedCustRef, 1.0);
           custRefMatches++;
         });
       }
