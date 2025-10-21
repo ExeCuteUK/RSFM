@@ -515,8 +515,12 @@ export class InvoiceMatchingEngine {
         if (capMatch) {
           const companyName = capMatch[1].trim();
           
-          // **NEW**: Skip if this looks like a reference code or process if valid
-          if (!isReferenceCode(companyName) && companyName.length >= 2) {
+          // Filter out common OCR artifacts and non-company text
+          const isOcrArtifact = /^(Page|Invoice Number|Customer Code|Tax|Payment|Due Date|Total|Bill|Receipt|Statement|Document)/i.test(companyName);
+          
+          // **NEW**: Skip if this looks like a reference code or OCR artifact
+          // Allow names >= 3 characters to capture short logistics brands (APL, DSV, OOCL, MSC, etc.)
+          if (!isReferenceCode(companyName) && !isOcrArtifact && companyName.length >= 3) {
             allCompanies.add(companyName);
             // Priority 1 = low (capitalized name without suffix)
             companiesWithContext.push({ name: companyName, hasExclusionHeader: currentExclusionState, priority: 1 });
@@ -739,10 +743,12 @@ export class InvoiceMatchingEngine {
       /vat\s+(?:gbp|eur|usd)\s+(-?[\d,]+\.?\d{0,2})/gi,
     ];
     
-    // Gross/Grand total patterns - including plain "Total:" and "Invoice Total:"
+    // Gross/Grand total patterns - ORDERED BY PRIORITY (most specific first)
     const grossPatterns = [
-      /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
+      // Highest priority: "Total Payable Amount", "Total Net Amount"
+      /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+\.?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
+      /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
       /(?:invoice\s*)?total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
       // UK invoice formats: "TOTAL GBP 207.50", "Sterling Equivalent TOTAL GBP 207.50"
       /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+(-?[\d,]+\.?\d{0,2})/gi,
@@ -839,6 +845,7 @@ export class InvoiceMatchingEngine {
 
   /**
    * Extract dates (handles both numeric and text-based formats)
+   * Filters out invalid dates like sort codes
    */
   private extractDates(text: string): string[] {
     const patterns = [
@@ -851,10 +858,25 @@ export class InvoiceMatchingEngine {
     ];
 
     const dates = new Set<string>();
+    const now = new Date();
+    const threeYearsAgo = new Date(now);
+    threeYearsAgo.setFullYear(now.getFullYear() - 3);
+    const twoYearsAhead = new Date(now);
+    twoYearsAhead.setFullYear(now.getFullYear() + 2);
+
     patterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        dates.add(match[1]);
+        const dateStr = match[1];
+        // Parse and validate the date
+        const parsed = this.parseDate(dateStr);
+        if (parsed && !isNaN(parsed.getTime())) {
+          // Only include dates within reasonable range (3 years ago to 2 years ahead)
+          // This filters out sort codes like "18-50-08" which parse to year 2018
+          if (parsed >= threeYearsAgo && parsed <= twoYearsAhead) {
+            dates.add(dateStr);
+          }
+        }
       }
     });
 
