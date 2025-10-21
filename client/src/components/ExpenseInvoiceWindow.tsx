@@ -49,12 +49,30 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
   const [invoices, setInvoices] = useState<InvoiceRow[]>(() => {
     const initialData = payload?.initialData
     if (initialData) {
+      // Parse autofilled invoice date to ensure it's in YYYY-MM-DD format
+      let parsedDate = initialData.invoiceDate || ''
+      if (parsedDate && parsedDate.length !== 10) {
+        // Date is not in YYYY-MM-DD format, try to parse it
+        try {
+          const formats = ['dd/MM/yy', 'dd/MM/yyyy', 'dd-MM-yy', 'dd-MM-yyyy']
+          for (const fmt of formats) {
+            const parsed = parse(parsedDate, fmt, new Date())
+            if (!isNaN(parsed.getTime())) {
+              parsedDate = format(parsed, 'yyyy-MM-dd')
+              break
+            }
+          }
+        } catch {
+          // If parsing fails, keep original value
+        }
+      }
+      
       return [{ 
         id: '1', 
         jobRef: initialData.jobRef || '', 
         companyName: initialData.companyName || '', 
         invoiceNumber: initialData.invoiceNumber || '', 
-        invoiceDate: initialData.invoiceDate || '', 
+        invoiceDate: parsedDate, 
         invoiceAmount: initialData.invoiceAmount || '' 
       }]
     }

@@ -56,7 +56,7 @@ export interface InvoiceAnalysis {
  * Searchable database built from filtered jobs
  */
 interface SearchableDatabase {
-  companyNames: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
+  companyNames: Map<string, { jobRef: number; jobType: string; fieldName: string; originalValue: string }[]>;
   containerNumbers: Map<string, { jobRef: number; jobType: string }[]>;
   jobReferences: Map<string, { jobRef: number; jobType: string }[]>;
   customerReferences: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
@@ -1246,7 +1246,7 @@ export class InvoiceMatchingEngine {
       const score = this.fuzzySearchScore(normalizedText, companyName);
       if (score > 0.7) {  // High confidence threshold for company names
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, `Company: ${job.fieldName}`, companyName, score);
+          addMatch(job.jobRef, job.jobType, `Company: ${job.fieldName}`, job.originalValue, score);
           companyMatches++;
         });
       }
@@ -1559,23 +1559,23 @@ export class InvoiceMatchingEngine {
       if (job.importCustomerId) {
         const customer = customers.find(c => c.id === job.importCustomerId);
         if (customer) {
-          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
+          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer', originalValue: customer.companyName });
         }
       }
 
       // Shipping line
       if (job.shippingLine) {
-        addToMap(db.companyNames, job.shippingLine, { jobRef, jobType, fieldName: 'Shipping Line' });
+        addToMap(db.companyNames, job.shippingLine, { jobRef, jobType, fieldName: 'Shipping Line', originalValue: job.shippingLine });
       }
 
       // Clearance agent
       if (job.clearanceAgent) {
-        addToMap(db.companyNames, job.clearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+        addToMap(db.companyNames, job.clearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent', originalValue: job.clearanceAgent });
       }
 
       // Haulier
       if (job.haulierName) {
-        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier' });
+        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier', originalValue: job.haulierName });
       }
 
       // Vessel names
@@ -1624,21 +1624,21 @@ export class InvoiceMatchingEngine {
       if (customerId) {
         const customer = customers.find(c => c.id === customerId);
         if (customer) {
-          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
+          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer', originalValue: customer.companyName });
         }
       }
 
       // Clearance agents
       if (job.exportClearanceAgent) {
-        addToMap(db.companyNames, job.exportClearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+        addToMap(db.companyNames, job.exportClearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent', originalValue: job.exportClearanceAgent });
       }
       if (job.arrivalClearanceAgent) {
-        addToMap(db.companyNames, job.arrivalClearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+        addToMap(db.companyNames, job.arrivalClearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent', originalValue: job.arrivalClearanceAgent });
       }
 
       // Haulier
       if (job.haulierName) {
-        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier' });
+        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier', originalValue: job.haulierName });
       }
 
       // Vessel names
@@ -1674,18 +1674,18 @@ export class InvoiceMatchingEngine {
       if (job.importCustomerId) {
         const customer = customers.find(c => c.id === job.importCustomerId);
         if (customer) {
-          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
+          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer', originalValue: customer.companyName });
         }
       }
 
       // Clearance agent
       if (job.clearanceAgent) {
-        addToMap(db.companyNames, job.clearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+        addToMap(db.companyNames, job.clearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent', originalValue: job.clearanceAgent });
       }
 
       // Haulier
       if (job.haulierName) {
-        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier' });
+        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier', originalValue: job.haulierName });
       }
 
       // Vessel names

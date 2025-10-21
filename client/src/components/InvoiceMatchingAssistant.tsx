@@ -226,7 +226,7 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
     // Prepare initial data for the expense invoice window
     const initialData = {
       jobRef: match.jobRef.toString(),
-      companyName: analysis.extractedData.supplierName || '',
+      companyName: match.matchedSupplierName || analysis.extractedData.supplierName || '',
       invoiceNumber: analysis.extractedData.invoiceNumbers[0] || '',
       invoiceDate: parseExtractedDate(analysis.extractedData.dates[0] || ''),
       invoiceAmount: analysis.extractedData.amounts.netTotal 
