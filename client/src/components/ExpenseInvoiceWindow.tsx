@@ -49,12 +49,14 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
   const [invoices, setInvoices] = useState<InvoiceRow[]>(() => {
     const initialData = payload?.initialData
     if (initialData) {
-      // Parse autofilled invoice date to ensure it's in YYYY-MM-DD format
+      // Parse autofilled invoice date to ensure it's in YYYY-MM-DD format as a LOCAL date
+      // This prevents timezone shifts when JavaScript interprets the date string
       let parsedDate = initialData.invoiceDate || ''
-      if (parsedDate && parsedDate.length !== 10) {
-        // Date is not in YYYY-MM-DD format, try to parse it
+      if (parsedDate) {
         try {
-          const formats = ['dd/MM/yy', 'dd/MM/yyyy', 'dd-MM-yy', 'dd-MM-yyyy']
+          // Try parsing with all possible formats, including YYYY-MM-DD
+          // Using explicit formats ensures dates are treated as local, not UTC
+          const formats = ['yyyy-MM-dd', 'dd/MM/yy', 'dd/MM/yyyy', 'dd-MM-yy', 'dd-MM-yyyy']
           for (const fmt of formats) {
             const parsed = parse(parsedDate, fmt, new Date())
             if (!isNaN(parsed.getTime())) {
@@ -335,7 +337,9 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
   const formatDate = (dateString: string | undefined): string => {
     if (!dateString) return 'N/A'
     try {
-      return format(new Date(dateString), 'dd/MM/yy')
+      // Parse as local date to prevent timezone shifts
+      const date = parse(dateString, 'yyyy-MM-dd', new Date())
+      return format(date, 'dd/MM/yy')
     } catch {
       return 'N/A'
     }
@@ -344,7 +348,9 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
   const formatDateForDisplay = (dateString: string): string => {
     if (!dateString) return ''
     try {
-      return format(new Date(dateString), 'dd/MM/yy')
+      // Parse as local date to prevent timezone shifts
+      const date = parse(dateString, 'yyyy-MM-dd', new Date())
+      return format(date, 'dd/MM/yy')
     } catch {
       return ''
     }
@@ -366,8 +372,9 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
     }
 
     try {
-      const invDate = new Date(invoiceDate)
-      const bookDate = new Date(bookingDate)
+      // Parse as local dates to prevent timezone shifts
+      const invDate = parse(invoiceDate, 'yyyy-MM-dd', new Date())
+      const bookDate = parse(bookingDate, 'yyyy-MM-dd', new Date())
 
       // Check if dates are valid
       if (isNaN(invDate.getTime()) || isNaN(bookDate.getTime())) {
@@ -695,7 +702,7 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={invoice.invoiceDate ? new Date(invoice.invoiceDate) : undefined}
+                              selected={invoice.invoiceDate ? parse(invoice.invoiceDate, 'yyyy-MM-dd', new Date()) : undefined}
                               onSelect={(date) => {
                                 updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(date))
                                 setTimeout(() => invoiceAmountInputRefs.current[invoice.id]?.focus(), 100)
