@@ -785,6 +785,14 @@ export class InvoiceMatchingEngine {
   }
 
   /**
+   * Normalize identifier for matching (removes spaces, lowercase)
+   * Handles cases like "34 FBY 664" matching "34FBY664"
+   */
+  private normalizeIdentifier(value: string): string {
+    return value.replace(/\s+/g, '').toLowerCase().trim();
+  }
+
+  /**
    * Fuzzy search score - returns similarity between 0 and 1
    * Uses simple substring matching with normalization
    */
