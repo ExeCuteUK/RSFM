@@ -22,6 +22,7 @@ export interface InvoiceMatchResult {
   }[];
   job: ImportShipment | ExportShipment | CustomClearance;
   customerName?: string;
+  shippingLineName?: string;
 }
 
 interface ExtractedAmounts {
@@ -1104,6 +1105,7 @@ export class InvoiceMatchingEngine {
       // Find the actual job object
       let job: ImportShipment | ExportShipment | CustomClearance | undefined;
       let customerName: string | undefined;
+      let shippingLineName: string | undefined;
 
       if (jobType === 'import') {
         job = filteredImports.find(j => j.jobRef === jobRef);
@@ -1113,15 +1115,18 @@ export class InvoiceMatchingEngine {
             const customer = importCustomers.find(c => c.id === importJob.importCustomerId);
             customerName = customer?.companyName;
           }
+          // Extract shipping line name from the job (only import shipments have this field)
+          shippingLineName = importJob.shippingLine || undefined;
         }
       } else if (jobType === 'export') {
         job = filteredExports.find(j => j.jobRef === jobRef);
         if (job) {
-          const customerId = (job as any).exportCustomerId;
-          if (customerId) {
-            const customer = exportCustomers.find(c => c.id === customerId);
+          const exportJob = job as any;
+          if (exportJob.exportCustomerId) {
+            const customer = exportCustomers.find(c => c.id === exportJob.exportCustomerId);
             customerName = customer?.companyName;
           }
+          // Export shipments don't have shippingLine field
         }
       } else if (jobType === 'clearance') {
         job = filteredClearances.find(j => j.jobRef === jobRef);
@@ -1131,6 +1136,7 @@ export class InvoiceMatchingEngine {
             const customer = [...importCustomers, ...exportCustomers].find(c => c.id === clearanceJob.importCustomerId);
             customerName = customer?.companyName;
           }
+          // Custom clearances don't have shippingLine field
         }
       }
 
@@ -1167,6 +1173,7 @@ export class InvoiceMatchingEngine {
           matchedFields: deduplicatedMatches,
           job,
           customerName,
+          shippingLineName,
         });
 
         console.log(`  ✓ Job #${jobRef} (${jobType}) matched with ${matchCount} unique field types, confidence ${confidence.toFixed(2)}`);
