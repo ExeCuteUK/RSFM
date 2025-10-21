@@ -782,14 +782,24 @@ export class InvoiceMatchingEngine {
     });
     console.log(`  Company name matches: ${companyMatches}`);
 
-    // Search for container numbers (normalized match handles "34 FBY 664" vs "34FBY664")
+    // Search for container numbers (normalized match with fuzzy matching for 1-character difference)
     let containerMatches = 0;
     searchDb.containerNumbers.forEach((jobs, normalizedContainer) => {
+      // Exact match (normalized)
       if (normalizedTextNoSpaces.includes(normalizedContainer)) {
         jobs.forEach(job => {
           addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', normalizedContainer, 1.0);
           containerMatches++;
         });
+      } else {
+        // Fuzzy match - allow 1 character difference using Levenshtein distance
+        const fuzzyMatch = this.findFuzzyReferenceMatch(normalizedTextNoSpaces, normalizedContainer);
+        if (fuzzyMatch) {
+          jobs.forEach(job => {
+            addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', normalizedContainer, 0.95); // Slightly lower score for fuzzy match
+            containerMatches++;
+          });
+        }
       }
     });
     console.log(`  Container/vehicle matches: ${containerMatches}`);
