@@ -765,12 +765,15 @@ export class InvoiceMatchingEngine {
     // Gross/Grand total patterns - ORDERED BY PRIORITY (most specific first)
     const grossPatterns = [
       // Highest priority: "Total Payable Amount", "Total Net Amount"
-      /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+\.?\d{0,2})/gi,
-      /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
-      /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
-      /(?:invoice\s*)?total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
+      /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
+      /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
+      /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
+      /(?:invoice\s*)?total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // UK invoice formats: "TOTAL GBP 207.50", "Sterling Equivalent TOTAL GBP 207.50"
-      /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+(-?[\d,]+\.?\d{0,2})/gi,
+      /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+(-?[\d,]+[\.,]?\d{0,2})/gi,
+      // Amount after "All:" at document end (word boundary ensures "All" is standalone)
+      // Uses [\s\S] instead of . with s flag for ES compatibility
+      /(?:^|\n)\s*all\s*:[\s\S]*?(?:gbp|eur|usd)\s*[\|]?\s*(-?[\d,]+[\.,]\d{2})/gi,
     ];
     
     // Generic amount patterns
@@ -783,7 +786,13 @@ export class InvoiceMatchingEngine {
     netPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        const value = match[1].replace(/,/g, '');
+        let value = match[1];
+        // Handle European format: convert "140,00" to "140.00"
+        if (/^\d{1,3}(?:[.,]\d{3})*[,]\d{2}$/.test(value)) {
+          value = value.replace(/\./g, '').replace(',', '.');
+        } else {
+          value = value.replace(/,/g, '');
+        }
         const num = parseFloat(value);
         if (!isNaN(num) && !netTotal) {
           netTotal = num.toFixed(2);
@@ -796,7 +805,13 @@ export class InvoiceMatchingEngine {
     vatPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        const value = match[1].replace(/,/g, '');
+        let value = match[1];
+        // Handle European format: convert "140,00" to "140.00"
+        if (/^\d{1,3}(?:[.,]\d{3})*[,]\d{2}$/.test(value)) {
+          value = value.replace(/\./g, '').replace(',', '.');
+        } else {
+          value = value.replace(/,/g, '');
+        }
         const num = parseFloat(value);
         if (!isNaN(num) && num >= 0 && !vat) {
           vat = num.toFixed(2);
@@ -809,7 +824,16 @@ export class InvoiceMatchingEngine {
     grossPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        const value = match[1].replace(/,/g, '');
+        let value = match[1];
+        // Handle European format: convert "140,00" to "140.00"
+        // Check if it's European format (comma as decimal separator)
+        if (/^\d{1,3}(?:[.,]\d{3})*[,]\d{2}$/.test(value)) {
+          // Remove thousand separators (dots) and replace decimal comma with dot
+          value = value.replace(/\./g, '').replace(',', '.');
+        } else {
+          // Standard format: just remove thousand separators (commas)
+          value = value.replace(/,/g, '');
+        }
         const num = parseFloat(value);
         if (!isNaN(num) && !grossTotal) {
           grossTotal = num.toFixed(2);
@@ -822,7 +846,13 @@ export class InvoiceMatchingEngine {
     genericPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        const value = match[1].replace(/,/g, '');
+        let value = match[1];
+        // Handle European format: convert "140,00" to "140.00"
+        if (/^\d{1,3}(?:[.,]\d{3})*[,]\d{2}$/.test(value)) {
+          value = value.replace(/\./g, '').replace(',', '.');
+        } else {
+          value = value.replace(/,/g, '');
+        }
         const num = parseFloat(value);
         if (!isNaN(num) && num > 0) {
           allAmounts.add(num.toFixed(2));
@@ -851,7 +881,12 @@ export class InvoiceMatchingEngine {
     const patterns = [
       /invoice\s*(?:no|number|#)?[:\s]*(\d+)/gi,
       /inv\s*(?:no|number|#)?[:\s]*(\d+)/gi,
-      /(?:no|number)[:\s]*(\d{6,})/gi,  // Generic long number sequences
+      // Handle "No/.", "No.", "No:" formats with flexible separators
+      /(?:no|number)[\/\.\:\s]+(\d{5,})/gi,
+      // Handle formats like "4519275 of 21/10/2025" (invoice number followed by date)
+      /\b(\d{6,})\s+of\s+\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/gi,
+      // Generic long number sequences (fallback)
+      /(?:no|number)[:\s]*(\d{6,})/gi,
     ];
 
     const numbers = new Set<string>();

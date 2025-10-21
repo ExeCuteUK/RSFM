@@ -366,18 +366,31 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
   }
 
   const checkDateDiscrepancy = (invoiceDate: string, bookingDate: string | undefined): { type: 'none' | 'warning', message: string } => {
-    // Only show advisory if invoice date is fully filled out (length 10 for YYYY-MM-DD format)
-    if (!invoiceDate || invoiceDate.length < 10 || !bookingDate) {
+    // Only show advisory if invoice date is filled out
+    if (!invoiceDate || invoiceDate.length < 8 || !bookingDate) {
       return { type: 'none', message: '' }
     }
 
     try {
-      // Parse as local dates to prevent timezone shifts
-      const invDate = parse(invoiceDate, 'yyyy-MM-dd', new Date())
-      const bookDate = parse(bookingDate, 'yyyy-MM-dd', new Date())
+      // Try parsing with multiple formats to handle various date states
+      const parseFlexibleDate = (dateStr: string): Date | null => {
+        const formats = ['yyyy-MM-dd', 'dd/MM/yy', 'dd/MM/yyyy', 'dd-MM-yy', 'dd-MM-yyyy']
+        for (const fmt of formats) {
+          try {
+            const parsed = parse(dateStr, fmt, new Date())
+            if (!isNaN(parsed.getTime())) {
+              return parsed
+            }
+          } catch {}
+        }
+        return null
+      }
+
+      const invDate = parseFlexibleDate(invoiceDate)
+      const bookDate = parseFlexibleDate(bookingDate)
 
       // Check if dates are valid
-      if (isNaN(invDate.getTime()) || isNaN(bookDate.getTime())) {
+      if (!invDate || !bookDate) {
         return { type: 'none', message: '' }
       }
 
