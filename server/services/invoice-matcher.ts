@@ -1613,6 +1613,11 @@ export class InvoiceMatchingEngine {
         addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier', originalValue: job.haulierName });
       }
 
+      // Supplier name
+      if (job.supplierName) {
+        addToMap(db.companyNames, job.supplierName, { jobRef, jobType, fieldName: 'Supplier', originalValue: job.supplierName });
+      }
+
       // Vessel names
       if (job.vesselName) {
         addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
@@ -1674,6 +1679,11 @@ export class InvoiceMatchingEngine {
       // Haulier
       if (job.haulierName) {
         addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier', originalValue: job.haulierName });
+      }
+
+      // Supplier name
+      if (job.supplierName) {
+        addToMap(db.companyNames, job.supplierName, { jobRef, jobType, fieldName: 'Supplier', originalValue: job.supplierName });
       }
 
       // Vessel names
