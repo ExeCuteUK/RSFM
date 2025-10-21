@@ -3592,21 +3592,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log('Scribe.js returned gibberish, falling back to image-based OCR...');
             usedFallback = true;
 
-            // Convert PDF to images and use Tesseract.js
-            const poppler = await import("pdf-poppler");
+            // Convert PDF to images using pdftoppm directly
+            const { exec } = await import("child_process");
+            const { promisify } = await import("util");
+            const execAsync = promisify(exec);
+            
             const outputDir = path.join(tempDir, `invoice-images-${Date.now()}`);
             fs.mkdirSync(outputDir, { recursive: true });
 
             try {
-              // Convert PDF pages to PNG images
-              const opts = {
-                format: 'png',
-                out_dir: outputDir,
-                out_prefix: 'page',
-                page: null, // Convert all pages
-              };
-
-              await poppler.convert(tempFilePath, opts);
+              // Convert PDF pages to PNG images using pdftoppm
+              const outputPrefix = path.join(outputDir, 'page');
+              const command = `pdftoppm -png "${tempFilePath}" "${outputPrefix}"`;
+              
+              console.log('Converting PDF to images...');
+              await execAsync(command);
 
               // Find all generated PNG files
               const imageFiles = fs.readdirSync(outputDir)
