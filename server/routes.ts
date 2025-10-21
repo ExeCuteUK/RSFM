@@ -3461,6 +3461,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Invoice matching with OCR
+  app.post("/api/ocr/match-invoice", requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = req.file;
+      const fileExtension = file.originalname.toLowerCase().split('.').pop();
+      const supportedImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
+      const isPDF = fileExtension === 'pdf';
+      const isImage = supportedImageTypes.includes(fileExtension || '');
+
+      if (!isPDF && !isImage) {
+        return res.status(400).json({ 
+          error: "Only PDF and image files (JPG, PNG, GIF, BMP, TIFF, WEBP) are supported" 
+        });
+      }
+
+      const fileBuffer = file.buffer;
+      let extractedText = "";
+
+      if (isPDF) {
+        // Use Scribe.js for PDF OCR
+        const scribe = (await import("scribe.js-ocr")).default;
+        const fs = await import("fs");
+        const path = await import("path");
+        const os = await import("os");
+
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `invoice-${Date.now()}.pdf`);
+
+        try {
+          fs.writeFileSync(tempFilePath, fileBuffer);
+          const result = await scribe.extractText([tempFilePath]);
+          fs.unlinkSync(tempFilePath);
+
+          if (typeof result === 'string') {
+            extractedText = result;
+          } else if (result && typeof result === 'object') {
+            if (result.text) {
+              extractedText = result.text;
+            } else if (result.pages && Array.isArray(result.pages)) {
+              extractedText = result.pages.map((p: any) => p.text || '').join('\n');
+            } else if (Array.isArray(result)) {
+              extractedText = result.map((p: any) => p.text || '').join('\n');
+            }
+          }
+        } catch (error) {
+          if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+          }
+          throw error;
+        }
+      } else {
+        // Use Tesseract.js for image OCR
+        const { createWorker } = await import("tesseract.js");
+        const worker = await createWorker('eng');
+
+        try {
+          const { data: { text } } = await worker.recognize(fileBuffer);
+          await worker.terminate();
+          extractedText = text;
+        } catch (error) {
+          await worker.terminate();
+          throw error;
+        }
+      }
+
+      // Fetch all jobs and customers
+      const importShipments = await storage.getImportShipments();
+      const exportShipments = await storage.getExportShipments();
+      const customClearances = await storage.getCustomClearances();
+      const importCustomers = await storage.getImportCustomers();
+      const exportCustomers = await storage.getExportCustomers();
+
+      // Use the portable matching engine
+      const { InvoiceMatchingEngine } = await import("./services/invoice-matcher.js");
+      const matcher = new InvoiceMatchingEngine({
+        importShipments,
+        exportShipments,
+        customClearances,
+        importCustomers,
+        exportCustomers,
+      });
+
+      const analysis = matcher.analyzeInvoice(extractedText);
+
+      res.json({
+        success: true,
+        filename: file.originalname,
+        analysis,
+      });
+    } catch (error) {
+      console.error("Error matching invoice:", error);
+      res.status(500).json({ error: "Failed to analyze invoice" });
+    }
+  });
+
   // ========== Backup Routes (Admin only) ==========
 
   // List all backups from Google Drive (all authenticated users)
