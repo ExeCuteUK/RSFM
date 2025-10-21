@@ -20,7 +20,7 @@ interface InvoiceMatch {
   confidence: number;
   matchedFields: MatchedField[];
   customerName?: string;
-  shippingLineName?: string;
+  matchedSupplierName?: string;
 }
 
 interface InvoiceAnalysis {
@@ -388,11 +388,11 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
                     {/* Invoice Metadata */}
                     <div className="pt-2 mt-2 border-t text-xs space-y-1">
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                        {(match.shippingLineName || analysis.extractedData.supplierName) && (
+                        {(match.matchedSupplierName || analysis.extractedData.supplierName) && (
                           <div>
                             <span className="text-muted-foreground">Invoice From:</span>{' '}
                             <span className="font-medium">
-                              {match.shippingLineName || analysis.extractedData.supplierName}
+                              {match.matchedSupplierName || analysis.extractedData.supplierName}
                             </span>
                           </div>
                         )}

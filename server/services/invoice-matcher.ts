@@ -22,7 +22,7 @@ export interface InvoiceMatchResult {
   }[];
   job: ImportShipment | ExportShipment | CustomClearance;
   customerName?: string;
-  shippingLineName?: string;
+  matchedSupplierName?: string;
 }
 
 interface ExtractedAmounts {
@@ -1105,7 +1105,18 @@ export class InvoiceMatchingEngine {
       // Find the actual job object
       let job: ImportShipment | ExportShipment | CustomClearance | undefined;
       let customerName: string | undefined;
-      let shippingLineName: string | undefined;
+      let matchedSupplierName: string | undefined;
+
+      // Extract matched supplier name from company matches (exclude customers)
+      // Only use shipping line, clearance agent, or haulier matches
+      const supplierMatch = fieldMatches.find(m => 
+        m.field === 'Company: Shipping Line' || 
+        m.field === 'Company: Clearance Agent' || 
+        m.field === 'Company: Haulier'
+      );
+      if (supplierMatch) {
+        matchedSupplierName = supplierMatch.value;
+      }
 
       if (jobType === 'import') {
         job = filteredImports.find(j => j.jobRef === jobRef);
@@ -1115,8 +1126,6 @@ export class InvoiceMatchingEngine {
             const customer = importCustomers.find(c => c.id === importJob.importCustomerId);
             customerName = customer?.companyName;
           }
-          // Extract shipping line name from the job (only import shipments have this field)
-          shippingLineName = importJob.shippingLine || undefined;
         }
       } else if (jobType === 'export') {
         job = filteredExports.find(j => j.jobRef === jobRef);
@@ -1126,7 +1135,6 @@ export class InvoiceMatchingEngine {
             const customer = exportCustomers.find(c => c.id === exportJob.exportCustomerId);
             customerName = customer?.companyName;
           }
-          // Export shipments don't have shippingLine field
         }
       } else if (jobType === 'clearance') {
         job = filteredClearances.find(j => j.jobRef === jobRef);
@@ -1136,7 +1144,6 @@ export class InvoiceMatchingEngine {
             const customer = [...importCustomers, ...exportCustomers].find(c => c.id === clearanceJob.importCustomerId);
             customerName = customer?.companyName;
           }
-          // Custom clearances don't have shippingLine field
         }
       }
 
@@ -1173,7 +1180,7 @@ export class InvoiceMatchingEngine {
           matchedFields: deduplicatedMatches,
           job,
           customerName,
-          shippingLineName,
+          matchedSupplierName,
         });
 
         console.log(`  ✓ Job #${jobRef} (${jobType}) matched with ${matchCount} unique field types, confidence ${confidence.toFixed(2)}`);
@@ -1556,6 +1563,21 @@ export class InvoiceMatchingEngine {
         }
       }
 
+      // Shipping line
+      if (job.shippingLine) {
+        addToMap(db.companyNames, job.shippingLine, { jobRef, jobType, fieldName: 'Shipping Line' });
+      }
+
+      // Clearance agent
+      if (job.clearanceAgent) {
+        addToMap(db.companyNames, job.clearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+      }
+
+      // Haulier
+      if (job.haulierName) {
+        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier' });
+      }
+
       // Vessel names
       if (job.vesselName) {
         addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
@@ -1606,6 +1628,19 @@ export class InvoiceMatchingEngine {
         }
       }
 
+      // Clearance agents
+      if (job.exportClearanceAgent) {
+        addToMap(db.companyNames, job.exportClearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+      }
+      if (job.arrivalClearanceAgent) {
+        addToMap(db.companyNames, job.arrivalClearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+      }
+
+      // Haulier
+      if (job.haulierName) {
+        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier' });
+      }
+
       // Vessel names
       if (job.vesselName) {
         addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
@@ -1641,6 +1676,21 @@ export class InvoiceMatchingEngine {
         if (customer) {
           addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
         }
+      }
+
+      // Clearance agent
+      if (job.clearanceAgent) {
+        addToMap(db.companyNames, job.clearanceAgent, { jobRef, jobType, fieldName: 'Clearance Agent' });
+      }
+
+      // Haulier
+      if (job.haulierName) {
+        addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier' });
+      }
+
+      // Vessel names
+      if (job.vesselName) {
+        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
       }
     });
 
