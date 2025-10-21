@@ -844,13 +844,13 @@ export class InvoiceMatchingEngine {
       weights: new Map(),
     };
 
-    // Helper to add to map
-    const addToMap = <T>(map: Map<string, T[]>, key: string, value: T) => {
-      const normalized = key.toLowerCase().trim();
-      if (!map.has(normalized)) {
-        map.set(normalized, []);
+    // Helper to add to map with optional normalization
+    const addToMap = <T>(map: Map<string, T[]>, key: string, value: T, normalize: boolean = false) => {
+      const mapKey = normalize ? this.normalizeIdentifier(key) : key.toLowerCase().trim();
+      if (!map.has(mapKey)) {
+        map.set(mapKey, []);
       }
-      map.get(normalized)!.push(value);
+      map.get(mapKey)!.push(value);
     };
 
     const addToWeightMap = (map: Map<number, any[]>, weight: number, value: any) => {
@@ -865,26 +865,26 @@ export class InvoiceMatchingEngine {
       const jobRef = job.jobRef;
       const jobType = 'import';
 
-      // Job reference
-      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType });
+      // Job reference (normalize to handle spaced numbers)
+      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType }, true);
 
-      // Container/Vehicle numbers
+      // Container/Vehicle numbers (normalize to handle "34 FBY 664" vs "34FBY664")
       if (job.trailerOrContainerNumber) {
-        addToMap(db.containerNumbers, job.trailerOrContainerNumber, { jobRef, jobType });
+        addToMap(db.containerNumbers, job.trailerOrContainerNumber, { jobRef, jobType }, true);
       }
 
-      // Customer references
+      // Customer references (normalize to handle spaced references)
       if (job.customerReferenceNumber) {
-        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' });
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' }, true);
       }
       if (job.collectionReference) {
-        addToMap(db.customerReferences, job.collectionReference, { jobRef, jobType, fieldName: 'Collection Reference' });
+        addToMap(db.customerReferences, job.collectionReference, { jobRef, jobType, fieldName: 'Collection Reference' }, true);
       }
       if (job.haulierReference) {
-        addToMap(db.customerReferences, job.haulierReference, { jobRef, jobType, fieldName: 'Haulier Reference' });
+        addToMap(db.customerReferences, job.haulierReference, { jobRef, jobType, fieldName: 'Haulier Reference' }, true);
       }
       if (job.deliveryReference) {
-        addToMap(db.customerReferences, job.deliveryReference, { jobRef, jobType, fieldName: 'Delivery Reference' });
+        addToMap(db.customerReferences, job.deliveryReference, { jobRef, jobType, fieldName: 'Delivery Reference' }, true);
       }
 
       // Weights
@@ -909,14 +909,14 @@ export class InvoiceMatchingEngine {
       const jobRef = job.jobRef;
       const jobType = 'export';
 
-      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType });
+      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType }, true);
 
       if (job.trailerNo) {
-        addToMap(db.containerNumbers, job.trailerNo, { jobRef, jobType });
+        addToMap(db.containerNumbers, job.trailerNo, { jobRef, jobType }, true);
       }
 
       if (job.customerReferenceNumber) {
-        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' });
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' }, true);
       }
 
       if (job.weight) {
@@ -941,14 +941,14 @@ export class InvoiceMatchingEngine {
       const jobRef = job.jobRef;
       const jobType = 'clearance';
 
-      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType });
+      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType }, true);
 
       if (job.containerShipment) {
-        addToMap(db.containerNumbers, job.containerShipment, { jobRef, jobType });
+        addToMap(db.containerNumbers, job.containerShipment, { jobRef, jobType }, true);
       }
 
       if (job.customerReferenceNumber) {
-        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' });
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' }, true);
       }
 
       // Custom clearances have grossWeight
