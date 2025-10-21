@@ -770,9 +770,10 @@ export class InvoiceMatchingEngine {
       // Highest priority: "Total Payable Amount", "Total Net Amount"
       /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
-      // ZIM table format: Look for amount after "TOTAL DEBIT" + "GBP" pattern (they might be far apart)
-      // Pattern: Find "TOTAL DEBIT" followed by any content, then "GBP", then capture next amount within ~200 chars
-      /total\s+(?:debit|credit)[^\d]{0,200}(?:gbp|eur|usd)[^\d]{0,100}(-?[\d,]+\.?\d{2})/gi,
+      // ZIM table format: "TOTAL DEBIT               GBP                    355.00"
+      // Allow whitespace/tabs/newlines and incidental digits (row numbers) between components
+      // Limit to ~100 chars between label and currency, and currency to amount
+      /total\s+(?:debit|credit)[\s\S]{0,100}?(?:gbp|eur|usd)[\s\S]{0,100}?(\d+[\.,]\d{2})\b/gi,
       /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // Gondrand format: "Total      (GBP) :        295.00"
       /total\s*\([^\)]+\)\s*[:]*\s*(-?[\d,]+\.?\d{0,2})/gi,
