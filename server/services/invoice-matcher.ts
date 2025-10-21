@@ -1681,9 +1681,9 @@ export class InvoiceMatchingEngine {
         addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier', originalValue: job.haulierName });
       }
 
-      // Supplier name
-      if (job.supplierName) {
-        addToMap(db.companyNames, job.supplierName, { jobRef, jobType, fieldName: 'Supplier', originalValue: job.supplierName });
+      // Supplier name (export shipments use 'supplier' field)
+      if (job.supplier) {
+        addToMap(db.companyNames, job.supplier, { jobRef, jobType, fieldName: 'Supplier', originalValue: job.supplier });
       }
 
       // Vessel names
@@ -1731,6 +1731,11 @@ export class InvoiceMatchingEngine {
       // Haulier
       if (job.haulierName) {
         addToMap(db.companyNames, job.haulierName, { jobRef, jobType, fieldName: 'Haulier', originalValue: job.haulierName });
+      }
+
+      // Supplier name
+      if (job.supplierName) {
+        addToMap(db.companyNames, job.supplierName, { jobRef, jobType, fieldName: 'Supplier', originalValue: job.supplierName });
       }
 
       // Vessel names
