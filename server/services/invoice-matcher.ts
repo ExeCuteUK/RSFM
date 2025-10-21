@@ -1331,6 +1331,19 @@ export class InvoiceMatchingEngine {
     });
     console.log(`  Vessel name matches: ${vesselMatches}`);
 
+    // Search for port names (use fuzzy matching for partial matches)
+    let portMatches = 0;
+    searchDb.portNames.forEach((jobs, portName) => {
+      const score = this.fuzzySearchScore(normalizedText, portName);
+      if (score > 0.65) {  // Same threshold as vessel names (allow flexibility for partial matches)
+        jobs.forEach(job => {
+          addMatch(job.jobRef, job.jobType, 'Port of Arrival', portName, score);
+          portMatches++;
+        });
+      }
+    });
+    console.log(`  Port name matches: ${portMatches}`);
+
     // Search for container numbers (normalized match with fuzzy matching for 1-character difference)
     let containerMatches = 0;
     searchDb.containerNumbers.forEach((jobs, normalizedContainer) => {
