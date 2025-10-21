@@ -181,28 +181,71 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Extract container numbers (standard format: 4 letters + 7 digits)
+   * Extract container/vehicle numbers with enhanced table format detection
    */
   private extractContainerNumbers(text: string): string[] {
-    const patterns = [
+    const containers = new Set<string>();
+    
+    // Standard patterns (direct extraction)
+    const directPatterns = [
       /\b[A-Z]{4}\s?\d{7}\b/g,  // Standard container format
       /container\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{4,20})/gi,
       /vehicle\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
       /trailer\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
+      /flight\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
     ];
     
-    const containers = new Set<string>();
-    patterns.forEach(pattern => {
+    directPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
         const value = (match[1] || match[0]).replace(/\s/g, '').toUpperCase();
-        if (value.length >= 4 && value.length <= 20) {
+        if (value.length >= 4 && value.length <= 20 && !this.isUKPostcode(value)) {
           containers.add(value);
         }
       }
     });
     
+    // Enhanced: Look for trigger words followed by nearby alphanumeric values (table format)
+    const triggerWords = /(?:container|vehicle|truck|trailer|flight)(?:\/container)?\s+no/gi;
+    const triggerMatches = Array.from(text.matchAll(triggerWords));
+    
+    for (const triggerMatch of triggerMatches) {
+      const startIndex = triggerMatch.index || 0;
+      const searchRange = text.substring(startIndex, startIndex + 200); // Look ahead 200 chars
+      
+      // Look for alphanumeric sequences (potential container/vehicle numbers)
+      const candidatePattern = /\b([A-Z0-9]{2,}\s?[A-Z0-9]{2,}(?:\s?[A-Z0-9]{2,})?)\b/g;
+      const candidates = Array.from(searchRange.matchAll(candidatePattern));
+      
+      for (const candidate of candidates) {
+        const value = candidate[1].replace(/\s/g, '').toUpperCase();
+        // Must have mix of letters and numbers, be reasonable length, and not be a postcode
+        if (value.length >= 4 && value.length <= 20 && 
+            /[A-Z]/.test(value) && /\d/.test(value) && 
+            !this.isUKPostcode(value)) {
+          containers.add(value);
+        }
+      }
+    }
+    
     return Array.from(containers);
+  }
+
+  /**
+   * Detect UK postcodes (X## #XX, XX# #XX, XX## #XX patterns)
+   */
+  private isUKPostcode(value: string): boolean {
+    const normalized = value.replace(/\s+/g, ' ').trim().toUpperCase();
+    
+    // UK postcode patterns: A9 9AA, A99 9AA, AA9 9AA, AA99 9AA, etc.
+    const postcodePatterns = [
+      /^[A-Z]{1}\d{1,2}\s?\d{1}[A-Z]{2}$/,     // A9 9AA, A99 9AA
+      /^[A-Z]{2}\d{1,2}\s?\d{1}[A-Z]{2}$/,    // AA9 9AA, AA99 9AA
+      /^[A-Z]{1}\d{1}[A-Z]{1}\s?\d{1}[A-Z]{2}$/, // A9A 9AA
+      /^[A-Z]{2}\d{1}[A-Z]{1}\s?\d{1}[A-Z]{2}$/, // AA9A 9AA
+    ];
+    
+    return postcodePatterns.some(pattern => pattern.test(normalized));
   }
 
   /**
@@ -221,7 +264,7 @@ export class InvoiceMatchingEngine {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
         const value = (match[1] || match[0]).trim().toUpperCase();
-        if (value.length >= 3 && value.length <= 15) {
+        if (value.length >= 3 && value.length <= 15 && !this.isUKPostcode(value)) {
           trucks.add(value);
         }
       }
@@ -259,11 +302,12 @@ export class InvoiceMatchingEngine {
 
   /**
    * Extract companies with context to identify supplier (FROM) vs customer (TO)
+   * Enhanced to exclude companies under exclusion headers
    */
   private extractCompaniesWithContext(text: string): { supplierName?: string; customerName?: string; allCompanies: string[] } {
     const lines = text.split('\n');
     const allCompanies = new Set<string>();
-    let supplierName: string | undefined;
+    const companiesWithContext: Array<{ name: string; hasExclusionHeader: boolean }> = [];
     let customerName: string | undefined;
 
     // Company name patterns - with AND without suffixes
@@ -275,57 +319,74 @@ export class InvoiceMatchingEngine {
     // Pattern for capitalized names (likely company names) - relaxed to allow short names like "Dell", "B&Q"
     const capitalizedNamePattern = /^([A-Z][A-Za-z0-9&\s]{1,80})$/;
 
-    // Context patterns for supplier (FROM)
-    const supplierContext = /(?:invoice\s*from|supplier|consignor|exporter|shipper|from)[:\s]*/i;
+    // Headers to EXCLUDE from Invoice From (these are customer/recipient/sender context)
+    const exclusionHeaders = /(?:invoice\s*to|consignor|importer|exporter|sender|delivery)[:\s]*/i;
     
-    // Context patterns for customer (TO)
+    // Context patterns for customer (TO) - for customerName detection
     const customerContext = /(?:invoice\s*to|customer|importer|consignee|buyer|to|bill\s*to)[:\s]*/i;
+
+    // Track current header context (persists until blank line or new header)
+    let currentExclusionState = false;
+    let currentCustomerState = false;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       
-      // Check if this line has context markers
-      const hasSupplierContext = supplierContext.test(line);
-      const hasCustomerContext = customerContext.test(line);
+      // Reset context on blank line (new section)
+      if (line === '') {
+        currentExclusionState = false;
+        currentCustomerState = false;
+        continue;
+      }
       
-      // Look for company names in current line and next few lines
-      for (let j = 0; j < 3 && i + j < lines.length; j++) {
-        const checkLine = lines[i + j].trim();
-        
-        // First try to match companies with legal suffixes
-        companyPatternsWithSuffix.forEach(pattern => {
-          const match = checkLine.match(pattern);
-          if (match && match[1].length >= 2 && match[1].length <= 100) {
-            const companyName = match[1].trim();
+      // Check if this line has exclusion headers - sets context for subsequent lines
+      if (exclusionHeaders.test(line)) {
+        currentExclusionState = true;
+      }
+      
+      if (customerContext.test(line)) {
+        currentCustomerState = true;
+      }
+      
+      // Look for company names in current line
+      // First try to match companies with legal suffixes
+      companyPatternsWithSuffix.forEach(pattern => {
+        const match = line.match(pattern);
+        if (match && match[1].length >= 2 && match[1].length <= 100) {
+          const companyName = match[1].trim();
+          allCompanies.add(companyName);
+          companiesWithContext.push({ name: companyName, hasExclusionHeader: currentExclusionState });
+          
+          // Set customer name if under customer context
+          if (currentCustomerState && !customerName) {
+            customerName = companyName;
+          }
+        }
+      });
+      
+      // Try capitalized names (skip if line is a header)
+      if (!exclusionHeaders.test(line) && !customerContext.test(line)) {
+        const capMatch = line.match(capitalizedNamePattern);
+        if (capMatch) {
+          const companyName = capMatch[1].trim();
+          if (companyName.length >= 2) {
             allCompanies.add(companyName);
+            companiesWithContext.push({ name: companyName, hasExclusionHeader: currentExclusionState });
             
-            // Assign to supplier or customer based on context
-            if (hasSupplierContext && !supplierName) {
-              supplierName = companyName;
-            } else if (hasCustomerContext && !customerName) {
+            if (currentCustomerState && !customerName) {
               customerName = companyName;
             }
           }
-        });
-        
-        // If we have context but no match yet, try capitalized names
-        // Skip j=0 to avoid matching the context line itself (e.g., "Invoice To")
-        if (j > 0 && ((hasSupplierContext && !supplierName) || (hasCustomerContext && !customerName))) {
-          const capMatch = checkLine.match(capitalizedNamePattern);
-          if (capMatch) {
-            const companyName = capMatch[1].trim();
-            // Minimum length of 2 to capture names like "Dell", "B&Q"
-            if (companyName.length >= 2) {
-              allCompanies.add(companyName);
-              
-              if (hasSupplierContext && !supplierName) {
-                supplierName = companyName;
-              } else if (hasCustomerContext && !customerName) {
-                customerName = companyName;
-              }
-            }
-          }
         }
+      }
+    }
+
+    // Determine Invoice From: find company NOT under exclusion headers
+    let supplierName: string | undefined;
+    for (const company of companiesWithContext) {
+      if (!company.hasExclusionHeader) {
+        supplierName = company.name;
+        break; // Take the first one found without exclusion headers
       }
     }
 

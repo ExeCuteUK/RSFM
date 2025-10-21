@@ -28,8 +28,15 @@ interface InvoiceAnalysis {
     truckNumbers: string[];
     customerReferences: string[];
     companyNames: string[];
+    supplierName?: string;
+    customerName?: string;
     weights: string[];
-    amounts: string[];
+    amounts: {
+      netTotal?: string;
+      vat?: string;
+      grossTotal?: string;
+      allAmounts: string[];
+    };
     invoiceNumbers: string[];
     dates: string[];
   };
@@ -48,6 +55,41 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
   const [filename, setFilename] = useState<string>('');
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
+  // Format date as DD/MM/YY
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    // Try to parse the date string
+    const formats = [
+      /(\d{2})\.(\d{2})\.(\d{4})/,  // DD.MM.YYYY
+      /(\d{2})\/(\d{2})\/(\d{4})/,  // DD/MM/YYYY
+      /(\d{2})-(\d{2})-(\d{4})/,    // DD-MM-YYYY
+      /(\d{4})-(\d{2})-(\d{2})/,    // YYYY-MM-DD
+    ];
+    
+    for (const format of formats) {
+      const match = dateString.match(format);
+      if (match) {
+        let day, month, year;
+        if (format === formats[3]) {
+          // YYYY-MM-DD format
+          year = match[1];
+          month = match[2];
+          day = match[3];
+        } else {
+          // DD.MM.YYYY, DD/MM/YYYY, DD-MM-YYYY formats
+          day = match[1];
+          month = match[2];
+          year = match[3];
+        }
+        // Return DD/MM/YY (last 2 digits of year)
+        return `${day}/${month}/${year.slice(-2)}`;
+      }
+    }
+    
+    return dateString; // Return as-is if no format matches
+  };
 
   const processFile = async (file: File) => {
     setIsProcessing(true);
@@ -268,6 +310,36 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
                           <span>{field.value}</span>
                         </div>
                       ))}
+                    </div>
+
+                    {/* Invoice Metadata */}
+                    <div className="pt-2 mt-2 border-t text-xs space-y-1">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        {analysis.extractedData.supplierName && (
+                          <div>
+                            <span className="text-muted-foreground">Invoice From:</span>{' '}
+                            <span className="font-medium">{analysis.extractedData.supplierName}</span>
+                          </div>
+                        )}
+                        {analysis.extractedData.invoiceNumbers.length > 0 && (
+                          <div>
+                            <span className="text-muted-foreground">Invoice No:</span>{' '}
+                            <span className="font-medium">{analysis.extractedData.invoiceNumbers[0]}</span>
+                          </div>
+                        )}
+                        {analysis.extractedData.dates.length > 0 && (
+                          <div>
+                            <span className="text-muted-foreground">Invoice Date:</span>{' '}
+                            <span className="font-medium">{formatDate(analysis.extractedData.dates[0])}</span>
+                          </div>
+                        )}
+                        {analysis.extractedData.amounts.netTotal && (
+                          <div>
+                            <span className="text-muted-foreground">Net Amount:</span>{' '}
+                            <span className="font-medium">£{analysis.extractedData.amounts.netTotal}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
