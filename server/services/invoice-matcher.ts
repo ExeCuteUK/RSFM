@@ -399,19 +399,37 @@ export class InvoiceMatchingEngine {
     }
 
     // Determine Invoice From: find company NOT under exclusion headers
+    // BUT: if a company under "Importer:" matches a known clearance agent/haulier, use it as supplier
     let supplierName: string | undefined;
+    
+    // First, check if any excluded company matches our clearance agents/hauliers
+    // This handles invoices where the agent appears under "Importer:" label
     for (const company of companiesWithContext) {
-      if (!company.hasExclusionHeader) {
-        supplierName = company.name;
-        break; // Take the first one found without exclusion headers
+      if (company.hasExclusionHeader) {
+        const matchedServiceProvider = this.crossReferenceSupplierName(company.name);
+        if (matchedServiceProvider) {
+          // This excluded company is actually a service provider - use it as supplier
+          supplierName = matchedServiceProvider;
+          break;
+        }
       }
     }
-
-    // Improve supplier name accuracy by cross-referencing against clearance agents and hauliers
-    if (supplierName) {
-      const improvedName = this.crossReferenceSupplierName(supplierName);
-      if (improvedName) {
-        supplierName = improvedName;
+    
+    // If no service provider found in excluded companies, use the standard logic
+    if (!supplierName) {
+      for (const company of companiesWithContext) {
+        if (!company.hasExclusionHeader) {
+          supplierName = company.name;
+          break; // Take the first one found without exclusion headers
+        }
+      }
+      
+      // Improve supplier name accuracy by cross-referencing against clearance agents and hauliers
+      if (supplierName) {
+        const improvedName = this.crossReferenceSupplierName(supplierName);
+        if (improvedName) {
+          supplierName = improvedName;
+        }
       }
     }
 
