@@ -403,6 +403,7 @@ export class InvoiceMatchingEngine {
       /acting\s+as\s+agent\s+for\s+(.+?)(?:\n|$)/gi,
       /issued\s+by\s+(.+?)(?:\n|$)/gi,
       /on\s+behalf\s+of\s+(.+?)(?:\n|$)/gi,
+      /service\s+provider\s+(.+?)(?:\n|$)/gi,
     ];
 
     agentPhrases.forEach(pattern => {
@@ -414,6 +415,19 @@ export class InvoiceMatchingEngine {
           .replace(/\s*\.$/, '')                    // Remove trailing period (sentence end)
           .replace(/\s*[,;:]\s*$/, '')              // Remove trailing comma/semicolon
           .trim();
+        
+        // **IMPROVED**: Stop after legal suffix to avoid capturing address
+        // e.g., "Maersk A/S Esplanaden 50..." → "Maersk A/S"
+        const suffixMatch = companyName.match(/^(.+?\s+(?:ltd|limited|inc|corp|corporation|plc|llc|co|gmbh|sa|srl|bv|a\/s|as|ab|oy|oyj|aps))(?:\s|$)/i);
+        if (suffixMatch) {
+          companyName = suffixMatch[1].trim();
+        } else {
+          // If no suffix found, stop at numeric street address (e.g., "123 Main St")
+          const addressMatch = companyName.match(/^([^0-9]+?)(?:\s+\d)/);
+          if (addressMatch) {
+            companyName = addressMatch[1].trim();
+          }
+        }
         
         // Stop at common sentence continuations (lowercase word after period indicates new sentence)
         const sentenceBreak = companyName.match(/\.\s+[a-z]/);
@@ -433,6 +447,8 @@ export class InvoiceMatchingEngine {
     const companyPatternsWithSuffix = [
       /^(.+?\s+(?:ltd|limited|inc|corp|corporation|plc|llc|co))\.?$/i,
       /^(.+?\s+(?:gmbh|sa|srl|bv))\.?$/i,
+      // Scandinavian and other international suffixes
+      /^(.+?\s+(?:a\/s|as|ab|oy|oyj|aps|k\.s\.|sp\.|nv))\.?$/i,
     ];
     
     // Pattern for capitalized names (likely company names) - relaxed to allow short names like "Dell", "B&Q"
@@ -622,6 +638,14 @@ export class InvoiceMatchingEngine {
       /\s+srl$/i,
       /\s+bv$/i,
       /\s+ag$/i,
+      // Scandinavian and international suffixes
+      /\s+a\/s$/i,
+      /\s+as$/i,
+      /\s+ab$/i,
+      /\s+oy$/i,
+      /\s+oyj$/i,
+      /\s+aps$/i,
+      /\s+nv$/i,
     ];
     
     previousLength = 0;
