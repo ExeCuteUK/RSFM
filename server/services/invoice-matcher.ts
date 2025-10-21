@@ -286,6 +286,55 @@ export class InvoiceMatchingEngine {
       }
     });
     
+    // Fallback: Search for standalone truck number patterns (e.g., "34KBJ052" in table cells)
+    // without requiring trigger words nearby
+    // Pattern: alphanumeric tokens with 2-4 letters and 3-8 digits mixed together
+    const standalonePattern = /\b([A-Z0-9]{5,12})\b/g;
+    const standaloneMatches = Array.from(text.matchAll(standalonePattern));
+    
+    for (const match of standaloneMatches) {
+      const value = match[1].toUpperCase();
+      
+      // Skip if already found via trigger patterns
+      if (trucks.has(value)) {
+        continue;
+      }
+      
+      // Skip if it's a common header word
+      if (excludeWords.test(value)) {
+        continue;
+      }
+      
+      // Skip if it matches the strict container format (4 letters + 7 digits)
+      if (/^[A-Z]{4}\d{7}$/.test(value)) {
+        continue;
+      }
+      
+      // Skip if it has 5+ consecutive letters
+      const letterSequences = value.match(/[A-Z]+/g) || [];
+      const maxLetterSequence = Math.max(...letterSequences.map(seq => seq.length), 0);
+      if (maxLetterSequence >= 5) {
+        continue;
+      }
+      
+      // Skip if it's a UK postcode
+      if (this.isUKPostcode(value)) {
+        continue;
+      }
+      
+      // Count total letters and digits
+      const letterCount = (value.match(/[A-Z]/g) || []).length;
+      const digitCount = (value.match(/\d/g) || []).length;
+      
+      // Must have mix of letters and digits in truck number range:
+      // 2-4 letters, 3-8 digits (e.g., "34KBJ052" has 3 letters, 5 digits)
+      if (letterCount >= 2 && letterCount <= 4 && 
+          digitCount >= 3 && digitCount <= 8 &&
+          value.length >= 5 && value.length <= 12) {
+        trucks.add(value);
+      }
+    }
+    
     return Array.from(trucks);
   }
 
