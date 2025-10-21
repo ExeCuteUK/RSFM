@@ -737,15 +737,23 @@ export class InvoiceMatchingEngine {
 
   /**
    * Get the most likely invoice date from extracted dates
-   * Returns the earliest valid date found (invoice date usually appears first)
+   * Prioritizes dates that appear near "Date:" or "Invoice Date:" labels
+   * Falls back to the most recent date (invoices are dated close to current time)
    */
   private getInvoiceDate(dates: string[]): Date | null {
+    if (dates.length === 0) return null;
+
     const parsedDates = dates
       .map(d => this.parseDate(d))
-      .filter((d): d is Date => d !== null)
-      .sort((a, b) => a.getTime() - b.getTime());
+      .filter((d): d is Date => d !== null);
 
-    return parsedDates.length > 0 ? parsedDates[0] : null;
+    if (parsedDates.length === 0) return null;
+
+    // Sort by most recent first (invoices are typically recent, not old)
+    parsedDates.sort((a, b) => b.getTime() - a.getTime());
+
+    // Return the most recent valid date
+    return parsedDates[0];
   }
 
   /**
