@@ -1,4 +1,4 @@
-import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from '@shared/schema';
+import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, Haulier, ClearanceAgent } from '@shared/schema';
 
 interface JobData {
   importShipments: ImportShipment[];
@@ -6,6 +6,8 @@ interface JobData {
   customClearances: CustomClearance[];
   importCustomers: ImportCustomer[];
   exportCustomers: ExportCustomer[];
+  hauliers: Haulier[];
+  clearanceAgents: ClearanceAgent[];
 }
 
 export interface InvoiceMatchResult {
@@ -266,6 +268,14 @@ export class InvoiceMatchingEngine {
             continue;
           }
           
+          // Skip if it has 5+ consecutive letters (filters table headers like "SEALNUMBER2")
+          // Truck/flight numbers never have more than 4 consecutive letters
+          const letterSequences = value.match(/[A-Z]+/g) || [];
+          const maxLetterSequence = Math.max(...letterSequences.map(seq => seq.length), 0);
+          if (maxLetterSequence >= 5) {
+            continue;
+          }
+          
           // Must be alphanumeric, reasonable length, not a postcode
           if (value.length >= 3 && value.length <= 25 && 
               /[A-Z0-9]/.test(value) && 
@@ -309,6 +319,7 @@ export class InvoiceMatchingEngine {
   /**
    * Extract companies with context to identify supplier (FROM) vs customer (TO)
    * Enhanced to exclude companies under exclusion headers
+   * Cross-references supplier against clearance agents and hauliers for accurate names
    */
   private extractCompaniesWithContext(text: string): { supplierName?: string; customerName?: string; allCompanies: string[] } {
     const lines = text.split('\n');
@@ -396,11 +407,45 @@ export class InvoiceMatchingEngine {
       }
     }
 
+    // Improve supplier name accuracy by cross-referencing against clearance agents and hauliers
+    if (supplierName) {
+      const improvedName = this.crossReferenceSupplierName(supplierName);
+      if (improvedName) {
+        supplierName = improvedName;
+      }
+    }
+
     return {
       supplierName,
       customerName,
       allCompanies: Array.from(allCompanies),
     };
+  }
+
+  /**
+   * Cross-reference extracted supplier name against clearance agents and hauliers
+   * Returns the official database name if a match is found, undefined otherwise
+   */
+  private crossReferenceSupplierName(extractedName: string): string | undefined {
+    const normalizedExtracted = extractedName.toLowerCase().trim();
+    
+    // Check clearance agents
+    for (const agent of this.jobData.clearanceAgents) {
+      const score = this.fuzzySearchScore(normalizedExtracted, agent.agentName);
+      if (score > 0.7) {  // High confidence threshold
+        return agent.agentName;
+      }
+    }
+    
+    // Check hauliers
+    for (const haulier of this.jobData.hauliers) {
+      const score = this.fuzzySearchScore(normalizedExtracted, haulier.haulierName);
+      if (score > 0.7) {  // High confidence threshold
+        return haulier.haulierName;
+      }
+    }
+    
+    return undefined;  // No match found, keep original
   }
 
   /**
