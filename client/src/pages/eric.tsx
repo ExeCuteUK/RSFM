@@ -8,6 +8,7 @@ import { useMemo, useEffect } from "react"
 import { type ImportShipment, type CustomClearance, type ImportCustomer, type ExportShipment, type ExportCustomer, type JobFileGroup } from "@shared/schema"
 import { differenceInDays, parseISO } from "date-fns"
 import { usePageHeader } from "@/contexts/PageHeaderContext"
+import { InvoiceMatchingAssistant } from "@/components/InvoiceMatchingAssistant"
 
 interface ContainerDiscrepancy {
   shipmentId: string
@@ -532,6 +533,9 @@ export default function Eric() {
           </CardContent>
         </Card>
       )}
+
+      {/* Invoice Matching Assistant */}
+      <InvoiceMatchingAssistant />
 
       {/* Show message when there are no notifications */}
       {!containerTrackingMessage && !jobIssuesMessage && !financeIssuesMessage && (

@@ -3531,11 +3531,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Fetch all jobs and customers
-      const importShipments = await storage.getImportShipments();
-      const exportShipments = await storage.getExportShipments();
-      const customClearances = await storage.getCustomClearances();
-      const importCustomers = await storage.getImportCustomers();
-      const exportCustomers = await storage.getExportCustomers();
+      const importShipments = await storage.getAllImportShipments();
+      const exportShipments = await storage.getAllExportShipments();
+      const customClearances = await storage.getAllCustomClearances();
+      const importCustomers = await storage.getAllImportCustomers();
+      const exportCustomers = await storage.getAllExportCustomers();
 
       // Use the portable matching engine
       const { InvoiceMatchingEngine } = await import("./services/invoice-matcher.js");
