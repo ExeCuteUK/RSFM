@@ -57,12 +57,12 @@ export interface InvoiceAnalysis {
  */
 interface SearchableDatabase {
   companyNames: Map<string, { jobRef: number; jobType: string; fieldName: string; originalValue: string }[]>;
-  containerNumbers: Map<string, { jobRef: number; jobType: string }[]>;
+  containerNumbers: Map<string, { jobRef: number; jobType: string; originalValue: string }[]>;
   jobReferences: Map<string, { jobRef: number; jobType: string }[]>;
-  customerReferences: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
+  customerReferences: Map<string, { jobRef: number; jobType: string; fieldName: string; originalValue: string }[]>;
   weights: Map<number, { jobRef: number; jobType: string }[]>;
-  vesselNames: Map<string, { jobRef: number; jobType: string }[]>;
-  portNames: Map<string, { jobRef: number; jobType: string }[]>;
+  vesselNames: Map<string, { jobRef: number; jobType: string; originalValue: string }[]>;
+  portNames: Map<string, { jobRef: number; jobType: string; originalValue: string }[]>;
   etaDates: Map<string, { jobRef: number; jobType: string; date: Date }[]>; // ETA Port dates as "YYYY-MM-DD" string keys
 }
 
@@ -770,6 +770,8 @@ export class InvoiceMatchingEngine {
       // Highest priority: "Total Payable Amount", "Total Net Amount"
       /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
+      // ZIM invoice format: "TOTAL DEBIT GBP 355.00" or "TOTAL CREDIT GBP 100.00"
+      /total\s+(?:debit|credit)\s+(?:gbp|eur|usd)\s+(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // Gondrand format: "Total      (GBP) :        295.00"
       /total\s*\([^\)]+\)\s*[:]*\s*(-?[\d,]+\.?\d{0,2})/gi,
@@ -880,18 +882,19 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Extract invoice numbers
+   * Extract invoice numbers (supports both numeric and alphanumeric with common separators)
    */
   private extractInvoiceNumbers(text: string): string[] {
     const patterns = [
-      /invoice\s*(?:no|number|#)?[:\s]*(\d+)/gi,
-      /inv\s*(?:no|number|#)?[:\s]*(\d+)/gi,
-      // Handle "No/.", "No.", "No:" formats with flexible separators
-      /(?:no|number)[\/\.\:\s]+(\d{5,})/gi,
+      // Alphanumeric invoice numbers with common separators (e.g., "LPLR314393", "INV/2024-001", "ABC.12345")
+      /invoice\s*(?:no|number|#)?[:\s]*([A-Z0-9\-\/\.]+)/gi,
+      /inv\s*(?:no|number|#)?[:\s]*([A-Z0-9\-\/\.]+)/gi,
+      // Handle "No/.", "No.", "No:" formats with flexible separators (alphanumeric)
+      /(?:no|number)[\/\.\:\s]+([A-Z0-9\-\/\.]{5,})/gi,
       // Handle formats like "4519275 of 21/10/2025" (invoice number followed by date)
-      /\b(\d{6,})\s+of\s+\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/gi,
-      // Generic long number sequences (fallback)
-      /(?:no|number)[:\s]*(\d{6,})/gi,
+      /\b([A-Z0-9\-\/\.]{6,})\s+of\s+\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/gi,
+      // Generic alphanumeric sequences (fallback) - must have at least one digit
+      /(?:no|number)[:\s]*([A-Z0-9\-\/\.]{5,})/gi,
     ];
 
     const numbers = new Set<string>();
@@ -899,7 +902,8 @@ export class InvoiceMatchingEngine {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
         const value = match[1].trim();
-        if (value.length >= 5 && value.length <= 20) {
+        // Must be 5-20 characters, contain at least one digit, and not be a pure date
+        if (value.length >= 5 && value.length <= 20 && /\d/.test(value) && !/^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$/.test(value)) {
           numbers.add(value);
         }
       }
@@ -1019,6 +1023,16 @@ export class InvoiceMatchingEngine {
     } catch (e) {
       return null;
     }
+  }
+
+  /**
+   * Format a Date object to DD/MM/YY (British format)
+   */
+  private formatDateBritish(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
   }
 
   /**
@@ -1324,7 +1338,7 @@ export class InvoiceMatchingEngine {
       const score = this.fuzzySearchScore(normalizedText, vesselName);
       if (score > 0.65) {  // Slightly lower threshold for vessel names (allow more flexibility for partial matches)
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, 'Vessel Name', vesselName, score);
+          addMatch(job.jobRef, job.jobType, 'Vessel Name', job.originalValue, score);
           vesselMatches++;
         });
       }
@@ -1337,7 +1351,7 @@ export class InvoiceMatchingEngine {
       const score = this.fuzzySearchScore(normalizedText, portName);
       if (score > 0.65) {  // Same threshold as vessel names (allow flexibility for partial matches)
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, 'Port of Arrival', portName, score);
+          addMatch(job.jobRef, job.jobType, 'Port of Arrival', job.originalValue, score);
           portMatches++;
         });
       }
@@ -1350,7 +1364,7 @@ export class InvoiceMatchingEngine {
       // Exact match (normalized)
       if (normalizedTextNoSpaces.includes(normalizedContainer)) {
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', normalizedContainer, 1.0);
+          addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', job.originalValue, 1.0);
           containerMatches++;
         });
       } else {
@@ -1358,7 +1372,7 @@ export class InvoiceMatchingEngine {
         const fuzzyMatch = this.findFuzzyReferenceMatch(normalizedTextNoSpaces, normalizedContainer);
         if (fuzzyMatch) {
           jobs.forEach(job => {
-            addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', normalizedContainer, 0.95); // Slightly lower score for fuzzy match
+            addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', job.originalValue, 0.95); // Slightly lower score for fuzzy match
             containerMatches++;
           });
         }
@@ -1394,7 +1408,7 @@ export class InvoiceMatchingEngine {
       // Exact match (normalized)
       if (normalizedTextNoSpaces.includes(normalizedCustRef)) {
         jobs.forEach(job => {
-          addMatch(job.jobRef, job.jobType, job.fieldName, normalizedCustRef, 1.0);
+          addMatch(job.jobRef, job.jobType, job.fieldName, job.originalValue, 1.0);
           custRefMatches++;
         });
       } else {
@@ -1402,7 +1416,7 @@ export class InvoiceMatchingEngine {
         const fuzzyMatch = this.findFuzzyReferenceMatch(normalizedTextNoSpaces, normalizedCustRef);
         if (fuzzyMatch) {
           jobs.forEach(job => {
-            addMatch(job.jobRef, job.jobType, job.fieldName, normalizedCustRef, 0.95); // Slightly lower score for fuzzy match
+            addMatch(job.jobRef, job.jobType, job.fieldName, job.originalValue, 0.95); // Slightly lower score for fuzzy match
             custRefMatches++;
           });
         }
@@ -1442,7 +1456,9 @@ export class InvoiceMatchingEngine {
             // Match if within 7 days
             if (diffDays <= 7) {
               const score = diffDays === 0 ? 1.0 : 0.95 - (diffDays * 0.05); // Higher score for closer dates
-              addMatch(job.jobRef, job.jobType, 'ETA Date', etaDateKey, score);
+              // Format date as DD/MM/YY for display
+              const formattedDate = this.formatDateBritish(etaDate);
+              addMatch(job.jobRef, job.jobType, 'ETA Date', formattedDate, score);
               etaDateMatches++;
             }
           });
@@ -1609,21 +1625,21 @@ export class InvoiceMatchingEngine {
 
       // Container/Vehicle numbers (normalize to handle "34 FBY 664" vs "34FBY664")
       if (job.trailerOrContainerNumber) {
-        addToMap(db.containerNumbers, job.trailerOrContainerNumber, { jobRef, jobType }, true);
+        addToMap(db.containerNumbers, job.trailerOrContainerNumber, { jobRef, jobType, originalValue: job.trailerOrContainerNumber }, true);
       }
 
       // Customer references (normalize to handle spaced references)
       if (job.customerReferenceNumber) {
-        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' }, true);
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference', originalValue: job.customerReferenceNumber }, true);
       }
       if (job.collectionReference) {
-        addToMap(db.customerReferences, job.collectionReference, { jobRef, jobType, fieldName: 'Collection Reference' }, true);
+        addToMap(db.customerReferences, job.collectionReference, { jobRef, jobType, fieldName: 'Collection Reference', originalValue: job.collectionReference }, true);
       }
       if (job.haulierReference) {
-        addToMap(db.customerReferences, job.haulierReference, { jobRef, jobType, fieldName: 'Haulier Reference' }, true);
+        addToMap(db.customerReferences, job.haulierReference, { jobRef, jobType, fieldName: 'Haulier Reference', originalValue: job.haulierReference }, true);
       }
       if (job.deliveryReference) {
-        addToMap(db.customerReferences, job.deliveryReference, { jobRef, jobType, fieldName: 'Delivery Reference' }, true);
+        addToMap(db.customerReferences, job.deliveryReference, { jobRef, jobType, fieldName: 'Delivery Reference', originalValue: job.deliveryReference }, true);
       }
 
       // Weights
@@ -1664,12 +1680,12 @@ export class InvoiceMatchingEngine {
 
       // Vessel names
       if (job.vesselName) {
-        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
+        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType, originalValue: job.vesselName });
       }
 
       // Port of arrival
       if (job.portOfArrival) {
-        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType });
+        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType, originalValue: job.portOfArrival });
       }
 
       // ETA Port dates
@@ -1694,11 +1710,11 @@ export class InvoiceMatchingEngine {
       addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType }, true);
 
       if (job.trailerNo) {
-        addToMap(db.containerNumbers, job.trailerNo, { jobRef, jobType }, true);
+        addToMap(db.containerNumbers, job.trailerNo, { jobRef, jobType, originalValue: job.trailerNo }, true);
       }
 
       if (job.customerReferenceNumber) {
-        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' }, true);
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference', originalValue: job.customerReferenceNumber }, true);
       }
 
       if (job.weight) {
@@ -1737,12 +1753,12 @@ export class InvoiceMatchingEngine {
 
       // Vessel names
       if (job.vesselName) {
-        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
+        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType, originalValue: job.vesselName });
       }
 
       // Port of arrival
       if (job.portOfArrival) {
-        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType });
+        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType, originalValue: job.portOfArrival });
       }
     });
 
@@ -1754,11 +1770,11 @@ export class InvoiceMatchingEngine {
       addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType }, true);
 
       if (job.containerShipment) {
-        addToMap(db.containerNumbers, job.containerShipment, { jobRef, jobType }, true);
+        addToMap(db.containerNumbers, job.containerShipment, { jobRef, jobType, originalValue: job.containerShipment }, true);
       }
 
       if (job.customerReferenceNumber) {
-        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' }, true);
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference', originalValue: job.customerReferenceNumber }, true);
       }
 
       // Custom clearances have grossWeight
@@ -1794,12 +1810,12 @@ export class InvoiceMatchingEngine {
 
       // Vessel names
       if (job.vesselName) {
-        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
+        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType, originalValue: job.vesselName });
       }
 
       // Port of arrival
       if (job.portOfArrival) {
-        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType });
+        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType, originalValue: job.portOfArrival });
       }
     });
 
