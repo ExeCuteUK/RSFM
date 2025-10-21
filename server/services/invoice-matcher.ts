@@ -384,14 +384,49 @@ export class InvoiceMatchingEngine {
 
   /**
    * Extract companies with context to identify supplier (FROM) vs customer (TO)
-   * Enhanced to exclude companies under exclusion headers
-   * Cross-references supplier against clearance agents and hauliers for accurate names
+   * Enhanced with:
+   * - Pattern recognition for "acting as agent for [Company]"
+   * - Filtering of alphanumeric reference codes
+   * - Cross-references supplier against clearance agents, hauliers, and shipping lines
    */
   private extractCompaniesWithContext(text: string): { supplierName?: string; customerName?: string; allCompanies: string[] } {
     const lines = text.split('\n');
     const allCompanies = new Set<string>();
-    const companiesWithContext: Array<{ name: string; hasExclusionHeader: boolean }> = [];
+    const companiesWithContext: Array<{ name: string; hasExclusionHeader: boolean; priority: number }> = [];
     let customerName: string | undefined;
+
+    // **NEW**: Extract companies from "acting as agent for" phrases (high priority)
+    // Captures full company names including parenthetical qualifiers like "(UK Branch)"
+    // Uses greedy matching to capture everything on the line, then intelligently trims
+    const agentPhrases = [
+      /acting\s+as\s+agent\s+for\s+(.+?)(?:\n|$)/gi,
+      /issued\s+by\s+(.+?)(?:\n|$)/gi,
+      /on\s+behalf\s+of\s+(.+?)(?:\n|$)/gi,
+    ];
+
+    agentPhrases.forEach(pattern => {
+      const matches = Array.from(text.matchAll(pattern));
+      for (const match of matches) {
+        // Capture full line, then intelligently trim sentence-ending punctuation
+        let companyName = match[1].trim()
+          .replace(/\s+/g, ' ')                     // Normalize whitespace
+          .replace(/\s*\.$/, '')                    // Remove trailing period (sentence end)
+          .replace(/\s*[,;:]\s*$/, '')              // Remove trailing comma/semicolon
+          .trim();
+        
+        // Stop at common sentence continuations (lowercase word after period indicates new sentence)
+        const sentenceBreak = companyName.match(/\.\s+[a-z]/);
+        if (sentenceBreak) {
+          companyName = companyName.substring(0, sentenceBreak.index! + 1).trim();
+        }
+        
+        if (companyName.length >= 5 && companyName.length <= 150) {
+          allCompanies.add(companyName);
+          // Priority 10 = highest (from agent phrases)
+          companiesWithContext.push({ name: companyName, hasExclusionHeader: false, priority: 10 });
+        }
+      }
+    });
 
     // Company name patterns - with AND without suffixes
     const companyPatternsWithSuffix = [
@@ -401,6 +436,25 @@ export class InvoiceMatchingEngine {
     
     // Pattern for capitalized names (likely company names) - relaxed to allow short names like "Dell", "B&Q"
     const capitalizedNamePattern = /^([A-Z][A-Za-z0-9&\s]{1,80})$/;
+    
+    // **NEW**: Filter out alphanumeric reference codes (e.g., "MEDUJE071611", "ABCD1234567")
+    // Reference codes have long consecutive digit runs (5+), unlike brand names like "WAREHOUSE24" (2 digits)
+    // This preserves legitimate brand names while filtering booking/reference codes
+    const isReferenceCode = (name: string): boolean => {
+      // Must be all uppercase with no spaces
+      if (name !== name.toUpperCase() || name.includes(' ')) {
+        return false;
+      }
+      // Must be 10+ characters (reference codes are long)
+      if (name.length < 10) {
+        return false;
+      }
+      // Must have a run of 5+ consecutive digits (the key discriminator)
+      // MEDUJE071611 has "071611" (6 digits) ✓ filtered
+      // WAREHOUSE24 has "24" (2 digits) ✗ not filtered
+      const hasLongDigitRun = /\d{5,}/.test(name);
+      return hasLongDigitRun;
+    };
 
     // Headers to EXCLUDE from Invoice From (these are customer/recipient/sender context)
     const exclusionHeaders = /(?:invoice\s*to|consignor|importer|exporter|sender|delivery)[:\s]*/i;
@@ -437,8 +491,15 @@ export class InvoiceMatchingEngine {
         const match = line.match(pattern);
         if (match && match[1].length >= 2 && match[1].length <= 100) {
           const companyName = match[1].trim();
+          
+          // **NEW**: Skip if this looks like a reference code
+          if (isReferenceCode(companyName)) {
+            return;  // Skip this match
+          }
+          
           allCompanies.add(companyName);
-          companiesWithContext.push({ name: companyName, hasExclusionHeader: currentExclusionState });
+          // Priority 5 = medium (company with suffix)
+          companiesWithContext.push({ name: companyName, hasExclusionHeader: currentExclusionState, priority: 5 });
           
           // Set customer name if under customer context
           if (currentCustomerState && !customerName) {
@@ -452,9 +513,12 @@ export class InvoiceMatchingEngine {
         const capMatch = line.match(capitalizedNamePattern);
         if (capMatch) {
           const companyName = capMatch[1].trim();
-          if (companyName.length >= 2) {
+          
+          // **NEW**: Skip if this looks like a reference code or process if valid
+          if (!isReferenceCode(companyName) && companyName.length >= 2) {
             allCompanies.add(companyName);
-            companiesWithContext.push({ name: companyName, hasExclusionHeader: currentExclusionState });
+            // Priority 1 = low (capitalized name without suffix)
+            companiesWithContext.push({ name: companyName, hasExclusionHeader: currentExclusionState, priority: 1 });
             
             if (currentCustomerState && !customerName) {
               customerName = companyName;
@@ -464,33 +528,32 @@ export class InvoiceMatchingEngine {
       }
     }
 
-    // Determine Invoice From: find company NOT under exclusion headers
-    // BUT: if a company under "Importer:" matches a known clearance agent/haulier, use it as supplier
+    // **NEW**: Improved supplier selection logic with database cross-referencing and priority
     let supplierName: string | undefined;
     
-    // First, check if any excluded company matches our clearance agents/hauliers
-    // This handles invoices where the agent appears under "Importer:" label
-    for (const company of companiesWithContext) {
-      if (company.hasExclusionHeader) {
-        const matchedServiceProvider = this.crossReferenceSupplierName(company.name);
-        if (matchedServiceProvider) {
-          // This excluded company is actually a service provider - use it as supplier
-          supplierName = matchedServiceProvider;
-          break;
-        }
+    // Strategy 1: Check ALL companies (including excluded ones) for database matches first
+    // Shipping lines/agents/hauliers take priority over exclusion rules
+    const companiesSortedByPriority = [...companiesWithContext].sort((a, b) => b.priority - a.priority);
+    
+    for (const company of companiesSortedByPriority) {
+      const matchedServiceProvider = this.crossReferenceSupplierName(company.name);
+      if (matchedServiceProvider) {
+        // Found a database match - use it regardless of exclusion headers
+        supplierName = matchedServiceProvider;
+        break;
       }
     }
     
-    // If no service provider found in excluded companies, use the standard logic
+    // Strategy 2: If no database match, pick highest priority company NOT under exclusion headers
     if (!supplierName) {
-      for (const company of companiesWithContext) {
+      for (const company of companiesSortedByPriority) {
         if (!company.hasExclusionHeader) {
           supplierName = company.name;
-          break; // Take the first one found without exclusion headers
+          break;
         }
       }
       
-      // Improve supplier name accuracy by cross-referencing against clearance agents and hauliers
+      // Still try to improve the name via cross-referencing (in case it's a partial match)
       if (supplierName) {
         const improvedName = this.crossReferenceSupplierName(supplierName);
         if (improvedName) {
