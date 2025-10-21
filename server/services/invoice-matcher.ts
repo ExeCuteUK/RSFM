@@ -838,12 +838,16 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Extract dates
+   * Extract dates (handles both numeric and text-based formats)
    */
   private extractDates(text: string): string[] {
     const patterns = [
       /\b(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4})\b/g,  // DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
       /\b(\d{4}[/.-]\d{1,2}[/.-]\d{1,2})\b/g,    // YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
+      // Text-based formats: "Oct 19, 2025", "October 19, 2025"
+      /\b((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4})\b/gi,
+      // Day-first text formats: "19 Oct 2025", "19th October 2025"
+      /\b(\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?,?\s+\d{4})\b/gi,
     ];
 
     const dates = new Set<string>();
@@ -858,10 +862,48 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Parse a date string to Date object (handles various formats)
+   * Parse a date string to Date object (handles various formats including text-based)
    */
   private parseDate(dateStr: string): Date | null {
     try {
+      // Month name mapping
+      const monthMap: Record<string, string> = {
+        'jan': '01', 'january': '01',
+        'feb': '02', 'february': '02',
+        'mar': '03', 'march': '03',
+        'apr': '04', 'april': '04',
+        'may': '05',
+        'jun': '06', 'june': '06',
+        'jul': '07', 'july': '07',
+        'aug': '08', 'august': '08',
+        'sep': '09', 'sept': '09', 'september': '09',
+        'oct': '10', 'october': '10',
+        'nov': '11', 'november': '11',
+        'dec': '12', 'december': '12',
+      };
+
+      // Try text-based format: "Oct 19, 2025", "October 19, 2025"
+      const textMonthFirst = dateStr.match(/^([a-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})$/i);
+      if (textMonthFirst) {
+        const [, monthName, day, year] = textMonthFirst;
+        const month = monthMap[monthName.toLowerCase()];
+        if (month) {
+          const parsed = new Date(`${year}-${month}-${day.padStart(2, '0')}`);
+          if (!isNaN(parsed.getTime())) return parsed;
+        }
+      }
+
+      // Try day-first text format: "19 Oct 2025", "19th October 2025"
+      const textDayFirst = dateStr.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]+)\.?,?\s+(\d{4})$/i);
+      if (textDayFirst) {
+        const [, day, monthName, year] = textDayFirst;
+        const month = monthMap[monthName.toLowerCase()];
+        if (month) {
+          const parsed = new Date(`${year}-${month}-${day.padStart(2, '0')}`);
+          if (!isNaN(parsed.getTime())) return parsed;
+        }
+      }
+
       // Try DD/MM/YYYY, DD-MM-YYYY, or DD.MM.YYYY
       const dmyMatch = dateStr.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
       if (dmyMatch) {
