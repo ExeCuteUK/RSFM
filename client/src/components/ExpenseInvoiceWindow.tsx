@@ -111,6 +111,33 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
     }
   }, [invoices.length])
 
+  // Validate pre-filled job references when data loads
+  useEffect(() => {
+    // Only run if we have job data loaded
+    if (importShipments.length === 0 && exportShipments.length === 0 && customClearances.length === 0) {
+      return
+    }
+
+    // Validate any invoices that have a jobRef value
+    const newJobInfoMap: { [invoiceId: string]: JobInfo } = {}
+    let hasUpdates = false
+
+    invoices.forEach(invoice => {
+      if (invoice.jobRef && invoice.jobRef.length >= 5) {
+        const jobInfo = getJobInfo(invoice.jobRef)
+        newJobInfoMap[invoice.id] = jobInfo
+        hasUpdates = true
+      }
+    })
+
+    if (hasUpdates) {
+      setJobInfoMap(prev => ({
+        ...prev,
+        ...newJobInfoMap
+      }))
+    }
+  }, [importShipments, exportShipments, customClearances, importCustomers, exportCustomers])
+
   const createMutation = useMutation({
     mutationFn: async (data: { invoices: any[] }) => {
       const response = await apiRequest('POST', '/api/purchase-invoices/batch', {
