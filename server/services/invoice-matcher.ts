@@ -516,7 +516,7 @@ export class InvoiceMatchingEngine {
           const companyName = capMatch[1].trim();
           
           // Filter out common OCR artifacts and non-company text
-          const isOcrArtifact = /^(Page|Invoice Number|Customer Code|Tax|Payment|Due Date|Total|Bill|Receipt|Statement|Document)/i.test(companyName);
+          const isOcrArtifact = /^(Page|Invoice Number|Customer Code|Tax|Payment|Due Date|Total|Bill|Receipt|Statement|Document|Import Invoice|Export Invoice|Commercial Invoice)/i.test(companyName);
           
           // **NEW**: Skip if this looks like a reference code or OCR artifact
           // Allow names >= 3 characters to capture short logistics brands (APL, DSV, OOCL, MSC, etc.)
@@ -533,44 +533,38 @@ export class InvoiceMatchingEngine {
       }
     }
 
-    // **NEW**: Improved supplier selection logic with database cross-referencing and priority
+    // **DATABASE MATCH = ABSOLUTE PRIORITY**
+    // If ANY company name matches Shipping Lines, Clearance Agents, or Hauliers database, use it
     let supplierName: string | undefined;
     
     // Strategy 1: Check ALL companies for database matches and find the BEST match
-    // (not just the first one with highest priority)
-    const companiesSortedByPriority = [...companiesWithContext].sort((a, b) => b.priority - a.priority);
+    // Database matches have 100% priority regardless of extraction context
+    let bestDatabaseMatch: { name: string; dbName: string; score: number } | undefined;
     
-    let bestMatch: { name: string; dbName: string; score: number } | undefined;
-    
-    for (const company of companiesSortedByPriority) {
+    for (const company of companiesWithContext) {
       const result = this.crossReferenceSupplierNameWithScore(company.name);
       if (result) {
-        // Found a database match - but keep checking to find the best one
-        if (!bestMatch || result.score > bestMatch.score) {
-          bestMatch = { name: company.name, dbName: result.dbName, score: result.score };
+        // Found a database match - keep checking to find the best one by score
+        if (!bestDatabaseMatch || result.score > bestDatabaseMatch.score) {
+          bestDatabaseMatch = { name: company.name, dbName: result.dbName, score: result.score };
         }
       }
     }
     
-    if (bestMatch) {
-      // Use the best database match found
-      supplierName = bestMatch.dbName;
+    // If we found ANY database match, use it (100% priority)
+    if (bestDatabaseMatch) {
+      supplierName = bestDatabaseMatch.dbName;
     }
     
-    // Strategy 2: If no database match, pick highest priority company NOT under exclusion headers
+    // Strategy 2: Only if NO database match, fall back to extraction priority
     if (!supplierName) {
+      const companiesSortedByPriority = [...companiesWithContext].sort((a, b) => b.priority - a.priority);
+      
+      // Pick highest priority company NOT under exclusion headers
       for (const company of companiesSortedByPriority) {
         if (!company.hasExclusionHeader) {
           supplierName = company.name;
           break;
-        }
-      }
-      
-      // Still try to improve the name via cross-referencing (in case it's a partial match)
-      if (supplierName) {
-        const result = this.crossReferenceSupplierNameWithScore(supplierName);
-        if (result) {
-          supplierName = result.dbName;
         }
       }
     }
@@ -811,6 +805,12 @@ export class InvoiceMatchingEngine {
       }
     });
 
+    // **FIX**: If no net total found or if it's negative (and not a credit note), use gross total
+    // Many invoices only have "Total Payable Amount" without separate Net/VAT breakdown
+    if (!netTotal || (parseFloat(netTotal) < 0 && grossTotal && parseFloat(grossTotal) > 0)) {
+      netTotal = grossTotal;
+    }
+
     return {
       netTotal,
       vat,
@@ -846,6 +846,7 @@ export class InvoiceMatchingEngine {
   /**
    * Extract dates (handles both numeric and text-based formats)
    * Filters out invalid dates like sort codes
+   * Returns dates in DD/MM/YY format
    */
   private extractDates(text: string): string[] {
     const patterns = [
@@ -874,7 +875,11 @@ export class InvoiceMatchingEngine {
           // Only include dates within reasonable range (3 years ago to 2 years ahead)
           // This filters out sort codes like "18-50-08" which parse to year 2018
           if (parsed >= threeYearsAgo && parsed <= twoYearsAhead) {
-            dates.add(dateStr);
+            // Convert to DD/MM/YY format (British format as required)
+            const day = parsed.getDate().toString().padStart(2, '0');
+            const month = (parsed.getMonth() + 1).toString().padStart(2, '0');
+            const year = parsed.getFullYear().toString().slice(-2);
+            dates.add(`${day}/${month}/${year}`);
           }
         }
       }
