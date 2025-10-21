@@ -316,10 +316,11 @@ export function ClearanceWorkGrid() {
       return greenBg
     }
 
-    // Agent Advised column: green only if BOTH statuses are 3
+    // Agent Advised column: green if BOTH statuses are 3 OR if Inventory Linked and CC Agent advised
     if (fieldName === "agentAdvised") {
       const bothComplete = clearance.adviseAgentStatusIndicator === 3 && clearance.sendHaulierEadStatusIndicator === 3
-      return bothComplete ? greenBg : yellowBg
+      const inventoryLinkedComplete = clearance.clearanceType === "Inventory Linked" && clearance.adviseAgentStatusIndicator === 3
+      return (bothComplete || inventoryLinkedComplete) ? greenBg : yellowBg
     }
 
     // MRN Number column: yellow if empty, green if has value
@@ -410,7 +411,9 @@ export function ClearanceWorkGrid() {
 
     if (fieldName === "agentAdvised") {
       const ccAgentText = clearance.adviseAgentStatusIndicator === 3 ? "CC Agent : Yes" : "CC Agent : No"
-      const haulierText = clearance.sendHaulierEadStatusIndicator === 3 ? "Haulier : Yes" : "Haulier : No"
+      const secondLineText = clearance.clearanceType === "Inventory Linked" 
+        ? "Inventory Linked" 
+        : (clearance.sendHaulierEadStatusIndicator === 3 ? "Haulier : Yes" : "Haulier : No")
       
       return (
         <td 
@@ -420,7 +423,7 @@ export function ClearanceWorkGrid() {
         >
           <div className="text-xs leading-tight">
             <div>{ccAgentText}</div>
-            <div>{haulierText}</div>
+            <div>{secondLineText}</div>
           </div>
         </td>
       )
