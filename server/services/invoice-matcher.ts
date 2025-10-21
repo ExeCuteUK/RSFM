@@ -47,6 +47,17 @@ export interface InvoiceAnalysis {
   rawText: string;
 }
 
+/**
+ * Searchable database built from filtered jobs
+ */
+interface SearchableDatabase {
+  companyNames: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
+  containerNumbers: Map<string, { jobRef: number; jobType: string }[]>;
+  jobReferences: Map<string, { jobRef: number; jobType: string }[]>;
+  customerReferences: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
+  weights: Map<number, { jobRef: number; jobType: string }[]>;
+}
+
 export class InvoiceMatchingEngine {
   private jobData: JobData;
 
@@ -589,6 +600,14 @@ export class InvoiceMatchingEngine {
     console.log(`  Export Shipments: ${exportShipments.length} → ${filteredExports.length}`);
     console.log(`  Custom Clearances: ${customClearances.length} → ${filteredClearances.length}`);
 
+    // Build searchable database from filtered jobs
+    const searchDb = this.buildSearchableDatabase(
+      filteredImports,
+      filteredExports,
+      filteredClearances,
+      [...importCustomers, ...exportCustomers]
+    );
+
     // Check filtered import shipments
     console.log(`\nChecking ${filteredImports.length} filtered import shipments...`);
     filteredImports.forEach(job => {
@@ -635,6 +654,160 @@ export class InvoiceMatchingEngine {
     oneMonthAfter.setMonth(oneMonthAfter.getMonth() + 1);
 
     return `${threeMonthsBefore.toISOString().split('T')[0]} to ${oneMonthAfter.toISOString().split('T')[0]}`;
+  }
+
+  /**
+   * Build searchable database from filtered jobs
+   * Extracts all searchable values (company names, containers, references, weights)
+   * from jobs so we can search for them in the OCR text
+   */
+  private buildSearchableDatabase(
+    importShipments: ImportShipment[],
+    exportShipments: ExportShipment[],
+    customClearances: CustomClearance[],
+    customers: (ImportCustomer | ExportCustomer)[]
+  ): SearchableDatabase {
+    const db: SearchableDatabase = {
+      companyNames: new Map(),
+      containerNumbers: new Map(),
+      jobReferences: new Map(),
+      customerReferences: new Map(),
+      weights: new Map(),
+    };
+
+    // Helper to add to map
+    const addToMap = <T>(map: Map<string, T[]>, key: string, value: T) => {
+      const normalized = key.toLowerCase().trim();
+      if (!map.has(normalized)) {
+        map.set(normalized, []);
+      }
+      map.get(normalized)!.push(value);
+    };
+
+    const addToWeightMap = (map: Map<number, any[]>, weight: number, value: any) => {
+      if (!map.has(weight)) {
+        map.set(weight, []);
+      }
+      map.get(weight)!.push(value);
+    };
+
+    // Process import shipments
+    importShipments.forEach(job => {
+      const jobRef = job.jobRef;
+      const jobType = 'import';
+
+      // Job reference
+      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType });
+
+      // Container/Vehicle numbers
+      if (job.trailerOrContainerNumber) {
+        addToMap(db.containerNumbers, job.trailerOrContainerNumber, { jobRef, jobType });
+      }
+
+      // Customer references
+      if (job.customerReferenceNumber) {
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' });
+      }
+      if (job.collectionReference) {
+        addToMap(db.customerReferences, job.collectionReference, { jobRef, jobType, fieldName: 'Collection Reference' });
+      }
+      if (job.haulierReference) {
+        addToMap(db.customerReferences, job.haulierReference, { jobRef, jobType, fieldName: 'Haulier Reference' });
+      }
+      if (job.deliveryReference) {
+        addToMap(db.customerReferences, job.deliveryReference, { jobRef, jobType, fieldName: 'Delivery Reference' });
+      }
+
+      // Weights
+      if (job.weight) {
+        const weight = parseFloat(job.weight.toString());
+        if (!isNaN(weight)) {
+          addToWeightMap(db.weights, weight, { jobRef, jobType });
+        }
+      }
+
+      // Company names
+      if (job.importCustomerId) {
+        const customer = customers.find(c => c.id === job.importCustomerId);
+        if (customer) {
+          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
+        }
+      }
+    });
+
+    // Process export shipments
+    exportShipments.forEach(job => {
+      const jobRef = job.jobRef;
+      const jobType = 'export';
+
+      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType });
+
+      if (job.trailerNo) {
+        addToMap(db.containerNumbers, job.trailerNo, { jobRef, jobType });
+      }
+
+      if (job.customerReferenceNumber) {
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' });
+      }
+
+      if (job.weight) {
+        const weight = parseFloat(job.weight.toString());
+        if (!isNaN(weight)) {
+          addToWeightMap(db.weights, weight, { jobRef, jobType });
+        }
+      }
+
+      // Export shipments have exportCustomerId
+      const customerId = (job as any).exportCustomerId;
+      if (customerId) {
+        const customer = customers.find(c => c.id === customerId);
+        if (customer) {
+          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
+        }
+      }
+    });
+
+    // Process custom clearances
+    customClearances.forEach(job => {
+      const jobRef = job.jobRef;
+      const jobType = 'clearance';
+
+      addToMap(db.jobReferences, jobRef.toString(), { jobRef, jobType });
+
+      if (job.containerShipment) {
+        addToMap(db.containerNumbers, job.containerShipment, { jobRef, jobType });
+      }
+
+      if (job.customerReferenceNumber) {
+        addToMap(db.customerReferences, job.customerReferenceNumber, { jobRef, jobType, fieldName: 'Customer Reference' });
+      }
+
+      // Custom clearances have grossWeight
+      const grossWeight = (job as any).grossWeight;
+      if (grossWeight) {
+        const weight = parseFloat(grossWeight.toString());
+        if (!isNaN(weight)) {
+          addToWeightMap(db.weights, weight, { jobRef, jobType });
+        }
+      }
+
+      if (job.importCustomerId) {
+        const customer = customers.find(c => c.id === job.importCustomerId);
+        if (customer) {
+          addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
+        }
+      }
+    });
+
+    console.log('\n--- SEARCHABLE DATABASE BUILT ---');
+    console.log(`Company Names: ${db.companyNames.size}`);
+    console.log(`Container Numbers: ${db.containerNumbers.size}`);
+    console.log(`Job References: ${db.jobReferences.size}`);
+    console.log(`Customer References: ${db.customerReferences.size}`);
+    console.log(`Weights: ${db.weights.size}`);
+    console.log('---\n');
+
+    return db;
   }
 
   /**
