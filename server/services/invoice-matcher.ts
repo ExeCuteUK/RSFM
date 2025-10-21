@@ -209,20 +209,32 @@ export class InvoiceMatchingEngine {
     const triggerWords = /(?:container|vehicle|truck|trailer|flight)(?:\/container)?\s+no/gi;
     const triggerMatches = Array.from(text.matchAll(triggerWords));
     
+    // Common table header words to exclude
+    const excludeWords = /^(seal|number|package|b\/l|final|destination|marks|gross|volume|description|kind|packages|goods|cbm|kgs|no)$/i;
+    
     for (const triggerMatch of triggerMatches) {
       const startIndex = triggerMatch.index || 0;
       const searchRange = text.substring(startIndex, startIndex + 200); // Look ahead 200 chars
       
       // Look for alphanumeric sequences (potential container/vehicle numbers)
-      const candidatePattern = /\b([A-Z0-9]{2,}\s?[A-Z0-9]{2,}(?:\s?[A-Z0-9]{2,})?)\b/g;
+      // Match single continuous strings or spaced groups
+      const candidatePattern = /\b([A-Z0-9]{4,}(?:\s?[A-Z0-9]{2,})?)\b/gi;
       const candidates = Array.from(searchRange.matchAll(candidatePattern));
       
       for (const candidate of candidates) {
         const value = candidate[1].replace(/\s/g, '').toUpperCase();
-        // Must have mix of letters and numbers, be reasonable length, and not be a postcode
+        
+        // Skip if it matches common header words
+        if (excludeWords.test(value)) {
+          continue;
+        }
+        
+        // Must have mix of letters and numbers, be reasonable length, not be a postcode
+        // AND should either start with digits (common for truck reg) or be all-caps with digits mixed in
         if (value.length >= 4 && value.length <= 20 && 
             /[A-Z]/.test(value) && /\d/.test(value) && 
-            !this.isUKPostcode(value)) {
+            !this.isUKPostcode(value) &&
+            (/^\d/.test(value) || (/^[A-Z]{2,4}\d/.test(value)))) {  // Starts with digit OR letters+digit pattern
           containers.add(value);
         }
       }
