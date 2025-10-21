@@ -745,6 +745,23 @@ export class InvoiceMatchingEngine {
     let grossTotal: string | undefined;
     const allAmounts = new Set<string>();
 
+    // DEBUG: Log text around TOTAL DEBIT/CREDIT if present
+    const debitCreditIndex = text.toLowerCase().indexOf('total debit');
+    const creditIndex = text.toLowerCase().indexOf('total credit');
+    if (debitCreditIndex !== -1) {
+      const start = Math.max(0, debitCreditIndex - 50);
+      const end = Math.min(text.length, debitCreditIndex + 200);
+      console.log('\n=== DEBUG: Text around TOTAL DEBIT ===');
+      console.log(text.substring(start, end));
+      console.log('=== END DEBUG ===\n');
+    } else if (creditIndex !== -1) {
+      const start = Math.max(0, creditIndex - 50);
+      const end = Math.min(text.length, creditIndex + 200);
+      console.log('\n=== DEBUG: Text around TOTAL CREDIT ===');
+      console.log(text.substring(start, end));
+      console.log('=== END DEBUG ===\n');
+    }
+
     // Net total patterns - handle both positive and negative amounts
     const netPatterns = [
       /(?:net|sub)\s*total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
