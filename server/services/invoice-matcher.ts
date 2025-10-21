@@ -407,6 +407,9 @@ export class InvoiceMatchingEngine {
     agentPhrases.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
+        // DEBUG: Log the raw captured text
+        console.log('[AGENT PHRASE DEBUG] Raw capture:', JSON.stringify(match[1]));
+        
         // Capture full line, then intelligently trim sentence-ending punctuation
         let companyName = match[1].trim()
           .replace(/\s+/g, ' ')                     // Normalize whitespace
@@ -414,16 +417,20 @@ export class InvoiceMatchingEngine {
           .replace(/\s*[,;:]\s*$/, '')              // Remove trailing comma/semicolon
           .trim();
         
+        console.log('[AGENT PHRASE DEBUG] After cleanup:', JSON.stringify(companyName));
+        
         // Stop at common sentence continuations (lowercase word after period indicates new sentence)
         const sentenceBreak = companyName.match(/\.\s+[a-z]/);
         if (sentenceBreak) {
           companyName = companyName.substring(0, sentenceBreak.index! + 1).trim();
+          console.log('[AGENT PHRASE DEBUG] After sentence break trim:', JSON.stringify(companyName));
         }
         
         if (companyName.length >= 5 && companyName.length <= 150) {
           allCompanies.add(companyName);
           // Priority 10 = highest (from agent phrases)
           companiesWithContext.push({ name: companyName, hasExclusionHeader: false, priority: 10 });
+          console.log('[AGENT PHRASE DEBUG] Added company:', JSON.stringify(companyName));
         }
       }
     });
