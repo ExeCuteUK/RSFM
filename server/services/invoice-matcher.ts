@@ -302,29 +302,39 @@ export class InvoiceMatchingEngine {
     const matches: InvoiceMatchResult[] = [];
     const { importShipments, exportShipments, customClearances, importCustomers, exportCustomers } = this.jobData;
 
+    console.log('\n--- CHECKING JOBS FOR MATCHES ---');
+
     // Check import shipments
+    console.log(`\nChecking ${importShipments.length} import shipments...`);
     importShipments.forEach(job => {
-      const result = this.scoreJob(job, 'import', extractedData, importCustomers);
+      const result = this.scoreJob(job, 'import', extractedData, importCustomers, true);
       if (result.confidence > 0) {
         matches.push(result);
+        console.log(`  ✓ Job #${job.jobRef} matched with confidence ${result.confidence}`);
       }
     });
 
     // Check export shipments
+    console.log(`\nChecking ${exportShipments.length} export shipments...`);
     exportShipments.forEach(job => {
-      const result = this.scoreJob(job, 'export', extractedData, exportCustomers);
+      const result = this.scoreJob(job, 'export', extractedData, exportCustomers, true);
       if (result.confidence > 0) {
         matches.push(result);
+        console.log(`  ✓ Job #${job.jobRef} matched with confidence ${result.confidence}`);
       }
     });
 
     // Check custom clearances
+    console.log(`\nChecking ${customClearances.length} custom clearances...`);
     customClearances.forEach(job => {
-      const result = this.scoreJob(job, 'clearance', extractedData, [...importCustomers, ...exportCustomers]);
+      const result = this.scoreJob(job, 'clearance', extractedData, [...importCustomers, ...exportCustomers], true);
       if (result.confidence > 0) {
         matches.push(result);
+        console.log(`  ✓ Job #${job.jobRef} matched with confidence ${result.confidence}`);
       }
     });
+
+    console.log('--- END JOB MATCHING ---\n');
 
     return matches;
   }
@@ -336,13 +346,22 @@ export class InvoiceMatchingEngine {
     job: ImportShipment | ExportShipment | CustomClearance,
     jobType: 'import' | 'export' | 'clearance',
     extractedData: InvoiceAnalysis['extractedData'],
-    customers: (ImportCustomer | ExportCustomer)[]
+    customers: (ImportCustomer | ExportCustomer)[],
+    debug = false
   ): InvoiceMatchResult {
     const matchedFields: InvoiceMatchResult['matchedFields'] = [];
     let totalScore = 0;
 
+    if (debug) {
+      console.log(`\n  Checking Job #${job.jobRef} (${jobType}):`);
+    }
+
     // Job reference match (very high confidence)
-    if (extractedData.jobReferences.includes(job.jobRef.toString())) {
+    const jobRefMatch = extractedData.jobReferences.includes(job.jobRef.toString());
+    if (debug) {
+      console.log(`    Job Ref ${job.jobRef} in extracted refs ${JSON.stringify(extractedData.jobReferences)}? ${jobRefMatch}`);
+    }
+    if (jobRefMatch) {
       matchedFields.push({ field: 'Job Reference', value: job.jobRef.toString(), score: 50 });
       totalScore += 50;
     }
@@ -353,6 +372,9 @@ export class InvoiceMatchingEngine {
       const containerMatch = extractedData.containerNumbers.some(
         c => c.replace(/\s/g, '').toUpperCase() === jobContainer.replace(/\s/g, '').toUpperCase()
       );
+      if (debug) {
+        console.log(`    Container ${jobContainer} in extracted containers ${JSON.stringify(extractedData.containerNumbers)}? ${containerMatch}`);
+      }
       if (containerMatch) {
         matchedFields.push({ field: 'Container Number', value: jobContainer, score: 40 });
         totalScore += 40;
@@ -366,6 +388,9 @@ export class InvoiceMatchingEngine {
         r => r.toLowerCase().includes(jobRef.toLowerCase()) ||
              jobRef.toLowerCase().includes(r.toLowerCase())
       );
+      if (debug) {
+        console.log(`    Customer Ref ${jobRef} matches extracted refs ${JSON.stringify(extractedData.customerReferences)}? ${refMatch}`);
+      }
       if (refMatch) {
         matchedFields.push({ field: 'Customer Reference', value: jobRef, score: 35 });
         totalScore += 35;
@@ -379,6 +404,9 @@ export class InvoiceMatchingEngine {
         const extractedWeight = parseFloat(w);
         return Math.abs(extractedWeight - weightValue) < weightValue * 0.1; // 10% tolerance
       });
+      if (debug) {
+        console.log(`    Weight ${weightValue} matches extracted weights ${JSON.stringify(extractedData.weights)}? ${weightMatch}`);
+      }
       if (weightMatch) {
         matchedFields.push({ field: 'Weight', value: job.weight.toString(), score: 20 });
         totalScore += 20;
@@ -392,6 +420,9 @@ export class InvoiceMatchingEngine {
         const extractedWeight = parseFloat(w);
         return Math.abs(extractedWeight - weightValue) < weightValue * 0.1;
       });
+      if (debug) {
+        console.log(`    Gross Weight ${weightValue} matches extracted weights ${JSON.stringify(extractedData.weights)}? ${weightMatch}`);
+      }
       if (weightMatch) {
         matchedFields.push({ field: 'Gross Weight', value: job.grossWeight.toString(), score: 20 });
         totalScore += 20;
@@ -411,11 +442,18 @@ export class InvoiceMatchingEngine {
           const similarity = this.stringSimilarity(c.toLowerCase(), customer.companyName.toLowerCase());
           return similarity > 0.6;
         });
+        if (debug) {
+          console.log(`    Company Name ${customer.companyName} matches extracted companies ${JSON.stringify(extractedData.companyNames)}? ${companyMatch}`);
+        }
         if (companyMatch) {
           matchedFields.push({ field: 'Company Name', value: customer.companyName, score: 15 });
           totalScore += 15;
         }
       }
+    }
+
+    if (debug && totalScore > 0) {
+      console.log(`    → Final Score: ${totalScore} (${matchedFields.length} fields matched)`);
     }
 
     return {

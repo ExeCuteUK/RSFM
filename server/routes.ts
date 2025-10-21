@@ -3549,6 +3549,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysis = matcher.analyzeInvoice(extractedText);
 
+      // Debug logging
+      console.log('\n=== INVOICE MATCHING DEBUG ===');
+      console.log('Filename:', file.originalname);
+      console.log('\nOCR Extracted Text (first 500 chars):');
+      console.log(extractedText.substring(0, 500));
+      console.log('\nExtracted Data:');
+      console.log('  Job References:', analysis.extractedData.jobReferences);
+      console.log('  Container Numbers:', analysis.extractedData.containerNumbers);
+      console.log('  Truck Numbers:', analysis.extractedData.truckNumbers);
+      console.log('  Customer References:', analysis.extractedData.customerReferences);
+      console.log('  Company Names:', analysis.extractedData.companyNames);
+      console.log('  Weights:', analysis.extractedData.weights);
+      console.log('  Invoice Numbers:', analysis.extractedData.invoiceNumbers);
+      console.log('  Dates:', analysis.extractedData.dates);
+      console.log('\nJobs Checked:');
+      console.log('  Import Shipments:', importShipments.length);
+      console.log('  Export Shipments:', exportShipments.length);
+      console.log('  Custom Clearances:', customClearances.length);
+      console.log('\nMatches Found:', analysis.matches.length);
+      if (analysis.matches.length > 0) {
+        analysis.matches.forEach((match, idx) => {
+          console.log(`  Match ${idx + 1}: Job #${match.jobRef} (${match.jobType}) - Confidence: ${match.confidence}`);
+          match.matchedFields.forEach(field => {
+            console.log(`    - ${field.field}: ${field.value} (score: ${field.score})`);
+          });
+        });
+      }
+      console.log('=== END DEBUG ===\n');
+
       res.json({
         success: true,
         filename: file.originalname,
