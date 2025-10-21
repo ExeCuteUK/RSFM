@@ -3601,9 +3601,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fs.mkdirSync(outputDir, { recursive: true });
 
             try {
-              // Convert PDF pages to PNG images using pdftoppm
+              // Convert PDF pages to PNG images using pdftoppm with higher DPI for better OCR
               const outputPrefix = path.join(outputDir, 'page');
-              const command = `pdftoppm -png "${tempFilePath}" "${outputPrefix}"`;
+              // Use 300 DPI for better text recognition, especially in tables
+              const command = `pdftoppm -png -r 300 "${tempFilePath}" "${outputPrefix}"`;
               
               console.log('Converting PDF to images...');
               await execAsync(command);
@@ -3617,6 +3618,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Use Tesseract.js to OCR each image
               const { createWorker } = await import("tesseract.js");
               const worker = await createWorker('eng');
+              
+              // Configure Tesseract for better table recognition
+              await worker.setParameters({
+                tessedit_pageseg_mode: '6',  // Assume single uniform block of text (better for tables)
+              });
+              
               const pageTexts: string[] = [];
 
               for (const imagePath of imageFiles) {
@@ -3661,6 +3668,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const worker = await createWorker('eng');
 
         try {
+          // Configure Tesseract for better table recognition
+          await worker.setParameters({
+            tessedit_pageseg_mode: '6',  // Assume single uniform block of text (better for tables)
+          });
+          
           const { data: { text } } = await worker.recognize(fileBuffer);
           await worker.terminate();
           extractedText = text;
