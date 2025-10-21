@@ -745,23 +745,6 @@ export class InvoiceMatchingEngine {
     let grossTotal: string | undefined;
     const allAmounts = new Set<string>();
 
-    // DEBUG: Log text around TOTAL DEBIT/CREDIT if present
-    const debitCreditIndex = text.toLowerCase().indexOf('total debit');
-    const creditIndex = text.toLowerCase().indexOf('total credit');
-    if (debitCreditIndex !== -1) {
-      const start = Math.max(0, debitCreditIndex - 50);
-      const end = Math.min(text.length, debitCreditIndex + 200);
-      console.log('\n=== DEBUG: Text around TOTAL DEBIT ===');
-      console.log(text.substring(start, end));
-      console.log('=== END DEBUG ===\n');
-    } else if (creditIndex !== -1) {
-      const start = Math.max(0, creditIndex - 50);
-      const end = Math.min(text.length, creditIndex + 200);
-      console.log('\n=== DEBUG: Text around TOTAL CREDIT ===');
-      console.log(text.substring(start, end));
-      console.log('=== END DEBUG ===\n');
-    }
-
     // Net total patterns - handle both positive and negative amounts
     const netPatterns = [
       /(?:net|sub)\s*total[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
@@ -787,10 +770,10 @@ export class InvoiceMatchingEngine {
       // Highest priority: "Total Payable Amount", "Total Net Amount"
       /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
-      // ZIM table format: "TOTAL DEBIT               GBP                    355.00"
-      // Allow whitespace/tabs/newlines and incidental digits (row numbers) between components
-      // Limit to ~100 chars between label and currency, and currency to amount
-      /total\s+(?:debit|credit)[\s\S]{0,100}?(?:gbp|eur|usd)[\s\S]{0,100}?(\d+[\.,]\d{2})\b/gi,
+      // ZIM table format REVERSE: Amount appears BEFORE "TOTAL DEBIT" label
+      // Pattern: "355.00 GBP" followed by optional content, then "TOTAL DEBIT"
+      // Lookbehind would be ideal but JavaScript has limited support, so we capture and validate
+      /(\d+[\.,]\d{2})\s+(?:gbp|eur|usd)[\s\S]{0,100}?total\s+(?:debit|credit)/gi,
       /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // Gondrand format: "Total      (GBP) :        295.00"
       /total\s*\([^\)]+\)\s*[:]*\s*(-?[\d,]+\.?\d{0,2})/gi,
