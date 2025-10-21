@@ -3471,13 +3471,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const alphanumeric = letters + digits;
     const specialChars = text.length - alphanumeric;
     
-    // If more than 40% special characters, it's likely gibberish
+    // Check 1: If more than 35% special characters (stricter), it's likely gibberish
     const specialCharRatio = specialChars / text.length;
-    if (specialCharRatio > 0.4) return true;
+    if (specialCharRatio > 0.35) return true;
     
-    // If very few actual words (less than 5% letters), it's gibberish
+    // Check 2: If very few actual words (less than 10% letters), it's gibberish
     const letterRatio = letters / text.length;
-    if (letterRatio < 0.05) return true;
+    if (letterRatio < 0.10) return true;
+    
+    // Check 3: Look for common OCR failure patterns
+    const ocrFailurePatterns = [
+      /I\.I\.I/,           // Repeated I.I.I pattern
+      /Oo\s+Oo/,           // Repeated Oo pattern
+      /\[[\w\d]{1,3}\]/g,  // Excessive bracketed short sequences like [14], [i]
+      /[<>=]{2,}/,         // Multiple comparison operators
+      /-k\s+-k/,           // Repeated -k pattern
+      /ju\s+oO/,           // Common gibberish combos
+    ];
+    
+    for (const pattern of ocrFailurePatterns) {
+      if (pattern.test(text)) {
+        console.log(`Gibberish detected: pattern ${pattern} found`);
+        return true;
+      }
+    }
+    
+    // Check 4: Excessive brackets overall (common in image-based PDF OCR failures)
+    const brackets = (text.match(/[\[\]]/g) || []).length;
+    if (brackets > text.length * 0.05) {  // More than 5% brackets
+      console.log(`Gibberish detected: ${brackets} brackets in text (${(brackets / text.length * 100).toFixed(1)}%)`);
+      return true;
+    }
+    
+    // Check 5: Too many single-character "words" separated by spaces
+    const words = text.split(/\s+/);
+    const singleCharWords = words.filter(w => w.length === 1 && /[a-zA-Z]/.test(w)).length;
+    if (words.length > 10 && singleCharWords / words.length > 0.3) {
+      console.log(`Gibberish detected: ${singleCharWords}/${words.length} single-char words (${(singleCharWords / words.length * 100).toFixed(1)}%)`);
+      return true;
+    }
     
     return false;
   }
