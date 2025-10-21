@@ -2,9 +2,11 @@ import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, Eye } from 'lucide-react';
+import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, Eye, FilePlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import { useWindowManager } from '@/contexts/WindowManagerContext';
+import { format, parse } from 'date-fns';
 
 interface MatchedField {
   field: string;
@@ -55,6 +57,7 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
   const [filename, setFilename] = useState<string>('');
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { openWindow } = useWindowManager();
 
   // Format date as DD/MM/YY
   const formatDate = (dateString: string): string => {
@@ -173,12 +176,70 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
 
   const navigateToJob = (match: InvoiceMatch) => {
     if (match.jobType === 'import') {
-      setLocation(`/import-shipments?highlight=${match.jobRef}`);
+      setLocation(`/import-shipments?search=${match.jobRef}`);
     } else if (match.jobType === 'export') {
-      setLocation(`/export-shipments?highlight=${match.jobRef}`);
+      setLocation(`/export-shipments?search=${match.jobRef}`);
     } else {
-      setLocation(`/custom-clearances?highlight=${match.jobRef}`);
+      setLocation(`/custom-clearances?search=${match.jobRef}`);
     }
+  };
+
+  const addToJobFile = (match: InvoiceMatch) => {
+    if (!analysis) return;
+
+    // Parse extracted date with common formats
+    const parseExtractedDate = (dateStr: string): string => {
+      if (!dateStr) return '';
+      
+      try {
+        // Try common date formats
+        const formats = [
+          'dd/MM/yyyy',
+          'dd/MM/yy',
+          'dd-MM-yyyy',
+          'dd-MM-yy',
+          'yyyy-MM-dd',
+          'MM/dd/yyyy',
+          'MM/dd/yy'
+        ];
+        
+        for (const fmt of formats) {
+          try {
+            const parsed = parse(dateStr, fmt, new Date());
+            if (!isNaN(parsed.getTime())) {
+              return format(parsed, 'yyyy-MM-dd');
+            }
+          } catch {}
+        }
+        
+        // Fallback to standard Date parsing
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          return format(date, 'yyyy-MM-dd');
+        }
+      } catch {}
+      
+      return '';
+    };
+
+    // Prepare initial data for the expense invoice window
+    const initialData = {
+      jobRef: match.jobRef.toString(),
+      companyName: analysis.extractedData.supplierName || '',
+      invoiceNumber: analysis.extractedData.invoiceNumbers[0] || '',
+      invoiceDate: parseExtractedDate(analysis.extractedData.dates[0] || ''),
+      invoiceAmount: analysis.extractedData.amounts.netTotal 
+        ? analysis.extractedData.amounts.netTotal.replace(/[^0-9.\-]/g, '') // Keep minus sign for credit notes
+        : ''
+    };
+
+    // Open the expense invoice window with pre-populated data
+    openWindow({
+      id: `expense-invoice-${Date.now()}`,
+      type: 'expense-invoice',
+      title: 'Add Batch Invoices / Credits',
+      payload: { initialData }
+    });
   };
 
 
@@ -282,15 +343,26 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
                       <span className="font-semibold text-sm">
                         Job #{match.jobRef}
                       </span>
-                      <Button
-                        onClick={() => navigateToJob(match)}
-                        variant="outline"
-                        size="sm"
-                        data-testid={`button-view-job-${match.jobRef}`}
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        View Job
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => navigateToJob(match)}
+                          variant="outline"
+                          size="sm"
+                          data-testid={`button-view-job-${match.jobRef}`}
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          View Job
+                        </Button>
+                        <Button
+                          onClick={() => addToJobFile(match)}
+                          variant="outline"
+                          size="sm"
+                          data-testid={`button-add-to-job-file-${match.jobRef}`}
+                        >
+                          <FilePlus className="h-3 w-3 mr-1" />
+                          Add to Job File
+                        </Button>
+                      </div>
                     </div>
 
                     {match.customerName && (

@@ -884,8 +884,8 @@ export class InvoiceMatchingEngine {
         const deduplicatedMatches = Array.from(uniqueFields.values());
         const uniqueFieldTypes = uniqueFields.size;
         
-        // Require at least 2 unique field types for a match
-        if (uniqueFieldTypes < 2) {
+        // Require at least 3 unique field types for a match
+        if (uniqueFieldTypes < 3) {
           console.log(`  ✗ Job #${jobRef} (${jobType}) filtered out - only ${uniqueFieldTypes} unique field type(s)`);
           return;
         }

@@ -15,6 +15,15 @@ import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, E
 
 interface ExpenseInvoiceWindowProps {
   windowId: string
+  payload?: {
+    initialData?: {
+      jobRef?: string
+      companyName?: string
+      invoiceNumber?: string
+      invoiceDate?: string
+      invoiceAmount?: string
+    }
+  }
 }
 
 interface InvoiceRow {
@@ -34,12 +43,23 @@ interface JobInfo {
   customerName?: string
 }
 
-export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
+export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindowProps) {
   const { closeWindow, minimizeWindow } = useWindowManager()
   const { toast } = useToast()
-  const [invoices, setInvoices] = useState<InvoiceRow[]>([
-    { id: '1', jobRef: '', companyName: '', invoiceNumber: '', invoiceDate: '', invoiceAmount: '' }
-  ])
+  const [invoices, setInvoices] = useState<InvoiceRow[]>(() => {
+    const initialData = payload?.initialData
+    if (initialData) {
+      return [{ 
+        id: '1', 
+        jobRef: initialData.jobRef || '', 
+        companyName: initialData.companyName || '', 
+        invoiceNumber: initialData.invoiceNumber || '', 
+        invoiceDate: initialData.invoiceDate || '', 
+        invoiceAmount: initialData.invoiceAmount || '' 
+      }]
+    }
+    return [{ id: '1', jobRef: '', companyName: '', invoiceNumber: '', invoiceDate: '', invoiceAmount: '' }]
+  })
   const [jobInfoMap, setJobInfoMap] = useState<{ [invoiceId: string]: JobInfo }>({})
   const jobRefInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const companyNameInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
@@ -489,7 +509,7 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
               return (
                 <div key={invoice.id} className="space-y-1">
                   <div
-                    className="grid grid-cols-[110px_1fr_0.67fr_130px_96px_auto_auto] gap-2 items-end p-2 border rounded-md bg-card"
+                    className="grid grid-cols-[110px_1fr_0.67fr_170px_96px_auto_auto] gap-2 items-end p-2 border rounded-md bg-card"
                     data-testid={`invoice-row-${index}`}
                   >
                     <div>
@@ -561,47 +581,85 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
 
                     <div>
                       <Label htmlFor={`invoiceDate-${invoice.id}`} className="text-xs">Invoice Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            ref={(el) => {
-                              if (el) {
-                                const input = el.querySelector('input') as HTMLInputElement | null
-                                if (input) {
-                                  invoiceDateInputRefs.current[invoice.id] = input
+                      <div className="flex gap-1">
+                        <Input
+                          ref={(el) => (invoiceDateInputRefs.current[invoice.id] = el)}
+                          id={`invoiceDate-${invoice.id}`}
+                          value={invoice.invoiceDate ? formatDateForDisplay(invoice.invoiceDate) : ''}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            // Try to parse DD/MM/YY or DD/MM/YYYY format
+                            if (value.length === 8 || value.length === 10) {
+                              try {
+                                // Parse DD/MM/YY format
+                                const parsed = parse(value, value.length === 8 ? 'dd/MM/yy' : 'dd/MM/yyyy', new Date())
+                                if (!isNaN(parsed.getTime())) {
+                                  updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(parsed))
+                                  return
                                 }
+                              } catch {}
+                            }
+                            // Store the display value as-is while user is typing
+                            const current = invoice.invoiceDate ? formatDateForDisplay(invoice.invoiceDate) : ''
+                            if (value !== current) {
+                              // User is typing, store as-is for now
+                              updateInvoice(invoice.id, 'invoiceDate', value)
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value
+                            if (!value) {
+                              updateInvoice(invoice.id, 'invoiceDate', '')
+                              return
+                            }
+                            // Try to parse on blur
+                            try {
+                              let parsed: Date | null = null
+                              if (value.length === 8) {
+                                parsed = parse(value, 'dd/MM/yy', new Date())
+                              } else if (value.length === 10) {
+                                parsed = parse(value, 'dd/MM/yyyy', new Date())
                               }
-                            }}
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal h-9 px-3"
-                            data-testid={`input-invoice-date-${index}`}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {invoice.invoiceDate ? formatDateForDisplay(invoice.invoiceDate) : <span>Pick a date</span>}
-                            <input
-                              type="text"
-                              className="sr-only"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault()
-                                  invoiceAmountInputRefs.current[invoice.id]?.focus()
-                                }
+                              
+                              if (parsed && !isNaN(parsed.getTime())) {
+                                updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(parsed))
+                              }
+                            } catch {}
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              invoiceAmountInputRefs.current[invoice.id]?.focus()
+                            }
+                          }}
+                          placeholder="DD/MM/YY"
+                          className="flex-1"
+                          data-testid={`input-invoice-date-${index}`}
+                        />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="flex-shrink-0"
+                              data-testid={`button-calendar-${index}`}
+                            >
+                              <CalendarIcon className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={invoice.invoiceDate ? new Date(invoice.invoiceDate) : undefined}
+                              onSelect={(date) => {
+                                updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(date))
+                                setTimeout(() => invoiceAmountInputRefs.current[invoice.id]?.focus(), 100)
                               }}
+                              initialFocus
                             />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={invoice.invoiceDate ? new Date(invoice.invoiceDate) : undefined}
-                            onSelect={(date) => {
-                              updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(date))
-                              setTimeout(() => invoiceAmountInputRefs.current[invoice.id]?.focus(), 100)
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
 
                     <div>
