@@ -678,9 +678,27 @@ export class InvoiceMatchingEngine {
       }
 
       if (job) {
+        // Deduplicate matched fields - keep only one match per unique field type
+        const uniqueFields = new Map<string, { field: string; value: string; score: number }>();
+        fieldMatches.forEach(match => {
+          const fieldType = match.field.split(':')[0]; // Extract base field type (e.g., "Company" from "Company: Customer")
+          if (!uniqueFields.has(fieldType) || uniqueFields.get(fieldType)!.score < match.score) {
+            uniqueFields.set(fieldType, match);
+          }
+        });
+        
+        const deduplicatedMatches = Array.from(uniqueFields.values());
+        const uniqueFieldTypes = uniqueFields.size;
+        
+        // Require at least 2 unique field types for a match
+        if (uniqueFieldTypes < 2) {
+          console.log(`  ✗ Job #${jobRef} (${jobType}) filtered out - only ${uniqueFieldTypes} unique field type(s)`);
+          return;
+        }
+
         // Calculate overall confidence based on match scores
-        const avgScore = fieldMatches.reduce((sum, m) => sum + m.score, 0) / fieldMatches.length;
-        const matchCount = fieldMatches.length;
+        const avgScore = deduplicatedMatches.reduce((sum, m) => sum + m.score, 0) / deduplicatedMatches.length;
+        const matchCount = deduplicatedMatches.length;
         
         // Higher confidence with more matches and higher scores
         const confidence = Math.min(1.0, avgScore * (1 + (matchCount - 1) * 0.1));
@@ -689,13 +707,13 @@ export class InvoiceMatchingEngine {
           jobRef,
           jobType: jobType as 'import' | 'export' | 'clearance',
           confidence,
-          matchedFields: fieldMatches,
+          matchedFields: deduplicatedMatches,
           job,
           customerName,
         });
 
-        console.log(`  ✓ Job #${jobRef} (${jobType}) matched with ${matchCount} fields, confidence ${confidence.toFixed(2)}`);
-        fieldMatches.forEach(m => {
+        console.log(`  ✓ Job #${jobRef} (${jobType}) matched with ${matchCount} unique field types, confidence ${confidence.toFixed(2)}`);
+        deduplicatedMatches.forEach(m => {
           console.log(`    - ${m.field}: "${m.value}" (score: ${m.score.toFixed(2)})`);
         });
       }
@@ -776,26 +794,46 @@ export class InvoiceMatchingEngine {
     });
     console.log(`  Container/vehicle matches: ${containerMatches}`);
 
-    // Search for job references (normalized match handles spaced numbers)
+    // Search for job references (normalized match with fuzzy matching for 1-character difference)
     let jobRefMatches = 0;
     searchDb.jobReferences.forEach((jobs, normalizedJobRef) => {
+      // Exact match (normalized)
       if (normalizedTextNoSpaces.includes(normalizedJobRef)) {
         jobs.forEach(job => {
           addMatch(job.jobRef, job.jobType, 'Job Reference', normalizedJobRef, 1.0);
           jobRefMatches++;
         });
+      } else {
+        // Fuzzy match - allow 1 character difference using Levenshtein distance
+        const fuzzyMatch = this.findFuzzyReferenceMatch(normalizedTextNoSpaces, normalizedJobRef);
+        if (fuzzyMatch) {
+          jobs.forEach(job => {
+            addMatch(job.jobRef, job.jobType, 'Job Reference', normalizedJobRef, 0.95); // Slightly lower score for fuzzy match
+            jobRefMatches++;
+          });
+        }
       }
     });
     console.log(`  Job reference matches: ${jobRefMatches}`);
 
-    // Search for customer references (normalized match handles spaced references)
+    // Search for customer references (normalized match with fuzzy matching for 1-character difference)
     let custRefMatches = 0;
     searchDb.customerReferences.forEach((jobs, normalizedCustRef) => {
+      // Exact match (normalized)
       if (normalizedTextNoSpaces.includes(normalizedCustRef)) {
         jobs.forEach(job => {
           addMatch(job.jobRef, job.jobType, job.fieldName, normalizedCustRef, 1.0);
           custRefMatches++;
         });
+      } else {
+        // Fuzzy match - allow 1 character difference using Levenshtein distance
+        const fuzzyMatch = this.findFuzzyReferenceMatch(normalizedTextNoSpaces, normalizedCustRef);
+        if (fuzzyMatch) {
+          jobs.forEach(job => {
+            addMatch(job.jobRef, job.jobType, job.fieldName, normalizedCustRef, 0.95); // Slightly lower score for fuzzy match
+            custRefMatches++;
+          });
+        }
       }
     });
     console.log(`  Customer reference matches: ${custRefMatches}`);
@@ -827,6 +865,61 @@ export class InvoiceMatchingEngine {
    */
   private normalizeIdentifier(value: string): string {
     return value.replace(/\s+/g, '').toLowerCase().trim();
+  }
+
+  /**
+   * Calculate Levenshtein distance between two strings
+   */
+  private levenshteinDistance(str1: string, str2: string): number {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const matrix: number[][] = [];
+
+    for (let i = 0; i <= len1; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,      // deletion
+          matrix[i][j - 1] + 1,      // insertion
+          matrix[i - 1][j - 1] + cost // substitution
+        );
+      }
+    }
+
+    return matrix[len1][len2];
+  }
+
+  /**
+   * Find fuzzy match for reference number in text (allows 1 character difference)
+   * Returns true if a match is found within Levenshtein distance of 1
+   */
+  private findFuzzyReferenceMatch(text: string, reference: string): boolean {
+    const refLen = reference.length;
+    
+    // Don't fuzzy match very short references
+    if (refLen < 5) {
+      return false;
+    }
+
+    // Search for substrings of same length as reference
+    for (let i = 0; i <= text.length - refLen; i++) {
+      const substring = text.substring(i, i + refLen);
+      const distance = this.levenshteinDistance(substring, reference);
+      
+      // Allow 1 character difference
+      if (distance <= 1) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

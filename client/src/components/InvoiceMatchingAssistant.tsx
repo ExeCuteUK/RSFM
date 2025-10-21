@@ -139,15 +139,6 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
     }
   };
 
-  const getConfidenceBadge = (confidence: number) => {
-    if (confidence >= 50) {
-      return <Badge className="bg-green-600 dark:bg-green-700">High Confidence</Badge>;
-    } else if (confidence >= 25) {
-      return <Badge className="bg-yellow-600 dark:bg-yellow-700">Possible Match</Badge>;
-    } else {
-      return <Badge className="bg-gray-600 dark:bg-gray-700">Low Confidence</Badge>;
-    }
-  };
 
   return (
     <Card className={className} data-testid="invoice-matching-assistant">
@@ -246,12 +237,9 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
                     data-testid={`match-result-${idx}`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm">
-                          Job #{match.jobRef}
-                        </span>
-                        {getConfidenceBadge(match.confidence)}
-                      </div>
+                      <span className="font-semibold text-sm">
+                        Job #{match.jobRef}
+                      </span>
                       <Button
                         onClick={() => navigateToJob(match)}
                         variant="outline"
