@@ -314,6 +314,7 @@ function AppContent() {
                 {window.type === 'expense-invoice' && (
                   <ExpenseInvoiceWindow
                     windowId={window.id}
+                    payload={window.payload}
                   />
                 )}
                 {window.type === 'customer-invoice' && <DraggableInvoiceWindow />}

@@ -651,12 +651,16 @@ export class InvoiceMatchingEngine {
     const netPatterns = [
       /(?:net|sub)\s*total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
       /subtotal[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      // UK invoice formats: "SUB TOTAL GBP 207.50"
+      /sub\s*total\s+(?:gbp|eur|usd)\s+([\d,]+\.?\d{0,2})/gi,
     ];
     
     // VAT patterns
     const vatPatterns = [
       /vat[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
       /tax[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      // UK invoice formats: "VAT GBP 0.00"
+      /vat\s+(?:gbp|eur|usd)\s+([\d,]+\.?\d{0,2})/gi,
     ];
     
     // Gross/Grand total patterns - including plain "Total:" and "Invoice Total:"
@@ -664,6 +668,8 @@ export class InvoiceMatchingEngine {
       /(?:gross|grand)\s*total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
       /(?:invoice\s*)?total[:\s]+[£$€]?\s?([\d,]+\.?\d{0,2})/gi,
+      // UK invoice formats: "TOTAL GBP 207.50", "Sterling Equivalent TOTAL GBP 207.50"
+      /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+([\d,]+\.?\d{0,2})/gi,
     ];
     
     // Generic amount patterns
