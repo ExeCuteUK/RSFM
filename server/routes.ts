@@ -3690,6 +3690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const exportCustomers = await storage.getAllExportCustomers();
       const hauliers = await storage.getAllHauliers();
       const clearanceAgents = await storage.getAllClearanceAgents();
+      const shippingLines = await storage.getAllShippingLines();
 
       // Use the portable matching engine
       const { InvoiceMatchingEngine } = await import("./services/invoice-matcher.js");
@@ -3701,6 +3702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         exportCustomers,
         hauliers,
         clearanceAgents,
+        shippingLines,
       });
 
       const analysis = matcher.analyzeInvoice(extractedText);

@@ -1,4 +1,4 @@
-import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, Haulier, ClearanceAgent } from '@shared/schema';
+import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, Haulier, ClearanceAgent, ShippingLine } from '@shared/schema';
 
 interface JobData {
   importShipments: ImportShipment[];
@@ -8,6 +8,7 @@ interface JobData {
   exportCustomers: ExportCustomer[];
   hauliers: Haulier[];
   clearanceAgents: ClearanceAgent[];
+  shippingLines: ShippingLine[];
 }
 
 export interface InvoiceMatchResult {
@@ -59,6 +60,7 @@ interface SearchableDatabase {
   jobReferences: Map<string, { jobRef: number; jobType: string }[]>;
   customerReferences: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
   weights: Map<number, { jobRef: number; jobType: string }[]>;
+  vesselNames: Map<string, { jobRef: number; jobType: string }[]>;
 }
 
 export class InvoiceMatchingEngine {
@@ -527,6 +529,14 @@ export class InvoiceMatchingEngine {
       }
     }
     
+    // Check shipping lines
+    for (const shippingLine of this.jobData.shippingLines) {
+      const score = this.fuzzySearchScore(normalizedExtracted, shippingLine.shippingLineName);
+      if (score > 0.7) {  // High confidence threshold
+        return shippingLine.shippingLineName;
+      }
+    }
+    
     return undefined;  // No match found, keep original
   }
 
@@ -976,6 +986,19 @@ export class InvoiceMatchingEngine {
     });
     console.log(`  Company name matches: ${companyMatches}`);
 
+    // Search for vessel names (use fuzzy matching for partial matches)
+    let vesselMatches = 0;
+    searchDb.vesselNames.forEach((jobs, vesselName) => {
+      const score = this.fuzzySearchScore(normalizedText, vesselName);
+      if (score > 0.65) {  // Slightly lower threshold for vessel names (allow more flexibility for partial matches)
+        jobs.forEach(job => {
+          addMatch(job.jobRef, job.jobType, 'Vessel Name', vesselName, score);
+          vesselMatches++;
+        });
+      }
+    });
+    console.log(`  Vessel name matches: ${vesselMatches}`);
+
     // Search for container numbers (normalized match with fuzzy matching for 1-character difference)
     let containerMatches = 0;
     searchDb.containerNumbers.forEach((jobs, normalizedContainer) => {
@@ -1176,6 +1199,7 @@ export class InvoiceMatchingEngine {
       jobReferences: new Map(),
       customerReferences: new Map(),
       weights: new Map(),
+      vesselNames: new Map(),
     };
 
     // Helper to add to map with optional normalization
@@ -1236,6 +1260,11 @@ export class InvoiceMatchingEngine {
           addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
         }
       }
+
+      // Vessel names
+      if (job.vesselName) {
+        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
+      }
     });
 
     // Process export shipments
@@ -1267,6 +1296,11 @@ export class InvoiceMatchingEngine {
         if (customer) {
           addToMap(db.companyNames, customer.companyName, { jobRef, jobType, fieldName: 'Customer' });
         }
+      }
+
+      // Vessel names
+      if (job.vesselName) {
+        addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
       }
     });
 
@@ -1308,6 +1342,7 @@ export class InvoiceMatchingEngine {
     console.log(`Job References: ${db.jobReferences.size}`);
     console.log(`Customer References: ${db.customerReferences.size}`);
     console.log(`Weights: ${db.weights.size}`);
+    console.log(`Vessel Names: ${db.vesselNames.size}`);
     console.log('---\n');
 
     return db;
