@@ -366,34 +366,77 @@ export class InvoiceMatchingEngine {
       totalScore += 50;
     }
 
-    // Container number match (high confidence)
-    if ('containerNumber' in job && job.containerNumber) {
-      const jobContainer = String(job.containerNumber);
+    // Container/Trailer number matches (high confidence)
+    // Check trailerOrContainerNumber (import/clearance)
+    if ('trailerOrContainerNumber' in job && job.trailerOrContainerNumber) {
+      const jobContainer = String(job.trailerOrContainerNumber);
       const containerMatch = extractedData.containerNumbers.some(
         c => c.replace(/\s/g, '').toUpperCase() === jobContainer.replace(/\s/g, '').toUpperCase()
+      ) || extractedData.truckNumbers.some(
+        t => t.replace(/\s/g, '').toUpperCase() === jobContainer.replace(/\s/g, '').toUpperCase()
       );
       if (debug) {
-        console.log(`    Container ${jobContainer} in extracted containers ${JSON.stringify(extractedData.containerNumbers)}? ${containerMatch}`);
+        console.log(`    Trailer/Container ${jobContainer} in extracted? ${containerMatch}`);
       }
       if (containerMatch) {
-        matchedFields.push({ field: 'Container Number', value: jobContainer, score: 40 });
+        matchedFields.push({ field: 'Trailer/Container Number', value: jobContainer, score: 40 });
+        totalScore += 40;
+      }
+    }
+    
+    // Check trailerNo (export)
+    if ('trailerNo' in job && job.trailerNo) {
+      const jobTrailer = String(job.trailerNo);
+      const trailerMatch = extractedData.truckNumbers.some(
+        t => t.replace(/\s/g, '').toUpperCase() === jobTrailer.replace(/\s/g, '').toUpperCase()
+      );
+      if (debug) {
+        console.log(`    Trailer No ${jobTrailer} in extracted trucks? ${trailerMatch}`);
+      }
+      if (trailerMatch) {
+        matchedFields.push({ field: 'Trailer Number', value: jobTrailer, score: 40 });
         totalScore += 40;
       }
     }
 
-    // Customer reference match (high confidence)
-    if ('customerReference' in job && job.customerReference) {
-      const jobRef = String(job.customerReference);
-      const refMatch = extractedData.customerReferences.some(
-        r => r.toLowerCase().includes(jobRef.toLowerCase()) ||
-             jobRef.toLowerCase().includes(r.toLowerCase())
+    // Check containerShipment (export - may contain container number)
+    if ('containerShipment' in job && job.containerShipment) {
+      const jobContainer = String(job.containerShipment);
+      const containerMatch = extractedData.containerNumbers.some(
+        c => c.replace(/\s/g, '').toUpperCase() === jobContainer.replace(/\s/g, '').toUpperCase()
       );
       if (debug) {
-        console.log(`    Customer Ref ${jobRef} matches extracted refs ${JSON.stringify(extractedData.customerReferences)}? ${refMatch}`);
+        console.log(`    Container Shipment ${jobContainer} in extracted? ${containerMatch}`);
       }
-      if (refMatch) {
-        matchedFields.push({ field: 'Customer Reference', value: jobRef, score: 35 });
-        totalScore += 35;
+      if (containerMatch) {
+        matchedFields.push({ field: 'Container Shipment', value: jobContainer, score: 40 });
+        totalScore += 40;
+      }
+    }
+
+    // Customer reference matches (high confidence) - check ALL reference fields
+    const referenceFields = [
+      { key: 'customerReferenceNumber', label: 'Customer Reference' },
+      { key: 'collectionReference', label: 'Collection Reference' },
+      { key: 'haulierReference', label: 'Haulier Reference' },
+      { key: 'deliveryReference', label: 'Delivery Reference' },
+    ];
+
+    for (const { key, label } of referenceFields) {
+      if (key in job && (job as any)[key]) {
+        const jobRef = String((job as any)[key]);
+        const refMatch = extractedData.customerReferences.some(
+          r => r.toLowerCase().includes(jobRef.toLowerCase()) ||
+               jobRef.toLowerCase().includes(r.toLowerCase())
+        );
+        if (debug && refMatch) {
+          console.log(`    ${label} ${jobRef} matches extracted refs? ${refMatch}`);
+        }
+        if (refMatch) {
+          matchedFields.push({ field: label, value: jobRef, score: 35 });
+          totalScore += 35;
+          break; // Only count one reference match to avoid double-scoring
+        }
       }
     }
 
