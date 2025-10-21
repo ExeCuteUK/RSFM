@@ -1039,10 +1039,15 @@ export class InvoiceMatchingEngine {
 
   /**
    * Filter jobs by date range relative to invoice date
-   * Only includes jobs where bookingDate is within:
+   * Date selection priority:
+   * - Import Shipments: importDateEtaPort → bookingDate
+   * - Export Shipments: bookingDate only
+   * - Custom Clearances: etaPort → bookingDate
+   * 
+   * Only includes jobs where the selected date is within:
    * - 3 months before invoice date
    * - 1 month after invoice date
-   * Jobs without bookingDate are included (treated as potential matches)
+   * Jobs without any date are included (treated as potential matches)
    */
   private filterJobsByDate<T extends ImportShipment | ExportShipment | CustomClearance>(
     jobs: T[],
@@ -1063,16 +1068,35 @@ export class InvoiceMatchingEngine {
     const failed: string[] = [];
 
     jobs.forEach(job => {
-      const bookingDate = (job as any).bookingDate;
       const jobRef = (job as any).jobRef;
       
-      // Include jobs without bookingDate (legacy/incomplete records)
-      if (!bookingDate) {
+      // Determine which date field to use based on job type
+      let dateToCheck: string | null = null;
+      let dateSource = '';
+      
+      // Check for import-specific ETA port date
+      if ('importDateEtaPort' in job && (job as any).importDateEtaPort) {
+        dateToCheck = (job as any).importDateEtaPort;
+        dateSource = 'ETA Port';
+      }
+      // Check for clearance-specific ETA port date
+      else if ('etaPort' in job && (job as any).etaPort) {
+        dateToCheck = (job as any).etaPort;
+        dateSource = 'ETA Port';
+      }
+      // Fall back to booking date
+      else if ((job as any).bookingDate) {
+        dateToCheck = (job as any).bookingDate;
+        dateSource = 'Booking Date';
+      }
+      
+      // Include jobs without any date (legacy/incomplete records)
+      if (!dateToCheck) {
         passed.push(job);
         return;
       }
 
-      const date = new Date(bookingDate);
+      const date = new Date(dateToCheck);
       if (isNaN(date.getTime())) {
         // Invalid date format - include to be safe
         passed.push(job);
@@ -1082,7 +1106,7 @@ export class InvoiceMatchingEngine {
       if (date >= threeMonthsBefore && date <= oneMonthAfter) {
         passed.push(job);
       } else {
-        failed.push(`${jobRef} (${bookingDate})`);
+        failed.push(`${jobRef} (${dateToCheck} from ${dateSource})`);
       }
     });
 
