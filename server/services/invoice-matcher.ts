@@ -181,61 +181,30 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Extract container/vehicle numbers with enhanced table format detection
+   * Extract container numbers with STRICT pattern matching
+   * Containers ALWAYS match: XXXX####### (4 letters + 7 digits)
+   * Handles "/" separators to extract multiple containers
    */
   private extractContainerNumbers(text: string): string[] {
     const containers = new Set<string>();
     
-    // Standard patterns (direct extraction)
-    const directPatterns = [
-      /\b[A-Z]{4}\s?\d{7}\b/g,  // Standard container format
-      /container\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{4,20})/gi,
-      /vehicle\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
-      /trailer\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
-      /flight\s*(?:no|number|#)?[:\s]*([A-Z0-9\s-]{3,15})/gi,
-    ];
+    // STRICT container pattern: exactly 4 letters + 7 digits (with optional spaces)
+    // Examples: ONEU750635, MLE204 SY577, CMAU 0076925
+    const strictContainerPattern = /\b([A-Z]{4}\s?\d{3}\s?\d{4})\b/gi;
     
-    directPatterns.forEach(pattern => {
-      const matches = Array.from(text.matchAll(pattern));
-      for (const match of matches) {
-        const value = (match[1] || match[0]).replace(/\s/g, '').toUpperCase();
-        if (value.length >= 4 && value.length <= 20 && !this.isUKPostcode(value)) {
-          containers.add(value);
-        }
-      }
-    });
-    
-    // Enhanced: Look for trigger words followed by nearby alphanumeric values (table format)
-    const triggerWords = /(?:container|vehicle|truck|trailer|flight)(?:\/container)?\s+no/gi;
-    const triggerMatches = Array.from(text.matchAll(triggerWords));
-    
-    // Common table header words to exclude
-    const excludeWords = /^(seal|number|package|b\/l|final|destination|marks|gross|volume|description|kind|packages|goods|cbm|kgs|no)$/i;
-    
-    for (const triggerMatch of triggerMatches) {
-      const startIndex = triggerMatch.index || 0;
-      const searchRange = text.substring(startIndex, startIndex + 200); // Look ahead 200 chars
+    const matches = Array.from(text.matchAll(strictContainerPattern));
+    for (const match of matches) {
+      const raw = match[1];
+      // Split on "/" to handle multiple containers: "ABCD1234567 / EFGH8901234"
+      const parts = raw.split(/\s*\/\s*/);
       
-      // Look for alphanumeric sequences (potential container/vehicle numbers)
-      // Match single continuous strings or spaced groups
-      const candidatePattern = /\b([A-Z0-9]{4,}(?:\s?[A-Z0-9]{2,})?)\b/gi;
-      const candidates = Array.from(searchRange.matchAll(candidatePattern));
-      
-      for (const candidate of candidates) {
-        const value = candidate[1].replace(/\s/g, '').toUpperCase();
+      for (const part of parts) {
+        // Normalize: remove all spaces
+        const normalized = part.replace(/\s/g, '').toUpperCase();
         
-        // Skip if it matches common header words
-        if (excludeWords.test(value)) {
-          continue;
-        }
-        
-        // Must have mix of letters and numbers, be reasonable length, not be a postcode
-        // AND should either start with digits (common for truck reg) or be all-caps with digits mixed in
-        if (value.length >= 4 && value.length <= 20 && 
-            /[A-Z]/.test(value) && /\d/.test(value) && 
-            !this.isUKPostcode(value) &&
-            (/^\d/.test(value) || (/^[A-Z]{2,4}\d/.test(value)))) {  // Starts with digit OR letters+digit pattern
-          containers.add(value);
+        // Final validation: must be exactly 4 letters + 7 digits
+        if (/^[A-Z]{4}\d{7}$/.test(normalized)) {
+          containers.add(normalized);
         }
       }
     }
@@ -261,27 +230,52 @@ export class InvoiceMatchingEngine {
   }
 
   /**
-   * Extract truck/vehicle registration numbers
+   * Extract truck/vehicle/flight numbers (anything NOT matching strict container format)
+   * Handles "/" separators to extract multiple values
    */
   private extractTruckNumbers(text: string): string[] {
-    const patterns = [
-      /truck\s*#?\s*([A-Z0-9\s-]+)/gi,
-      /vehicle\s*#?\s*([A-Z0-9\s-]+)/gi,
-      /reg(?:istration)?[:\s]+([A-Z0-9\s-]+)/gi,
-      /\b([A-Z]{2}\d{2}\s?[A-Z]{3})\b/g, // UK reg format
-    ];
-
     const trucks = new Set<string>();
-    patterns.forEach(pattern => {
+    
+    // Common table header words to exclude
+    const excludeWords = /^(seal|number|package|packages|b\/l|final|destination|marks|gross|volume|description|kind|goods|cbm|kgs|no|yes|date|from|to|port|loading|discharge)$/i;
+    
+    // Look for trigger words followed by nearby alphanumeric values
+    const triggerPatterns = [
+      /(?:vehicle|truck|trailer|flight)(?:\/container)?\s*(?:no|number|#)?[:\s]*([A-Z0-9\s\/\-]+)/gi,
+      /reg(?:istration)?[:\s]+([A-Z0-9\s\/\-]+)/gi,
+    ];
+    
+    triggerPatterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        const value = (match[1] || match[0]).trim().toUpperCase();
-        if (value.length >= 3 && value.length <= 15 && !this.isUKPostcode(value)) {
-          trucks.add(value);
+        const raw = match[1].trim();
+        
+        // Split on "/" to handle multiple values: "34KBJ052 / 35ABC123"
+        const parts = raw.split(/\s*\/\s*/);
+        
+        for (const part of parts) {
+          const value = part.replace(/\s/g, '').toUpperCase();
+          
+          // Skip if it's a common header word
+          if (excludeWords.test(value)) {
+            continue;
+          }
+          
+          // Skip if it matches the strict container format (4 letters + 7 digits)
+          if (/^[A-Z]{4}\d{7}$/.test(value)) {
+            continue;
+          }
+          
+          // Must be alphanumeric, reasonable length, not a postcode
+          if (value.length >= 3 && value.length <= 25 && 
+              /[A-Z0-9]/.test(value) && 
+              !this.isUKPostcode(value)) {
+            trucks.add(value);
+          }
         }
       }
     });
-
+    
     return Array.from(trucks);
   }
 
