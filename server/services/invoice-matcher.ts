@@ -151,6 +151,7 @@ export class InvoiceMatchingEngine {
       amounts: this.extractAmounts(text),
       invoiceNumbers: this.extractInvoiceNumbers(text),
       dates: this.extractDates(text),
+      rawText: text,  // Include raw OCR text for full-text search
     };
   }
 
@@ -608,33 +609,62 @@ export class InvoiceMatchingEngine {
       [...importCustomers, ...exportCustomers]
     );
 
-    // Check filtered import shipments
-    console.log(`\nChecking ${filteredImports.length} filtered import shipments...`);
-    filteredImports.forEach(job => {
-      const result = this.scoreJob(job, 'import', extractedData, importCustomers, true);
-      if (result.confidence > 0) {
-        matches.push(result);
-        console.log(`  ✓ Job #${job.jobRef} matched with confidence ${result.confidence}`);
-      }
-    });
+    // Search OCR text for database values
+    const searchResults = this.searchTextForMatches(extractedData.rawText, searchDb);
 
-    // Check filtered export shipments
-    console.log(`\nChecking ${filteredExports.length} filtered export shipments...`);
-    filteredExports.forEach(job => {
-      const result = this.scoreJob(job, 'export', extractedData, exportCustomers, true);
-      if (result.confidence > 0) {
-        matches.push(result);
-        console.log(`  ✓ Job #${job.jobRef} matched with confidence ${result.confidence}`);
-      }
-    });
+    // Convert search results into match results
+    console.log('\n--- CONVERTING SEARCH RESULTS TO MATCHES ---');
+    searchResults.forEach((result) => {
+      const { jobRef, jobType, matches: fieldMatches } = result;
 
-    // Check filtered custom clearances
-    console.log(`\nChecking ${filteredClearances.length} filtered custom clearances...`);
-    filteredClearances.forEach(job => {
-      const result = this.scoreJob(job, 'clearance', extractedData, [...importCustomers, ...exportCustomers], true);
-      if (result.confidence > 0) {
-        matches.push(result);
-        console.log(`  ✓ Job #${job.jobRef} matched with confidence ${result.confidence}`);
+      // Find the actual job object
+      let job: ImportShipment | ExportShipment | CustomClearance | undefined;
+      let customerName: string | undefined;
+
+      if (jobType === 'import') {
+        job = filteredImports.find(j => j.jobRef === jobRef);
+        if (job && job.importCustomerId) {
+          const customer = importCustomers.find(c => c.id === job.importCustomerId);
+          customerName = customer?.companyName;
+        }
+      } else if (jobType === 'export') {
+        job = filteredExports.find(j => j.jobRef === jobRef);
+        if (job) {
+          const customerId = (job as any).exportCustomerId;
+          if (customerId) {
+            const customer = exportCustomers.find(c => c.id === customerId);
+            customerName = customer?.companyName;
+          }
+        }
+      } else if (jobType === 'clearance') {
+        job = filteredClearances.find(j => j.jobRef === jobRef);
+        if (job && job.importCustomerId) {
+          const customer = [...importCustomers, ...exportCustomers].find(c => c.id === job.importCustomerId);
+          customerName = customer?.companyName;
+        }
+      }
+
+      if (job) {
+        // Calculate overall confidence based on match scores
+        const avgScore = fieldMatches.reduce((sum, m) => sum + m.score, 0) / fieldMatches.length;
+        const matchCount = fieldMatches.length;
+        
+        // Higher confidence with more matches and higher scores
+        const confidence = Math.min(1.0, avgScore * (1 + (matchCount - 1) * 0.1));
+
+        matches.push({
+          jobRef,
+          jobType: jobType as 'import' | 'export' | 'clearance',
+          confidence,
+          matchedFields: fieldMatches,
+          job,
+          customerName,
+        });
+
+        console.log(`  ✓ Job #${jobRef} (${jobType}) matched with ${matchCount} fields, confidence ${confidence.toFixed(2)}`);
+        fieldMatches.forEach(m => {
+          console.log(`    - ${m.field}: "${m.value}" (score: ${m.score.toFixed(2)})`);
+        });
       }
     });
 
@@ -654,6 +684,136 @@ export class InvoiceMatchingEngine {
     oneMonthAfter.setMonth(oneMonthAfter.getMonth() + 1);
 
     return `${threeMonthsBefore.toISOString().split('T')[0]} to ${oneMonthAfter.toISOString().split('T')[0]}`;
+  }
+
+  /**
+   * Search entire OCR text for database values using fuzzy matching
+   * Returns jobs that have matching data in the invoice text
+   */
+  private searchTextForMatches(ocrText: string, searchDb: SearchableDatabase): Map<number, {
+    jobRef: number;
+    jobType: string;
+    matches: { field: string; value: string; score: number }[];
+  }> {
+    const results = new Map<number, {
+      jobRef: number;
+      jobType: string;
+      matches: { field: string; value: string; score: number }[];
+    }>();
+
+    const normalizedText = ocrText.toLowerCase();
+
+    // Helper to add match to results
+    const addMatch = (jobRef: number, jobType: string, field: string, value: string, score: number) => {
+      if (!results.has(jobRef)) {
+        results.set(jobRef, { jobRef, jobType, matches: [] });
+      }
+      results.get(jobRef)!.matches.push({ field, value, score });
+    };
+
+    console.log('\n--- SEARCHING OCR TEXT FOR DATABASE VALUES ---');
+
+    // Search for company names
+    let companyMatches = 0;
+    searchDb.companyNames.forEach((jobs, companyName) => {
+      const score = this.fuzzySearchScore(normalizedText, companyName);
+      if (score > 0.7) {  // High confidence threshold for company names
+        jobs.forEach(job => {
+          addMatch(job.jobRef, job.jobType, `Company: ${job.fieldName}`, companyName, score);
+          companyMatches++;
+        });
+      }
+    });
+    console.log(`  Company name matches: ${companyMatches}`);
+
+    // Search for container numbers (exact match required)
+    let containerMatches = 0;
+    searchDb.containerNumbers.forEach((jobs, containerNumber) => {
+      if (normalizedText.includes(containerNumber)) {
+        jobs.forEach(job => {
+          addMatch(job.jobRef, job.jobType, 'Container/Vehicle Number', containerNumber, 1.0);
+          containerMatches++;
+        });
+      }
+    });
+    console.log(`  Container/vehicle matches: ${containerMatches}`);
+
+    // Search for job references (exact match required)
+    let jobRefMatches = 0;
+    searchDb.jobReferences.forEach((jobs, jobRef) => {
+      if (normalizedText.includes(jobRef)) {
+        jobs.forEach(job => {
+          addMatch(job.jobRef, job.jobType, 'Job Reference', jobRef, 1.0);
+          jobRefMatches++;
+        });
+      }
+    });
+    console.log(`  Job reference matches: ${jobRefMatches}`);
+
+    // Search for customer references
+    let custRefMatches = 0;
+    searchDb.customerReferences.forEach((jobs, custRef) => {
+      if (normalizedText.includes(custRef)) {
+        jobs.forEach(job => {
+          addMatch(job.jobRef, job.jobType, job.fieldName, custRef, 1.0);
+          custRefMatches++;
+        });
+      }
+    });
+    console.log(`  Customer reference matches: ${custRefMatches}`);
+
+    // Search for weights (fuzzy match for numbers)
+    let weightMatches = 0;
+    searchDb.weights.forEach((jobs, weight) => {
+      // Look for the weight number in text (allowing for decimal variations)
+      const weightStr = weight.toString();
+      const weightPattern = new RegExp(`\\b${weightStr.replace('.', '\\.')}\\b`, 'i');
+      if (weightPattern.test(ocrText)) {
+        jobs.forEach(job => {
+          addMatch(job.jobRef, job.jobType, 'Weight', weightStr, 0.9);
+          weightMatches++;
+        });
+      }
+    });
+    console.log(`  Weight matches: ${weightMatches}`);
+
+    console.log(`Total unique jobs matched: ${results.size}`);
+    console.log('---\n');
+
+    return results;
+  }
+
+  /**
+   * Fuzzy search score - returns similarity between 0 and 1
+   * Uses simple substring matching with normalization
+   */
+  private fuzzySearchScore(text: string, searchTerm: string): number {
+    const normalizedText = text.toLowerCase().trim();
+    const normalizedSearch = searchTerm.toLowerCase().trim();
+
+    // Exact match
+    if (normalizedText.includes(normalizedSearch)) {
+      return 1.0;
+    }
+
+    // Check if all words in search term appear in text
+    const searchWords = normalizedSearch.split(/\s+/);
+    const matchedWords = searchWords.filter(word => normalizedText.includes(word));
+    
+    if (matchedWords.length === 0) {
+      return 0;
+    }
+
+    // Score based on proportion of words matched
+    const wordScore = matchedWords.length / searchWords.length;
+
+    // Bonus if words appear close together
+    if (wordScore === 1.0) {
+      // All words present - check proximity
+      return 0.95; // High score but not perfect since not exact match
+    }
+
+    return wordScore * 0.8; // Partial match
   }
 
   /**
