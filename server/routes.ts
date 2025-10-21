@@ -3603,8 +3603,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               // Convert PDF pages to PNG images using pdftoppm with higher DPI for better OCR
               const outputPrefix = path.join(outputDir, 'page');
-              // Use 300 DPI for better text recognition, especially in tables
-              const command = `pdftoppm -png -r 300 "${tempFilePath}" "${outputPrefix}"`;
+              // Use 600 DPI for sharp text recognition, especially in table cells
+              const command = `pdftoppm -png -r 600 "${tempFilePath}" "${outputPrefix}"`;
               
               console.log('Converting PDF to images...');
               await execAsync(command);

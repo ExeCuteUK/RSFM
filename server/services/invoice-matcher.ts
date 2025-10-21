@@ -276,6 +276,14 @@ export class InvoiceMatchingEngine {
             continue;
           }
           
+          // Skip if it has 5+ consecutive digits (filters reference numbers like "ATA2519658")
+          // Truck/flight numbers never have more than 4 consecutive digits
+          const digitSequences = value.match(/\d+/g) || [];
+          const maxDigitSequence = Math.max(...digitSequences.map(seq => seq.length), 0);
+          if (maxDigitSequence >= 5) {
+            continue;
+          }
+          
           // Must be alphanumeric, reasonable length, not a postcode
           if (value.length >= 3 && value.length <= 25 && 
               /[A-Z0-9]/.test(value) && 
@@ -314,6 +322,13 @@ export class InvoiceMatchingEngine {
       const letterSequences = value.match(/[A-Z]+/g) || [];
       const maxLetterSequence = Math.max(...letterSequences.map(seq => seq.length), 0);
       if (maxLetterSequence >= 5) {
+        continue;
+      }
+      
+      // Skip if it has 5+ consecutive digits (filters reference numbers like "ATA2519658")
+      const digitSequences = value.match(/\d+/g) || [];
+      const maxDigitSequence = Math.max(...digitSequences.map(seq => seq.length), 0);
+      if (maxDigitSequence >= 5) {
         continue;
       }
       
