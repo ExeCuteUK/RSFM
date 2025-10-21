@@ -154,19 +154,21 @@ export class InvoiceMatchingEngine {
    * Extract customer reference numbers
    */
   private extractCustomerReferences(text: string): string[] {
+    // Use non-newline whitespace and limit capture length to avoid over-matching
     const patterns = [
-      /customer\s*ref(?:erence)?[:\s]+([A-Z0-9\s-]+)/gi,
-      /your\s*ref(?:erence)?[:\s]+([A-Z0-9\s-]+)/gi,
-      /po\s*#?\s*([A-Z0-9\s-]+)/gi,
-      /order\s*#?\s*([A-Z0-9\s-]+)/gi,
+      /customer\s*ref(?:erence)?[:\s]+([A-Z0-9 -]{3,30})/gi,
+      /your\s*ref(?:erence)?[:\s]+([A-Z0-9 -]{3,30})/gi,
+      /po\s*#?\s*([A-Z0-9 -]{3,30})/gi,
+      /order\s*#?\s*([A-Z0-9 -]{3,30})/gi,
     ];
 
     const refs = new Set<string>();
     patterns.forEach(pattern => {
       const matches = Array.from(text.matchAll(pattern));
       for (const match of matches) {
-        const value = match[1].trim();
-        if (value.length >= 3 && value.length <= 50) {
+        // Split on newlines and take only the first line (the actual reference)
+        const value = match[1].split(/[\n\r]+/)[0].trim();
+        if (value.length >= 3 && value.length <= 30) {
           refs.add(value);
         }
       }
