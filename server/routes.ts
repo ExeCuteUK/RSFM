@@ -3463,7 +3463,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to detect if OCR output is gibberish
   function isGibberish(text: string): boolean {
-    if (!text || text.length < 20) return true;
+    console.log('\n=== GIBBERISH DETECTION ===');
+    console.log('Text length:', text.length);
+    console.log('Text preview:', text.substring(0, 200));
+    
+    if (!text || text.length < 20) {
+      console.log('RESULT: Too short');
+      return true;
+    }
     
     // Count letters, digits, and special characters
     const letters = (text.match(/[a-zA-Z]/g) || []).length;
@@ -3471,46 +3478,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const alphanumeric = letters + digits;
     const specialChars = text.length - alphanumeric;
     
+    console.log(`Letters: ${letters}, Digits: ${digits}, Special: ${specialChars}`);
+    
     // Check 1: If more than 35% special characters (stricter), it's likely gibberish
     const specialCharRatio = specialChars / text.length;
-    if (specialCharRatio > 0.35) return true;
+    console.log(`Special char ratio: ${(specialCharRatio * 100).toFixed(1)}% (threshold: 35%)`);
+    if (specialCharRatio > 0.35) {
+      console.log('RESULT: Too many special chars - GIBBERISH');
+      return true;
+    }
     
     // Check 2: If very few actual words (less than 10% letters), it's gibberish
     const letterRatio = letters / text.length;
-    if (letterRatio < 0.10) return true;
+    console.log(`Letter ratio: ${(letterRatio * 100).toFixed(1)}% (threshold: 10%)`);
+    if (letterRatio < 0.10) {
+      console.log('RESULT: Too few letters - GIBBERISH');
+      return true;
+    }
     
     // Check 3: Look for common OCR failure patterns
     const ocrFailurePatterns = [
-      /I\.I\.I/,           // Repeated I.I.I pattern
-      /Oo\s+Oo/,           // Repeated Oo pattern
-      /\[[\w\d]{1,3}\]/g,  // Excessive bracketed short sequences like [14], [i]
-      /[<>=]{2,}/,         // Multiple comparison operators
-      /-k\s+-k/,           // Repeated -k pattern
-      /ju\s+oO/,           // Common gibberish combos
+      { pattern: /I\.I\.I/, name: 'I.I.I' },
+      { pattern: /Oo\s+Oo/, name: 'Oo Oo' },
+      { pattern: /\[[\w\d]{1,3}\]/, name: '[bracketed]' },
+      { pattern: /[<>=]{2,}/, name: '>><<==' },
+      { pattern: /-k\s+-k/, name: '-k -k' },
+      { pattern: /ju\s+oO/, name: 'ju oO' },
     ];
     
-    for (const pattern of ocrFailurePatterns) {
+    console.log('Checking OCR failure patterns...');
+    for (const { pattern, name } of ocrFailurePatterns) {
       if (pattern.test(text)) {
-        console.log(`Gibberish detected: pattern ${pattern} found`);
+        console.log(`RESULT: Pattern detected (${name}) - GIBBERISH`);
         return true;
       }
     }
     
     // Check 4: Excessive brackets overall (common in image-based PDF OCR failures)
     const brackets = (text.match(/[\[\]]/g) || []).length;
-    if (brackets > text.length * 0.05) {  // More than 5% brackets
-      console.log(`Gibberish detected: ${brackets} brackets in text (${(brackets / text.length * 100).toFixed(1)}%)`);
+    const bracketRatio = brackets / text.length;
+    console.log(`Bracket count: ${brackets} (${(bracketRatio * 100).toFixed(1)}% of text, threshold: 5%)`);
+    if (bracketRatio > 0.05) {
+      console.log('RESULT: Too many brackets - GIBBERISH');
       return true;
     }
     
     // Check 5: Too many single-character "words" separated by spaces
     const words = text.split(/\s+/);
     const singleCharWords = words.filter(w => w.length === 1 && /[a-zA-Z]/.test(w)).length;
-    if (words.length > 10 && singleCharWords / words.length > 0.3) {
-      console.log(`Gibberish detected: ${singleCharWords}/${words.length} single-char words (${(singleCharWords / words.length * 100).toFixed(1)}%)`);
+    const singleCharRatio = words.length > 0 ? singleCharWords / words.length : 0;
+    console.log(`Single-char words: ${singleCharWords}/${words.length} (${(singleCharRatio * 100).toFixed(1)}%, threshold: 30%)`);
+    if (words.length > 10 && singleCharRatio > 0.3) {
+      console.log('RESULT: Too many single-char words - GIBBERISH');
       return true;
     }
     
+    console.log('RESULT: Looks OK - NOT GIBBERISH');
+    console.log('=== END GIBBERISH DETECTION ===\n');
     return false;
   }
 
