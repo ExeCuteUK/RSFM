@@ -4,11 +4,13 @@ import { DraggableWindow } from './DraggableWindow'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, X, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { Plus, X, CheckCircle2, XCircle, AlertTriangle, CalendarIcon } from 'lucide-react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiRequest, queryClient } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
 import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from '@shared/schema'
 
 interface ExpenseInvoiceWindowProps {
@@ -40,7 +42,10 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   ])
   const [jobInfoMap, setJobInfoMap] = useState<{ [invoiceId: string]: JobInfo }>({})
   const jobRefInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const companyNameInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const invoiceNumberInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const invoiceDateInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const invoiceAmountInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [focusRowId, setFocusRowId] = useState<string | null>(null)
 
@@ -265,9 +270,27 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
   const formatDate = (dateString: string | undefined): string => {
     if (!dateString) return 'N/A'
     try {
-      return format(new Date(dateString), 'dd/MM/yyyy')
+      return format(new Date(dateString), 'dd/MM/yy')
     } catch {
       return 'N/A'
+    }
+  }
+
+  const formatDateForDisplay = (dateString: string): string => {
+    if (!dateString) return ''
+    try {
+      return format(new Date(dateString), 'dd/MM/yy')
+    } catch {
+      return ''
+    }
+  }
+
+  const formatDateForStorage = (date: Date | undefined): string => {
+    if (!date) return ''
+    try {
+      return format(date, 'yyyy-MM-dd')
+    } catch {
+      return ''
     }
   }
 
@@ -477,6 +500,12 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         type="number"
                         value={invoice.jobRef}
                         onChange={(e) => handleJobRefChange(invoice.id, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            companyNameInputRefs.current[invoice.id]?.focus()
+                          }
+                        }}
                         placeholder="26001"
                         className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         data-testid={`input-job-ref-${index}`}
@@ -486,9 +515,16 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                     <div>
                       <Label htmlFor={`companyName-${invoice.id}`} className="text-xs">Company Name</Label>
                       <Input
+                        ref={(el) => (companyNameInputRefs.current[invoice.id] = el)}
                         id={`companyName-${invoice.id}`}
                         value={invoice.companyName}
                         onChange={(e) => handleCompanyNameChange(invoice.id, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            invoiceNumberInputRefs.current[invoice.id]?.focus()
+                          }
+                        }}
                         placeholder="Company name"
                         list={`companyNames-${invoice.id}`}
                         data-testid={`input-company-name-${index}`}
@@ -512,6 +548,12 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
                         id={`invoiceNumber-${invoice.id}`}
                         value={invoice.invoiceNumber}
                         onChange={(e) => updateInvoice(invoice.id, 'invoiceNumber', e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            invoiceDateInputRefs.current[invoice.id]?.focus()
+                          }
+                        }}
                         placeholder="Invoice #"
                         data-testid={`input-invoice-number-${index}`}
                       />
@@ -519,19 +561,53 @@ export function ExpenseInvoiceWindow({ windowId }: ExpenseInvoiceWindowProps) {
 
                     <div>
                       <Label htmlFor={`invoiceDate-${invoice.id}`} className="text-xs">Invoice Date</Label>
-                      <Input
-                        id={`invoiceDate-${invoice.id}`}
-                        type="date"
-                        value={invoice.invoiceDate}
-                        onChange={(e) => updateInvoice(invoice.id, 'invoiceDate', e.target.value)}
-                        className="[&::-webkit-calendar-picker-indicator]:hidden"
-                        data-testid={`input-invoice-date-${index}`}
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            ref={(el) => {
+                              if (el) {
+                                const input = el.querySelector('input') as HTMLInputElement | null
+                                if (input) {
+                                  invoiceDateInputRefs.current[invoice.id] = input
+                                }
+                              }
+                            }}
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal h-9 px-3"
+                            data-testid={`input-invoice-date-${index}`}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {invoice.invoiceDate ? formatDateForDisplay(invoice.invoiceDate) : <span>Pick a date</span>}
+                            <input
+                              type="text"
+                              className="sr-only"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  invoiceAmountInputRefs.current[invoice.id]?.focus()
+                                }
+                              }}
+                            />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={invoice.invoiceDate ? new Date(invoice.invoiceDate) : undefined}
+                            onSelect={(date) => {
+                              updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(date))
+                              setTimeout(() => invoiceAmountInputRefs.current[invoice.id]?.focus(), 100)
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
                     <div>
                       <Label htmlFor={`invoiceAmount-${invoice.id}`} className="text-xs">Amount (£)</Label>
                       <Input
+                        ref={(el) => (invoiceAmountInputRefs.current[invoice.id] = el)}
                         id={`invoiceAmount-${invoice.id}`}
                         type="number"
                         step="0.01"
