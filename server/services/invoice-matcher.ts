@@ -62,6 +62,7 @@ interface SearchableDatabase {
   customerReferences: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
   weights: Map<number, { jobRef: number; jobType: string }[]>;
   vesselNames: Map<string, { jobRef: number; jobType: string }[]>;
+  portNames: Map<string, { jobRef: number; jobType: string }[]>;
   etaDates: Map<string, { jobRef: number; jobType: string; date: Date }[]>; // ETA Port dates as "YYYY-MM-DD" string keys
 }
 
@@ -1557,6 +1558,7 @@ export class InvoiceMatchingEngine {
       customerReferences: new Map(),
       weights: new Map(),
       vesselNames: new Map(),
+      portNames: new Map(),
       etaDates: new Map(),
     };
 
@@ -1652,6 +1654,11 @@ export class InvoiceMatchingEngine {
         addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
       }
 
+      // Port of arrival
+      if (job.portOfArrival) {
+        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType });
+      }
+
       // ETA Port dates
       if (job.importDateEtaPort) {
         try {
@@ -1719,6 +1726,11 @@ export class InvoiceMatchingEngine {
       if (job.vesselName) {
         addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
       }
+
+      // Port of arrival
+      if (job.portOfArrival) {
+        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType });
+      }
     });
 
     // Process custom clearances
@@ -1771,6 +1783,11 @@ export class InvoiceMatchingEngine {
       if (job.vesselName) {
         addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
       }
+
+      // Port of arrival
+      if (job.portOfArrival) {
+        addToMap(db.portNames, job.portOfArrival, { jobRef, jobType });
+      }
     });
 
     console.log('\n--- SEARCHABLE DATABASE BUILT ---');
@@ -1780,6 +1797,7 @@ export class InvoiceMatchingEngine {
     console.log(`Customer References: ${db.customerReferences.size}`);
     console.log(`Weights: ${db.weights.size}`);
     console.log(`Vessel Names: ${db.vesselNames.size}`);
+    console.log(`Port Names: ${db.portNames.size}`);
     console.log('---\n');
 
     return db;
