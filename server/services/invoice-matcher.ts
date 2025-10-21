@@ -61,6 +61,7 @@ interface SearchableDatabase {
   customerReferences: Map<string, { jobRef: number; jobType: string; fieldName: string }[]>;
   weights: Map<number, { jobRef: number; jobType: string }[]>;
   vesselNames: Map<string, { jobRef: number; jobType: string }[]>;
+  etaDates: Map<string, { jobRef: number; jobType: string; date: Date }[]>; // ETA Port dates as "YYYY-MM-DD" string keys
 }
 
 export class InvoiceMatchingEngine {
@@ -1239,6 +1240,32 @@ export class InvoiceMatchingEngine {
     });
     console.log(`  Weight matches: ${weightMatches}`);
 
+    // Search for ETA dates (compare extracted dates against job ETA dates with ±7 day window)
+    let etaDateMatches = 0;
+    const extractedDates = this.extractDates(ocrText);
+    extractedDates.forEach(dateStr => {
+      const invoiceDate = this.parseDate(dateStr);
+      if (invoiceDate && !isNaN(invoiceDate.getTime())) {
+        // Check each ETA date in database
+        searchDb.etaDates.forEach((jobs, etaDateKey) => {
+          jobs.forEach(job => {
+            const etaDate = job.date;
+            // Calculate difference in days
+            const diffMs = Math.abs(invoiceDate.getTime() - etaDate.getTime());
+            const diffDays = diffMs / (1000 * 60 * 60 * 24);
+            
+            // Match if within 7 days
+            if (diffDays <= 7) {
+              const score = diffDays === 0 ? 1.0 : 0.95 - (diffDays * 0.05); // Higher score for closer dates
+              addMatch(job.jobRef, job.jobType, 'ETA Date', etaDateKey, score);
+              etaDateMatches++;
+            }
+          });
+        });
+      }
+    });
+    console.log(`  ETA date matches: ${etaDateMatches}`);
+
     console.log(`Total unique jobs matched: ${results.size}`);
     console.log('---\n');
 
@@ -1359,6 +1386,7 @@ export class InvoiceMatchingEngine {
       customerReferences: new Map(),
       weights: new Map(),
       vesselNames: new Map(),
+      etaDates: new Map(),
     };
 
     // Helper to add to map with optional normalization
@@ -1375,6 +1403,14 @@ export class InvoiceMatchingEngine {
         map.set(weight, []);
       }
       map.get(weight)!.push(value);
+    };
+
+    const addToDateMap = (map: Map<string, any[]>, dateStr: string, value: any) => {
+      const dateKey = dateStr; // Store as YYYY-MM-DD
+      if (!map.has(dateKey)) {
+        map.set(dateKey, []);
+      }
+      map.get(dateKey)!.push(value);
     };
 
     // Process import shipments
@@ -1423,6 +1459,19 @@ export class InvoiceMatchingEngine {
       // Vessel names
       if (job.vesselName) {
         addToMap(db.vesselNames, job.vesselName, { jobRef, jobType });
+      }
+
+      // ETA Port dates
+      if (job.importDateEtaPort) {
+        try {
+          const etaDate = new Date(job.importDateEtaPort);
+          if (!isNaN(etaDate.getTime())) {
+            const dateKey = etaDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+            addToDateMap(db.etaDates, dateKey, { jobRef, jobType, date: etaDate });
+          }
+        } catch (e) {
+          // Ignore invalid dates
+        }
       }
     });
 
