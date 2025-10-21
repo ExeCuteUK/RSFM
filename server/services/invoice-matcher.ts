@@ -750,6 +750,8 @@ export class InvoiceMatchingEngine {
       /subtotal[:\s]+[£$€]?\s?(-?[\d,]+\.?\d{0,2})/gi,
       // UK invoice formats: "SUB TOTAL GBP 207.50"
       /sub\s*total\s+(?:gbp|eur|usd)\s+(-?[\d,]+\.?\d{0,2})/gi,
+      // Gondrand format: "Sub-total      (GBP) :        295.00"
+      /sub[\s\-]*total\s*\([^\)]+\)\s*[:]*\s*(-?[\d,]+\.?\d{0,2})/gi,
       // Credit note format: amount before currency "-400.00 GBP"
       /(-[\d,]+\.?\d{0,2})\s+(?:gbp|eur|usd)/gi,
     ];
@@ -768,6 +770,8 @@ export class InvoiceMatchingEngine {
       /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
+      // Gondrand format: "Total      (GBP) :        295.00"
+      /total\s*\([^\)]+\)\s*[:]*\s*(-?[\d,]+\.?\d{0,2})/gi,
       /(?:invoice\s*)?total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // UK invoice formats: "TOTAL GBP 207.50", "Sterling Equivalent TOTAL GBP 207.50"
       /(?:sterling\s+equivalent\s+)?total\s+(?:gbp|eur|usd)\s+(-?[\d,]+[\.,]?\d{0,2})/gi,
