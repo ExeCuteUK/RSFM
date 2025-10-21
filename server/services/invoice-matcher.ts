@@ -42,6 +42,7 @@ export interface InvoiceAnalysis {
     amounts: ExtractedAmounts;
     invoiceNumbers: string[];
     dates: string[];
+    rawText: string;  // Full OCR text for full-text search
   };
   matches: InvoiceMatchResult[];
   rawText: string;
