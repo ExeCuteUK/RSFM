@@ -771,9 +771,9 @@ export class InvoiceMatchingEngine {
       /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // ZIM table format REVERSE: Amount appears BEFORE "TOTAL DEBIT" label
-      // Pattern: "355.00 GBP" followed by optional content, then "TOTAL DEBIT"
-      // Lookbehind would be ideal but JavaScript has limited support, so we capture and validate
-      /(\d+[\.,]\d{2})\s+(?:gbp|eur|usd)[\s\S]{0,100}?total\s+(?:debit|credit)/gi,
+      // Pattern: "355.00 GBP" immediately before (within ~40 chars) "TOTAL DEBIT"
+      // Narrow window to avoid matching earlier line items
+      /(\d+[\.,]\d{2})\s+(?:gbp|eur|usd)[\s\S]{0,40}?total\s+(?:debit|credit)/gi,
       /(?:gross|grand)\s*total[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // Gondrand format: "Total      (GBP) :        295.00"
       /total\s*\([^\)]+\)\s*[:]*\s*(-?[\d,]+\.?\d{0,2})/gi,
