@@ -4027,8 +4027,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (line.match(/^(Charge\s+Description|Description|Our\s+Ref|Your\s+Ref|Amount)/i)) continue;
           
           // Check if this line looks like a table row (has some content)
-          // Look for "Our Ref" pattern (IMP/GLB reference) which appears in all rows
-          const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
+          // Look for "Our Ref" pattern (IMP/GLB/EXP reference) which appears in all rows
+          const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+|EXP\d+)\b/);
           
           // Try to find job reference (try dash formats first, then plain)
           const completeMatch = line.match(completeJobRefPattern);
@@ -4038,17 +4038,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // If no dash format matched, try plain 5-digit format
           if (!completeMatch && !partialMatch) {
             const plainMatches = Array.from(line.matchAll(new RegExp(plainJobRefPattern.source, 'g')));
-            // Filter out matches that look like "Our Ref" codes (IMP/GLB numbers)
+            // Filter out matches that look like "Our Ref" codes (IMP/GLB/EXP numbers)
             const validMatches = plainMatches.filter(m => {
               const beforeMatch = line.substring(0, m.index || 0);
-              return !beforeMatch.match(/(IMP|GLB)$/i);
+              return !beforeMatch.match(/(IMP|GLB|EXP)$/i);
             });
             if (validMatches.length > 0) {
               plainMatch = validMatches[0];
             }
           }
           
-          // CRITICAL: Only process rows that have "Our Ref" (IMP/GLB code)
+          // CRITICAL: Only process rows that have "Our Ref" (IMP/GLB/EXP code)
           // This filters out footer content like bank details, totals, etc.
           if (ourRefMatch) {
             const jobRef = (completeMatch || partialMatch || plainMatch)?.[1] || '';
@@ -4084,12 +4084,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // Extract description - more robust to handle various formats
             // Pattern 1: Uppercase words at start (before Our Ref or job ref)
-            const descMatch1 = line.match(/^([A-Z][A-Z\s&]+?)\s+(?:IMP|GLB|\d)/);
+            const descMatch1 = line.match(/^([A-Z][A-Z\s&]+?)\s+(?:IMP|GLB|EXP|\d)/);
             if (descMatch1) {
               description = descMatch1[1].trim();
             } else {
               // Pattern 2: Mixed case description
-              const descMatch2 = line.match(/^([A-Za-z][A-Za-z\s&]+?)\s+(?:IMP|GLB|\d)/);
+              const descMatch2 = line.match(/^([A-Za-z][A-Za-z\s&]+?)\s+(?:IMP|GLB|EXP|\d)/);
               if (descMatch2) {
                 description = descMatch2[1].trim();
               }
@@ -4169,7 +4169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               description = descMatch[1].trim();
             }
 
-            const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
+            const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+|EXP\d+)\b/);
             if (ourRefMatch) {
               ourRef = ourRefMatch[1];
             }
