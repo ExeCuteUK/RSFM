@@ -248,6 +248,9 @@ export function InvoiceMatchingAssistant({ className }: InvoiceMatchingAssistant
     <Card className={className} data-testid="invoice-matching-assistant">
       <CardHeader>
         <CardTitle className="text-base">Invoice Matching Assistant</CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">
+          Supported: Zim, MSC, Maersk, PSG, GLB, Atanak, Transmec, Gondrand
+        </p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Upload Zone */}

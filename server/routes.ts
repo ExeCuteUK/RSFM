@@ -3981,11 +3981,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Job reference patterns: flexible to capture both complete and partial refs
-      // Complete: 10-47833 (2 digits, dash, 4-5 digits)
-      // Partial: 10-478 (2 digits, dash, 3 digits) - will be flagged
+      // Job reference patterns: flexible to capture dash-separated and plain formats
+      // Dash complete: 10-47833 (2 digits, dash, 4-5 digits)
+      // Dash partial: 10-478 (2 digits, dash, 3 digits) - will be flagged
+      // Plain: 48002 (5 digits, no dash) - common in GLB invoices
       const completeJobRefPattern = /\b(\d{2}[-\/]\d{4,5})\b/;
       const partialJobRefPattern = /\b(\d{2}[-\/]\d{3,5})\b/;
+      const plainJobRefPattern = /\b(\d{5})\b/;
       
       // Scan the table region
       if (tableStartIndex !== -1) {
@@ -4000,13 +4002,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Skip header-like lines
           if (line.match(/^(Charge\s+Description|Description|Our\s+Ref|Your\s+Ref|Amount)/i)) continue;
           
-          // Try to find job reference (complete or partial)
+          // Try to find job reference (try dash formats first, then plain)
           const completeMatch = line.match(completeJobRefPattern);
           const partialMatch = !completeMatch ? line.match(partialJobRefPattern) : null;
+          let plainMatch = null;
           
-          if (completeMatch || partialMatch) {
-            const jobRef = (completeMatch || partialMatch)![1];
-            const isPartialRef = !!partialMatch && !completeMatch;
+          // If no dash format matched, try plain 5-digit format
+          if (!completeMatch && !partialMatch) {
+            const plainMatches = Array.from(line.matchAll(new RegExp(plainJobRefPattern.source, 'g')));
+            // Filter to valid job reference range (26001-99999)
+            for (const match of plainMatches) {
+              const num = parseInt(match[1]);
+              if (num >= 26001 && num <= 99999) {
+                plainMatch = match;
+                break;
+              }
+            }
+          }
+          
+          if (completeMatch || partialMatch || plainMatch) {
+            const jobRef = (completeMatch || partialMatch || plainMatch)![1];
+            const isPartialRef = !!partialMatch && !completeMatch && !plainMatch;
             
             let description = '';
             let amount = '';
@@ -4048,9 +4064,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
           
+          // Try dash format first, then plain format
           const jobRefMatch = line.match(completeJobRefPattern);
-          if (jobRefMatch) {
-            const jobRef = jobRefMatch[1];
+          let plainMatch = null;
+          
+          if (!jobRefMatch) {
+            const plainMatches = Array.from(line.matchAll(new RegExp(plainJobRefPattern.source, 'g')));
+            for (const match of plainMatches) {
+              const num = parseInt(match[1]);
+              if (num >= 26001 && num <= 99999) {
+                plainMatch = match;
+                break;
+              }
+            }
+          }
+          
+          if (jobRefMatch || plainMatch) {
+            const jobRef = (jobRefMatch || plainMatch)![1];
             
             let description = '';
             let amount = '';
