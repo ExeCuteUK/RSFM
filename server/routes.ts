@@ -7,7 +7,6 @@ import multer from "multer";
 import fs from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
-import Tesseract from "tesseract.js";
 import { 
   insertImportCustomerSchema,
   insertExportCustomerSchema,
@@ -3628,12 +3627,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .sort();
 
             // Use Tesseract.js to OCR each image
-            const { createWorker } = await import("tesseract.js");
+            const { createWorker, PSM } = await import("tesseract.js");
             const worker = await createWorker('eng');
             
             // Configure Tesseract for typed documents with clear text
             await worker.setParameters({
-              tessedit_pageseg_mode: Tesseract.PSM.AUTO,  // Fully automatic page segmentation (best for invoices)
+              tessedit_pageseg_mode: PSM.AUTO,  // Fully automatic page segmentation (best for invoices)
               tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t',
             });
             
@@ -3678,13 +3677,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } else {
         // Use Tesseract.js for image OCR
-        const { createWorker } = await import("tesseract.js");
+        const { createWorker, PSM } = await import("tesseract.js");
         const worker = await createWorker('eng');
 
         try {
           // Configure Tesseract for typed documents with clear text
           await worker.setParameters({
-            tessedit_pageseg_mode: Tesseract.PSM.AUTO,  // Fully automatic page segmentation (best for invoices)
+            tessedit_pageseg_mode: PSM.AUTO,  // Fully automatic page segmentation (best for invoices)
             tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t',
           });
           
