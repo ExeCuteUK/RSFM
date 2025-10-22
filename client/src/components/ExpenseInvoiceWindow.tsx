@@ -621,7 +621,7 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
                       <Input
                         ref={(el) => (jobRefInputRefs.current[invoice.id] = el)}
                         id={`jobRef-${invoice.id}`}
-                        type="number"
+                        type="text"
                         value={invoice.jobRef}
                         onChange={(e) => handleJobRefChange(invoice.id, e.target.value)}
                         onKeyDown={(e) => {
@@ -631,7 +631,6 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
                           }
                         }}
                         placeholder="26001"
-                        className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         data-testid={`input-job-ref-${index}`}
                       />
                     </div>
