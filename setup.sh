@@ -69,12 +69,19 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}Step 6: Creating application directory...${NC}"
+echo -e "${GREEN}Step 6: Installing OCR dependencies (Tesseract & Poppler)...${NC}"
+echo "Installing tesseract-ocr, tesseract-ocr-eng, and poppler-utils for Invoice Matching Assistant and Bulk Invoice Processor..."
+sudo apt-get install -y tesseract-ocr tesseract-ocr-eng poppler-utils
+echo "Tesseract installed: $(tesseract --version 2>&1 | head -n 1 || echo 'version check failed')"
+echo "Poppler pdftoppm installed: $(command -v pdftoppm && echo 'OK' || echo 'NOT FOUND')"
+
+echo ""
+echo -e "${GREEN}Step 7: Creating application directory...${NC}"
 sudo mkdir -p $APP_DIR
 sudo chown $APP_USER:$APP_USER $APP_DIR
 
 echo ""
-echo -e "${GREEN}Step 7: Cloning repository...${NC}"
+echo -e "${GREEN}Step 8: Cloning repository...${NC}"
 echo -e "${YELLOW}You will be prompted for GitHub credentials (use Personal Access Token as password)${NC}"
 if [ -d "$APP_DIR/.git" ]; then
     echo "Repository already cloned, skipping..."
@@ -83,12 +90,12 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}Step 8: Installing npm dependencies...${NC}"
+echo -e "${GREEN}Step 9: Installing npm dependencies...${NC}"
 cd $APP_DIR
 npm install
 
 echo ""
-echo -e "${GREEN}Step 9: Creating .env file...${NC}"
+echo -e "${GREEN}Step 10: Creating .env file...${NC}"
 if [ -f "$APP_DIR/.env" ]; then
     echo -e "${YELLOW}Warning: .env file already exists, skipping...${NC}"
 else
@@ -139,7 +146,7 @@ EOF
 fi
 
 echo ""
-echo -e "${GREEN}Step 10: Setting up PostgreSQL database...${NC}"
+echo -e "${GREEN}Step 11: Setting up PostgreSQL database...${NC}"
 DB_NAME="rsfm_db"
 DB_USER="rsfm_user"
 
@@ -174,20 +181,20 @@ EOF
 fi
 
 echo ""
-echo -e "${GREEN}Step 11: Building application for production...${NC}"
+echo -e "${GREEN}Step 12: Building application for production...${NC}"
 cd $APP_DIR
 npm run build
 
 echo ""
-echo -e "${GREEN}Step 12: Pushing database schema...${NC}"
+echo -e "${GREEN}Step 13: Pushing database schema...${NC}"
 npm run db:push
 
 echo ""
-echo -e "${GREEN}Step 13: Clearing users table for fresh setup...${NC}"
+echo -e "${GREEN}Step 14: Clearing users table for fresh setup...${NC}"
 sudo -u postgres psql -d $DB_NAME -c "DELETE FROM users;" 2>/dev/null || echo "Users table not found or already empty"
 
 echo ""
-echo -e "${GREEN}Step 14: Creating PM2 ecosystem config...${NC}"
+echo -e "${GREEN}Step 15: Creating PM2 ecosystem config...${NC}"
 cat > $APP_DIR/ecosystem.config.cjs << 'EOFECO'
 const fs = require('fs');
 const path = require('path');
@@ -223,18 +230,18 @@ module.exports = {
 EOFECO
 
 echo ""
-echo -e "${GREEN}Step 15: Starting PM2 process with ecosystem config...${NC}"
+echo -e "${GREEN}Step 16: Starting PM2 process with ecosystem config...${NC}"
 pm2 delete rsfm 2>/dev/null || true
 pm2 start $APP_DIR/ecosystem.config.cjs
 pm2 save
 
 echo ""
-echo -e "${GREEN}Step 16: Enabling PM2 startup script...${NC}"
+echo -e "${GREEN}Step 17: Enabling PM2 startup script...${NC}"
 sudo env PATH=$PATH:/usr/bin $(which pm2) startup systemd -u $APP_USER --hp /home/$APP_USER
 pm2 save
 
 echo ""
-echo -e "${GREEN}Step 17: Configuring firewall (UFW)...${NC}"
+echo -e "${GREEN}Step 18: Configuring firewall (UFW)...${NC}"
 if ! command -v ufw &> /dev/null; then
     echo "Installing UFW..."
     sudo apt-get install -y ufw
@@ -267,7 +274,7 @@ echo -e "${GREEN}Firewall configured successfully!${NC}"
 echo -e "${YELLOW}Ports allowed: SSH (22), HTTP (80), HTTPS (443), App (5000)${NC}"
 
 echo ""
-echo -e "${GREEN}Step 18: Making update script executable...${NC}"
+echo -e "${GREEN}Step 19: Making update script executable...${NC}"
 chmod +x $APP_DIR/update.sh
 echo -e "${GREEN}Update script is now executable${NC}"
 

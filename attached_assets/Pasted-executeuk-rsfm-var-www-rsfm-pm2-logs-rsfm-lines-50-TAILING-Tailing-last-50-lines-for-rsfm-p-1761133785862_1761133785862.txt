@@ -1,0 +1,53 @@
+executeuk@rsfm:/var/www/rsfm$ pm2 logs rsfm --lines 50
+[TAILING] Tailing last 50 lines for [rsfm] process (change the value with --lines option)
+/home/executeuk/.pm2/logs/rsfm-error-0.log last 50 lines:
+0|rsfm     |   stderr: '/bin/sh: 1: pdftoppm: not found\n'
+0|rsfm     | }
+0|rsfm     | Terminal49 check all containers error: error: column "lcl_container" does not exist
+0|rsfm     |     at /var/www/rsfm/node_modules/pg-pool/index.js:45:11
+0|rsfm     |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|rsfm     |     at async file:///var/www/rsfm/node_modules/drizzle-orm/node-postgres/session.js:83:22
+0|rsfm     |     at async DatabaseStorage.getAllImportShipments (file:///var/www/rsfm/dist/index.js:3756:12)
+0|rsfm     |     at async file:///var/www/rsfm/dist/index.js:8498:32 {
+0|rsfm     |   length: 114,
+0|rsfm     |   severity: 'ERROR',
+0|rsfm     |   code: '42703',
+0|rsfm     |   detail: undefined,
+0|rsfm     |   hint: undefined,
+0|rsfm     |   position: '437',
+0|rsfm     |   internalPosition: undefined,
+0|rsfm     |   internalQuery: undefined,
+0|rsfm     |   where: undefined,
+0|rsfm     |   schema: undefined,
+0|rsfm     |   table: undefined,
+0|rsfm     |   column: undefined,
+0|rsfm     |   dataType: undefined,
+0|rsfm     |   constraint: undefined,
+0|rsfm     |   file: 'parse_relation.c',
+0|rsfm     |   line: '3722',
+0|rsfm     |   routine: 'errorMissingColumn'
+0|rsfm     | }
+0|rsfm     | Error matching invoice: error: column "lcl_container" does not exist
+0|rsfm     |     at /var/www/rsfm/node_modules/pg-pool/index.js:45:11
+0|rsfm     |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|rsfm     |     at async file:///var/www/rsfm/node_modules/drizzle-orm/node-postgres/session.js:83:22
+0|rsfm     |     at async DatabaseStorage.getAllImportShipments (file:///var/www/rsfm/dist/index.js:3756:12)
+0|rsfm     |     at async file:///var/www/rsfm/dist/index.js:7718:32 {
+0|rsfm     |   length: 114,
+0|rsfm     |   severity: 'ERROR',
+0|rsfm     |   code: '42703',
+0|rsfm     |   detail: undefined,
+0|rsfm     |   hint: undefined,
+0|rsfm     |   position: '437',
+0|rsfm     |   internalPosition: undefined,
+0|rsfm     |   internalQuery: undefined,
+0|rsfm     |   where: undefined,
+0|rsfm     |   schema: undefined,
+0|rsfm     |   table: undefined,
+0|rsfm     |   column: undefined,
+0|rsfm     |   dataType: undefined,
+0|rsfm     |   constraint: undefined,
+0|rsfm     |   file: 'parse_relation.c',
+0|rsfm     |   line: '3722',
+0|rsfm     |   routine: 'errorMissingColumn'
+0|rsfm     | }

@@ -1,0 +1,95 @@
+executeuk@rsfm:/var/www/rsfm$ pm2 logs rsfm --lines 50
+[TAILING] Tailing last 50 lines for [rsfm] process (change the value with --lines option)
+/home/executeuk/.pm2/logs/rsfm-error-0.log last 50 lines:
+0|rsfm     |   routine: 'errorMissingColumn'
+0|rsfm     | }
+0|rsfm     | Error matching invoice: error: column "lcl_container" does not exist
+0|rsfm     |     at /var/www/rsfm/node_modules/pg-pool/index.js:45:11
+0|rsfm     |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|rsfm     |     at async file:///var/www/rsfm/node_modules/drizzle-orm/node-postgres/session.js:83:22
+0|rsfm     |     at async DatabaseStorage.getAllImportShipments (file:///var/www/rsfm/dist/index.js:3756:12)
+0|rsfm     |     at async file:///var/www/rsfm/dist/index.js:7718:32 {
+0|rsfm     |   length: 114,
+0|rsfm     |   severity: 'ERROR',
+0|rsfm     |   code: '42703',
+0|rsfm     |   detail: undefined,
+0|rsfm     |   hint: undefined,
+0|rsfm     |   position: '437',
+0|rsfm     |   internalPosition: undefined,
+0|rsfm     |   internalQuery: undefined,
+0|rsfm     |   where: undefined,
+0|rsfm     |   schema: undefined,
+0|rsfm     |   table: undefined,
+0|rsfm     |   column: undefined,
+0|rsfm     |   dataType: undefined,
+0|rsfm     |   constraint: undefined,
+0|rsfm     |   file: 'parse_relation.c',
+0|rsfm     |   line: '3722',
+0|rsfm     |   routine: 'errorMissingColumn'
+0|rsfm     | }
+0|rsfm     | Error processing bulk invoice: error: column "lcl_container" does not exist
+0|rsfm     |     at /var/www/rsfm/node_modules/pg-pool/index.js:45:11
+0|rsfm     |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|rsfm     |     at async file:///var/www/rsfm/node_modules/drizzle-orm/node-postgres/session.js:83:22
+0|rsfm     |     at async DatabaseStorage.getAllImportShipments (file:///var/www/rsfm/dist/index.js:3756:12)
+0|rsfm     |     at async file:///var/www/rsfm/dist/index.js:8069:34 {
+0|rsfm     |   length: 114,
+0|rsfm     |   severity: 'ERROR',
+0|rsfm     |   code: '42703',
+0|rsfm     |   detail: undefined,
+0|rsfm     |   hint: undefined,
+0|rsfm     |   position: '437',
+0|rsfm     |   internalPosition: undefined,
+0|rsfm     |   internalQuery: undefined,
+0|rsfm     |   where: undefined,
+0|rsfm     |   schema: undefined,
+0|rsfm     |   table: undefined,
+0|rsfm     |   column: undefined,
+0|rsfm     |   dataType: undefined,
+0|rsfm     |   constraint: undefined,
+0|rsfm     |   file: 'parse_relation.c',
+0|rsfm     |   line: '3722',
+0|rsfm     |   routine: 'errorMissingColumn'
+0|rsfm     | }
+
+/home/executeuk/.pm2/logs/rsfm-out-0.log last 50 lines:
+0|rsfm     | IMPORT CLEARANCE IMP2500240 09-47806 25.00 Z
+0|rsfm     | IMPORT CLEARANCE IMP2500248 09-47809 25.00 Z
+0|rsfm     | IMPORT CLEARANCE IMP2500249 09-47678 25.00 Z
+0|rsfm     | IMPORT CLEARANCE IMP2500253 09-47811 25.00 Z
+0|rsfm     | IMPORT CLEARA
+0|rsfm     |
+0|rsfm     | Scanning table rows from line 40 to 78
+0|rsfm     |   Row 40: JobRef="10-47833", OurRef="IMP2500302", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 41: JobRef="10-47841", OurRef="IMP2500313", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 42: JobRef="10-47842", OurRef="IMP2500314", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 43: JobRef="09-47804", OurRef="IMP2500236", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 44: JobRef="09-47805", OurRef="IMP2500237", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 45: JobRef="09-47808", OurRef="IMP2500242", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 46: JobRef="09-47806", OurRef="IMP2500240", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 47: JobRef="09-47809", OurRef="IMP2500248", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 48: JobRef="09-47678", OurRef="IMP2500249", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 49: JobRef="09-47811", OurRef="IMP2500253", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 50: JobRef="09-47812", OurRef="IMP2500255", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 51: JobRef="09-47813", OurRef="IMP2500257", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 52: JobRef="09-47814", OurRef="IMP2500259", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 53: JobRef="09-47678", OurRef="IMP2500267", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 54: JobRef="10-47821", OurRef="IMP2500272", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 55: JobRef="10-47823", OurRef="IMP2500283", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 56: JobRef="10-47823", OurRef="IMP2500283", Desc="ADDITIONAL HEADINGS X", Amount=2.00
+0|rsfm     |   Row 57: JobRef="10-47838", OurRef="IMP2500310", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 58: JobRef="10-47838", OurRef="IMP2500310", Desc="ADDITIONAL HEADINGS X", Amount=2.00
+0|rsfm     |   Row 59: JobRef="10-47845", OurRef="IMP2500315", Desc="IMPORT CLEARANCE", Amount=25.00
+0|rsfm     |   Row 60: JobRef="10-47845", OurRef="IMP2500315", Desc="INVENTORY LINK FEE", Amount=15.00
+0|rsfm     |   Row 61: JobRef="10-478" (PARTIAL), OurRef="GLB2500574", Desc="IMPORT CLEARANCE", Amount=40.00
+0|rsfm     |   Row 62: JobRef="(none)", OurRef="", Desc="IMPORT CLEARANCE", Amount=509.00
+0|rsfm     |   Row 64: JobRef="(none)", OurRef="", Desc="IMPORT CLEARANCE", Amount=0.00
+0|rsfm     |   Row 66: JobRef="(none)", OurRef="", Desc="IMPORT CLEARANCE", Amount=509.00
+0|rsfm     |   Row 68: JobRef="(none)", OurRef="", Desc="IMPORT CLEARANCE", Amount=0.00
+0|rsfm     |   Row 70: JobRef="(none)", OurRef="", Desc="IMPORT CLEARANCE", Amount=0.00
+0|rsfm     |   Row 73: JobRef="(none)", OurRef="", Desc="IMPORT CLEARANCE", Amount=0.00
+0|rsfm     | 11:49:16 AM [express] POST /api/ocr/process-bulk-invoice 500 in 38884ms :: {"error":"Failed to proces…
+0|rsfm     | 11:49:22 AM [express] GET /api/messages/unread-count 304 in 4ms :: {"count":"0"}
+0|rsfm     | 11:49:22 AM [express] GET /api/presence/online-users 304 in 2ms :: ["f6ec8b73-01e0-48d4-ab62-4af13cde…
+0|rsfm     | 11:49:22 AM [express] GET /api/users 304 in 2ms :: [{"id":"d0aba207-0936-423c-8c9b-ccd5854634fb","use…
+0|rsfm     | 11:49:32 AM [express] POST /api/presence/heartbeat 200 in 4ms :: {"success":true}
