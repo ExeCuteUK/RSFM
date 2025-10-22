@@ -7,6 +7,7 @@ import multer from "multer";
 import fs from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
+import Tesseract from "tesseract.js";
 import { 
   insertImportCustomerSchema,
   insertExportCustomerSchema,
@@ -3587,8 +3588,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let usedFallback = false;
 
       if (isPDF) {
-        // Use Scribe.js for PDF OCR first
-        const scribe = (await import("scribe.js-ocr")).default;
+        // For invoice matching, always use image-based OCR to capture logos, headers, and images
+        // that may contain critical information (company names, invoice numbers, etc.)
+        console.log('Using image-based OCR for comprehensive invoice text extraction...');
         const fs = await import("fs");
         const path = await import("path");
         const os = await import("os");
@@ -3598,88 +3600,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         try {
           fs.writeFileSync(tempFilePath, fileBuffer);
-          const result = await scribe.extractText([tempFilePath]);
+          
+          // Skip Scribe.js and go straight to image-based OCR for invoice matching
+          usedFallback = true;
 
-          if (typeof result === 'string') {
-            extractedText = result;
-          } else if (result && typeof result === 'object') {
-            if (result.text) {
-              extractedText = result.text;
-            } else if (result.pages && Array.isArray(result.pages)) {
-              extractedText = result.pages.map((p: any) => p.text || '').join('\n');
-            } else if (Array.isArray(result)) {
-              extractedText = result.map((p: any) => p.text || '').join('\n');
-            }
-          }
+          // Convert PDF to images using pdftoppm directly
+          const { exec } = await import("child_process");
+          const { promisify } = await import("util");
+          const execAsync = promisify(exec);
+          
+          const outputDir = path.join(tempDir, `invoice-images-${Date.now()}`);
+          fs.mkdirSync(outputDir, { recursive: true });
 
-          // Check if the extracted text is gibberish
-          if (isGibberish(extractedText)) {
-            console.log('Scribe.js returned gibberish, falling back to image-based OCR...');
-            usedFallback = true;
-
-            // Convert PDF to images using pdftoppm directly
-            const { exec } = await import("child_process");
-            const { promisify } = await import("util");
-            const execAsync = promisify(exec);
+          try {
+            // Convert PDF pages to PNG images using pdftoppm with higher DPI for better OCR
+            const outputPrefix = path.join(outputDir, 'page');
+            // Use 600 DPI for sharp text recognition, especially in table cells
+            const command = `pdftoppm -png -r 600 "${tempFilePath}" "${outputPrefix}"`;
             
-            const outputDir = path.join(tempDir, `invoice-images-${Date.now()}`);
-            fs.mkdirSync(outputDir, { recursive: true });
+            console.log('Converting PDF to images...');
+            await execAsync(command);
 
-            try {
-              // Convert PDF pages to PNG images using pdftoppm with higher DPI for better OCR
-              const outputPrefix = path.join(outputDir, 'page');
-              // Use 600 DPI for sharp text recognition, especially in table cells
-              const command = `pdftoppm -png -r 600 "${tempFilePath}" "${outputPrefix}"`;
-              
-              console.log('Converting PDF to images...');
-              await execAsync(command);
+            // Find all generated PNG files
+            const imageFiles = fs.readdirSync(outputDir)
+              .filter((f: string) => f.endsWith('.png'))
+              .map((f: string) => path.join(outputDir, f))
+              .sort();
 
-              // Find all generated PNG files
-              const imageFiles = fs.readdirSync(outputDir)
-                .filter((f: string) => f.endsWith('.png'))
-                .map((f: string) => path.join(outputDir, f))
-                .sort();
+            // Use Tesseract.js to OCR each image
+            const { createWorker } = await import("tesseract.js");
+            const worker = await createWorker('eng');
+            
+            // Configure Tesseract for typed documents with clear text
+            await worker.setParameters({
+              tessedit_pageseg_mode: Tesseract.PSM.AUTO,  // Fully automatic page segmentation (best for invoices)
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t',
+            });
+            
+            const pageTexts: string[] = [];
 
-              // Use Tesseract.js to OCR each image
-              const { createWorker } = await import("tesseract.js");
-              const worker = await createWorker('eng');
-              
-              // Configure Tesseract for typed documents with clear text
-              await worker.setParameters({
-                tessedit_pageseg_mode: '3',  // Fully automatic page segmentation (best for invoices)
-                tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t',
-              });
-              
-              const pageTexts: string[] = [];
+            for (const imagePath of imageFiles) {
+              const imageBuffer = fs.readFileSync(imagePath);
+              // Preprocess image for better OCR accuracy
+              const preprocessedBuffer = await preprocessImageForOCR(imageBuffer);
+              const { data: { text } } = await worker.recognize(preprocessedBuffer);
+              pageTexts.push(text);
+            }
 
-              for (const imagePath of imageFiles) {
-                const imageBuffer = fs.readFileSync(imagePath);
-                // Preprocess image for better OCR accuracy
-                const preprocessedBuffer = await preprocessImageForOCR(imageBuffer);
-                const { data: { text } } = await worker.recognize(preprocessedBuffer);
-                pageTexts.push(text);
-              }
+            await worker.terminate();
+            extractedText = pageTexts.join('\n\n');
 
-              await worker.terminate();
-              extractedText = pageTexts.join('\n\n');
-
-              // Clean up image files
-              for (const imagePath of imageFiles) {
-                fs.unlinkSync(imagePath);
+            // Clean up image files
+            for (const imagePath of imageFiles) {
+              fs.unlinkSync(imagePath);
+            }
+            fs.rmdirSync(outputDir);
+          } catch (fallbackError) {
+            console.error('Fallback OCR error:', fallbackError);
+            // Clean up on error
+            if (fs.existsSync(outputDir)) {
+              const files = fs.readdirSync(outputDir);
+              for (const f of files) {
+                fs.unlinkSync(path.join(outputDir, f));
               }
               fs.rmdirSync(outputDir);
-            } catch (fallbackError) {
-              console.error('Fallback OCR error:', fallbackError);
-              // Clean up on error
-              if (fs.existsSync(outputDir)) {
-                const files = fs.readdirSync(outputDir);
-                for (const f of files) {
-                  fs.unlinkSync(path.join(outputDir, f));
-                }
-                fs.rmdirSync(outputDir);
-              }
-              throw fallbackError;
             }
+            throw fallbackError;
           }
 
           // Clean up temp PDF
@@ -3698,7 +3684,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Configure Tesseract for typed documents with clear text
           await worker.setParameters({
-            tessedit_pageseg_mode: '3',  // Fully automatic page segmentation (best for invoices)
+            tessedit_pageseg_mode: Tesseract.PSM.AUTO,  // Fully automatic page segmentation (best for invoices)
             tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t',
           });
           
