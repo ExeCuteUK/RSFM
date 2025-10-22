@@ -767,7 +767,10 @@ export class InvoiceMatchingEngine {
     
     // Gross/Grand total patterns - ORDERED BY PRIORITY (most specific first)
     const grossPatterns = [
-      // Highest priority: "Total Payable Amount", "Total Net Amount"
+      // Highest priority: ZIM format "TOTAL DEBIT               GBP                    355.00"
+      // Pattern matches: TOTAL DEBIT/CREDIT followed by currency and amount (lots of whitespace allowed)
+      /total\s+(?:debit|credit)\s+(?:gbp|eur|usd)\s+(-?[\d,]+[\.,]?\d{0,2})/gi,
+      // "Total Payable Amount", "Total Net Amount"
       /total\s+(?:payable|net)\s+amount[:\s]*(?:gbp|eur|usd|\£|\$|\€)?\s*(-?[\d,]+[\.,]?\d{0,2})/gi,
       /(?:total|amount)\s*(?:due|payable)[:\s]+[£$€]?\s?(-?[\d,]+[\.,]?\d{0,2})/gi,
       // ZIM table format REVERSE: Amount appears BEFORE "TOTAL DEBIT" label

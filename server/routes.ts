@@ -3919,16 +3919,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         supplier = 'GLB Customs Ltd';
       }
 
-      // Extract Invoice No
+      // Extract Invoice No - more flexible pattern for OCR variations
       for (const line of lines) {
-        const invMatch = line.match(/Invoice\s+No\s*:?\s*([A-Z0-9]+)/i);
-        if (invMatch) {
-          invoiceNumber = invMatch[1].trim();
+        // Try various invoice number patterns
+        if (!invoiceNumber) {
+          // Pattern 1: "Invoice No : INV2500215" or "Invoice No: 123456" (alphanumeric or numeric-only)
+          const invMatch1 = line.match(/Invoice\s+No\s*:?\s*([A-Z0-9]+)/i);
+          if (invMatch1) {
+            invoiceNumber = invMatch1[1].trim();
+          } else {
+            // Pattern 2: Just the number if "Invoice No" appears earlier
+            if (line.match(/Invoice\s+No\s*:/i)) {
+              const numMatch = line.match(/([A-Z0-9]+)/i);
+              if (numMatch) {
+                invoiceNumber = numMatch[1].trim();
+              }
+            }
+          }
         }
 
-        const dateMatch = line.match(/Date\s*\/\s*Tax\s+Point\s*:?\s*([\d.\/]+)/i);
-        if (dateMatch) {
-          invoiceDate = dateMatch[1].trim();
+        // Extract date - more flexible for OCR variations
+        if (!invoiceDate) {
+          // Pattern 1: "Date / Tax Point : 06.10.2025"
+          const dateMatch1 = line.match(/Date\s*[\/\\]?\s*Tax\s+Point\s*:?\s*([\d]{1,2}[.\/-][\d]{1,2}[.\/-][\d]{2,4})/i);
+          if (dateMatch1) {
+            invoiceDate = dateMatch1[1].trim();
+          } else {
+            // Pattern 2: Look for date after "Date" keyword
+            if (line.match(/Date\s*[\/\\]?\s*Tax/i)) {
+              const numMatch = line.match(/([\d]{1,2}[.\/-][\d]{1,2}[.\/-][\d]{2,4})/);
+              if (numMatch) {
+                invoiceDate = numMatch[1].trim();
+              }
+            }
+          }
         }
       }
 
@@ -4002,6 +4026,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Skip header-like lines
           if (line.match(/^(Charge\s+Description|Description|Our\s+Ref|Your\s+Ref|Amount)/i)) continue;
           
+          // Check if this line looks like a table row (has some content)
+          // Look for "Our Ref" pattern (IMP/GLB reference) which appears in all rows
+          const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
+          
           // Try to find job reference (try dash formats first, then plain)
           const completeMatch = line.match(completeJobRefPattern);
           const partialMatch = !completeMatch ? line.match(partialJobRefPattern) : null;
@@ -4010,56 +4038,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // If no dash format matched, try plain 5-digit format
           if (!completeMatch && !partialMatch) {
             const plainMatches = Array.from(line.matchAll(new RegExp(plainJobRefPattern.source, 'g')));
-            // Take first match (removed range filtering - extract ALL rows)
-            if (plainMatches.length > 0) {
-              plainMatch = plainMatches[0];
+            // Filter out matches that look like "Our Ref" codes (IMP/GLB numbers)
+            const validMatches = plainMatches.filter(m => {
+              const beforeMatch = line.substring(0, m.index || 0);
+              return !beforeMatch.match(/(IMP|GLB)$/i);
+            });
+            if (validMatches.length > 0) {
+              plainMatch = validMatches[0];
             }
           }
           
-          if (completeMatch || partialMatch || plainMatch) {
-            const jobRef = (completeMatch || partialMatch || plainMatch)![1];
+          // Process row if it has "Our Ref" (which indicates a table row) OR has enough content
+          if (ourRefMatch || line.length > 20) {
+            const jobRef = (completeMatch || partialMatch || plainMatch)?.[1] || '';
             const isPartialRef = !!partialMatch && !completeMatch && !plainMatch;
             
             let description = '';
             let amount = '';
-            let ourRef = '';
+            const ourRef = ourRefMatch ? ourRefMatch[1] : '';
 
-            // Extract amount - handle various formats: 25.00, 25.0, 2500 (no decimal)
-            // First try standard format with 2 decimals
-            let amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
+            // Extract amount - more flexible, doesn't require end-of-line anchor
+            // Pattern 1: Standard format with 2 decimals (25.00)
+            let amountMatch = line.match(/(\d+\.\d{2})(?:\s|[A-Z]|$)/);
             if (amountMatch) {
               amount = amountMatch[1];
             } else {
-              // Try with 1 decimal (25.0)
-              amountMatch = line.match(/(\d+\.\d)\s*[A-Z]?\s*$/);
+              // Pattern 2: 1 decimal (25.0)
+              amountMatch = line.match(/(\d+\.\d)(?:\s|[A-Z]|$)/);
               if (amountMatch) {
                 amount = parseFloat(amountMatch[1]).toFixed(2);
               } else {
-                // Try no decimal (2500) - convert to decimal format
-                amountMatch = line.match(/(\d{2,})(?:\s*[A-Z])?\s*$/);
-                if (amountMatch) {
-                  const numericAmount = parseInt(amountMatch[1]);
-                  // Only accept if it looks like a valid amount (2-4 digits typically)
-                  if (numericAmount >= 1 && numericAmount <= 99999) {
+                // Pattern 3: No decimal (2500) near end of line - convert to decimal format
+                // Look for 2-5 digit numbers that might be amounts
+                const possibleAmounts = Array.from(line.matchAll(/\b(\d{2,5})(?:\s*[A-Z])?\s*$/g));
+                if (possibleAmounts.length > 0) {
+                  const numericAmount = parseInt(possibleAmounts[0][1]);
+                  // Only accept if it looks like a valid amount (typically 10-9999)
+                  if (numericAmount >= 10 && numericAmount <= 99999) {
                     amount = (numericAmount / 100).toFixed(2);
                   }
                 }
               }
             }
 
-            // Look for description at the start (uppercase words before job ref)
-            const descMatch = line.match(/^([A-Z][A-Z\s&]+?)\s+[A-Z0-9]/);
-            if (descMatch) {
-              description = descMatch[1].trim();
+            // Extract description - more robust to handle various formats
+            // Pattern 1: Uppercase words at start (before Our Ref or job ref)
+            const descMatch1 = line.match(/^([A-Z][A-Z\s&]+?)\s+(?:IMP|GLB|\d)/);
+            if (descMatch1) {
+              description = descMatch1[1].trim();
+            } else {
+              // Pattern 2: Mixed case description
+              const descMatch2 = line.match(/^([A-Za-z][A-Za-z\s&]+?)\s+(?:IMP|GLB|\d)/);
+              if (descMatch2) {
+                description = descMatch2[1].trim();
+              }
             }
 
-            // Look for "Our Ref" pattern (IMP/GLB reference)
-            const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
-            if (ourRefMatch) {
-              ourRef = ourRefMatch[1];
-            }
-
-            console.log(`  Row ${i}: JobRef=${jobRef}${isPartialRef ? ' (PARTIAL)' : ''}, Desc="${description || 'IMPORT CLEARANCE'}", Amount=${amount || '0.00'}`);
+            console.log(`  Row ${i}: JobRef="${jobRef || '(none)'}"${isPartialRef ? ' (PARTIAL)' : ''}, OurRef="${ourRef}", Desc="${description || 'IMPORT CLEARANCE'}", Amount=${amount || '0.00'}`);
 
             lineItems.push({
               jobRef,
