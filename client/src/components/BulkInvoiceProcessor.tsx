@@ -15,6 +15,7 @@ interface BulkInvoiceLineItem {
   jobExists: boolean;
   jobType: 'import' | 'export' | 'clearance' | null;
   jobRefNumber: number;
+  isPartialRef?: boolean;
 }
 
 interface BulkInvoiceHeader {
@@ -250,9 +251,17 @@ export function BulkInvoiceProcessor({ className, onAddToBatchForm }: BulkInvoic
             {/* Line Items Table */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">
-                  Line Items ({result.lineItems.length})
-                </h3>
+                <div>
+                  <h3 className="font-medium">
+                    Line Items ({result.lineItems.length})
+                  </h3>
+                  {result.lineItems.some(item => item.isPartialRef) && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
+                      {result.lineItems.filter(item => item.isPartialRef).length} partial reference{result.lineItems.filter(item => item.isPartialRef).length > 1 ? 's' : ''} detected - review before saving
+                    </p>
+                  )}
+                </div>
                 <Button
                   size="sm"
                   onClick={addAllToJobs}
@@ -278,7 +287,15 @@ export function BulkInvoiceProcessor({ className, onAddToBatchForm }: BulkInvoic
                     {result.lineItems.map((item, index) => (
                       <TableRow key={index} data-testid={`row-line-item-${index}`}>
                         <TableCell className="font-medium" data-testid={`text-job-ref-${index}`}>
-                          {item.jobRef}
+                          <div className="flex items-center gap-1.5">
+                            {item.jobRef}
+                            {item.isPartialRef && (
+                              <Badge variant="outline" className="text-xs gap-1 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700">
+                                <AlertTriangle className="h-2.5 w-2.5" />
+                                Partial
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell data-testid={`text-description-${index}`}>
                           {item.description}

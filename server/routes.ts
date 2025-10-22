@@ -3932,57 +3932,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Parse table rows - looking for lines with job references
+      // Parse table rows - enhanced to capture ALL rows in the table region
       const lineItems: Array<{
         jobRef: string;
         description: string;
         amount: string;
         ourRef?: string;
+        isPartialRef?: boolean;
       }> = [];
 
-      // Job reference patterns: NN-NNNNN or similar
-      const jobRefPattern = /\b(\d{2}[-\/]\d{4,5})\b/;
+      // Find table boundaries
+      let tableStartIndex = -1;
+      let tableEndIndex = -1;
       
+      // Look for "Your Ref" column header to identify table start
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+        if (lines[i].match(/Your\s+Ref/i) || lines[i].match(/Charge\s+Description.*Our\s+Ref.*Your\s+Ref/i)) {
+          tableStartIndex = i + 1; // Start after header
+          break;
+        }
+      }
+      
+      // If we found a table start, scan until we hit a non-table row
+      if (tableStartIndex !== -1) {
+        for (let i = tableStartIndex; i < lines.length; i++) {
+          const line = lines[i];
+          
+          // Stop at common footer markers
+          if (line.match(/^(Sub[\s-]?Total|Total|VAT|All\s*:|Page\s+\d+)/i)) {
+            tableEndIndex = i;
+            break;
+          }
+          
+          // Stop at empty lines followed by footer-ish content
+          if (line.trim() === '' && i > tableStartIndex + 5) {
+            // Check if next few lines look like footer
+            const nextLines = lines.slice(i, i + 3).join(' ');
+            if (nextLines.match(/(Sub[\s-]?Total|Total|VAT|Page)/i)) {
+              tableEndIndex = i;
+              break;
+            }
+          }
+        }
         
-        // Look for lines containing job references
-        const jobRefMatch = line.match(jobRefPattern);
-        if (jobRefMatch) {
-          const jobRef = jobRefMatch[1];
+        // If no end marker found, scan to end of document
+        if (tableEndIndex === -1) {
+          tableEndIndex = lines.length;
+        }
+      }
+
+      // Job reference patterns: flexible to capture both complete and partial refs
+      // Complete: 10-47833 (2 digits, dash, 4-5 digits)
+      // Partial: 10-478 (2 digits, dash, 3 digits) - will be flagged
+      const completeJobRefPattern = /\b(\d{2}[-\/]\d{4,5})\b/;
+      const partialJobRefPattern = /\b(\d{2}[-\/]\d{3,5})\b/;
+      
+      // Scan the table region
+      if (tableStartIndex !== -1) {
+        console.log(`\nScanning table rows from line ${tableStartIndex} to ${tableEndIndex}`);
+        
+        for (let i = tableStartIndex; i < tableEndIndex; i++) {
+          const line = lines[i];
           
-          // Try to extract description and amount from the same line
-          const parts = line.split(/\s{2,}/); // Split by multiple spaces
+          // Skip empty lines
+          if (line.trim() === '') continue;
           
-          let description = '';
-          let amount = '';
-          let ourRef = '';
+          // Skip header-like lines
+          if (line.match(/^(Charge\s+Description|Description|Our\s+Ref|Your\s+Ref|Amount)/i)) continue;
+          
+          // Try to find job reference (complete or partial)
+          const completeMatch = line.match(completeJobRefPattern);
+          const partialMatch = !completeMatch ? line.match(partialJobRefPattern) : null;
+          
+          if (completeMatch || partialMatch) {
+            const jobRef = (completeMatch || partialMatch)![1];
+            const isPartialRef = !!partialMatch && !completeMatch;
+            
+            let description = '';
+            let amount = '';
+            let ourRef = '';
 
-          // Common patterns in GLB invoices
-          const amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
-          if (amountMatch) {
-            amount = amountMatch[1];
-          }
+            // Extract amount - look for monetary values (with decimal point)
+            const amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
+            if (amountMatch) {
+              amount = amountMatch[1];
+            }
 
-          // Look for description at the start
-          const descMatch = line.match(/^([A-Z\s]+?)\s+[A-Z0-9]/);
-          if (descMatch) {
-            description = descMatch[1].trim();
-          }
+            // Look for description at the start (uppercase words before job ref)
+            const descMatch = line.match(/^([A-Z][A-Z\s&]+?)\s+[A-Z0-9]/);
+            if (descMatch) {
+              description = descMatch[1].trim();
+            }
 
-          // Look for "Our Ref" pattern (IMP/GLB reference)
-          const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
-          if (ourRefMatch) {
-            ourRef = ourRefMatch[1];
-          }
+            // Look for "Our Ref" pattern (IMP/GLB reference)
+            const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
+            if (ourRefMatch) {
+              ourRef = ourRefMatch[1];
+            }
 
-          if (jobRef) {
+            console.log(`  Row ${i}: JobRef=${jobRef}${isPartialRef ? ' (PARTIAL)' : ''}, Desc="${description || 'IMPORT CLEARANCE'}", Amount=${amount || '0.00'}`);
+
             lineItems.push({
               jobRef,
               description: description || 'IMPORT CLEARANCE',
               amount: amount || '0.00',
               ourRef,
+              isPartialRef,
             });
+          }
+        }
+      } else {
+        // Fallback: Original behavior if no table detected
+        console.log('\nNo table header found, using fallback extraction');
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          
+          const jobRefMatch = line.match(completeJobRefPattern);
+          if (jobRefMatch) {
+            const jobRef = jobRefMatch[1];
+            
+            let description = '';
+            let amount = '';
+            let ourRef = '';
+
+            const amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
+            if (amountMatch) {
+              amount = amountMatch[1];
+            }
+
+            const descMatch = line.match(/^([A-Z\s]+?)\s+[A-Z0-9]/);
+            if (descMatch) {
+              description = descMatch[1].trim();
+            }
+
+            const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
+            if (ourRefMatch) {
+              ourRef = ourRefMatch[1];
+            }
+
+            if (jobRef) {
+              lineItems.push({
+                jobRef,
+                description: description || 'IMPORT CLEARANCE',
+                amount: amount || '0.00',
+                ourRef,
+                isPartialRef: false,
+              });
+            }
           }
         }
       }
