@@ -4010,13 +4010,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // If no dash format matched, try plain 5-digit format
           if (!completeMatch && !partialMatch) {
             const plainMatches = Array.from(line.matchAll(new RegExp(plainJobRefPattern.source, 'g')));
-            // Filter to valid job reference range (26001-99999)
-            for (const match of plainMatches) {
-              const num = parseInt(match[1]);
-              if (num >= 26001 && num <= 99999) {
-                plainMatch = match;
-                break;
-              }
+            // Take first match (removed range filtering - extract ALL rows)
+            if (plainMatches.length > 0) {
+              plainMatch = plainMatches[0];
             }
           }
           
@@ -4028,10 +4024,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
             let amount = '';
             let ourRef = '';
 
-            // Extract amount - look for monetary values (with decimal point)
-            const amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
+            // Extract amount - handle various formats: 25.00, 25.0, 2500 (no decimal)
+            // First try standard format with 2 decimals
+            let amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
             if (amountMatch) {
               amount = amountMatch[1];
+            } else {
+              // Try with 1 decimal (25.0)
+              amountMatch = line.match(/(\d+\.\d)\s*[A-Z]?\s*$/);
+              if (amountMatch) {
+                amount = parseFloat(amountMatch[1]).toFixed(2);
+              } else {
+                // Try no decimal (2500) - convert to decimal format
+                amountMatch = line.match(/(\d{2,})(?:\s*[A-Z])?\s*$/);
+                if (amountMatch) {
+                  const numericAmount = parseInt(amountMatch[1]);
+                  // Only accept if it looks like a valid amount (2-4 digits typically)
+                  if (numericAmount >= 1 && numericAmount <= 99999) {
+                    amount = (numericAmount / 100).toFixed(2);
+                  }
+                }
+              }
             }
 
             // Look for description at the start (uppercase words before job ref)
@@ -4070,12 +4083,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (!jobRefMatch) {
             const plainMatches = Array.from(line.matchAll(new RegExp(plainJobRefPattern.source, 'g')));
-            for (const match of plainMatches) {
-              const num = parseInt(match[1]);
-              if (num >= 26001 && num <= 99999) {
-                plainMatch = match;
-                break;
-              }
+            // Take first match (removed range filtering - extract ALL rows)
+            if (plainMatches.length > 0) {
+              plainMatch = plainMatches[0];
             }
           }
           
@@ -4086,9 +4096,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
             let amount = '';
             let ourRef = '';
 
-            const amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
+            // Extract amount - handle various formats: 25.00, 25.0, 2500 (no decimal)
+            // First try standard format with 2 decimals
+            let amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
             if (amountMatch) {
               amount = amountMatch[1];
+            } else {
+              // Try with 1 decimal (25.0)
+              amountMatch = line.match(/(\d+\.\d)\s*[A-Z]?\s*$/);
+              if (amountMatch) {
+                amount = parseFloat(amountMatch[1]).toFixed(2);
+              } else {
+                // Try no decimal (2500) - convert to decimal format
+                amountMatch = line.match(/(\d{2,})(?:\s*[A-Z])?\s*$/);
+                if (amountMatch) {
+                  const numericAmount = parseInt(amountMatch[1]);
+                  // Only accept if it looks like a valid amount (2-4 digits typically)
+                  if (numericAmount >= 1 && numericAmount <= 99999) {
+                    amount = (numericAmount / 100).toFixed(2);
+                  }
+                }
+              }
             }
 
             const descMatch = line.match(/^([A-Z\s]+?)\s+[A-Z0-9]/);

@@ -280,7 +280,6 @@ export function BulkInvoiceProcessor({ className, onAddToBatchForm }: BulkInvoic
                       <TableHead>Description</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -315,16 +314,6 @@ export function BulkInvoiceProcessor({ className, onAddToBatchForm }: BulkInvoic
                               Not Found
                             </Badge>
                           )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => addToJob(item)}
-                            data-testid={`button-add-to-job-${index}`}
-                          >
-                            Add to Batch Form
-                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
