@@ -9,7 +9,8 @@ import { type ImportShipment, type CustomClearance, type ImportCustomer, type Ex
 import { differenceInDays, parseISO } from "date-fns"
 import { usePageHeader } from "@/contexts/PageHeaderContext"
 import { InvoiceMatchingAssistant } from "@/components/InvoiceMatchingAssistant"
-import { BulkInvoiceProcessor } from "@/components/BulkInvoiceProcessor"
+import { BulkInvoiceProcessor, type BatchInvoiceData } from "@/components/BulkInvoiceProcessor"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 
 interface ContainerDiscrepancy {
   shipmentId: string
@@ -74,6 +75,7 @@ export default function Eric() {
   const [, setLocation] = useLocation()
   const { user } = useAuth()
   const { setPageTitle, setActionButtons } = usePageHeader()
+  const { openWindow } = useWindowManager()
 
   // Set page header
   useEffect(() => {
@@ -538,7 +540,19 @@ export default function Eric() {
       {/* Invoice Processing Tools */}
       <div className="grid md:grid-cols-2 gap-4">
         <InvoiceMatchingAssistant />
-        <BulkInvoiceProcessor />
+        <BulkInvoiceProcessor 
+          onAddToBatchForm={(data: BatchInvoiceData) => {
+            // Open the batch invoice window with all line items
+            openWindow({
+              id: `batch-invoice-${Date.now()}`,
+              type: 'expense-invoice',
+              title: 'Add Batch Invoices / Credits',
+              payload: { 
+                batchInvoiceData: data 
+              }
+            });
+          }}
+        />
       </div>
 
       {/* Show message when there are no notifications */}

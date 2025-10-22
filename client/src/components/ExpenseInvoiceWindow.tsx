@@ -23,6 +23,16 @@ interface ExpenseInvoiceWindowProps {
       invoiceDate?: string
       invoiceAmount?: string
     }
+    batchInvoiceData?: {
+      invoiceNumber: string
+      invoiceDate: string
+      supplier: string
+      lineItems: Array<{
+        jobRef: string
+        description: string
+        amount: string
+      }>
+    }
   }
 }
 
@@ -46,28 +56,55 @@ interface JobInfo {
 export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindowProps) {
   const { closeWindow, minimizeWindow } = useWindowManager()
   const { toast } = useToast()
-  const [invoices, setInvoices] = useState<InvoiceRow[]>(() => {
-    const initialData = payload?.initialData
-    if (initialData) {
-      // Parse autofilled invoice date to ensure it's in YYYY-MM-DD format as a LOCAL date
-      // This prevents timezone shifts when JavaScript interprets the date string
-      let parsedDate = initialData.invoiceDate || ''
-      if (parsedDate) {
-        try {
-          // Try parsing with all possible formats, including YYYY-MM-DD
-          // Using explicit formats ensures dates are treated as local, not UTC
-          const formats = ['yyyy-MM-dd', 'dd/MM/yy', 'dd/MM/yyyy', 'dd-MM-yy', 'dd-MM-yyyy']
-          for (const fmt of formats) {
-            const parsed = parse(parsedDate, fmt, new Date())
-            if (!isNaN(parsed.getTime())) {
-              parsedDate = format(parsed, 'yyyy-MM-dd')
-              break
-            }
-          }
-        } catch {
-          // If parsing fails, keep original value
+  
+  // Helper function to parse date strings into YYYY-MM-DD format
+  const parseDateString = (dateStr: string): string => {
+    if (!dateStr) return ''
+    try {
+      // Handle DD/MM/YY format (GLB Customs format)
+      const ddmmyyMatch = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{2})$/)
+      if (ddmmyyMatch) {
+        const [, day, month, year] = ddmmyyMatch
+        // Assume 20xx for year (e.g., 25 -> 2025)
+        const fullYear = `20${year}`
+        return `${fullYear}-${month}-${day}`
+      }
+      
+      // Try parsing with various formats
+      const formats = ['yyyy-MM-dd', 'dd/MM/yy', 'dd/MM/yyyy', 'dd-MM-yy', 'dd-MM-yyyy', 'dd.MM.yyyy']
+      for (const fmt of formats) {
+        const parsed = parse(dateStr, fmt, new Date())
+        if (!isNaN(parsed.getTime())) {
+          return format(parsed, 'yyyy-MM-dd')
         }
       }
+    } catch {
+      // If parsing fails, keep original value
+    }
+    return dateStr
+  }
+  
+  const [invoices, setInvoices] = useState<InvoiceRow[]>(() => {
+    const batchData = payload?.batchInvoiceData
+    const initialData = payload?.initialData
+    
+    // Priority 1: Batch invoice data from Bulk Invoice Processor
+    if (batchData && batchData.lineItems.length > 0) {
+      const parsedDate = parseDateString(batchData.invoiceDate)
+      
+      return batchData.lineItems.map((item, index) => ({
+        id: (index + 1).toString(),
+        jobRef: item.jobRef,
+        companyName: batchData.supplier,
+        invoiceNumber: batchData.invoiceNumber,
+        invoiceDate: parsedDate,
+        invoiceAmount: item.amount,
+      }))
+    }
+    
+    // Priority 2: Single invoice data from Invoice Matching Assistant
+    if (initialData) {
+      const parsedDate = parseDateString(initialData.invoiceDate || '')
       
       return [{ 
         id: '1', 
@@ -78,6 +115,8 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
         invoiceAmount: initialData.invoiceAmount || '' 
       }]
     }
+    
+    // Default: Empty row
     return [{ id: '1', jobRef: '', companyName: '', invoiceNumber: '', invoiceDate: '', invoiceAmount: '' }]
   })
   const [jobInfoMap, setJobInfoMap] = useState<{ [invoiceId: string]: JobInfo }>({})

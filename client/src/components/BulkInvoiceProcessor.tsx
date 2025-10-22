@@ -31,25 +31,33 @@ interface BulkInvoiceResult {
   rawText: string;
 }
 
-interface BulkInvoiceProcessorProps {
-  className?: string;
+export interface BatchInvoiceData {
+  invoiceNumber: string;
+  invoiceDate: string;
+  supplier: string;
+  lineItems: Array<{
+    jobRef: string;
+    description: string;
+    amount: string;
+  }>;
 }
 
-export function BulkInvoiceProcessor({ className }: BulkInvoiceProcessorProps) {
+interface BulkInvoiceProcessorProps {
+  className?: string;
+  onAddToBatchForm?: (data: BatchInvoiceData) => void;
+}
+
+export function BulkInvoiceProcessor({ className, onAddToBatchForm }: BulkInvoiceProcessorProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<BulkInvoiceResult | null>(null);
   const [filename, setFilename] = useState<string>('');
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [addingItems, setAddingItems] = useState<Set<number>>(new Set());
-  const [addingAll, setAddingAll] = useState(false);
   const { toast } = useToast();
 
   const processFile = async (file: File) => {
     setIsProcessing(true);
     setFilename(file.name);
     setResult(null);
-    setUploadedFile(file);
 
     try {
       const formData = new FormData();
@@ -80,7 +88,6 @@ export function BulkInvoiceProcessor({ className }: BulkInvoiceProcessorProps) {
         description: error instanceof Error ? error.message : 'Failed to process bulk invoice',
         variant: 'destructive',
       });
-      setUploadedFile(null);
     } finally {
       setIsProcessing(false);
     }
@@ -113,210 +120,40 @@ export function BulkInvoiceProcessor({ className }: BulkInvoiceProcessorProps) {
     }
   };
 
-  const addToJob = async (lineItem: BulkInvoiceLineItem, index: number) => {
-    if (!result || !lineItem.jobExists || !uploadedFile) return;
+  const addToJob = (lineItem: BulkInvoiceLineItem) => {
+    if (!result || !onAddToBatchForm) return;
 
-    setAddingItems(prev => new Set(prev).add(index));
+    // Open batch invoice form with this single line item
+    const batchData: BatchInvoiceData = {
+      invoiceNumber: result.header.invoiceNumber || '',
+      invoiceDate: result.header.invoiceDate || '',
+      supplier: result.header.supplier || '',
+      lineItems: [{
+        jobRef: lineItem.jobRef,
+        description: lineItem.description,
+        amount: lineItem.amount,
+      }],
+    };
 
-    try {
-      console.log(`Processing single job ${lineItem.jobRef} (${lineItem.jobRefNumber})...`);
-      
-      // Step 1: Upload the invoice file to Google Drive with job context
-      const formData = new FormData();
-      formData.append('file', uploadedFile);
-      formData.append('jobType', lineItem.jobType === 'import' ? 'Import Shipments' : 
-                                  lineItem.jobType === 'export' ? 'Export Shipments' : 
-                                  'Custom Clearances');
-      formData.append('jobRef', lineItem.jobRefNumber.toString());
-      formData.append('documentType', 'Clearance Documents');
-
-      const uploadResponse = await fetch('/api/drive/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        console.error(`Upload failed for job ${lineItem.jobRef}:`, errorText);
-        throw new Error(`Upload failed: ${errorText}`);
-      }
-
-      const uploadResult = await uploadResponse.json();
-      console.log(`Upload successful for job ${lineItem.jobRef}:`, uploadResult);
-
-      // Step 2: Get existing job file group documents (handle 404 as empty array)
-      const fileGroupResponse = await fetch(`/api/job-file-groups/${lineItem.jobRefNumber}`, {
-        credentials: 'include',
-      });
-
-      let documents: Array<{filename: string; path: string}> = [];
-      
-      if (fileGroupResponse.ok) {
-        const fileGroup = await fileGroupResponse.json();
-        documents = fileGroup.documents || [];
-        console.log(`Found ${documents.length} existing documents for job ${lineItem.jobRef}`);
-      } else if (fileGroupResponse.status === 404) {
-        // File group doesn't exist yet, start with empty array
-        console.log(`No existing file group for job ${lineItem.jobRef}, will create new one`);
-        documents = [];
-      } else {
-        const errorText = await fileGroupResponse.text();
-        console.error(`Failed to fetch file group for job ${lineItem.jobRef}:`, errorText);
-        throw new Error(`Failed to fetch file group: ${errorText}`);
-      }
-
-      // Add the new invoice to the documents array
-      documents.push({
-        filename: uploadResult.filename,
-        path: uploadResult.objectPath,
-      });
-
-      // Step 3: Update the job file group with the new document (will create if it doesn't exist)
-      // Note: apiRequest throws on error, so if we reach here it succeeded
-      await apiRequest('PATCH', `/api/job-file-groups/${lineItem.jobRefNumber}/documents`, {
-        documents,
-      });
-
-      console.log(`Successfully added invoice to job ${lineItem.jobRef}`);
-      
-      toast({
-        title: 'Invoice Added',
-        description: `Successfully added invoice to Job ${lineItem.jobRef}`,
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['/api/job-file-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/job-file-groups', lineItem.jobRefNumber] });
-    } catch (error) {
-      console.error(`Error adding invoice to job ${lineItem.jobRef}:`, error);
-      toast({
-        title: 'Failed to Add',
-        description: error instanceof Error ? error.message : 'Failed to add invoice to job',
-        variant: 'destructive',
-      });
-    } finally {
-      setAddingItems(prev => {
-        const next = new Set(prev);
-        next.delete(index);
-        return next;
-      });
-    }
+    onAddToBatchForm(batchData);
   };
 
-  const addAllToJobs = async () => {
-    if (!result || !uploadedFile) return;
+  const addAllToJobs = () => {
+    if (!result || !onAddToBatchForm) return;
 
-    const validItems = result.lineItems.filter(item => item.jobExists);
-    if (validItems.length === 0) {
-      toast({
-        title: 'No Valid Items',
-        description: 'No line items with valid job references found',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // Open batch invoice form with ALL line items (regardless of job validation status)
+    const batchData: BatchInvoiceData = {
+      invoiceNumber: result.header.invoiceNumber || '',
+      invoiceDate: result.header.invoiceDate || '',
+      supplier: result.header.supplier || '',
+      lineItems: result.lineItems.map(item => ({
+        jobRef: item.jobRef,
+        description: item.description,
+        amount: item.amount,
+      })),
+    };
 
-    setAddingAll(true);
-
-    try {
-      let successCount = 0;
-      let failedCount = 0;
-
-      // Process all valid items
-      for (const item of validItems) {
-        try {
-          console.log(`Processing job ${item.jobRef} (${item.jobRefNumber})...`);
-          
-          // Create a NEW FormData instance for each iteration to avoid field duplication
-          const formData = new FormData();
-          formData.append('file', uploadedFile);
-          formData.append('jobType', item.jobType === 'import' ? 'Import Shipments' : 
-                                      item.jobType === 'export' ? 'Export Shipments' : 
-                                      'Custom Clearances');
-          formData.append('jobRef', item.jobRefNumber.toString());
-          formData.append('documentType', 'Clearance Documents');
-
-          const uploadResponse = await fetch('/api/drive/upload', {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
-          });
-
-          if (!uploadResponse.ok) {
-            const errorText = await uploadResponse.text();
-            console.error(`Upload failed for job ${item.jobRef}:`, errorText);
-            throw new Error(`Upload failed: ${errorText}`);
-          }
-
-          const uploadResult = await uploadResponse.json();
-          console.log(`Upload successful for job ${item.jobRef}:`, uploadResult);
-
-          // Get existing job file group documents (handle 404 as empty array)
-          const fileGroupResponse = await fetch(`/api/job-file-groups/${item.jobRefNumber}`, {
-            credentials: 'include',
-          });
-
-          let documents: Array<{filename: string; path: string}> = [];
-          
-          if (fileGroupResponse.ok) {
-            const fileGroup = await fileGroupResponse.json();
-            documents = fileGroup.documents || [];
-            console.log(`Found ${documents.length} existing documents for job ${item.jobRef}`);
-          } else if (fileGroupResponse.status === 404) {
-            // File group doesn't exist yet, start with empty array
-            console.log(`No existing file group for job ${item.jobRef}, will create new one`);
-            documents = [];
-          } else {
-            throw new Error(`Failed to fetch file group: ${fileGroupResponse.statusText}`);
-          }
-
-          // Add the new invoice to documents array
-          documents.push({
-            filename: uploadResult.filename,
-            path: uploadResult.objectPath,
-          });
-
-          // Update the job file group (will create if it doesn't exist)
-          // Note: apiRequest throws on error, so if we reach here it succeeded
-          await apiRequest('PATCH', `/api/job-file-groups/${item.jobRefNumber}/documents`, {
-            documents,
-          });
-
-          console.log(`Successfully added invoice to job ${item.jobRef}`);
-          successCount++;
-          
-          // Invalidate cache for this specific job
-          queryClient.invalidateQueries({ queryKey: ['/api/job-file-groups', item.jobRefNumber] });
-        } catch (itemError) {
-          console.error(`Error adding invoice to job ${item.jobRef}:`, itemError);
-          failedCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        toast({
-          title: 'Invoices Added',
-          description: `Successfully added invoice to ${successCount} job(s)${failedCount > 0 ? `, ${failedCount} failed` : ''}`,
-        });
-      } else {
-        toast({
-          title: 'Failed to Add Invoices',
-          description: 'Could not add invoices to any jobs',
-          variant: 'destructive',
-        });
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['/api/job-file-groups'] });
-    } catch (error) {
-      console.error('Error adding all:', error);
-      toast({
-        title: 'Failed to Add All',
-        description: error instanceof Error ? error.message : 'Failed to add invoices to jobs',
-        variant: 'destructive',
-      });
-    } finally {
-      setAddingAll(false);
-    }
+    onAddToBatchForm(batchData);
   };
 
   return (
@@ -416,26 +253,14 @@ export function BulkInvoiceProcessor({ className }: BulkInvoiceProcessorProps) {
                 <h3 className="font-medium">
                   Line Items ({result.lineItems.length})
                 </h3>
-                {result.lineItems.some(item => item.jobExists) && (
-                  <Button
-                    size="sm"
-                    onClick={addAllToJobs}
-                    disabled={addingAll}
-                    data-testid="button-add-all"
-                  >
-                    {addingAll ? (
-                      <>
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                        Adding All...
-                      </>
-                    ) : (
-                      <>
-                        <FilePlus className="h-3 w-3 mr-1" />
-                        Add All to Jobs
-                      </>
-                    )}
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  onClick={addAllToJobs}
+                  data-testid="button-add-all"
+                >
+                  <FilePlus className="h-3 w-3 mr-1" />
+                  Add All to Batch Form
+                </Button>
               </div>
 
               <div className="border rounded-lg">
@@ -478,15 +303,10 @@ export function BulkInvoiceProcessor({ className }: BulkInvoiceProcessorProps) {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => addToJob(item, index)}
-                            disabled={!item.jobExists || addingItems.has(index)}
+                            onClick={() => addToJob(item)}
                             data-testid={`button-add-to-job-${index}`}
                           >
-                            {addingItems.has(index) ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              'Add to Job'
-                            )}
+                            Add to Batch Form
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -502,7 +322,6 @@ export function BulkInvoiceProcessor({ className }: BulkInvoiceProcessorProps) {
               onClick={() => {
                 setResult(null);
                 setFilename('');
-                setUploadedFile(null);
               }}
               className="w-full"
               data-testid="button-process-another"
