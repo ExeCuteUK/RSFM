@@ -1,0 +1,62 @@
+
+
+To view real-time logs, run:
+   pm2 logs rsfm --lines 100
+
+Note: If you had uncommitted changes, they were stashed.
+Restore them with: git stash pop
+
+executeuk@rsfm:/var/www/rsfm$ pm2 logs rsfm --lines 50
+[TAILING] Tailing last 50 lines for [rsfm] process (change the value with --line                                                  s option)
+/home/executeuk/.pm2/logs/rsfm-error-0.log last 50 lines:
+0|rsfm     | Error processing bulk invoice: Error: Command failed: pdftoppm -png                                                   -r 600 "/tmp/bulk-invoice-1761133190586.pdf" "/tmp/bulk-invoice-images-17611331                                                  90587/page"
+0|rsfm     | /bin/sh: 1: pdftoppm: not found
+0|rsfm     |
+0|rsfm     |     at genericNodeError (node:internal/errors:984:15)
+0|rsfm     |     at wrappedFn (node:internal/errors:538:14)
+0|rsfm     |     at ChildProcess.exithandler (node:child_process:422:12)
+0|rsfm     |     at ChildProcess.emit (node:events:524:28)
+0|rsfm     |     at maybeClose (node:internal/child_process:1104:16)
+0|rsfm     |     at Socket.<anonymous> (node:internal/child_process:456:11)
+0|rsfm     |     at Socket.emit (node:events:524:28)
+0|rsfm     |     at Pipe.<anonymous> (node:net:343:12) {
+0|rsfm     |   code: 127,
+0|rsfm     |   killed: false,
+0|rsfm     |   signal: null,
+0|rsfm     |   cmd: 'pdftoppm -png -r 600 "/tmp/bulk-invoice-1761133190586.pdf"                                                   "/tmp/bulk-invoice-images-1761133190587/page"',
+0|rsfm     |   stdout: '',
+0|rsfm     |   stderr: '/bin/sh: 1: pdftoppm: not found\n'
+0|rsfm     | }
+0|rsfm     | Fallback OCR error: Error: Command failed: pdftoppm -png -r 600 "/t                                                  mp/invoice-1761133455748.pdf" "/tmp/invoice-images-1761133455749/page"
+0|rsfm     | /bin/sh: 1: pdftoppm: not found
+0|rsfm     |
+0|rsfm     |     at genericNodeError (node:internal/errors:984:15)
+0|rsfm     |     at wrappedFn (node:internal/errors:538:14)
+0|rsfm     |     at ChildProcess.exithandler (node:child_process:422:12)
+0|rsfm     |     at ChildProcess.emit (node:events:524:28)
+0|rsfm     |     at maybeClose (node:internal/child_process:1104:16)
+0|rsfm     |     at ChildProcess._handle.onexit (node:internal/child_process:304                                                  :5) {
+0|rsfm     |   code: 127,
+0|rsfm     |   killed: false,
+0|rsfm     |   signal: null,
+0|rsfm     |   cmd: 'pdftoppm -png -r 600 "/tmp/invoice-1761133455748.pdf" "/tmp                                                  /invoice-images-1761133455749/page"',
+0|rsfm     |   stdout: '',
+0|rsfm     |   stderr: '/bin/sh: 1: pdftoppm: not found\n'
+0|rsfm     | }
+0|rsfm     | Error matching invoice: Error: Command failed: pdftoppm -png -r 600                                                   "/tmp/invoice-1761133455748.pdf" "/tmp/invoice-images-1761133455749/page"
+0|rsfm     | /bin/sh: 1: pdftoppm: not found
+0|rsfm     |
+0|rsfm     |     at genericNodeError (node:internal/errors:984:15)
+0|rsfm     |     at wrappedFn (node:internal/errors:538:14)
+0|rsfm     |     at ChildProcess.exithandler (node:child_process:422:12)
+0|rsfm     |     at ChildProcess.emit (node:events:524:28)
+0|rsfm     |     at maybeClose (node:internal/child_process:1104:16)
+0|rsfm     |     at ChildProcess._handle.onexit (node:internal/child_process:304                                                  :5) {
+0|rsfm     |   code: 127,
+0|rsfm     |   killed: false,
+0|rsfm     |   signal: null,
+0|rsfm     |   cmd: 'pdftoppm -png -r 600 "/tmp/invoice-1761133455748.pdf" "/tmp                                                  /invoice-images-1761133455749/page"',
+0|rsfm     |   stdout: '',
+0|rsfm     |   stderr: '/bin/sh: 1: pdftoppm: not found\n'
+0|rsfm     | }
+
