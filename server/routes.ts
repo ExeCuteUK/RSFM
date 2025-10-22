@@ -3782,6 +3782,258 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk invoice processing (GLB Customs format)
+  app.post("/api/ocr/process-bulk-invoice", requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = req.file;
+      const fileExtension = file.originalname.toLowerCase().split('.').pop();
+      const supportedImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
+      const isPDF = fileExtension === 'pdf';
+      const isImage = supportedImageTypes.includes(fileExtension || '');
+
+      if (!isPDF && !isImage) {
+        return res.status(400).json({ 
+          error: "Only PDF and image files (JPG, PNG, GIF, BMP, TIFF, WEBP) are supported" 
+        });
+      }
+
+      const fileBuffer = file.buffer;
+      let extractedText = "";
+
+      // Perform OCR extraction
+      if (isPDF) {
+        console.log('Processing bulk invoice PDF with OCR...');
+        const fs = await import("fs");
+        const path = await import("path");
+        const os = await import("os");
+
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `bulk-invoice-${Date.now()}.pdf`);
+
+        try {
+          fs.writeFileSync(tempFilePath, fileBuffer);
+          
+          // Convert PDF to images using pdftoppm
+          const { exec } = await import("child_process");
+          const { promisify } = await import("util");
+          const execAsync = promisify(exec);
+          
+          const outputDir = path.join(tempDir, `bulk-invoice-images-${Date.now()}`);
+          fs.mkdirSync(outputDir, { recursive: true });
+
+          try {
+            const outputPrefix = path.join(outputDir, 'page');
+            const command = `pdftoppm -png -r 600 "${tempFilePath}" "${outputPrefix}"`;
+            
+            console.log('Converting PDF to images...');
+            await execAsync(command);
+
+            const imageFiles = fs.readdirSync(outputDir)
+              .filter((f: string) => f.endsWith('.png'))
+              .map((f: string) => path.join(outputDir, f))
+              .sort();
+
+            const { createWorker, PSM } = await import("tesseract.js");
+            const worker = await createWorker('eng');
+            
+            await worker.setParameters({
+              tessedit_pageseg_mode: PSM.AUTO,
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t/-',
+            });
+            
+            const pageTexts: string[] = [];
+
+            for (const imagePath of imageFiles) {
+              const imageBuffer = fs.readFileSync(imagePath);
+              const preprocessedBuffer = await preprocessImageForOCR(imageBuffer);
+              const { data: { text } } = await worker.recognize(preprocessedBuffer);
+              pageTexts.push(text);
+            }
+
+            await worker.terminate();
+            extractedText = pageTexts.join('\n\n');
+
+            // Clean up image files
+            for (const imagePath of imageFiles) {
+              fs.unlinkSync(imagePath);
+            }
+            fs.rmdirSync(outputDir);
+          } catch (fallbackError) {
+            console.error('Bulk invoice OCR error:', fallbackError);
+            if (fs.existsSync(outputDir)) {
+              const files = fs.readdirSync(outputDir);
+              for (const f of files) {
+                fs.unlinkSync(path.join(outputDir, f));
+              }
+              fs.rmdirSync(outputDir);
+            }
+            throw fallbackError;
+          }
+
+          fs.unlinkSync(tempFilePath);
+        } catch (error) {
+          if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+          }
+          throw error;
+        }
+      } else {
+        // Image file
+        const { createWorker, PSM } = await import("tesseract.js");
+        const worker = await createWorker('eng');
+
+        try {
+          await worker.setParameters({
+            tessedit_pageseg_mode: PSM.AUTO,
+            tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t/-',
+          });
+          
+          const preprocessedBuffer = await preprocessImageForOCR(fileBuffer);
+          const { data: { text } } = await worker.recognize(preprocessedBuffer);
+          await worker.terminate();
+          extractedText = text;
+        } catch (error) {
+          await worker.terminate();
+          throw error;
+        }
+      }
+
+      console.log('\n=== BULK INVOICE PROCESSING ===');
+      console.log('OCR Text (first 1000 chars):');
+      console.log(extractedText.substring(0, 1000));
+
+      // Parse GLB Customs invoice format
+      const lines = extractedText.split('\n');
+      
+      // Extract header fields
+      let invoiceNumber = null;
+      let invoiceDate = null;
+      let supplier = null;
+
+      // Check for GLB CUSTOMS LTD
+      if (extractedText.toUpperCase().includes('GLB CUSTOMS')) {
+        supplier = 'GLB Customs Ltd';
+      }
+
+      // Extract Invoice No
+      for (const line of lines) {
+        const invMatch = line.match(/Invoice\s+No\s*:?\s*([A-Z0-9]+)/i);
+        if (invMatch) {
+          invoiceNumber = invMatch[1].trim();
+        }
+
+        const dateMatch = line.match(/Date\s*\/\s*Tax\s+Point\s*:?\s*([\d.\/]+)/i);
+        if (dateMatch) {
+          invoiceDate = dateMatch[1].trim();
+        }
+      }
+
+      // Parse table rows - looking for lines with job references
+      const lineItems: Array<{
+        jobRef: string;
+        description: string;
+        amount: string;
+        ourRef?: string;
+      }> = [];
+
+      // Job reference patterns: NN-NNNNN or similar
+      const jobRefPattern = /\b(\d{2}[-\/]\d{4,5})\b/;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Look for lines containing job references
+        const jobRefMatch = line.match(jobRefPattern);
+        if (jobRefMatch) {
+          const jobRef = jobRefMatch[1];
+          
+          // Try to extract description and amount from the same line
+          const parts = line.split(/\s{2,}/); // Split by multiple spaces
+          
+          let description = '';
+          let amount = '';
+          let ourRef = '';
+
+          // Common patterns in GLB invoices
+          const amountMatch = line.match(/(\d+\.\d{2})\s*[A-Z]?\s*$/);
+          if (amountMatch) {
+            amount = amountMatch[1];
+          }
+
+          // Look for description at the start
+          const descMatch = line.match(/^([A-Z\s]+?)\s+[A-Z0-9]/);
+          if (descMatch) {
+            description = descMatch[1].trim();
+          }
+
+          // Look for "Our Ref" pattern (IMP/GLB reference)
+          const ourRefMatch = line.match(/\b(IMP\d+|GLB\d+)\b/);
+          if (ourRefMatch) {
+            ourRef = ourRefMatch[1];
+          }
+
+          if (jobRef) {
+            lineItems.push({
+              jobRef,
+              description: description || 'IMPORT CLEARANCE',
+              amount: amount || '0.00',
+              ourRef,
+            });
+          }
+        }
+      }
+
+      // Validate job references against database
+      const allImportShipments = await storage.getAllImportShipments();
+      const allExportShipments = await storage.getAllExportShipments();
+      const allCustomClearances = await storage.getAllCustomClearances();
+
+      const validatedLineItems = lineItems.map(item => {
+        // Check if job reference exists
+        const jobRefNum = parseInt(item.jobRef.replace(/[-\/]/g, ''));
+        
+        const importJob = allImportShipments.find(j => j.jobRef === jobRefNum);
+        const exportJob = allExportShipments.find(j => j.jobRef === jobRefNum);
+        const clearanceJob = allCustomClearances.find(j => j.jobRef === jobRefNum);
+
+        const jobExists = !!(importJob || exportJob || clearanceJob);
+        const jobType = importJob ? 'import' : exportJob ? 'export' : clearanceJob ? 'clearance' : null;
+
+        return {
+          ...item,
+          jobExists,
+          jobType,
+          jobRefNumber: jobRefNum,
+        };
+      });
+
+      console.log(`\nExtracted ${validatedLineItems.length} line items`);
+      console.log('Invoice Number:', invoiceNumber);
+      console.log('Invoice Date:', invoiceDate);
+      console.log('Supplier:', supplier);
+      console.log('=== END BULK PROCESSING ===\n');
+
+      res.json({
+        success: true,
+        filename: file.originalname,
+        header: {
+          invoiceNumber,
+          invoiceDate,
+          supplier,
+        },
+        lineItems: validatedLineItems,
+        rawText: extractedText,
+      });
+    } catch (error) {
+      console.error("Error processing bulk invoice:", error);
+      res.status(500).json({ error: "Failed to process bulk invoice" });
+    }
+  });
+
   // ========== Backup Routes (Admin only) ==========
 
   // List all backups from Google Drive (all authenticated users)

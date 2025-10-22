@@ -9,6 +9,7 @@ import { type ImportShipment, type CustomClearance, type ImportCustomer, type Ex
 import { differenceInDays, parseISO } from "date-fns"
 import { usePageHeader } from "@/contexts/PageHeaderContext"
 import { InvoiceMatchingAssistant } from "@/components/InvoiceMatchingAssistant"
+import { BulkInvoiceProcessor } from "@/components/BulkInvoiceProcessor"
 
 interface ContainerDiscrepancy {
   shipmentId: string
@@ -534,8 +535,11 @@ export default function Eric() {
         </Card>
       )}
 
-      {/* Invoice Matching Assistant */}
-      <InvoiceMatchingAssistant />
+      {/* Invoice Processing Tools */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <InvoiceMatchingAssistant />
+        <BulkInvoiceProcessor />
+      </div>
 
       {/* Show message when there are no notifications */}
       {!containerTrackingMessage && !jobIssuesMessage && !financeIssuesMessage && (
