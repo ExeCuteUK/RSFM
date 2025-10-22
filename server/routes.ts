@@ -3461,6 +3461,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to preprocess images for better OCR accuracy
+  async function preprocessImageForOCR(imageBuffer: Buffer): Promise<Buffer> {
+    const sharp = (await import("sharp")).default;
+    
+    return await sharp(imageBuffer)
+      // Convert to grayscale (removes color noise)
+      .greyscale()
+      // Increase contrast and brightness for better text clarity
+      .normalize()
+      // Apply slight sharpening to enhance text edges
+      .sharpen({ sigma: 1.5 })
+      // Increase DPI metadata (some OCR engines use this)
+      .withMetadata({ density: 600 })
+      // Output as PNG with maximum quality
+      .png({ quality: 100, compressionLevel: 0 })
+      .toBuffer();
+  }
+
   // Helper function to detect if OCR output is gibberish
   function isGibberish(text: string): boolean {
     console.log('\n=== GIBBERISH DETECTION ===');
@@ -3497,18 +3515,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     // Check 3: Look for common OCR failure patterns
+    // Exclude legitimate bracketed content like country codes ([GB], [CN]) and currencies ([GBP], [USD])
+    const legitimateBracketedPattern = /\[(?:[A-Z]{2,3}|[a-z]{2,3})\]/g;
+    const legitimateBracketed = (text.match(legitimateBracketedPattern) || []);
+    const textWithoutLegitimate = text.replace(legitimateBracketedPattern, '');
+    
     const ocrFailurePatterns = [
       { pattern: /I\.I\.I/, name: 'I.I.I' },
       { pattern: /Oo\s+Oo/, name: 'Oo Oo' },
-      { pattern: /\[[\w\d]{1,3}\]/, name: '[bracketed]' },
+      { pattern: /\[[\w\d]{1,3}\]/, name: '[bracketed]', testText: textWithoutLegitimate },
       { pattern: /[<>=]{2,}/, name: '>><<==' },
       { pattern: /-k\s+-k/, name: '-k -k' },
       { pattern: /ju\s+oO/, name: 'ju oO' },
     ];
     
     console.log('Checking OCR failure patterns...');
-    for (const { pattern, name } of ocrFailurePatterns) {
-      if (pattern.test(text)) {
+    for (const item of ocrFailurePatterns) {
+      const { pattern, name } = item;
+      const testText = 'testText' in item ? item.testText : text;
+      if (pattern.test(testText)) {
         console.log(`RESULT: Pattern detected (${name}) - GIBBERISH`);
         return true;
       }
@@ -3619,16 +3644,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const { createWorker } = await import("tesseract.js");
               const worker = await createWorker('eng');
               
-              // Configure Tesseract for better table recognition
+              // Configure Tesseract for typed documents with clear text
               await worker.setParameters({
-                tessedit_pageseg_mode: '6',  // Assume single uniform block of text (better for tables)
+                tessedit_pageseg_mode: '3',  // Fully automatic page segmentation (best for invoices)
+                tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t',
               });
               
               const pageTexts: string[] = [];
 
               for (const imagePath of imageFiles) {
                 const imageBuffer = fs.readFileSync(imagePath);
-                const { data: { text } } = await worker.recognize(imageBuffer);
+                // Preprocess image for better OCR accuracy
+                const preprocessedBuffer = await preprocessImageForOCR(imageBuffer);
+                const { data: { text } } = await worker.recognize(preprocessedBuffer);
                 pageTexts.push(text);
               }
 
@@ -3668,12 +3696,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const worker = await createWorker('eng');
 
         try {
-          // Configure Tesseract for better table recognition
+          // Configure Tesseract for typed documents with clear text
           await worker.setParameters({
-            tessedit_pageseg_mode: '6',  // Assume single uniform block of text (better for tables)
+            tessedit_pageseg_mode: '3',  // Fully automatic page segmentation (best for invoices)
+            tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;!?()[]{}/@#$%&*+-=<> \n\t',
           });
           
-          const { data: { text } } = await worker.recognize(fileBuffer);
+          // Preprocess image for better OCR accuracy
+          const preprocessedBuffer = await preprocessImageForOCR(fileBuffer);
+          const { data: { text } } = await worker.recognize(preprocessedBuffer);
           await worker.terminate();
           extractedText = text;
         } catch (error) {
