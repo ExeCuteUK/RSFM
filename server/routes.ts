@@ -3982,8 +3982,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let i = tableStartIndex; i < lines.length; i++) {
           const line = lines[i];
           
-          // Stop at common footer markers
-          if (line.match(/^(Sub[\s-]?Total|Total|VAT|All\s*:|Page\s+\d+)/i)) {
+          // Stop at common footer markers - enhanced detection
+          if (line.match(/^(Sub[\s-]?Total|Net\s+Total|Total|VAT\s+Payable|TOTAL\s+AMOUNT|Our\s+bank\s+account|Payment\s+Terms|All\s*:|Page\s+\d+)/i)) {
             tableEndIndex = i;
             break;
           }
@@ -3991,8 +3991,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Stop at empty lines followed by footer-ish content
           if (line.trim() === '' && i > tableStartIndex + 5) {
             // Check if next few lines look like footer
-            const nextLines = lines.slice(i, i + 3).join(' ');
-            if (nextLines.match(/(Sub[\s-]?Total|Total|VAT|Page)/i)) {
+            const nextLines = lines.slice(i, i + 5).join(' ');
+            if (nextLines.match(/(Sub[\s-]?Total|Net\s+Total|Total|VAT\s+Payable|TOTAL\s+AMOUNT|Our\s+bank\s+account|Payment\s+Terms)/i)) {
               tableEndIndex = i;
               break;
             }
@@ -4048,14 +4048,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Process row if it has "Our Ref" (which indicates a table row) OR has enough content
-          if (ourRefMatch || line.length > 20) {
+          // CRITICAL: Only process rows that have "Our Ref" (IMP/GLB code)
+          // This filters out footer content like bank details, totals, etc.
+          if (ourRefMatch) {
             const jobRef = (completeMatch || partialMatch || plainMatch)?.[1] || '';
             const isPartialRef = !!partialMatch && !completeMatch && !plainMatch;
             
             let description = '';
             let amount = '';
-            const ourRef = ourRefMatch ? ourRefMatch[1] : '';
+            const ourRef = ourRefMatch[1];
 
             // Extract amount - more flexible, doesn't require end-of-line anchor
             // Pattern 1: Standard format with 2 decimals (25.00)
@@ -4094,15 +4095,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
-            console.log(`  Row ${i}: JobRef="${jobRef || '(none)'}"${isPartialRef ? ' (PARTIAL)' : ''}, OurRef="${ourRef}", Desc="${description || 'IMPORT CLEARANCE'}", Amount=${amount || '0.00'}`);
+            // Skip rows with suspiciously large amounts that match typical invoice totals
+            // This helps filter out footer content that might have slipped through
+            const amountNum = parseFloat(amount || '0');
+            const isSuspiciouslyLarge = amountNum > 200; // Typical line items are £15-£40
+            
+            if (!isSuspiciouslyLarge) {
+              console.log(`  Row ${i}: JobRef="${jobRef || '(none)'}"${isPartialRef ? ' (PARTIAL)' : ''}, OurRef="${ourRef}", Desc="${description || 'IMPORT CLEARANCE'}", Amount=${amount || '0.00'}`);
 
-            lineItems.push({
-              jobRef,
-              description: description || 'IMPORT CLEARANCE',
-              amount: amount || '0.00',
-              ourRef,
-              isPartialRef,
-            });
+              lineItems.push({
+                jobRef,
+                description: description || 'IMPORT CLEARANCE',
+                amount: amount || '0.00',
+                ourRef,
+                isPartialRef,
+              });
+            } else {
+              console.log(`  Row ${i}: SKIPPED (suspiciously large amount: £${amount}) - likely invoice total`);
+            }
           }
         }
       } else {
