@@ -664,11 +664,10 @@ export default function JobJournals() {
         </Button>
       </div>
 
-      <Card className="flex-1 flex flex-col min-h-0">
-        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-          <div className="flex-1 overflow-auto">
-            <table className="w-full border-collapse">
-              <thead className="text-xs sticky top-0 bg-background z-10">
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-auto">
+          <table className="w-full border-collapse">
+            <thead className="text-xs sticky top-0 bg-background z-10">
                 <tr className="border-b-4">
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">#</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Job Ref</th>
@@ -899,77 +898,75 @@ export default function JobJournals() {
                   </tr>
                 ))}
               </tbody>
-              
-              <tfoot className="text-xs sticky bottom-0 bg-background z-10">
-                <tr className="border-t-4">
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center border-r-4 border-border"></td>
-                  <td className="p-1 text-center border-l-2 border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center font-bold text-white bg-red-100 dark:bg-red-900 border-r border-border" data-testid="text-total-purchase">
-                    £{totalPurchaseAmount.toFixed(2)}
-                  </td>
-                  {showReserveColumns && (
-                    <td className="p-1 text-center border-l-4 border-r-4 border-border"></td>
-                  )}
-                  <td className="p-1 text-center border-l-2 border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center border-r border-border"></td>
-                  <td className="p-1 text-center font-bold text-white bg-green-100 dark:bg-green-900 border-r border-border" data-testid="text-total-sales">
-                    £{totalSalesAmount.toFixed(2)}
-                  </td>
-                  {showReserveColumns && (
-                    <td className="p-1 text-center border-l-4 border-r-4 border-border"></td>
-                  )}
-                  <td className="p-1 text-center font-bold bg-muted border-l-2" data-testid="text-total-profit-loss">
-                    {(() => {
-                      const profitLoss = totalSalesAmount - totalPurchaseAmount
-                      const formatted = profitLoss.toLocaleString('en-GB', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })
-                      
-                      let colorClass = ""
-                      if (profitLoss > 0) {
-                        colorClass = "text-green-600 dark:text-green-400"
-                      } else if (profitLoss < 0) {
-                        colorClass = "text-red-600 dark:text-red-400"
-                      } else {
-                        colorClass = "text-orange-400 dark:text-orange-400"
-                      }
-                      
-                      return <span className={colorClass}>£{formatted}</span>
-                    })()}
-                  </td>
-                </tr>
-              </tfoot>
             </table>
           </div>
-        </CardContent>
-      </Card>
+          
+          {/* Totals Footer Row - Outside table */}
+          <div className="flex text-xs bg-background border-t-4 border-border">
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center font-bold text-white bg-red-100 dark:bg-red-900 flex-1" data-testid="text-total-purchase">
+              £{totalPurchaseAmount.toFixed(2)}
+            </div>
+            {showReserveColumns && (
+              <div className="p-2 text-center flex-1"></div>
+            )}
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center flex-1"></div>
+            <div className="p-2 text-center font-bold text-white bg-green-100 dark:bg-green-900 flex-1" data-testid="text-total-sales">
+              £{totalSalesAmount.toFixed(2)}
+            </div>
+            {showReserveColumns && (
+              <div className="p-2 text-center flex-1"></div>
+            )}
+            <div className="p-2 text-center font-bold bg-muted flex-1" data-testid="text-total-profit-loss">
+              {(() => {
+                const profitLoss = totalSalesAmount - totalPurchaseAmount
+                const formatted = profitLoss.toLocaleString('en-GB', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })
+                
+                let colorClass = ""
+                if (profitLoss > 0) {
+                  colorClass = "text-green-600 dark:text-green-400"
+                } else if (profitLoss < 0) {
+                  colorClass = "text-red-600 dark:text-red-400"
+                } else {
+                  colorClass = "text-orange-400 dark:text-orange-400"
+                }
+                
+                return <span className={colorClass}>£{formatted}</span>
+              })()}
+            </div>
+          </div>
+        </div>
       
-      <InvoiceEditDialog
-        invoice={selectedInvoice}
-        open={invoiceDialogOpen}
-        onOpenChange={setInvoiceDialogOpen}
-      />
-      
-      <GeneralReferenceDialog
-        trigger={<span className="hidden" />}
-        reference={editingGeneralRef}
-        open={generalRefDialogOpen}
-        onOpenChange={(open) => {
-          setGeneralRefDialogOpen(open)
-          if (!open) {
-            setEditingGeneralRef(null)
-          }
-        }}
-      />
-    </div>
-  )
-}
+        <InvoiceEditDialog
+          invoice={selectedInvoice}
+          open={invoiceDialogOpen}
+          onOpenChange={setInvoiceDialogOpen}
+        />
+        
+        <GeneralReferenceDialog
+          trigger={<span className="hidden" />}
+          reference={editingGeneralRef}
+          open={generalRefDialogOpen}
+          onOpenChange={(open) => {
+            setGeneralRefDialogOpen(open)
+            if (!open) {
+              setEditingGeneralRef(null)
+            }
+          }}
+        />
+      </div>
+    )
+  }

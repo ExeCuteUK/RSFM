@@ -112,24 +112,9 @@ export function AnparioCCGrid() {
       // Return context with the previous value
       return { previousEntries }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       // Don't invalidate queries immediately - rely on optimistic updates
       // Only invalidate when we're done editing to avoid focus loss
-      
-      // Check if this was the last entry and auto-create a new row
-      const isLastEntry = entries.length > 0 && variables.id === entries[entries.length - 1].id
-      if (isLastEntry && selectedReferenceId) {
-        // Auto-create new row
-        createEntryMutation.mutate({
-          generalReferenceId: selectedReferenceId,
-          etaPort: null,
-          containerNumber: null,
-          entryNumber: null,
-          poNumber: null,
-          notes: null,
-        })
-      }
-      
       // Don't clear editingCell here - let handleSave manage it to support tab navigation
     },
     onError: (error: Error, _, context) => {
@@ -198,18 +183,25 @@ export function AnparioCCGrid() {
   // Generate display rows - show actual entries plus one editable blank row for new data entry
   const displayRows: (AnparioCCEntry & { isBlank?: boolean })[] = [...entries]
   
-  // Always add one editable blank row at the end for new entries
-  displayRows.push({
-    id: `blank-new`,
-    generalReferenceId: selectedReferenceId || '',
-    containerNumber: null,
-    etaPort: null,
-    entryNumber: null,
-    poNumber: null,
-    notes: null,
-    createdAt: new Date().toISOString(),
-    isBlank: true,
-  } as any)
+  // Only add blank row if there are no entries OR if all entries have some data
+  // This ensures we always have at least one row to edit, but don't create duplicates
+  const shouldShowBlankRow = entries.length === 0 || entries.every(e => 
+    e.containerNumber || e.etaPort || e.entryNumber || e.poNumber || e.notes
+  )
+  
+  if (shouldShowBlankRow) {
+    displayRows.push({
+      id: `blank-new`,
+      generalReferenceId: selectedReferenceId || '',
+      containerNumber: null,
+      etaPort: null,
+      entryNumber: null,
+      poNumber: null,
+      notes: null,
+      createdAt: new Date().toISOString(),
+      isBlank: true,
+    } as any)
+  }
 
   // Handle cell click
   const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, currentValue: string) => {
