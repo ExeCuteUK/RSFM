@@ -1629,37 +1629,13 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
               </div>
 
               <div className="border-t pt-4">
-                <div className="grid gap-4 md:grid-cols-6">
-                  <FormField
-                    control={form.control}
-                    name="currencyIn"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-3">
-                        <FormLabel>Rate Currency</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || "GBP"}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-currency-in">
-                              <SelectValue placeholder="Select currency" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="GBP">GBP (£)</SelectItem>
-                            <SelectItem value="EUR">EUR (€)</SelectItem>
-                            <SelectItem value="USD">USD ($)</SelectItem>
-                            <SelectItem value="TL">TL (₺)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+                <div className="grid gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
                     name="haulierFreightRateIn"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Haulier Freight Rate In</FormLabel>
+                        <FormLabel>Freight Rate In</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-haulier-freight-rate-in" />
                         </FormControl>
@@ -1667,22 +1643,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                       </FormItem>
                     )}
                   />
-
-                  {arrivalClearanceAgent === "Haulier" && (
-                    <FormField
-                      control={form.control}
-                      name="destinationClearanceCostIn"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Destination Clearance Cost In</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
 
                   {exportClearanceAgent === "R.S" && (
                     <FormField
@@ -1700,11 +1660,27 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                     />
                   )}
 
+                  {arrivalClearanceAgent === "Haulier" && (
+                    <FormField
+                      control={form.control}
+                      name="destinationClearanceCostIn"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Destination CC In</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
                   <FormField
                     control={form.control}
                     name="additionalExpensesIn"
                     render={({ field }) => (
-                      <FormItem className="col-span-6">
+                      <FormItem className="col-span-3">
                         <FormLabel>Additional Expenses In</FormLabel>
                         <div className="space-y-2">
                           {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
