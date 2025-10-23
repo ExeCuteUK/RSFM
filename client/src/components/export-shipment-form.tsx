@@ -1466,7 +1466,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
               <CardTitle>Quotation / Rate Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <FormField
                   control={form.control}
                   name="freightRateOut"
@@ -1487,7 +1487,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                     name="clearanceCharge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Export Clearance Charge Out</FormLabel>
+                        <FormLabel>Export CC Charge Out</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-clearance-charge" />
                         </FormControl>
@@ -1629,13 +1629,13 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
               </div>
 
               <div className="border-t pt-4">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-4">
                   <FormField
                     control={form.control}
                     name="currencyIn"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Currency</FormLabel>
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Rate Currency</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || "GBP"}>
                           <FormControl>
                             <SelectTrigger data-testid="select-currency-in">
@@ -1668,22 +1668,6 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                     )}
                   />
 
-                  {exportClearanceAgent === "R.S" && (
-                    <FormField
-                      control={form.control}
-                      name="exportClearanceChargeIn"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Export Clearance Charge In</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
                   {arrivalClearanceAgent === "Haulier" && (
                     <FormField
                       control={form.control}
@@ -1693,6 +1677,22 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                           <FormLabel>Destination Clearance Cost In</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value || ""} data-testid="input-destination-clearance-cost-in" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {exportClearanceAgent === "R.S" && (
+                    <FormField
+                      control={form.control}
+                      name="exportClearanceChargeIn"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Export CC Charge In</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
