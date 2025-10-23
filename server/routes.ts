@@ -3045,7 +3045,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ========== Anpario CC Entries Routes ==========
 
   // Get all Anpario CC entries
-  app.get("/api/anpario-cc-entries", async (_req, res) => {
+  app.get("/api/anpario-cc-entries", requireAuth, async (_req, res) => {
     try {
       const entries = await storage.getAllAnparioCCEntries();
       res.json(entries);
@@ -3056,7 +3056,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get Anpario CC entries by general reference ID
-  app.get("/api/anpario-cc-entries/by-reference/:generalReferenceId", async (req, res) => {
+  app.get("/api/anpario-cc-entries/by-reference/:generalReferenceId", requireAuth, async (req, res) => {
     try {
       const entries = await storage.getAnparioCCEntriesByGeneralReferenceId(req.params.generalReferenceId);
       res.json(entries);
@@ -3067,7 +3067,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get single Anpario CC entry
-  app.get("/api/anpario-cc-entries/:id", async (req, res) => {
+  app.get("/api/anpario-cc-entries/:id", requireAuth, async (req, res) => {
     try {
       const entry = await storage.getAnparioCCEntry(req.params.id);
       if (!entry) {
@@ -3081,7 +3081,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create Anpario CC entry
-  app.post("/api/anpario-cc-entries", async (req, res) => {
+  app.post("/api/anpario-cc-entries", requireAuth, async (req, res) => {
     try {
       const validatedData = insertAnparioCCEntrySchema.parse(req.body);
       const entry = await storage.createAnparioCCEntry(validatedData);
@@ -3096,7 +3096,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update Anpario CC entry
-  app.patch("/api/anpario-cc-entries/:id", async (req, res) => {
+  app.patch("/api/anpario-cc-entries/:id", requireAuth, async (req, res) => {
     try {
       const validatedData = insertAnparioCCEntrySchema.partial().parse(req.body);
       const entry = await storage.updateAnparioCCEntry(req.params.id, validatedData);
@@ -3114,7 +3114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete Anpario CC entry
-  app.delete("/api/anpario-cc-entries/:id", async (req, res) => {
+  app.delete("/api/anpario-cc-entries/:id", requireAuth, async (req, res) => {
     try {
       const success = await storage.deleteAnparioCCEntry(req.params.id);
       if (!success) {
@@ -3128,7 +3128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate and download Anpario CC statement PDF
-  app.post("/api/anpario-cc-entries/generate-statement", async (req, res) => {
+  app.post("/api/anpario-cc-entries/generate-statement", requireAuth, async (req, res) => {
     try {
       const {
         generalReferenceId,
