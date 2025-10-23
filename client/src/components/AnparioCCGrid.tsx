@@ -76,10 +76,18 @@ export function AnparioCCGrid() {
 
   // Refresh data when exiting edit mode to sync with server
   useEffect(() => {
-    if (!editingCell && selectedReferenceId) {
-      // User has left editing mode - refresh to get server-normalized data
+    // Only invalidate when truly exiting edit mode (going from editing to not editing)
+    // Don't invalidate when moving between cells (both prevEditingCellRef and editingCell are non-null)
+    const wasEditing = prevEditingCellRef.current !== null
+    const isEditing = editingCell !== null
+    
+    if (wasEditing && !isEditing && selectedReferenceId) {
+      // User has left editing mode completely - refresh to get server-normalized data
       queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
     }
+    
+    // Update ref for next render
+    prevEditingCellRef.current = editingCell
   }, [editingCell, selectedReferenceId])
 
   // Update entry mutation with optimistic updates
