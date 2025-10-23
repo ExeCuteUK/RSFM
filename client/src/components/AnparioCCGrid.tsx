@@ -15,8 +15,6 @@ export function AnparioCCGrid() {
   const [selectedReferenceId, setSelectedReferenceId] = useState<string | null>(null)
   const [editingCell, setEditingCell] = useState<{ entryId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
-  const [columnWidths, setColumnWidths] = useState<number[]>([])
-  const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Fetch all general references with "Anpario EU CC" name
@@ -68,19 +66,20 @@ export function AnparioCCGrid() {
     },
   })
 
-  // Clear column widths when exiting edit mode
-  useEffect(() => {
-    if (!editingCell) {
-      setColumnWidths([])
-    }
-  }, [editingCell])
-
   // Focus input when entering edit mode
   useEffect(() => {
     if (editingCell && inputRef.current) {
       inputRef.current.focus()
     }
   }, [editingCell])
+
+  // Refresh data when exiting edit mode to sync with server
+  useEffect(() => {
+    if (!editingCell && selectedReferenceId) {
+      // User has left editing mode - refresh to get server-normalized data
+      queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
+    }
+  }, [editingCell, selectedReferenceId])
 
   // Update entry mutation with optimistic updates
   const updateEntryMutation = useMutation({
@@ -104,7 +103,8 @@ export function AnparioCCGrid() {
       return { previousEntries }
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
+      // Don't invalidate queries immediately - rely on optimistic updates
+      // Only invalidate when we're done editing to avoid focus loss
       
       // Check if this was the last entry and auto-create a new row
       const isLastEntry = entries.length > 0 && variables.id === entries[entries.length - 1].id
@@ -203,13 +203,6 @@ export function AnparioCCGrid() {
 
   // Handle cell click
   const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, currentValue: string) => {
-    // Capture column widths before entering edit mode
-    if (tableRef.current && !editingCell) {
-      const headers = tableRef.current.querySelectorAll('thead th')
-      const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
-      setColumnWidths(widths)
-    }
-
     setEditingCell({ entryId: entry.id, fieldName })
     setTempValue(currentValue || "")
   }
@@ -289,8 +282,8 @@ export function AnparioCCGrid() {
     } else if (e.key === "Tab" && editingCell) {
       e.preventDefault()
       
-      // Define field order for tab navigation
-      const fieldOrder = ['containerNumber', 'etaPort', 'entryNumber', 'poNumber', 'notes']
+      // Define field order for tab navigation (matches left-to-right column order)
+      const fieldOrder = ['etaPort', 'containerNumber', 'entryNumber', 'poNumber', 'notes']
       const currentFieldIndex = fieldOrder.indexOf(editingCell.fieldName)
       
       // Don't tab from notes column (it's the last field)
@@ -351,9 +344,17 @@ export function AnparioCCGrid() {
   }
 
   // Render cell
-  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, index: number) => {
+  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string) => {
     const isEditing = editingCell?.entryId === entry.id && editingCell.fieldName === fieldName
-    const width = columnWidths[index]
+    
+    // Define fixed widths for each column
+    const widthClass = {
+      etaPort: 'w-28',
+      containerNumber: 'w-40',
+      entryNumber: 'w-32',
+      poNumber: 'w-32',
+      notes: 'w-64'
+    }[fieldName] || 'w-32'
     
     const value = (entry as any)[fieldName] || ""
 
@@ -361,8 +362,7 @@ export function AnparioCCGrid() {
       return (
         <td 
           key={fieldName} 
-          className="border px-2 py-1"
-          style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+          className={`border px-2 py-1 ${widthClass}`}
         >
           <input
             ref={inputRef}
@@ -381,8 +381,7 @@ export function AnparioCCGrid() {
     return (
       <td 
         key={fieldName} 
-        className="border px-2 py-1 text-center cursor-pointer hover-elevate"
-        style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+        className={`border px-2 py-1 text-center cursor-pointer hover-elevate ${widthClass}`}
         onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
       >
@@ -597,15 +596,15 @@ export function AnparioCCGrid() {
       {selectedReferenceId ? (
         <Card className="p-4">
           <div className="overflow-x-auto">
-            <table ref={tableRef} className="w-full border-collapse">
+            <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">ETA Port</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">Container Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">Entry Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">PO Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">Notes</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-20">Actions</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-28">ETA Port</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-40">Container Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-32">Entry Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-32">PO Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-64">Notes</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-24">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -616,12 +615,12 @@ export function AnparioCCGrid() {
                     key={entry.id} 
                     className={`border-b ${hasEntryNumber ? 'bg-green-100 dark:bg-green-950 hover:bg-green-200 dark:hover:bg-green-900' : 'hover:bg-muted/50'}`}
                   >
-                    {renderCell(entry, "etaPort", 0)}
-                    {renderCell(entry, "containerNumber", 1)}
-                    {renderCell(entry, "entryNumber", 2)}
-                    {renderCell(entry, "poNumber", 3)}
-                    {renderCell(entry, "notes", 4)}
-                    <td className="border px-2 py-1 text-center" style={columnWidths[5] ? { width: `${columnWidths[5]}px`, minWidth: `${columnWidths[5]}px`, maxWidth: `${columnWidths[5]}px` } : {}}>
+                    {renderCell(entry, "etaPort")}
+                    {renderCell(entry, "containerNumber")}
+                    {renderCell(entry, "entryNumber")}
+                    {renderCell(entry, "poNumber")}
+                    {renderCell(entry, "notes")}
+                    <td className="border px-2 py-1 text-center w-24">
                       {!entry.isBlank && (
                         <Button
                           variant="ghost"
@@ -632,7 +631,7 @@ export function AnparioCCGrid() {
                             }
                           }}
                           data-testid={`button-delete-${entry.id}`}
-                          className="h-auto min-h-6 px-2 py-0 text-xs"
+                          className="h-auto min-h-6 px-2 py-0 text-xs whitespace-nowrap"
                         >
                           Delete
                         </Button>
