@@ -2972,6 +2972,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check if a reference exists for a given month/year (General Reference or Anpario CC)
+  app.get("/api/general-references/check-exists", async (req, res) => {
+    try {
+      const month = parseInt(req.query.month as string);
+      const year = parseInt(req.query.year as string);
+      
+      if (isNaN(month) || isNaN(year)) {
+        return res.status(400).json({ error: "Invalid month or year" });
+      }
+      
+      // First, check if any general reference exists for this month/year
+      const references = await storage.getAllGeneralReferences();
+      const generalRefExists = references.some(ref => ref.month === month && ref.year === year);
+      
+      if (generalRefExists) {
+        return res.json({ exists: true });
+      }
+      
+      // If no general reference found, check Anpario CC entries
+      // Get all Anpario CC entries and check if any have a date matching the month/year
+      const anparioCCEntries = await storage.getAllAnparioCCEntries();
+      
+      const anparioExists = anparioCCEntries.some(entry => {
+        if (!entry.etaPort) return false;
+        
+        try {
+          // Try to parse etaPort as a date
+          const date = new Date(entry.etaPort);
+          if (isNaN(date.getTime())) return false;
+          
+          const entryMonth = date.getMonth() + 1; // JavaScript months are 0-indexed
+          const entryYear = date.getFullYear();
+          
+          return entryMonth === month && entryYear === year;
+        } catch (error) {
+          return false;
+        }
+      });
+      
+      res.json({ exists: anparioExists });
+    } catch (error) {
+      console.error("Error checking reference existence:", error);
+      res.status(500).json({ error: "Failed to check reference existence" });
+    }
+  });
+
   // Create general reference
   app.post("/api/general-references", async (req, res) => {
     try {

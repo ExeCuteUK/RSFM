@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useWindowManager } from '@/contexts/WindowManagerContext'
 import { DraggableWindow } from './DraggableWindow'
 import { ImportShipmentForm } from './import-shipment-form'
@@ -5,6 +6,16 @@ import type { InsertImportShipment } from '@shared/schema'
 import { useMutation } from '@tanstack/react-query'
 import { apiRequest, queryClient } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface ImportShipmentWindowProps {
   windowId: string
@@ -18,6 +29,8 @@ interface ImportShipmentWindowProps {
 export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: ImportShipmentWindowProps) {
   const { closeWindow, minimizeWindow } = useWindowManager()
   const { toast } = useToast()
+  const [showWarningDialog, setShowWarningDialog] = useState(false)
+  const [pendingData, setPendingData] = useState<InsertImportShipment | null>(null)
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertImportShipment) => {
@@ -72,12 +85,54 @@ export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: Imp
     }
   })
 
-  const handleSubmit = (data: InsertImportShipment) => {
+  const checkReferenceExists = async (month: number, year: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/general-references/check-exists?month=${month}&year=${year}`)
+      const data = await response.json()
+      return data.exists
+    } catch (error) {
+      console.error('Error checking reference existence:', error)
+      return true // Assume exists on error to avoid blocking
+    }
+  }
+
+  const handleSubmit = async (data: InsertImportShipment) => {
+    if (payload.mode === 'create' && data.bookingDate) {
+      // Extract month and year from booking date
+      const date = new Date(data.bookingDate)
+      const month = date.getMonth() + 1 // JavaScript months are 0-indexed
+      const year = date.getFullYear()
+      
+      // Check if reference exists
+      const exists = await checkReferenceExists(month, year)
+      
+      if (!exists) {
+        // Show warning dialog
+        setPendingData(data)
+        setShowWarningDialog(true)
+        return
+      }
+    }
+    
+    // Proceed with submission
     if (payload.mode === 'create') {
       createMutation.mutate(data)
     } else {
       updateMutation.mutate(data)
     }
+  }
+
+  const handleConfirmSubmit = () => {
+    if (pendingData) {
+      createMutation.mutate(pendingData)
+      setPendingData(null)
+    }
+    setShowWarningDialog(false)
+  }
+
+  const handleCancelSubmit = () => {
+    setPendingData(null)
+    setShowWarningDialog(false)
   }
 
   const handleCancel = () => {
@@ -89,28 +144,59 @@ export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: Imp
   }
 
   const title = payload.mode === 'create' ? 'New Import Shipment' : 'Edit Import Shipment'
+  
+  const getMonthName = (month: number) => {
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    return monthNames[month - 1]
+  }
 
   return (
-    <DraggableWindow
-      id={windowId}
-      title={title}
-      onClose={handleCancel}
-      onMinimize={() => {
-        try {
-          minimizeWindow(windowId)
-        } catch (error) {
-          console.error('Error minimizing window:', error)
-        }
-      }}
-      width={900}
-      height={700}
-    >
-      <ImportShipmentForm
-        key={(payload.defaultValues as any)?.id || 'new'}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        defaultValues={payload.defaultValues}
-      />
-    </DraggableWindow>
+    <>
+      <DraggableWindow
+        id={windowId}
+        title={title}
+        onClose={handleCancel}
+        onMinimize={() => {
+          try {
+            minimizeWindow(windowId)
+          } catch (error) {
+            console.error('Error minimizing window:', error)
+          }
+        }}
+        width={900}
+        height={700}
+      >
+        <ImportShipmentForm
+          key={(payload.defaultValues as any)?.id || 'new'}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          defaultValues={payload.defaultValues}
+        />
+      </DraggableWindow>
+
+      <AlertDialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+        <AlertDialogContent data-testid="alert-missing-reference">
+          <AlertDialogHeader>
+            <AlertDialogTitle>No General Reference Found</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingData?.bookingDate && (() => {
+                const date = new Date(pendingData.bookingDate)
+                const month = date.getMonth() + 1
+                const year = date.getFullYear()
+                return `No General Reference or Anpario CC entry exists for ${getMonthName(month)} ${year}. Would you like to proceed anyway?`
+              })()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelSubmit} data-testid="button-cancel-submit">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit} data-testid="button-confirm-submit">
+              Proceed Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
