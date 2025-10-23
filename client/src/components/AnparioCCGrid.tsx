@@ -579,7 +579,7 @@ export function AnparioCCGrid() {
                       className="border px-2 py-1 text-center"
                       style={columnWidths[5] ? { width: `${columnWidths[5]}px`, minWidth: `${columnWidths[5]}px`, maxWidth: `${columnWidths[5]}px` } : {}}
                     >
-                      {!entry.isBlank && (
+                      {!entry.isBlank ? (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -589,10 +589,12 @@ export function AnparioCCGrid() {
                             }
                           }}
                           data-testid={`button-delete-${entry.id}`}
-                          className="h-auto px-2 py-0 text-xs"
+                          className="h-auto px-1 py-0 text-xs min-h-0"
                         >
                           Delete
                         </Button>
+                      ) : (
+                        <span className="text-xs opacity-0">-</span>
                       )}
                     </td>
                   </tr>
