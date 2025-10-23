@@ -80,10 +80,13 @@ export function DraggableInvoiceWindow() {
 
   if (!invoiceWindow) return null
 
-  const { job, jobType, existingInvoice } = invoiceWindow.payload as {
-    job: ImportShipment | ExportShipment | CustomClearance | null
-    jobType: 'import' | 'export' | 'clearance'
+  const { job, jobType, existingInvoice, mode, generalReference, prePopulateData } = invoiceWindow.payload as {
+    job?: ImportShipment | ExportShipment | CustomClearance | null
+    jobType: 'import' | 'export' | 'clearance' | 'general'
     existingInvoice?: Invoice | null
+    mode?: 'create' | 'edit'
+    generalReference?: any
+    prePopulateData?: any
   }
 
   return (
@@ -135,7 +138,7 @@ export function DraggableInvoiceWindow() {
       {/* Invoice Form Content - Scrollable */}
       <div className="flex-1 overflow-y-auto p-6">
         <CustomerInvoiceForm
-          job={job}
+          job={job || null}
           jobType={jobType}
           open={true}
           onOpenChange={(open) => {
@@ -143,6 +146,8 @@ export function DraggableInvoiceWindow() {
           }}
           existingInvoice={existingInvoice}
           asWindow={true}
+          generalReference={generalReference}
+          prePopulateData={prePopulateData}
         />
       </div>
     </div>

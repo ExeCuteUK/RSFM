@@ -82,10 +82,26 @@ export function AnparioCCGrid() {
     }
   }, [editingCell])
 
-  // Update entry mutation
+  // Update entry mutation with optimistic updates
   const updateEntryMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<AnparioCCEntry> }) => {
       return await apiRequest("PATCH", `/api/anpario-cc-entries/${id}`, data)
+    },
+    onMutate: async ({ id, data }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
+      
+      // Snapshot the previous value
+      const previousEntries = queryClient.getQueryData<AnparioCCEntry[]>(["/api/anpario-cc-entries/by-reference", selectedReferenceId])
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData<AnparioCCEntry[]>(
+        ["/api/anpario-cc-entries/by-reference", selectedReferenceId],
+        (old) => old ? old.map(entry => entry.id === id ? { ...entry, ...data } : entry) : []
+      )
+      
+      // Return context with the previous value
+      return { previousEntries }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
@@ -107,7 +123,11 @@ export function AnparioCCGrid() {
       setEditingCell(null)
       setTempValue("")
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _, context) => {
+      // Rollback on error
+      if (context?.previousEntries) {
+        queryClient.setQueryData(["/api/anpario-cc-entries/by-reference", selectedReferenceId], context.previousEntries)
+      }
       toast({
         title: "Error",
         description: error.message || "Failed to update entry",
@@ -195,33 +215,24 @@ export function AnparioCCGrid() {
     entry.containerNumber || entry.etaPort || entry.entryNumber || entry.poNumber
   ).length
 
-  // Generate display rows (minimum 25 rows)
-  const displayRows: (AnparioCCEntry & { isBlank?: boolean; isFirstBlank?: boolean })[] = [...entries]
-  const blankRowsNeeded = Math.max(0, 25 - entries.length)
+  // Generate display rows - show actual entries plus one editable blank row for new data entry
+  const displayRows: (AnparioCCEntry & { isBlank?: boolean })[] = [...entries]
   
-  // If there are no entries at all, we need at least one that's editable
-  const needsEditableRow = entries.length === 0
-  
-  for (let i = 0; i < blankRowsNeeded; i++) {
-    displayRows.push({
-      id: `blank-${i}`,
-      generalReferenceId: selectedReferenceId || '',
-      containerNumber: null,
-      etaPort: null,
-      entryNumber: null,
-      poNumber: null,
-      notes: null,
-      createdAt: new Date().toISOString(),
-      isBlank: true,
-      isFirstBlank: i === 0 && needsEditableRow, // First blank row is editable when there are no entries
-    } as any)
-  }
+  // Always add one editable blank row at the end for new entries
+  displayRows.push({
+    id: `blank-new`,
+    generalReferenceId: selectedReferenceId || '',
+    containerNumber: null,
+    etaPort: null,
+    entryNumber: null,
+    poNumber: null,
+    notes: null,
+    createdAt: new Date().toISOString(),
+    isBlank: true,
+  } as any)
 
   // Handle cell click
-  const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean; isFirstBlank?: boolean }, fieldName: string, currentValue: string) => {
-    // Don't allow editing blank rows unless it's the first blank when there are no entries
-    if (entry.isBlank && !entry.isFirstBlank) return
-
+  const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, currentValue: string) => {
     // Capture column widths before entering edit mode
     if (tableRef.current && !editingCell) {
       const headers = tableRef.current.querySelectorAll('thead th')
@@ -285,18 +296,48 @@ export function AnparioCCGrid() {
   }
 
   // Handle keydown
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault()
-      handleSave()
+      await handleSave()
     } else if (e.key === "Escape") {
       setEditingCell(null)
       setTempValue("")
+    } else if (e.key === "Tab" && editingCell) {
+      e.preventDefault()
+      
+      // Define field order for tab navigation
+      const fieldOrder = ['containerNumber', 'etaPort', 'entryNumber', 'poNumber', 'notes']
+      const currentFieldIndex = fieldOrder.indexOf(editingCell.fieldName)
+      
+      // Don't tab from notes column (it's the last field)
+      if (editingCell.fieldName === 'notes') {
+        return
+      }
+      
+      // Save current cell
+      await handleSave()
+      
+      // Move to next field
+      if (currentFieldIndex < fieldOrder.length - 1) {
+        const nextField = fieldOrder[currentFieldIndex + 1]
+        const currentEntry = displayRows.find(r => r.id === editingCell.entryId)
+        if (currentEntry) {
+          const nextValue = nextField === 'etaPort' 
+            ? formatDateDDMMYY(currentEntry.etaPort)
+            : (currentEntry as any)[nextField] || ''
+          
+          // Small delay to ensure save completes first
+          setTimeout(() => {
+            handleCellClick(currentEntry, nextField, nextValue)
+          }, 50)
+        }
+      }
     }
   }
 
   // Render cell
-  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean; isFirstBlank?: boolean }, fieldName: string, index: number) => {
+  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, index: number) => {
     const isEditing = editingCell?.entryId === entry.id && editingCell.fieldName === fieldName
     const width = columnWidths[index]
     
@@ -306,9 +347,6 @@ export function AnparioCCGrid() {
     } else {
       value = (entry as any)[fieldName] || ""
     }
-
-    // Allow editing if: not blank, OR is the first blank when there are no entries
-    const isEditable = !entry.isBlank || entry.isFirstBlank
 
     if (isEditing) {
       return (
@@ -335,9 +373,9 @@ export function AnparioCCGrid() {
     return (
       <td 
         key={fieldName} 
-        className={`border px-2 py-1 text-center ${isEditable ? 'cursor-pointer hover-elevate' : ''}`}
+        className="border px-2 py-1 text-center cursor-pointer hover-elevate"
         style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
-        onClick={() => isEditable && handleCellClick(entry, fieldName, value)}
+        onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
       >
         <span className="text-xs">{value}</span>

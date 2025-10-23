@@ -53,14 +53,16 @@ interface ShipmentLine {
 
 interface CustomerInvoiceFormProps {
   job: ImportShipment | ExportShipment | CustomClearance | null
-  jobType: 'import' | 'export' | 'clearance'
+  jobType: 'import' | 'export' | 'clearance' | 'general'
   open: boolean
   onOpenChange: (open: boolean) => void
   existingInvoice?: Invoice | null
   asWindow?: boolean
+  generalReference?: any
+  prePopulateData?: any
 }
 
-export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existingInvoice, asWindow = false }: CustomerInvoiceFormProps) {
+export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existingInvoice, asWindow = false, generalReference, prePopulateData }: CustomerInvoiceFormProps) {
   const { toast } = useToast()
   
   // Fetch customer data based on job
@@ -620,8 +622,29 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
         // For editing existing invoice or no job, keep one empty line item
         setLineItems([{ description: '', chargeAmount: '', vatCode: '1', vatAmount: '0' }])
       }
+    } else if (prePopulateData && !existingInvoice) {
+      // Use prePopulateData when provided (for general reference invoices like Anpario CC)
+      if (prePopulateData.taxPointDate) setTaxPointDate(prePopulateData.taxPointDate)
+      if (prePopulateData.ourRef) setOurRef(prePopulateData.ourRef)
+      if (prePopulateData.exportersRef !== undefined) setExportersRef(prePopulateData.exportersRef)
+      if (prePopulateData.customerCompanyName) setCustomerCompanyName(prePopulateData.customerCompanyName)
+      if (prePopulateData.customerAddress) setCustomerAddress(prePopulateData.customerAddress)
+      if (prePopulateData.customerVatNumber) setCustomerVatNumber(prePopulateData.customerVatNumber)
+      if (prePopulateData.consignorName) setConsignorName(prePopulateData.consignorName)
+      if (prePopulateData.consignorAddress !== undefined) setConsignorAddress(prePopulateData.consignorAddress)
+      if (prePopulateData.consigneeName) setConsigneeName(prePopulateData.consigneeName)
+      if (prePopulateData.consigneeAddress !== undefined) setConsigneeAddress(prePopulateData.consigneeAddress)
+      if (prePopulateData.identifier) setIdentifier(prePopulateData.identifier)
+      if (prePopulateData.vesselName) setVesselName(prePopulateData.vesselName)
+      if (prePopulateData.portLoading) setPortLoading(prePopulateData.portLoading)
+      if (prePopulateData.portDischarge) setPortDischarge(prePopulateData.portDischarge)
+      if (prePopulateData.deliveryTerms) setDeliveryTerms(prePopulateData.deliveryTerms)
+      if (prePopulateData.destination) setDestination(prePopulateData.destination)
+      if (prePopulateData.lineItems && prePopulateData.lineItems.length > 0) {
+        setLineItems(prePopulateData.lineItems)
+      }
     }
-  }, [job, jobType, existingInvoice, importCustomer, exportCustomer, exportReceiver])
+  }, [job, jobType, existingInvoice, importCustomer, exportCustomer, exportReceiver, prePopulateData])
 
   // Clear payment terms when type changes to credit_note
   useEffect(() => {
