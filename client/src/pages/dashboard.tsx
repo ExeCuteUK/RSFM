@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { ImportExportWorkGrid } from "@/components/ImportExportWorkGrid"
 import { ClearanceWorkGrid } from "@/components/ClearanceWorkGrid"
+import { AnparioCCGrid } from "@/components/AnparioCCGrid"
 import { usePageHeader } from "@/contexts/PageHeaderContext"
 
 const DASHBOARD_STORAGE_KEY = 'dashboard_preferences'
@@ -156,10 +157,19 @@ export default function Dashboard() {
           variant={activeTab === "clearance-work" ? "default" : "ghost"}
           onClick={() => setActiveTab("clearance-work")}
           data-testid="tab-clearance"
-          className="rounded-r-md rounded-l-none py-2 px-4 font-semibold"
+          className="rounded-none border-r border-border py-2 px-4 font-semibold"
         >
           <Clipboard className="h-4 w-4 mr-2" />
           Customs Clearances
+        </Button>
+        <Button
+          variant={activeTab === "anpario-cc" ? "default" : "ghost"}
+          onClick={() => setActiveTab("anpario-cc")}
+          data-testid="tab-anpario-cc"
+          className="rounded-r-md rounded-l-none py-2 px-4 font-semibold"
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Anpario CC
         </Button>
       </div>
     )
@@ -1879,6 +1889,10 @@ export default function Dashboard() {
 
         <TabsContent value="clearance-work" className="mt-4">
           <ClearanceWorkGrid />
+        </TabsContent>
+
+        <TabsContent value="anpario-cc" className="mt-4">
+          <AnparioCCGrid />
         </TabsContent>
       </div>
     </Tabs>
