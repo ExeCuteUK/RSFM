@@ -1877,7 +1877,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                   control={form.control}
                   name="expensesToChargeOut"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-3">
                       <FormLabel>Expenses To Charge Out</FormLabel>
                       <div className="space-y-2">
                         {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
@@ -1995,7 +1995,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                     control={form.control}
                     name="exportClearanceChargeIn"
                     render={({ field }) => (
-                      <FormItem className="md:col-span-2">
+                      <FormItem>
                         <FormLabel>Export CC Charge In</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-export-clearance-charge-in" />
@@ -2009,7 +2009,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                     control={form.control}
                     name="additionalExpensesIn"
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
+                      <FormItem className="col-span-4">
                         <FormLabel>Additional Expenses In</FormLabel>
                         <div className="space-y-2">
                           {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
