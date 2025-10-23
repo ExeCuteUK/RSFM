@@ -1708,46 +1708,8 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                 )}
               </div>
 
-              {!rsToClear && (
-                <FormField
-                  control={form.control}
-                  name="customsClearanceAgent"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Customs Clearance Agent</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} data-testid="input-customs-agent" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
               {rsToClear && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="clearanceType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Clearance Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-clearance-type">
-                              <SelectValue placeholder="Select clearance type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="GVMS">GVMS</SelectItem>
-                            <SelectItem value="Inventory Linked">Inventory Linked</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+                <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="clearanceAgent"
@@ -1772,7 +1734,29 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                       </FormItem>
                     )}
                   />
-                </>
+
+                  <FormField
+                    control={form.control}
+                    name="clearanceType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Clearance Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-clearance-type">
+                              <SelectValue placeholder="Select clearance type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="GVMS">GVMS</SelectItem>
+                            <SelectItem value="Inventory Linked">Inventory Linked</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
