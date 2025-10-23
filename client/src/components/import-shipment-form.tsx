@@ -1936,12 +1936,12 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
               </div>
 
               <div className="border-t pt-4">
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-4 md:grid-cols-6">
                   <FormField
                     control={form.control}
                     name="currencyIn"
                     render={({ field }) => (
-                      <FormItem className="md:col-span-2">
+                      <FormItem className="md:col-span-3">
                         <FormLabel>Rate Currency</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || "GBP"}>
                           <FormControl>
@@ -2009,7 +2009,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                     control={form.control}
                     name="additionalExpensesIn"
                     render={({ field }) => (
-                      <FormItem className="col-span-4">
+                      <FormItem className="col-span-6">
                         <FormLabel>Additional Expenses In</FormLabel>
                         <div className="space-y-2">
                           {((field.value || []) as Array<{ description: string; amount: string }>).map((expense, index) => (
