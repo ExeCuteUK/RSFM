@@ -16,7 +16,9 @@ export function AnparioCCGrid() {
   const [editingCell, setEditingCell] = useState<{ entryId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const [localEntries, setLocalEntries] = useState<AnparioCCEntry[]>([])
+  const [columnWidths, setColumnWidths] = useState<number[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
+  const tableRef = useRef<HTMLTableElement>(null)
 
   // Fetch all general references with "Anpario EU CC" name
   const { data: allReferences = [] } = useQuery<GeneralReference[]>({
@@ -79,6 +81,13 @@ export function AnparioCCGrid() {
     }
   }, [editingCell])
 
+  // Clear column widths when exiting edit mode
+  useEffect(() => {
+    if (!editingCell) {
+      setColumnWidths([])
+    }
+  }, [editingCell])
+
   // Update entry mutation - save silently without refetching
   const updateEntryMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<AnparioCCEntry> }) => {
@@ -113,7 +122,7 @@ export function AnparioCCGrid() {
     },
   })
 
-  // Delete entry mutation - remove from local state and refetch
+  // Delete entry mutation - remove from local state
   const deleteEntryMutation = useMutation({
     mutationFn: async (id: string) => {
       return await apiRequest("DELETE", `/api/anpario-cc-entries/${id}`)
@@ -168,21 +177,15 @@ export function AnparioCCGrid() {
     } as any)
   }
 
-  // Get cell color based on value
-  const getCellColor = (entry: AnparioCCEntry & { isBlank?: boolean }, value: any) => {
-    const greenBg = "bg-green-100 dark:bg-green-900 dark:text-white"
-
-    // Blank rows always normal background
-    if (entry.isBlank) {
-      return ""
-    }
-
-    // Fields with values are green, empty fields are normal
-    return (value && value.toString().trim()) ? greenBg : ""
-  }
-
   // Handle cell click
   const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, currentValue: string) => {
+    // Capture column widths before entering edit mode
+    if (tableRef.current && !editingCell) {
+      const headers = tableRef.current.querySelectorAll('thead th')
+      const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
+      setColumnWidths(widths)
+    }
+
     setEditingCell({ entryId: entry.id, fieldName })
     setTempValue(currentValue || "")
   }
@@ -245,27 +248,65 @@ export function AnparioCCGrid() {
     setTempValue("")
   }
 
-  // Handle keydown
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  // Handle keydown with Tab/Enter navigation
+  const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      handleSave()
+      await handleSave()
+      
+      // Move to next cell after save
+      if (editingCell) {
+        moveToNextCell()
+      }
+    } else if (e.key === "Tab") {
+      e.preventDefault()
+      await handleSave()
+      
+      // Move to next cell after save
+      if (editingCell) {
+        moveToNextCell()
+      }
     } else if (e.key === "Escape") {
       handleCancel()
     }
   }
 
+  // Move to next cell (Tab/Enter behavior)
+  const moveToNextCell = () => {
+    if (!editingCell) return
+
+    // Field order matches column order: ETA Port, Container Number, PO Number, Entry Number, Notes
+    const fieldOrder = ['etaPort', 'containerNumber', 'poNumber', 'entryNumber', 'notes']
+    const currentFieldIndex = fieldOrder.indexOf(editingCell.fieldName)
+    const currentEntryIndex = displayRows.findIndex(r => r.id === editingCell.entryId)
+
+    if (currentFieldIndex === fieldOrder.length - 1) {
+      // We're on Notes (last field) - move to first field of next row
+      if (currentEntryIndex < displayRows.length - 1) {
+        const nextEntry = displayRows[currentEntryIndex + 1]
+        const nextValue = (nextEntry as any)[fieldOrder[0]] || ''
+        handleCellClick(nextEntry, fieldOrder[0], nextValue)
+      }
+    } else {
+      // Move to next field in same row
+      const nextField = fieldOrder[currentFieldIndex + 1]
+      const currentEntry = displayRows[currentEntryIndex]
+      const nextValue = (currentEntry as any)[nextField] || ''
+      handleCellClick(currentEntry, nextField, nextValue)
+    }
+  }
+
   // Render cell
-  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string) => {
+  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, width?: number) => {
     const isEditing = editingCell?.entryId === entry.id && editingCell.fieldName === fieldName
     const value = (entry as any)[fieldName] || ""
-    const cellColor = getCellColor(entry, value)
 
     if (isEditing) {
       return (
         <td 
           key={fieldName} 
-          className={`border px-2 py-2 ${cellColor}`}
+          className="border px-2 py-1"
+          style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
           <input
             ref={inputRef}
@@ -274,7 +315,7 @@ export function AnparioCCGrid() {
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
-            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-sm text-center focus:outline-none"
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
             autoComplete="off"
             data-testid={`input-${fieldName}-${entry.id}`}
           />
@@ -285,13 +326,22 @@ export function AnparioCCGrid() {
     return (
       <td 
         key={fieldName} 
-        className={`border px-2 py-2 text-center cursor-pointer hover-elevate ${cellColor}`}
+        className="border px-2 py-1 text-center cursor-pointer hover-elevate"
+        style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
       >
-        <span className="text-sm">{value}</span>
+        <span className="text-xs">{value}</span>
       </td>
     )
+  }
+
+  // Get row background color - green only if Entry Number has value
+  const getRowColor = (entry: AnparioCCEntry & { isBlank?: boolean }) => {
+    if (entry.isBlank) return ""
+    return (entry.entryNumber && entry.entryNumber.toString().trim()) 
+      ? "bg-green-100 dark:bg-green-900 dark:text-white" 
+      : ""
   }
 
   // Handle Create Invoice
@@ -461,7 +511,7 @@ export function AnparioCCGrid() {
       <Card className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
-            <label className="font-semibold whitespace-nowrap text-sm">Select Month:</label>
+            <label className="font-semibold whitespace-nowrap text-xs">Select Month:</label>
             <Select value={selectedReferenceId || ""} onValueChange={setSelectedReferenceId}>
               <SelectTrigger className="w-[250px]" data-testid="select-month-reference">
                 <SelectValue placeholder="Select a month" />
@@ -475,13 +525,13 @@ export function AnparioCCGrid() {
               </SelectContent>
             </Select>
             {selectedReference && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Monthly Ref: <span className="font-semibold">{selectedReference.jobRef}</span>
               </div>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-sm font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md">
+            <div className="text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md">
               {clearanceCount} Clearances
             </div>
             <Button variant="default" size="sm" onClick={handleCreateInvoice} data-testid="button-create-invoice">
@@ -500,27 +550,28 @@ export function AnparioCCGrid() {
       {selectedReferenceId ? (
         <Card className="p-4">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table ref={tableRef} className="w-full border-collapse">
               <thead>
                 <tr className="border-b-2">
-                  <th className="border px-2 py-2 text-center font-semibold bg-muted text-sm">ETA Port</th>
-                  <th className="border px-2 py-2 text-center font-semibold bg-muted text-sm">Container Number</th>
-                  <th className="border px-2 py-2 text-center font-semibold bg-muted text-sm">Entry Number</th>
-                  <th className="border px-2 py-2 text-center font-semibold bg-muted text-sm">PO Number</th>
-                  <th className="border px-2 py-2 text-center font-semibold bg-muted text-sm">Notes</th>
-                  <th className="border px-2 py-2 text-center font-semibold bg-muted text-sm">Actions</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[0] ? { width: `${columnWidths[0]}px` } : {}}>ETA Port</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[1] ? { width: `${columnWidths[1]}px` } : {}}>Container Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[2] ? { width: `${columnWidths[2]}px` } : {}}>PO Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[3] ? { width: `${columnWidths[3]}px` } : {}}>Entry Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[4] ? { width: `${columnWidths[4]}px` } : {}}>Notes</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[5] ? { width: `${columnWidths[5]}px` } : {}}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {displayRows.map((entry) => (
-                  <tr key={entry.id} className="border-b">
-                    {renderCell(entry, "etaPort")}
-                    {renderCell(entry, "containerNumber")}
-                    {renderCell(entry, "entryNumber")}
-                    {renderCell(entry, "poNumber")}
-                    {renderCell(entry, "notes")}
+                  <tr key={entry.id} className={`border-b ${getRowColor(entry)}`}>
+                    {renderCell(entry, "etaPort", columnWidths[0])}
+                    {renderCell(entry, "containerNumber", columnWidths[1])}
+                    {renderCell(entry, "poNumber", columnWidths[2])}
+                    {renderCell(entry, "entryNumber", columnWidths[3])}
+                    {renderCell(entry, "notes", columnWidths[4])}
                     <td 
-                      className="border px-2 py-2 text-center bg-green-100 dark:bg-green-900 dark:text-white"
+                      className="border px-2 py-1 text-center"
+                      style={columnWidths[5] ? { width: `${columnWidths[5]}px`, minWidth: `${columnWidths[5]}px`, maxWidth: `${columnWidths[5]}px` } : {}}
                     >
                       {!entry.isBlank && (
                         <Button
@@ -532,7 +583,7 @@ export function AnparioCCGrid() {
                             }
                           }}
                           data-testid={`button-delete-${entry.id}`}
-                          className="h-auto px-2 py-1 text-sm"
+                          className="h-auto px-2 py-0 text-xs"
                         >
                           Delete
                         </Button>
@@ -546,7 +597,7 @@ export function AnparioCCGrid() {
         </Card>
       ) : (
         <Card className="p-8 text-center text-muted-foreground">
-          <p className="text-sm">No monthly references found. Create an "Anpario EU CC" general reference to get started.</p>
+          <p className="text-xs">No monthly references found. Create an "Anpario EU CC" general reference to get started.</p>
         </Card>
       )}
     </div>
