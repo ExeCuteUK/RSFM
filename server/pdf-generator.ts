@@ -443,10 +443,10 @@ export async function generateStatementPDF(options: GenerateStatementPDFOptions)
         }
       }
 
-      // Header - STATEMENT Title
-      doc.fontSize(18)
+      // Header - Monthly Breakdown Title
+      doc.fontSize(16)
          .font('Helvetica-Bold')
-         .text('STATEMENT', 50, 20, { width: 140, align: 'center' });
+         .text('MONTHLY BREAKDOWN', 50, 20, { width: 140, align: 'center' });
 
       // Header - Company Details (right side)
       doc.fontSize(9)
@@ -471,10 +471,15 @@ export async function generateStatementPDF(options: GenerateStatementPDFOptions)
       const yr = String(options.year).slice(-2);
       const dateStr = `${day}/${mon}/${yr}`;
       
+      // Format month name from the month number
+      const monthNames = ["January", "February", "March", "April", "May", "June", 
+                          "July", "August", "September", "October", "November", "December"];
+      const monthName = `${monthNames[options.month - 1]}, ${options.year}`;
+      
       doc.fontSize(10)
          .font('Helvetica-Bold')
-         .text('Statement No.', 400, 129);
-      doc.text(options.generalRefNumber, valueX, 129);
+         .text('Job Month :', 400, 129);
+      doc.text(monthName, valueX, 129);
 
       doc.fontSize(9)
          .font('Helvetica')
@@ -494,10 +499,10 @@ export async function generateStatementPDF(options: GenerateStatementPDFOptions)
         }
       }
 
-      // Statement To Section
+      // Monthly Breakdown To Section
       doc.fontSize(10)
          .font('Helvetica-Bold')
-         .text('STATEMENT TO', 50, 190);
+         .text('MONTHLY BREAKDOWN TO', 50, 190);
 
       doc.fontSize(9);
       

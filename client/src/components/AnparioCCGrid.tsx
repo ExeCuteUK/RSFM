@@ -24,9 +24,9 @@ export function AnparioCCGrid() {
     queryKey: ["/api/general-references"],
   })
 
-  // Filter to only Anpario EU CC references and sort by date descending
+  // Filter to any references containing "Anpario" (case-insensitive) and sort by date descending
   const anparioReferences = allReferences
-    .filter(ref => ref.referenceName === "Anpario EU CC")
+    .filter(ref => ref.referenceName.toLowerCase().includes("anpario"))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   // Auto-select the most recent reference if none selected
@@ -120,8 +120,7 @@ export function AnparioCCGrid() {
         })
       }
       
-      setEditingCell(null)
-      setTempValue("")
+      // Don't clear editingCell here - let handleSave manage it to support tab navigation
     },
     onError: (error: Error, _, context) => {
       // Rollback on error
@@ -180,35 +179,6 @@ export function AnparioCCGrid() {
     return `${months[month - 1]}, ${year}`
   }
 
-  // Format date as DD/MM/YY
-  const formatDateDDMMYY = (dateStr: string | null): string => {
-    if (!dateStr) return ""
-    try {
-      const date = new Date(dateStr)
-      const day = String(date.getDate()).padStart(2, '0')
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const year = String(date.getFullYear()).slice(-2)
-      return `${day}/${month}/${year}`
-    } catch {
-      return ""
-    }
-  }
-
-  // Validate and convert DD/MM/YY to YYYY-MM-DD
-  const validateAndConvertDate = (dateStr: string): string | null => {
-    if (!dateStr.trim()) return null
-    
-    const ddmmyyPattern = /^(\d{2})\/(\d{2})\/(\d{2})$/
-    const match = dateStr.match(ddmmyyPattern)
-    
-    if (!match) {
-      throw new Error("Date must be in DD/MM/YY format")
-    }
-    
-    const [, day, month, year] = match
-    const fullYear = `20${year}`
-    return `${fullYear}-${month}-${day}`
-  }
 
   // Calculate clearance count (only actual data rows with content)
   const clearanceCount = entries.filter(entry => 
@@ -245,12 +215,16 @@ export function AnparioCCGrid() {
   }
 
   // Handle save
-  const handleSave = async () => {
+  const handleSave = async (clearAfterSave = true) => {
     if (!editingCell || !selectedReferenceId) return
+
+    // Capture the cell we're saving so we can check if we've moved to another cell
+    const savingCell = editingCell
+    const savingValue = tempValue
 
     try {
       // Check if we're editing a blank row (first blank when no entries exist)
-      const isEditingFirstBlank = editingCell.entryId.startsWith('blank-')
+      const isEditingFirstBlank = savingCell.entryId.startsWith('blank-')
       
       if (isEditingFirstBlank) {
         // Create a new entry
@@ -261,30 +235,29 @@ export function AnparioCCGrid() {
           entryNumber: null,
           poNumber: null,
           notes: null,
-        }
-        
-        if (editingCell.fieldName === "etaPort") {
-          const convertedDate = validateAndConvertDate(tempValue)
-          ;(newEntryData as any)[editingCell.fieldName] = convertedDate
-        } else {
-          ;(newEntryData as any)[editingCell.fieldName] = tempValue.trim() || null
+          [savingCell.fieldName]: savingValue.trim() || null
         }
         
         await createEntryMutation.mutateAsync(newEntryData)
-        setEditingCell(null)
-        setTempValue("")
+        
+        // Only clear if we're still on the same cell (haven't tabbed away)
+        if (clearAfterSave && editingCell?.entryId === savingCell.entryId && editingCell?.fieldName === savingCell.fieldName) {
+          setEditingCell(null)
+          setTempValue("")
+        }
       } else {
         // Update existing entry
-        const updateData: Partial<AnparioCCEntry> = {}
-        
-        if (editingCell.fieldName === "etaPort") {
-          const convertedDate = validateAndConvertDate(tempValue)
-          ;(updateData as any)[editingCell.fieldName] = convertedDate
-        } else {
-          ;(updateData as any)[editingCell.fieldName] = tempValue.trim() || null
+        const updateData: Partial<AnparioCCEntry> = {
+          [savingCell.fieldName]: savingValue.trim() || null
         }
         
-        await updateEntryMutation.mutateAsync({ id: editingCell.entryId, data: updateData })
+        await updateEntryMutation.mutateAsync({ id: savingCell.entryId, data: updateData })
+        
+        // Only clear if we're still on the same cell (haven't tabbed away)
+        if (clearAfterSave && editingCell?.entryId === savingCell.entryId && editingCell?.fieldName === savingCell.fieldName) {
+          setEditingCell(null)
+          setTempValue("")
+        }
       }
     } catch (error) {
       toast({
@@ -315,22 +288,53 @@ export function AnparioCCGrid() {
         return
       }
       
-      // Save current cell
-      await handleSave()
+      // Check if we're on a blank row
+      const isBlankRow = editingCell.entryId.startsWith('blank-')
       
-      // Move to next field
-      if (currentFieldIndex < fieldOrder.length - 1) {
-        const nextField = fieldOrder[currentFieldIndex + 1]
-        const currentEntry = displayRows.find(r => r.id === editingCell.entryId)
-        if (currentEntry) {
-          const nextValue = nextField === 'etaPort' 
-            ? formatDateDDMMYY(currentEntry.etaPort)
-            : (currentEntry as any)[nextField] || ''
+      if (isBlankRow) {
+        // For blank rows, we must await to get the new entry ID
+        try {
+          await handleSave(false)
+          // After save, refetch to get the new entry
+          await queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
+          // Wait a moment for the refetch
+          await new Promise(resolve => setTimeout(resolve, 100))
           
-          // Small delay to ensure save completes first
-          setTimeout(() => {
+          // Find the newly created entry (it will be the last one)
+          const updatedEntries = queryClient.getQueryData<AnparioCCEntry[]>(["/api/anpario-cc-entries/by-reference", selectedReferenceId])
+          if (updatedEntries && updatedEntries.length > 0) {
+            const newEntry = updatedEntries[updatedEntries.length - 1]
+            const nextField = fieldOrder[currentFieldIndex + 1]
+            const nextValue = (newEntry as any)[nextField] || ''
+            handleCellClick(newEntry, nextField, nextValue)
+          }
+        } catch (error) {
+          toast({
+            title: "Save Error",
+            description: error instanceof Error ? error.message : "Failed to save",
+            variant: "destructive",
+          })
+        }
+      } else {
+        // For existing rows, move immediately (optimistic updates handle UI)
+        if (currentFieldIndex < fieldOrder.length - 1) {
+          const nextField = fieldOrder[currentFieldIndex + 1]
+          const currentEntry = displayRows.find(r => r.id === editingCell.entryId)
+          if (currentEntry) {
+            const nextValue = (currentEntry as any)[nextField] || ''
+            
+            // Start save in background (won't clear editingCell since we're moving to new cell)
+            handleSave(false).catch(error => {
+              toast({
+                title: "Save Error",
+                description: error instanceof Error ? error.message : "Failed to save",
+                variant: "destructive",
+              })
+            })
+            
+            // Move focus immediately
             handleCellClick(currentEntry, nextField, nextValue)
-          }, 50)
+          }
         }
       }
     }
@@ -341,12 +345,7 @@ export function AnparioCCGrid() {
     const isEditing = editingCell?.entryId === entry.id && editingCell.fieldName === fieldName
     const width = columnWidths[index]
     
-    let value = ""
-    if (fieldName === "etaPort") {
-      value = formatDateDDMMYY(entry.etaPort)
-    } else {
-      value = (entry as any)[fieldName] || ""
-    }
+    const value = (entry as any)[fieldName] || ""
 
     if (isEditing) {
       return (
@@ -362,7 +361,6 @@ export function AnparioCCGrid() {
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
-            placeholder={fieldName === "etaPort" ? "DD/MM/YY" : ""}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
             data-testid={`input-${fieldName}-${entry.id}`}
           />
@@ -576,9 +574,9 @@ export function AnparioCCGrid() {
               <FileText className="h-4 w-4 mr-1" />
               Create Invoice
             </Button>
-            <Button variant="default" size="sm" onClick={handleCreateStatement} data-testid="button-create-statement">
+            <Button variant="default" size="sm" onClick={handleCreateStatement} data-testid="button-create-breakdown">
               <FileBarChart className="h-4 w-4 mr-1" />
-              Create Statement
+              Create Breakdown
             </Button>
           </div>
         </div>
@@ -600,8 +598,13 @@ export function AnparioCCGrid() {
                 </tr>
               </thead>
               <tbody>
-                {displayRows.map((entry) => (
-                  <tr key={entry.id} className="border-b hover:bg-muted/50">
+                {displayRows.map((entry) => {
+                  const hasEntryNumber = !entry.isBlank && entry.entryNumber
+                  return (
+                  <tr 
+                    key={entry.id} 
+                    className={`border-b ${hasEntryNumber ? 'bg-green-100 dark:bg-green-950 hover:bg-green-200 dark:hover:bg-green-900' : 'hover:bg-muted/50'}`}
+                  >
                     {renderCell(entry, "etaPort", 0)}
                     {renderCell(entry, "containerNumber", 1)}
                     {renderCell(entry, "entryNumber", 2)}
@@ -625,7 +628,8 @@ export function AnparioCCGrid() {
                       )}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

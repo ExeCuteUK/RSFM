@@ -10,7 +10,6 @@ interface DraggableWindowProps {
   children: ReactNode
   onClose: () => void
   onMinimize?: () => void
-  onRestore?: () => void
   width?: number
   height?: number
   initialX?: number
@@ -24,7 +23,6 @@ export function DraggableWindow({
   children,
   onClose,
   onMinimize,
-  onRestore,
   width = 800,
   height = 600,
   initialX,
@@ -37,19 +35,12 @@ export function DraggableWindow({
     return { x: centerX, y: centerY }
   })
   
-  const [isMinimized, setIsMinimized] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const windowRef = useRef<HTMLDivElement>(null)
   
   const handleMinimize = () => {
-    setIsMinimized(true)
     onMinimize?.()
-  }
-  
-  const handleRestore = () => {
-    setIsMinimized(false)
-    onRestore?.()
   }
 
   // Handle drag start
@@ -101,39 +92,7 @@ export function DraggableWindow({
     }
   }, [isDragging, dragOffset, width, height])
 
-  // Render minimized bar
-  if (isMinimized) {
-    return (
-      <div
-        className="fixed bottom-4 left-4 z-50 shadow-lg"
-        data-testid={`minimized-window-${id}`}
-      >
-        <Card 
-          className="px-4 py-2 cursor-pointer hover-elevate active-elevate-2"
-          onClick={handleRestore}
-        >
-          <div className="flex items-center gap-3">
-            <span className="font-medium text-sm">{title}</span>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6"
-              onClick={(e) => {
-                e.stopPropagation()
-                onClose()
-              }}
-              data-testid={`button-close-minimized-${id}`}
-              title="Close"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        </Card>
-      </div>
-    )
-  }
-
-  // Render full window
+  // Render window
   return (
     <div
       ref={windowRef}
