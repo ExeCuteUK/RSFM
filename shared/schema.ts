@@ -885,10 +885,10 @@ export const invoices = pgTable("invoices", {
   invoiceDate: text("invoice_date").notNull(),
   taxPointDate: text("tax_point_date"),
   
-  // Job reference
-  jobRef: integer("job_ref").notNull(),
-  jobType: text("job_type").notNull(), // "import", "export", "clearance"
-  jobId: varchar("job_id").notNull(), // Link to specific job record
+  // Job reference (optional - not all invoices are linked to jobs, e.g., Anpario CC invoices)
+  jobRef: integer("job_ref"),
+  jobType: text("job_type"), // "import", "export", "clearance"
+  jobId: varchar("job_id"), // Link to specific job record
   
   // Customer information (INVOICE TO section)
   customerCompanyName: text("customer_company_name"),
