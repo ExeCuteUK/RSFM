@@ -235,6 +235,22 @@ export function AnparioCCGrid() {
     entry.containerNumber || entry.etaPort || entry.entryNumber || entry.poNumber
   ).length
 
+  // Generate display rows (minimum 25 rows)
+  const displayRows = [...entries]
+  const blankRowsNeeded = Math.max(0, 25 - entries.length)
+  for (let i = 0; i < blankRowsNeeded; i++) {
+    displayRows.push({
+      id: `blank-${i}`,
+      generalReferenceId: selectedReferenceId || '',
+      containerNumber: null,
+      etaPort: null,
+      entryNumber: null,
+      poNumber: null,
+      notes: null,
+      createdAt: new Date().toISOString(),
+    } as AnparioCCEntry)
+  }
+
   // Get last day of month
   const getLastDayOfMonth = (month: number, year: number): string => {
     const lastDay = new Date(year, month, 0).getDate()
@@ -456,20 +472,22 @@ export function AnparioCCGrid() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th className="p-2 text-center font-semibold bg-muted">ETA Port</th>
-                  <th className="p-2 text-center font-semibold bg-muted">Container Number</th>
-                  <th className="p-2 text-center font-semibold bg-muted">Entry Number</th>
-                  <th className="p-2 text-center font-semibold bg-muted">PO Number</th>
-                  <th className="p-2 text-center font-semibold bg-muted">Notes</th>
-                  <th className="p-2 text-center font-semibold bg-muted w-20">Actions</th>
+                  <th className="p-2 text-center font-semibold bg-muted text-xs">ETA Port</th>
+                  <th className="p-2 text-center font-semibold bg-muted text-xs">Container Number</th>
+                  <th className="p-2 text-center font-semibold bg-muted text-xs">Entry Number</th>
+                  <th className="p-2 text-center font-semibold bg-muted text-xs">PO Number</th>
+                  <th className="p-2 text-center font-semibold bg-muted text-xs">Notes</th>
+                  <th className="p-2 text-center font-semibold bg-muted text-xs w-20">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {entries.map((entry, index) => (
+                {displayRows.map((entry, index) => {
+                  const isBlankRow = entry.id.startsWith('blank-')
+                  return (
                   <tr key={entry.id} className="border-b hover:bg-muted/50">
                     {/* ETA Port */}
                     <td className="p-2 text-center">
-                      {editingCell?.entryId === entry.id && editingCell.fieldName === "etaPort" ? (
+                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "etaPort" ? (
                         <Input
                           ref={inputRef}
                           value={tempValue}
@@ -480,13 +498,13 @@ export function AnparioCCGrid() {
                             if (e.key === "Escape") handleCancel()
                           }}
                           placeholder="DD/MM/YY"
-                          className="h-8 text-center"
+                          className="h-8 text-center text-xs"
                           data-testid={`input-eta-port-${index}`}
                         />
                       ) : (
                         <div
-                          onClick={() => handleCellClick(entry.id, "etaPort", formatDateDDMMYY(entry.etaPort))}
-                          className="cursor-pointer hover:bg-accent p-1 rounded min-h-[32px] flex items-center justify-center"
+                          onClick={() => !isBlankRow && handleCellClick(entry.id, "etaPort", formatDateDDMMYY(entry.etaPort))}
+                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
                           data-testid={`cell-eta-port-${index}`}
                         >
                           {formatDateDDMMYY(entry.etaPort)}
@@ -496,7 +514,7 @@ export function AnparioCCGrid() {
 
                     {/* Container Number */}
                     <td className="p-2 text-center">
-                      {editingCell?.entryId === entry.id && editingCell.fieldName === "containerNumber" ? (
+                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "containerNumber" ? (
                         <Input
                           ref={inputRef}
                           value={tempValue}
@@ -506,13 +524,13 @@ export function AnparioCCGrid() {
                             if (e.key === "Enter") handleSave(entry.id, "containerNumber", tempValue)
                             if (e.key === "Escape") handleCancel()
                           }}
-                          className="h-8 text-center"
+                          className="h-8 text-center text-xs"
                           data-testid={`input-container-number-${index}`}
                         />
                       ) : (
                         <div
-                          onClick={() => handleCellClick(entry.id, "containerNumber", entry.containerNumber || "")}
-                          className="cursor-pointer hover:bg-accent p-1 rounded min-h-[32px] flex items-center justify-center"
+                          onClick={() => !isBlankRow && handleCellClick(entry.id, "containerNumber", entry.containerNumber || "")}
+                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
                           data-testid={`cell-container-number-${index}`}
                         >
                           {entry.containerNumber}
@@ -522,7 +540,7 @@ export function AnparioCCGrid() {
 
                     {/* Entry Number */}
                     <td className="p-2 text-center">
-                      {editingCell?.entryId === entry.id && editingCell.fieldName === "entryNumber" ? (
+                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "entryNumber" ? (
                         <Input
                           ref={inputRef}
                           value={tempValue}
@@ -532,13 +550,13 @@ export function AnparioCCGrid() {
                             if (e.key === "Enter") handleSave(entry.id, "entryNumber", tempValue)
                             if (e.key === "Escape") handleCancel()
                           }}
-                          className="h-8 text-center"
+                          className="h-8 text-center text-xs"
                           data-testid={`input-entry-number-${index}`}
                         />
                       ) : (
                         <div
-                          onClick={() => handleCellClick(entry.id, "entryNumber", entry.entryNumber || "")}
-                          className="cursor-pointer hover:bg-accent p-1 rounded min-h-[32px] flex items-center justify-center"
+                          onClick={() => !isBlankRow && handleCellClick(entry.id, "entryNumber", entry.entryNumber || "")}
+                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
                           data-testid={`cell-entry-number-${index}`}
                         >
                           {entry.entryNumber}
@@ -548,7 +566,7 @@ export function AnparioCCGrid() {
 
                     {/* PO Number */}
                     <td className="p-2 text-center">
-                      {editingCell?.entryId === entry.id && editingCell.fieldName === "poNumber" ? (
+                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "poNumber" ? (
                         <Input
                           ref={inputRef}
                           value={tempValue}
@@ -558,13 +576,13 @@ export function AnparioCCGrid() {
                             if (e.key === "Enter") handleSave(entry.id, "poNumber", tempValue)
                             if (e.key === "Escape") handleCancel()
                           }}
-                          className="h-8 text-center"
+                          className="h-8 text-center text-xs"
                           data-testid={`input-po-number-${index}`}
                         />
                       ) : (
                         <div
-                          onClick={() => handleCellClick(entry.id, "poNumber", entry.poNumber || "")}
-                          className="cursor-pointer hover:bg-accent p-1 rounded min-h-[32px] flex items-center justify-center"
+                          onClick={() => !isBlankRow && handleCellClick(entry.id, "poNumber", entry.poNumber || "")}
+                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
                           data-testid={`cell-po-number-${index}`}
                         >
                           {entry.poNumber}
@@ -574,7 +592,7 @@ export function AnparioCCGrid() {
 
                     {/* Notes */}
                     <td className="p-2 text-center">
-                      {editingCell?.entryId === entry.id && editingCell.fieldName === "notes" ? (
+                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "notes" ? (
                         <Input
                           ref={inputRef}
                           value={tempValue}
@@ -584,13 +602,13 @@ export function AnparioCCGrid() {
                             if (e.key === "Enter") handleSave(entry.id, "notes", tempValue)
                             if (e.key === "Escape") handleCancel()
                           }}
-                          className="h-8 text-center"
+                          className="h-8 text-center text-xs"
                           data-testid={`input-notes-${index}`}
                         />
                       ) : (
                         <div
-                          onClick={() => handleCellClick(entry.id, "notes", entry.notes || "")}
-                          className="cursor-pointer hover:bg-accent p-1 rounded min-h-[32px] flex items-center justify-center"
+                          onClick={() => !isBlankRow && handleCellClick(entry.id, "notes", entry.notes || "")}
+                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
                           data-testid={`cell-notes-${index}`}
                         >
                           {entry.notes}
@@ -600,22 +618,25 @@ export function AnparioCCGrid() {
 
                     {/* Actions */}
                     <td className="p-2 text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm("Are you sure you want to delete this entry?")) {
-                            deleteEntryMutation.mutate(entry.id)
-                          }
-                        }}
-                        data-testid={`button-delete-${index}`}
-                        className="h-8 px-2"
-                      >
-                        Delete
-                      </Button>
+                      {!isBlankRow && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Are you sure you want to delete this entry?")) {
+                              deleteEntryMutation.mutate(entry.id)
+                            }
+                          }}
+                          data-testid={`button-delete-${index}`}
+                          className="h-8 px-2 text-xs"
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
