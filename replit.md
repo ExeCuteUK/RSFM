@@ -6,6 +6,15 @@ R.S International Freight Manager is a web-based enterprise solution designed to
 
 Key features include an integrated file upload system with Google Drive for shared document storage, ensuring automatic syncing of files between linked jobs. The application also boasts a dual-engine OCR for text extraction, a multi-user internal messaging system with real-time notifications, customer contact history, real-time user presence, and a draggable email composer. A team calendar powered by the Google Calendar API manages holidays and leave. The dashboard provides a tabbed interface for container, Nisbets, import/export, and clearance management. A notable feature is the Container Tracking Comparison System, which asynchronously checks Terminal49 data, providing dashboard notifications for discrepancies (ETA, port, vessel changes) and offering detailed views with one-click updates.
 
+## Recent Changes
+
+**October 23, 2025 - Truck Journals & Management Sheets UI Improvements:**
+- **Truck Journals:** Removed underlines from totals footer row, made totals row half-width with left alignment, added zebra striping for better readability, refined header and data row borders (border-b-2 for headers, border-b for data rows)
+- **Truck Journals Filter Layout:** Swapped filter layout - "Currently Viewing" date label moved to left side, filter controls (Month/Year or Date Range inputs) to right side, added date label display in range mode
+- **Chronological Sorting:** Journal entries now sort chronologically (earliest to latest) when displaying "All Time" (no date filters applied)
+- **Management Sheets:** Removed search text persistence - search bar starts empty on each page visit
+- **Import Containers Filter:** Filtered out LCL containers from Import Containers management sheet (already shown in Import & Export Work sheet)
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
