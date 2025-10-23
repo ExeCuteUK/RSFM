@@ -21,6 +21,7 @@ import {
   insertUserSchema,
   updateUserSchema,
   insertGeneralReferenceSchema,
+  insertAnparioCCEntrySchema,
   insertInvoiceChargeTemplateSchema,
   type User
 } from "@shared/schema";
@@ -3038,6 +3039,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting general reference:", error);
       res.status(500).json({ error: "Failed to delete general reference" });
+    }
+  });
+
+  // ========== Anpario CC Entries Routes ==========
+
+  // Get all Anpario CC entries
+  app.get("/api/anpario-cc-entries", async (_req, res) => {
+    try {
+      const entries = await storage.getAllAnparioCCEntries();
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching Anpario CC entries:", error);
+      res.status(500).json({ error: "Failed to fetch Anpario CC entries" });
+    }
+  });
+
+  // Get Anpario CC entries by general reference ID
+  app.get("/api/anpario-cc-entries/by-reference/:generalReferenceId", async (req, res) => {
+    try {
+      const entries = await storage.getAnparioCCEntriesByGeneralReferenceId(req.params.generalReferenceId);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching Anpario CC entries by reference:", error);
+      res.status(500).json({ error: "Failed to fetch Anpario CC entries" });
+    }
+  });
+
+  // Get single Anpario CC entry
+  app.get("/api/anpario-cc-entries/:id", async (req, res) => {
+    try {
+      const entry = await storage.getAnparioCCEntry(req.params.id);
+      if (!entry) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+      res.json(entry);
+    } catch (error) {
+      console.error("Error fetching Anpario CC entry:", error);
+      res.status(500).json({ error: "Failed to fetch Anpario CC entry" });
+    }
+  });
+
+  // Create Anpario CC entry
+  app.post("/api/anpario-cc-entries", async (req, res) => {
+    try {
+      const validatedData = insertAnparioCCEntrySchema.parse(req.body);
+      const entry = await storage.createAnparioCCEntry(validatedData);
+      res.status(201).json(entry);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid entry data", details: error.errors });
+      }
+      console.error("Error creating Anpario CC entry:", error);
+      res.status(500).json({ error: "Failed to create Anpario CC entry" });
+    }
+  });
+
+  // Update Anpario CC entry
+  app.patch("/api/anpario-cc-entries/:id", async (req, res) => {
+    try {
+      const validatedData = insertAnparioCCEntrySchema.partial().parse(req.body);
+      const entry = await storage.updateAnparioCCEntry(req.params.id, validatedData);
+      if (!entry) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+      res.json(entry);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid entry data", details: error.errors });
+      }
+      console.error("Error updating Anpario CC entry:", error);
+      res.status(500).json({ error: "Failed to update Anpario CC entry" });
+    }
+  });
+
+  // Delete Anpario CC entry
+  app.delete("/api/anpario-cc-entries/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteAnparioCCEntry(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting Anpario CC entry:", error);
+      res.status(500).json({ error: "Failed to delete Anpario CC entry" });
     }
   });
 
