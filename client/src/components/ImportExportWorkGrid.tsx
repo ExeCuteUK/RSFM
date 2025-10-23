@@ -321,63 +321,65 @@ export function ImportExportWorkGrid() {
   }
 
   const getQuoteDisplay = (job: (ImportShipment | ExportShipment) & { _jobType: 'import' | 'export' }) => {
-    const parts: string[] = []
+    const mainParts: string[] = []
+    let additional: string | null = null
     
     if (job._jobType === 'import') {
       const importJob = job as ImportShipment & { _jobType: 'import' }
-      if (importJob.freightRateOut) parts.push(`Frt £${importJob.freightRateOut}`)
-      if (importJob.exportCustomsClearanceCharge) parts.push(`Exp CC £${importJob.exportCustomsClearanceCharge}`)
-      if (importJob.clearanceCharge) parts.push(`Dest CC £${importJob.clearanceCharge}`)
+      if (importJob.freightRateOut) mainParts.push(`Frt £${importJob.freightRateOut}`)
+      if (importJob.exportCustomsClearanceCharge) mainParts.push(`Exp CC £${importJob.exportCustomsClearanceCharge}`)
+      if (importJob.clearanceCharge) mainParts.push(`Dest CC £${importJob.clearanceCharge}`)
       
       // Add expenses to charge out
       if (importJob.expensesToChargeOut && Array.isArray(importJob.expensesToChargeOut) && importJob.expensesToChargeOut.length > 0) {
         const amounts = importJob.expensesToChargeOut.map(exp => `£${exp.amount}`).join(', ')
-        parts.push(`Add : ${amounts}`)
+        additional = `Additional : ${amounts}`
       }
     } else {
       const exportJob = job as ExportShipment & { _jobType: 'export' }
-      if (exportJob.freightRateOut) parts.push(`Frt £${exportJob.freightRateOut}`)
-      if (exportJob.clearanceCharge) parts.push(`Exp CC £${exportJob.clearanceCharge}`)
-      if (exportJob.arrivalClearanceCost) parts.push(`Imp CC £${exportJob.arrivalClearanceCost}`)
+      if (exportJob.freightRateOut) mainParts.push(`Frt £${exportJob.freightRateOut}`)
+      if (exportJob.clearanceCharge) mainParts.push(`Exp CC £${exportJob.clearanceCharge}`)
+      if (exportJob.arrivalClearanceCost) mainParts.push(`Imp CC £${exportJob.arrivalClearanceCost}`)
       
       // Add expenses to charge out
       if (exportJob.expensesToChargeOut && Array.isArray(exportJob.expensesToChargeOut) && exportJob.expensesToChargeOut.length > 0) {
         const amounts = exportJob.expensesToChargeOut.map(exp => `£${exp.amount}`).join(', ')
-        parts.push(`Add : ${amounts}`)
+        additional = `Additional : ${amounts}`
       }
     }
     
-    return parts.join(' / ')
+    return { main: mainParts.join(' / '), additional }
   }
 
   const getNetDisplay = (job: (ImportShipment | ExportShipment) & { _jobType: 'import' | 'export' }) => {
-    const parts: string[] = []
+    const mainParts: string[] = []
+    let additional: string | null = null
     
     if (job._jobType === 'import') {
       const importJob = job as ImportShipment & { _jobType: 'import' }
-      if (importJob.haulierFreightRateIn) parts.push(`Frt £${importJob.haulierFreightRateIn}`)
-      if (importJob.exportClearanceChargeIn) parts.push(`Exp CC £${importJob.exportClearanceChargeIn}`)
-      if (importJob.destinationClearanceCostIn) parts.push(`Imp CC £${importJob.destinationClearanceCostIn}`)
+      if (importJob.haulierFreightRateIn) mainParts.push(`Frt £${importJob.haulierFreightRateIn}`)
+      if (importJob.exportClearanceChargeIn) mainParts.push(`Exp CC £${importJob.exportClearanceChargeIn}`)
+      if (importJob.destinationClearanceCostIn) mainParts.push(`Imp CC £${importJob.destinationClearanceCostIn}`)
       
       // Add additional expenses in
       if (importJob.additionalExpensesIn && Array.isArray(importJob.additionalExpensesIn) && importJob.additionalExpensesIn.length > 0) {
         const amounts = importJob.additionalExpensesIn.map(exp => `£${exp.amount}`).join(', ')
-        parts.push(`Add : ${amounts}`)
+        additional = `Additional : ${amounts}`
       }
     } else {
       const exportJob = job as ExportShipment & { _jobType: 'export' }
-      if (exportJob.haulierFreightRateIn) parts.push(`Frt £${exportJob.haulierFreightRateIn}`)
-      if (exportJob.exportClearanceChargeIn) parts.push(`Exp CC £${exportJob.exportClearanceChargeIn}`)
-      if (exportJob.destinationClearanceCostIn) parts.push(`Dest CC £${exportJob.destinationClearanceCostIn}`)
+      if (exportJob.haulierFreightRateIn) mainParts.push(`Frt £${exportJob.haulierFreightRateIn}`)
+      if (exportJob.exportClearanceChargeIn) mainParts.push(`Exp CC £${exportJob.exportClearanceChargeIn}`)
+      if (exportJob.destinationClearanceCostIn) mainParts.push(`Dest CC £${exportJob.destinationClearanceCostIn}`)
       
       // Add additional expenses in
       if (exportJob.additionalExpensesIn && Array.isArray(exportJob.additionalExpensesIn) && exportJob.additionalExpensesIn.length > 0) {
         const amounts = exportJob.additionalExpensesIn.map(exp => `£${exp.amount}`).join(', ')
-        parts.push(`Add : ${amounts}`)
+        additional = `Additional : ${amounts}`
       }
     }
     
-    return parts.join(' / ')
+    return { main: mainParts.join(' / '), additional }
   }
 
   // Get row color based on status indicator (clearanceStatusIndicator for imports, adviseClearanceToAgentStatusIndicator for exports)
@@ -545,6 +547,10 @@ export function ImportExportWorkGrid() {
                 const deliveryDate = isImport ? importJob?.deliveryDate : exportJob?.deliveryDate
                 const deliveryAddress = isImport ? importJob?.deliveryAddress : exportJob?.deliveryAddress
                 const haulierName = isImport ? importJob?.haulierName : exportJob?.haulierName
+                
+                // Get quote and net displays
+                const quoteData = getQuoteDisplay(job)
+                const netData = getNetDisplay(job)
 
                 return (
                   <tr key={job.id} className="border-b hover:bg-muted/50">
@@ -799,9 +805,19 @@ export function ImportExportWorkGrid() {
                     {/* Quote Out / Net In - Not editable, status color */}
                     <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
                       <div className="min-h-[84px] flex items-center justify-center">
-                        <div className="space-y-0.5">
-                          <div className="pb-0.5 border-b border-black">Quote: {getQuoteDisplay(job)}</div>
-                          <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
+                        <div className="space-y-0.5 w-full">
+                          <div className="pb-0.5 border-b border-black">
+                            <div>Quote: {quoteData.main}</div>
+                            {quoteData.additional && (
+                              <div className="text-xs">{quoteData.additional}</div>
+                            )}
+                          </div>
+                          <div className="pt-0.5">
+                            <div>Net: {netData.main}</div>
+                            {netData.additional && (
+                              <div className="text-xs">{netData.additional}</div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
