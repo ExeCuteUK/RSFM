@@ -587,6 +587,7 @@ export function ImportExportWorkGrid() {
                             onBlur={() => handleBlur(job.id, 'customerReferenceNumber', job._jobType)}
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'customerReferenceNumber', job._jobType)}
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           isImport ? importJob?.customerReferenceNumber : exportJob?.customerReferenceNumber
@@ -617,6 +618,7 @@ export function ImportExportWorkGrid() {
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'dispatchDate', job._jobType)}
                             placeholder="DD/MM/YY"
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           formatDate(isImport ? importJob?.dispatchDate || null : exportJob?.dispatchDate || null)
@@ -639,6 +641,7 @@ export function ImportExportWorkGrid() {
                             onBlur={() => handleBlur(job.id, 'portOfArrival', job._jobType)}
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'portOfArrival', job._jobType)}
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           portOfArrival
@@ -661,6 +664,7 @@ export function ImportExportWorkGrid() {
                             onBlur={() => handleBlur(job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
                             onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'trailerOrContainerNumber' : 'trailerNo', job._jobType)}
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           identifier
@@ -683,6 +687,7 @@ export function ImportExportWorkGrid() {
                             onBlur={() => handleBlur(job.id, 'numberOfPieces', job._jobType)}
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'numberOfPieces', job._jobType)}
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           qty
@@ -705,6 +710,7 @@ export function ImportExportWorkGrid() {
                             onBlur={() => handleBlur(job.id, 'weight', job._jobType)}
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'weight', job._jobType)}
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           weight
@@ -727,6 +733,7 @@ export function ImportExportWorkGrid() {
                             onBlur={() => handleBlur(job.id, 'cube', job._jobType)}
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'cube', job._jobType)}
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           cbm
@@ -750,6 +757,7 @@ export function ImportExportWorkGrid() {
                             onKeyDown={(e) => handleKeyDown(e, job.id, isImport ? 'importDateEtaPort' : 'etaPortDate', job._jobType)}
                             placeholder="DD/MM/YY"
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           formatDate(etaPort || null)
@@ -773,6 +781,7 @@ export function ImportExportWorkGrid() {
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryDate', job._jobType)}
                             placeholder="DD/MM/YY"
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           formatDate(deliveryDate || null)
@@ -795,6 +804,7 @@ export function ImportExportWorkGrid() {
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'deliveryAddress', job._jobType)}
                             className="w-full min-h-[40px] bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-tight focus:outline-none resize-none"
                             rows={2}
+                            autoComplete="off"
                           />
                         ) : (
                           <div className="text-xs leading-tight">{formatAddress(deliveryAddress)}</div>
@@ -869,6 +879,7 @@ export function ImportExportWorkGrid() {
                             onKeyDown={(e) => handleKeyDown(e, job.id, 'sendPodToCustomerStatusIndicatorTimestamp', job._jobType)}
                             placeholder="DD/MM/YY"
                             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
+                            autoComplete="off"
                           />
                         ) : (
                           formatDate(podTimestamp || null)

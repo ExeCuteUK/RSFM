@@ -374,6 +374,7 @@ export function AnparioCCGrid() {
             onKeyDown={handleKeyDown}
             onBlur={() => handleSave({ cellId: entry.id, fieldName })}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none min-h-[26px]"
+            autoComplete="off"
             data-testid={`input-${fieldName}-${entry.id}`}
           />
         </td>

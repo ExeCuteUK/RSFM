@@ -837,6 +837,7 @@ export default function Dashboard() {
               onKeyDown={handleKeyDown}
               className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center leading-[inherit] focus:outline-none"
               placeholder="DD/MM/YY"
+              autoComplete="off"
             />
           </div>
         </td>
@@ -998,6 +999,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                     placeholder="DD/MM/YY"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1029,6 +1031,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1086,6 +1089,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1111,6 +1115,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1137,6 +1142,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                     placeholder="DD/MM/YY"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1162,6 +1168,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1193,6 +1200,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1224,6 +1232,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1263,6 +1272,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full min-h-[60px] max-h-[60px] text-sm text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none resize-none px-0 py-0 leading-tight"
                                     rows={3}
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1431,6 +1441,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1458,6 +1469,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                     placeholder="DD/MM/YY"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1517,6 +1529,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1543,6 +1556,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1569,6 +1583,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1596,6 +1611,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                     placeholder="DD/MM/YY"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1622,6 +1638,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1648,6 +1665,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1675,6 +1693,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                     placeholder="DD/MM/YY"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1701,6 +1720,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1727,6 +1747,7 @@ export default function Dashboard() {
                                     onKeyDown={(e) => handleCellKeyDown(e)}
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1763,6 +1784,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                     placeholder="DD/MM/YY"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>
@@ -1791,6 +1813,7 @@ export default function Dashboard() {
                                     onBlur={handleCellSave}
                                     className="w-full text-xs text-center bg-transparent border-0 ring-0 ring-offset-0 focus:outline-none px-0 py-0"
                                     placeholder="DD/MM/YY"
+                                    autoComplete="off"
                                   />
                                 </div>
                               </td>

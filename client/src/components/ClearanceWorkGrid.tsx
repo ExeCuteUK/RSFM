@@ -496,6 +496,7 @@ export function ClearanceWorkGrid() {
               onBlur={handleSave}
               className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none resize-none"
               rows={2}
+              autoComplete="off"
               data-testid={`input-${fieldName}-${clearance.id}`}
             />
           </td>
@@ -516,6 +517,7 @@ export function ClearanceWorkGrid() {
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
+            autoComplete="off"
             data-testid={`input-${fieldName}-${clearance.id}`}
           />
         </td>
