@@ -364,7 +364,7 @@ export function AnparioCCGrid() {
       return (
         <td 
           key={fieldName} 
-          className={`border px-2 py-1 ${widthClass}`}
+          className={`border px-2 py-1 min-h-[42px] ${widthClass}`}
         >
           <input
             ref={inputRef}
@@ -373,7 +373,7 @@ export function AnparioCCGrid() {
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={() => handleSave({ cellId: entry.id, fieldName })}
-            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none min-h-[26px]"
             data-testid={`input-${fieldName}-${entry.id}`}
           />
         </td>
@@ -383,7 +383,7 @@ export function AnparioCCGrid() {
     return (
       <td 
         key={fieldName} 
-        className={`border px-2 py-1 text-center cursor-pointer hover-elevate ${widthClass}`}
+        className={`border px-2 py-1 text-center cursor-pointer hover-elevate min-h-[42px] ${widthClass}`}
         onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
       >
@@ -622,7 +622,7 @@ export function AnparioCCGrid() {
                     {renderCell(entry, "entryNumber")}
                     {renderCell(entry, "poNumber")}
                     {renderCell(entry, "notes")}
-                    <td className="border px-2 py-1 text-center w-24">
+                    <td className="border px-2 py-1 text-center w-24 min-h-[42px]">
                       {!entry.isBlank && (
                         <Button
                           variant="ghost"

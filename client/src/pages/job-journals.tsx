@@ -736,7 +736,7 @@ export default function JobJournals() {
                 {journalEntries.map((entry, index) => (
                   <tr 
                     key={`${entry.jobType}-${entry.jobRef}-${index}`}
-                    className={`border-b border-border hover-elevate ${index % 2 === 1 ? 'bg-muted/30' : ''}`}
+                    className={`border-b border-border hover-elevate ${index % 2 === 0 ? 'bg-muted/30' : ''}`}
                     data-testid={`row-job-${entry.jobRef}`}
                   >
                     <td className="p-1 text-center border-r border-border" data-testid={`text-type-${entry.jobRef}`}>
@@ -763,7 +763,7 @@ export default function JobJournals() {
                     <td className="p-1 text-center border-r-4 border-border" data-testid={`text-reg-${entry.jobRef}`}>
                       {entry.regContainerFlight}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-l-2 border-r border-border align-top" data-testid={`text-purchase-supplier-${entry.jobRef}`}>
+                    <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-red-200 dark:bg-red-900' : 'bg-red-100 dark:bg-red-800'} border-l-2 border-r border-border align-top`} data-testid={`text-purchase-supplier-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -776,7 +776,7 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-invoice-${entry.jobRef}`}>
+                    <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-red-200 dark:bg-red-900' : 'bg-red-100 dark:bg-red-800'} border-r border-border align-top`} data-testid={`text-purchase-invoice-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -797,7 +797,7 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" data-testid={`text-purchase-date-${entry.jobRef}`}>
+                    <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-red-200 dark:bg-red-900' : 'bg-red-100 dark:bg-red-800'} border-r border-border align-top`} data-testid={`text-purchase-date-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -811,7 +811,7 @@ export default function JobJournals() {
                       })()}
                     </td>
                     <td 
-                      className="p-1 text-center bg-red-100 dark:bg-red-900 border-r border-border align-top" 
+                      className={`p-1 text-center ${index % 2 === 0 ? 'bg-red-200 dark:bg-red-900' : 'bg-red-100 dark:bg-red-800'} border-r border-border align-top`}
                       data-testid={`text-purchase-amount-${entry.jobRef}`}
                       title={`Total: £${getInvoicesForJob(entry.jobRef).reduce((sum, inv) => sum + Number(inv.invoiceAmount), 0).toFixed(2)}`}
                     >
@@ -828,11 +828,11 @@ export default function JobJournals() {
                       })()}
                     </td>
                     {showReserveColumns && (
-                      <td className="p-1 text-center bg-red-50 dark:bg-red-950 border-l-4 border-r-4 border-border" data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
+                      <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-red-100 dark:bg-red-950' : 'bg-red-50 dark:bg-red-950'} border-l-4 border-r-4 border-border`} data-testid={`text-job-expenses-reserve-${entry.jobRef}`}>
                         {entry.jobExpensesReserve && entry.jobExpensesReserve > 0 ? `£${entry.jobExpensesReserve.toFixed(2)}` : ""}
                       </td>
                     )}
-                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-l-2 border-r border-border align-top" data-testid={`text-sales-customer-${entry.jobRef}`}>
+                    <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-green-200 dark:bg-green-900' : 'bg-green-100 dark:bg-green-800'} border-l-2 border-r border-border align-top`} data-testid={`text-sales-customer-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getCustomerInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -845,7 +845,7 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border align-top" data-testid={`text-sales-invoice-${entry.jobRef}`}>
+                    <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-green-200 dark:bg-green-900' : 'bg-green-100 dark:bg-green-800'} border-r border-border align-top`} data-testid={`text-sales-invoice-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getCustomerInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -860,7 +860,7 @@ export default function JobJournals() {
                         )
                       })()}
                     </td>
-                    <td className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border align-top" data-testid={`text-sales-date-${entry.jobRef}`}>
+                    <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-green-200 dark:bg-green-900' : 'bg-green-100 dark:bg-green-800'} border-r border-border align-top`} data-testid={`text-sales-date-${entry.jobRef}`}>
                       {(() => {
                         const invoices = getCustomerInvoicesForJob(entry.jobRef)
                         if (invoices.length === 0) return null
@@ -874,7 +874,7 @@ export default function JobJournals() {
                       })()}
                     </td>
                     <td 
-                      className="p-1 text-center bg-green-100 dark:bg-green-900 border-r border-border align-top" 
+                      className={`p-1 text-center ${index % 2 === 0 ? 'bg-green-200 dark:bg-green-900' : 'bg-green-100 dark:bg-green-800'} border-r border-border align-top`}
                       data-testid={`text-sales-amount-${entry.jobRef}`}
                       title={`Total: ${calculateInvoiceTotals(entry.jobRef).displayText}`}
                     >
@@ -905,7 +905,7 @@ export default function JobJournals() {
                       })()}
                     </td>
                     {showReserveColumns && (
-                      <td className="p-1 text-center bg-green-50 dark:bg-green-950 border-l-4 border-r-4 border-border" data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
+                      <td className={`p-1 text-center ${index % 2 === 0 ? 'bg-green-100 dark:bg-green-950' : 'bg-green-50 dark:bg-green-950'} border-l-4 border-r-4 border-border`} data-testid={`text-rs-charges-reserve-${entry.jobRef}`}>
                         {entry.rsChargesReserve && entry.rsChargesReserve > 0 ? `£${entry.rsChargesReserve.toFixed(2)}` : ""}
                       </td>
                     )}
