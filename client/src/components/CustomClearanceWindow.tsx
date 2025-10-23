@@ -97,7 +97,8 @@ export function CustomClearanceWindow({ windowId, payload, onSubmitSuccess }: Cu
   }
 
   const handleSubmit = async (data: InsertCustomClearance) => {
-    if (payload.mode === 'create' && data.etaPort) {
+    // Validate reference exists for both create and edit modes
+    if (data.etaPort) {
       // Try to parse etaPort as a date (it's a text field that may contain a date)
       try {
         const date = new Date(data.etaPort)
@@ -131,7 +132,11 @@ export function CustomClearanceWindow({ windowId, payload, onSubmitSuccess }: Cu
 
   const handleConfirmSubmit = () => {
     if (pendingData) {
-      createMutation.mutate(pendingData)
+      if (payload.mode === 'create') {
+        createMutation.mutate(pendingData)
+      } else {
+        updateMutation.mutate(pendingData)
+      }
       setPendingData(null)
     }
     setShowWarningDialog(false)

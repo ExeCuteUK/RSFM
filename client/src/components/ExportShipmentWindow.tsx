@@ -96,7 +96,8 @@ export function ExportShipmentWindow({ windowId, payload, onSubmitSuccess }: Exp
   }
 
   const handleSubmit = async (data: InsertExportShipment) => {
-    if (payload.mode === 'create' && data.bookingDate) {
+    // Validate reference exists for both create and edit modes
+    if (data.bookingDate) {
       // Extract month and year from booking date
       const date = new Date(data.bookingDate)
       const month = date.getMonth() + 1 // JavaScript months are 0-indexed
@@ -123,7 +124,11 @@ export function ExportShipmentWindow({ windowId, payload, onSubmitSuccess }: Exp
 
   const handleConfirmSubmit = () => {
     if (pendingData) {
-      createMutation.mutate(pendingData)
+      if (payload.mode === 'create') {
+        createMutation.mutate(pendingData)
+      } else {
+        updateMutation.mutate(pendingData)
+      }
       setPendingData(null)
     }
     setShowWarningDialog(false)
