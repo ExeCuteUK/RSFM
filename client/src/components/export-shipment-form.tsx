@@ -1503,7 +1503,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
                     name="arrivalClearanceCost"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Destination Clearance Charge Out</FormLabel>
+                        <FormLabel>Destination CC Out</FormLabel>
                         <FormControl>
                           <Input {...field} value={field.value || ""} data-testid="input-arrival-clearance-cost" />
                         </FormControl>

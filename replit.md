@@ -18,6 +18,7 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Export Form:**
   - Swapped field order in Rate In section: "Export CC Charge In" now appears before "Destination CC In"
   - Renamed "Destination Clearance Cost In" → "Destination CC In"
+  - Renamed "Destination Clearance Charge Out" → "Destination CC Out"
 - **Import Form - Customs Clearance Section:**
   - "Customs Clearance Agent" text field permanently hidden
   - "Clearance Agent" dropdown and "Clearance Type" dropdown now on same line at 50% width each (2-column grid)
