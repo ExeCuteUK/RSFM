@@ -3145,13 +3145,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get general reference
-      const reference = await storage.getGeneralReference(generalReferenceId);
+      const reference = await storage.getGeneralReferenceById(generalReferenceId);
       if (!reference) {
         return res.status(404).json({ error: "General reference not found" });
       }
 
       // Get entries for this reference
-      const entries = await storage.getAnparioCCEntriesByReference(generalReferenceId);
+      const entries = await storage.getAnparioCCEntriesByGeneralReferenceId(generalReferenceId);
 
       // Calculate grand total
       const grandTotal = (parseFloat(totalCharge || '0') + parseFloat(vatAmount || '0')).toFixed(2);

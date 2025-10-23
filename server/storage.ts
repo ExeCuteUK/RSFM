@@ -204,6 +204,7 @@ export interface IStorage {
 
   // General Reference methods (for miscellaneous charges)
   getAllGeneralReferences(): Promise<GeneralReference[]>;
+  getGeneralReferenceById(id: string): Promise<GeneralReference | undefined>;
   createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference>;
   updateGeneralReference(id: string, updates: Partial<InsertGeneralReference>): Promise<GeneralReference | undefined>;
   deleteGeneralReference(id: string): Promise<boolean>;
@@ -1160,6 +1161,10 @@ export class MemStorage implements IStorage {
   // General Reference methods (stubs for MemStorage)
   async getAllGeneralReferences(): Promise<GeneralReference[]> {
     return [];
+  }
+
+  async getGeneralReferenceById(id: string): Promise<GeneralReference | undefined> {
+    return undefined;
   }
 
   async createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference> {
@@ -2262,6 +2267,13 @@ export class DatabaseStorage implements IStorage {
     return db.select()
       .from(generalReferences)
       .orderBy(desc(generalReferences.createdAt));
+  }
+
+  async getGeneralReferenceById(id: string): Promise<GeneralReference | undefined> {
+    const [reference] = await db.select()
+      .from(generalReferences)
+      .where(eq(generalReferences.id, id));
+    return reference;
   }
 
   async createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference> {
