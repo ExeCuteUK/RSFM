@@ -16,6 +16,7 @@ export function AnparioCCGrid() {
   const [editingCell, setEditingCell] = useState<{ entryId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
+  const prevEditingCellRef = useRef<{ entryId: string; fieldName: string } | null>(null)
 
   // Fetch all general references with "Anpario EU CC" name
   const { data: allReferences = [] } = useQuery<GeneralReference[]>({
