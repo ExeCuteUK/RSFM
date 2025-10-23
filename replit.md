@@ -14,7 +14,7 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Chronological Sorting:** Journal entries now sort chronologically (earliest to latest) when displaying "All Time" (no date filters applied)
 - **Management Sheets:** Removed search text persistence - search bar starts empty on each page visit
 - **Import Containers Filter:** Filtered out LCL containers from Import Containers management sheet (already shown in Import & Export Work sheet)
-- **Import/Export Work Sheet - Quote Out / Net In Column:** Changed dividing line from grey to black for better contrast, added display of expensesToChargeOut and additionalExpensesIn amounts when present (format: "Add : £amount1, £amount2")
+- **Import/Export Work Sheet - Quote Out / Net In Column:** Changed dividing line from grey to black for better contrast, added display of expensesToChargeOut and additionalExpensesIn amounts on separate lines when present (format: "Additional : £amount1, £amount2")
 
 ## User Preferences
 
