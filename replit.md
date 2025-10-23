@@ -37,9 +37,12 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Instant Updates:** All cell edits update local state immediately without any server refetching - zero lag during typing
 - **Silent Background Sync:** Mutations save to server without invalidating queries - no UI refreshes or focus loss
 - **Focus Stability:** Editing state cleared immediately after save, focus never jumps between cells during rapid data entry
-- **Clean Styling:** Green background only for filled cells, normal background for empty cells, restored original font sizes (text-sm), proper row height (py-2) for all rows including blank row
-- **Simplified Interactions:** Enter to save, Escape to cancel, no complex tab navigation
-- **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, perfect for rapid data entry
+- **Styling Match:** Exact match with ClearanceWorkGrid - text-xs font, py-1 padding for all cells including blank row
+- **Fixed Column Widths:** Column widths captured before first edit and locked via inline styles to prevent any resizing during editing
+- **Row-Level Coloring:** Green background applied to entire row only when Entry Number has value (not cell-by-cell)
+- **Column Order:** Swapped PO Number and Entry Number positions - order is now: ETA Port → Container Number → PO Number → Entry Number → Notes → Actions
+- **Tab/Enter Navigation:** Move to next cell on Tab or Enter, wrap from Notes column to first cell of next row for continuous data entry flow
+- **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, fixed layout, perfect for rapid data entry
 
 ## User Preferences
 

@@ -252,33 +252,39 @@ export function AnparioCCGrid() {
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
+      
+      // Capture editing context before save clears it
+      const currentEditingCell = editingCell
+      
       await handleSave()
       
-      // Move to next cell after save
-      if (editingCell) {
-        moveToNextCell()
+      // Move to next cell using captured context
+      if (currentEditingCell) {
+        moveToNextCell(currentEditingCell)
       }
     } else if (e.key === "Tab") {
       e.preventDefault()
+      
+      // Capture editing context before save clears it
+      const currentEditingCell = editingCell
+      
       await handleSave()
       
-      // Move to next cell after save
-      if (editingCell) {
-        moveToNextCell()
+      // Move to next cell using captured context
+      if (currentEditingCell) {
+        moveToNextCell(currentEditingCell)
       }
     } else if (e.key === "Escape") {
       handleCancel()
     }
   }
 
-  // Move to next cell (Tab/Enter behavior)
-  const moveToNextCell = () => {
-    if (!editingCell) return
-
+  // Move to next cell (Tab/Enter behavior) - accepts current cell context as parameter
+  const moveToNextCell = (currentCell: { entryId: string; fieldName: string }) => {
     // Field order matches column order: ETA Port, Container Number, PO Number, Entry Number, Notes
     const fieldOrder = ['etaPort', 'containerNumber', 'poNumber', 'entryNumber', 'notes']
-    const currentFieldIndex = fieldOrder.indexOf(editingCell.fieldName)
-    const currentEntryIndex = displayRows.findIndex(r => r.id === editingCell.entryId)
+    const currentFieldIndex = fieldOrder.indexOf(currentCell.fieldName)
+    const currentEntryIndex = displayRows.findIndex(r => r.id === currentCell.entryId)
 
     if (currentFieldIndex === fieldOrder.length - 1) {
       // We're on Notes (last field) - move to first field of next row
