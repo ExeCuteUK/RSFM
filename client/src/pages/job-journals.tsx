@@ -934,7 +934,7 @@ export default function JobJournals() {
           <div className="flex text-xs bg-background border border-border">
             {/* Merged label cell spanning first 6 columns (#, Job Ref, Date, Client Name, Destination, Identifier) */}
             <div className="p-2 text-left flex-[6]">
-              <span className="text-muted-foreground font-medium">
+              <span className="text-muted-foreground font-bold underline">
                 {(() => {
                   if (filterMode === "month") {
                     return `Totals for ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
@@ -963,13 +963,13 @@ export default function JobJournals() {
                 - With reserves: 8 columns (same 6 + 2 reserve columns) */}
             <div className={`p-2 ${showReserveColumns ? 'flex-[8]' : 'flex-[6]'}`}></div>
             {/* Three total cells grouped together */}
-            <div className="p-2 text-center font-bold text-black dark:text-white bg-red-100 dark:bg-red-900 flex-1" data-testid="text-total-purchase">
+            <div className="p-2 text-center font-bold underline text-black dark:text-white bg-red-100 dark:bg-red-900 flex-1" data-testid="text-total-purchase">
               £{totalPurchaseAmount.toFixed(2)}
             </div>
-            <div className="p-2 text-center font-bold text-black dark:text-white bg-green-100 dark:bg-green-900 flex-1" data-testid="text-total-sales">
+            <div className="p-2 text-center font-bold underline text-black dark:text-white bg-green-100 dark:bg-green-900 flex-1" data-testid="text-total-sales">
               £{totalSalesAmount.toFixed(2)}
             </div>
-            <div className="p-2 text-center font-bold text-black dark:text-white bg-muted flex-1" data-testid="text-total-profit-loss">
+            <div className="p-2 text-center font-bold underline text-black dark:text-white bg-muted flex-1" data-testid="text-total-profit-loss">
               {(() => {
                 const profitLoss = totalSalesAmount - totalPurchaseAmount
                 const formatted = profitLoss.toLocaleString('en-GB', {
