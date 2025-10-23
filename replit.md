@@ -10,10 +10,11 @@ Key features include an integrated file upload system with Google Drive for shar
 
 **October 23, 2025 - Truck Journals & Management Sheets UI Improvements:**
 - **Truck Journals:** Removed underlines from totals footer row, made totals row half-width with left alignment, added zebra striping for better readability, refined header and data row borders (border-b-2 for headers, border-b for data rows)
-- **Truck Journals Filter Layout:** Swapped filter layout - "Currently Viewing" date label moved to left side, filter controls (Month/Year or Date Range inputs) to right side, added date label display in range mode
+- **Truck Journals Filter Layout:** Swapped filter layout - "Currently Viewing" date label moved to left side, filter controls (Month/Year or Date Range inputs) to right side, added date label display in range mode, centered "Currently Viewing" text
 - **Chronological Sorting:** Journal entries now sort chronologically (earliest to latest) when displaying "All Time" (no date filters applied)
 - **Management Sheets:** Removed search text persistence - search bar starts empty on each page visit
 - **Import Containers Filter:** Filtered out LCL containers from Import Containers management sheet (already shown in Import & Export Work sheet)
+- **Import/Export Work Sheet - Quote Out / Net In Column:** Changed dividing line from grey to black for better contrast, added display of expensesToChargeOut and additionalExpensesIn amounts when present (format: "Add : £amount1, £amount2")
 
 ## User Preferences
 
