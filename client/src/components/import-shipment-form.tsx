@@ -41,7 +41,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { FileUpload, type FileMetadata } from "@/components/ui/file-upload"
 import { ObjectStorageUploader } from "@/components/ui/object-storage-uploader"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -59,6 +59,7 @@ interface ImportShipmentFormProps {
   onSubmit: (data: InsertImportShipment) => void
   onCancel: () => void
   defaultValues?: Partial<InsertImportShipment>
+  scrollToCard?: string
 }
 
 // Date parsing helper to safely handle invalid date strings
@@ -114,7 +115,7 @@ const importShipmentFormSchema = insertImportShipmentSchema.superRefine((data: a
   }
 });
 
-export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: ImportShipmentFormProps) {
+export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollToCard }: ImportShipmentFormProps) {
   const { toast } = useToast()
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
   const [pendingProofOfDelivery, setPendingProofOfDelivery] = useState<string[]>([])
@@ -126,6 +127,17 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
   const [showUnsavedFieldsWarning, setShowUnsavedFieldsWarning] = useState(false)
   const [showJobHoldConfirmation, setShowJobHoldConfirmation] = useState(false)
   const [pendingSubmitData, setPendingSubmitData] = useState<InsertImportShipment | null>(null)
+  const quotationCardRef = useRef<HTMLDivElement>(null)
+
+  // Scroll to quotation card if requested
+  useEffect(() => {
+    if (scrollToCard === 'quotation' && quotationCardRef.current) {
+      // Use setTimeout to ensure the card is fully rendered
+      setTimeout(() => {
+        quotationCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  }, [scrollToCard])
 
   const form = useForm<InsertImportShipment>({
     resolver: zodResolver(importShipmentFormSchema),
@@ -1765,7 +1777,7 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues }: Import
             </CardContent>
           </Card>
 
-          <Card>
+          <Card ref={quotationCardRef}>
             <CardHeader>
               <CardTitle>Quotation / Rate Information</CardTitle>
             </CardHeader>

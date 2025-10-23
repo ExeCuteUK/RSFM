@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { useLocation } from "wouter"
+import { useWindowManager } from "@/contexts/WindowManagerContext"
 
 const STORAGE_KEY = 'importExportWorkGrid_preferences'
 
@@ -41,6 +42,7 @@ export function ImportExportWorkGrid() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { toast } = useToast()
   const [, setLocation] = useLocation()
+  const { openWindow } = useWindowManager()
 
   // Save preferences to localStorage
   useEffect(() => {
@@ -434,6 +436,27 @@ export function ImportExportWorkGrid() {
     setLocation(`${page}?search=${jobRef}`)
   }
 
+  // Handle Quote Out / Net In click to open shipment window and scroll to rate card
+  const handleQuoteClick = (job: (ImportShipment | ExportShipment) & { _jobType: 'import' | 'export' }) => {
+    const isImport = job._jobType === 'import'
+    const shipmentData = isImport 
+      ? importShipments.find(s => s.id === job.id)
+      : exportShipments.find(s => s.id === job.id)
+    
+    if (!shipmentData) return
+
+    openWindow({
+      id: `${isImport ? 'import' : 'export'}-shipment-${shipmentData.id}`,
+      type: isImport ? 'import-shipment' : 'export-shipment',
+      title: `${isImport ? 'Import' : 'Export'} Shipment ${shipmentData.jobRef}`,
+      payload: {
+        mode: 'edit',
+        defaultValues: shipmentData,
+        scrollToCard: 'quotation'
+      }
+    })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -812,8 +835,12 @@ export function ImportExportWorkGrid() {
                       </div>
                     </td>
                     
-                    {/* Quote Out / Net In - Not editable, status color */}
-                    <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
+                    {/* Quote Out / Net In - Clickable to open shipment and scroll to rate card */}
+                    <td 
+                      className={`p-1 text-center border-r border-border cursor-pointer hover:underline ${getQuoteColor(job)}`}
+                      onClick={() => handleQuoteClick(job)}
+                      data-testid={`cell-quote-net-${job.jobRef}`}
+                    >
                       <div className="min-h-[84px] flex items-center justify-center">
                         <div className="space-y-0.5 w-full">
                           <div className="pb-0.5 border-b border-black">

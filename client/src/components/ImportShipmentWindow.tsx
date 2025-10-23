@@ -22,6 +22,7 @@ interface ImportShipmentWindowProps {
   payload: {
     mode: 'create' | 'edit'
     defaultValues?: Partial<InsertImportShipment>
+    scrollToCard?: string
   }
   onSubmitSuccess: () => void
 }
@@ -176,6 +177,7 @@ export function ImportShipmentWindow({ windowId, payload, onSubmitSuccess }: Imp
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           defaultValues={payload.defaultValues}
+          scrollToCard={payload.scrollToCard}
         />
       </DraggableWindow>
 

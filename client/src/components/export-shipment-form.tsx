@@ -36,7 +36,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import { ExportCustomerForm } from "./export-customer-form"
 import { ExportReceiverForm } from "./export-receiver-form"
@@ -48,6 +48,7 @@ interface ExportShipmentFormProps {
   onSubmit: (data: InsertExportShipment) => void
   onCancel: () => void
   defaultValues?: Partial<InsertExportShipment>
+  scrollToCard?: string
 }
 
 // Validation helpers
@@ -89,7 +90,7 @@ const exportShipmentFormSchema = insertExportShipmentSchema.superRefine((data: a
   }
 });
 
-export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: ExportShipmentFormProps) {
+export function ExportShipmentForm({ onSubmit, onCancel, defaultValues, scrollToCard }: ExportShipmentFormProps) {
   const { toast } = useToast()
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
   const [isReceiverDialogOpen, setIsReceiverDialogOpen] = useState(false)
@@ -99,6 +100,17 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
   const [newHaulierContactName, setNewHaulierContactName] = useState("")
   const [newJobContactName, setNewJobContactName] = useState("")
   const [newJobContactEmail, setNewJobContactEmail] = useState("")
+  const quotationCardRef = useRef<HTMLDivElement>(null)
+
+  // Scroll to quotation card if requested
+  useEffect(() => {
+    if (scrollToCard === 'quotation' && quotationCardRef.current) {
+      // Use setTimeout to ensure the card is fully rendered
+      setTimeout(() => {
+        quotationCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  }, [scrollToCard])
 
   const form = useForm<InsertExportShipment>({
     resolver: zodResolver(exportShipmentFormSchema),
@@ -1449,7 +1461,7 @@ export function ExportShipmentForm({ onSubmit, onCancel, defaultValues }: Export
             </CardContent>
           </Card>
 
-          <Card>
+          <Card ref={quotationCardRef}>
             <CardHeader>
               <CardTitle>Quotation / Rate Information</CardTitle>
             </CardHeader>
