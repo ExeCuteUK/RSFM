@@ -63,7 +63,7 @@ export default function Dashboard() {
   const nisbetsPrefs = loadNisbetsPrefs()
 
   const [activeTab, setActiveTab] = useState(dashPrefs.activeTab || "container-management")
-  const [searchText, setSearchText] = useState(dashPrefs.searchText || "")
+  const [searchText, setSearchText] = useState("")
   const [jobStatusFilter, setJobStatusFilter] = useState<("active" | "completed")[]>(dashPrefs.jobStatusFilter || ["active", "completed"])
   const [, setLocation] = useLocation()
   const { toast } = useToast()
@@ -87,9 +87,9 @@ export default function Dashboard() {
 
   // Save dashboard preferences
   useEffect(() => {
-    const prefs = { activeTab, searchText, jobStatusFilter }
+    const prefs = { activeTab, jobStatusFilter }
     localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(prefs))
-  }, [activeTab, searchText, jobStatusFilter])
+  }, [activeTab, jobStatusFilter])
 
   // Save container preferences
   useEffect(() => {
@@ -466,6 +466,8 @@ export default function Dashboard() {
   // Filter container shipments
   const containerShipments = importShipments
     .filter((s) => s.containerShipment === "Container Shipment")
+    // Exclude LCL containers (they're shown in Import & Export Work sheet)
+    .filter((s) => !s.lclContainer)
     // Apply job status filter
     .filter((s) => {
       const isCompleted = isRowFullyGreen(s)

@@ -441,7 +441,7 @@ export default function JobJournals() {
     return matchesFilter(entry.date)
   })
   
-  const journalEntries = filteredByDate.filter(entry => {
+  const filteredEntries = filteredByDate.filter(entry => {
     const matchesJobType = selectedJobTypes.length === 0 || selectedJobTypes.includes(entry.jobType)
     
     if (!searchText.trim()) return matchesJobType
@@ -466,6 +466,15 @@ export default function JobJournals() {
     
     return matchesJobType && matchesSearch
   })
+
+  // Sort by date (earliest first) when showing all records, otherwise keep jobRef sort
+  const journalEntries = (filterMode === "range" && !startDate && !endDate)
+    ? [...filteredEntries].sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0
+        const dateB = b.date ? new Date(b.date).getTime() : 0
+        return dateA - dateB
+      })
+    : filteredEntries
 
   const handleJobTypeToggle = (jobType: string) => {
     setSelectedJobTypes(prev => 
@@ -562,6 +571,10 @@ export default function JobJournals() {
         
         {filterMode === "month" ? (
           <>
+            <div className="text-xl font-semibold flex-1">
+              Currently Viewing : {getFilterLabel()}
+            </div>
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium">Month:</label>
               <Select value={selectedMonth} onValueChange={setSelectedMonth}>
@@ -593,13 +606,13 @@ export default function JobJournals() {
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="text-xl font-semibold text-center flex-1">
-              Currently Viewing : {getFilterLabel()}
-            </div>
           </>
         ) : (
           <>
+            <div className="text-xl font-semibold flex-1">
+              Currently Viewing : {getFilterLabel()}
+            </div>
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium">From:</label>
               <Input
@@ -695,7 +708,7 @@ export default function JobJournals() {
         <div className="border border-border">
           <table className="w-full border-collapse">
             <thead className="text-xs sticky top-0 bg-background z-10">
-                <tr className="border-b-4">
+                <tr className="border-b-2 border-border">
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">#</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Job Ref</th>
                   <th className="text-center p-1 font-semibold underline border-r border-border bg-background">Date</th>
@@ -723,7 +736,7 @@ export default function JobJournals() {
                 {journalEntries.map((entry, index) => (
                   <tr 
                     key={`${entry.jobType}-${entry.jobRef}-${index}`}
-                    className="border-b-2 hover-elevate"
+                    className={`border-b border-border hover-elevate ${index % 2 === 1 ? 'bg-muted/30' : ''}`}
                     data-testid={`row-job-${entry.jobRef}`}
                   >
                     <td className="p-1 text-center border-r border-border" data-testid={`text-type-${entry.jobRef}`}>
@@ -931,10 +944,10 @@ export default function JobJournals() {
           
       {/* Fixed Totals Footer Row */}
       <div className="flex-none px-6 pb-6">
-          <div className="flex text-xs bg-background border border-border">
+          <div className="flex text-xs bg-background border border-border w-1/2">
             {/* Merged label cell spanning first 6 columns (#, Job Ref, Date, Client Name, Destination, Identifier) */}
             <div className="p-2 text-left flex-[6]">
-              <span className="text-muted-foreground font-bold underline">
+              <span className="text-muted-foreground font-bold">
                 {(() => {
                   if (filterMode === "month") {
                     return `Totals for ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
@@ -963,13 +976,13 @@ export default function JobJournals() {
                 - With reserves: 8 columns (same 6 + 2 reserve columns) */}
             <div className={`p-2 ${showReserveColumns ? 'flex-[8]' : 'flex-[6]'}`}></div>
             {/* Three total cells grouped together */}
-            <div className="p-2 text-center font-bold underline text-black dark:text-white bg-red-100 dark:bg-red-900 flex-1" data-testid="text-total-purchase">
+            <div className="p-2 text-center font-bold text-black dark:text-white bg-red-100 dark:bg-red-900 flex-1" data-testid="text-total-purchase">
               £{totalPurchaseAmount.toFixed(2)}
             </div>
-            <div className="p-2 text-center font-bold underline text-black dark:text-white bg-green-100 dark:bg-green-900 flex-1" data-testid="text-total-sales">
+            <div className="p-2 text-center font-bold text-black dark:text-white bg-green-100 dark:bg-green-900 flex-1" data-testid="text-total-sales">
               £{totalSalesAmount.toFixed(2)}
             </div>
-            <div className="p-2 text-center font-bold underline text-black dark:text-white bg-muted flex-1" data-testid="text-total-profit-loss">
+            <div className="p-2 text-center font-bold text-black dark:text-white bg-muted flex-1" data-testid="text-total-profit-loss">
               {(() => {
                 const profitLoss = totalSalesAmount - totalPurchaseAmount
                 const formatted = profitLoss.toLocaleString('en-GB', {
