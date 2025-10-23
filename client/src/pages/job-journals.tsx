@@ -512,7 +512,9 @@ export default function JobJournals() {
   }, 0)
 
   return (
-    <div className="h-full flex flex-col p-6 gap-4 overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Fixed Filter/Header Section */}
+      <div className="flex-none p-6 pb-4 flex flex-col gap-4">
       <div className="flex gap-4 items-center">
         <div className="flex gap-2">
           <Button
@@ -663,9 +665,10 @@ export default function JobJournals() {
           Reserve Columns
         </Button>
       </div>
-
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="flex-1 overflow-auto">
+      </div>
+      
+      {/* Scrollable Table Section */}
+      <div className="flex-1 overflow-auto px-6">
           <table className="w-full border-collapse">
             <thead className="text-xs sticky top-0 bg-background z-10">
                 <tr className="border-b-4">
@@ -899,10 +902,19 @@ export default function JobJournals() {
                 ))}
               </tbody>
             </table>
-          </div>
+      </div>
           
-          {/* Totals Footer Row - Outside table */}
-          <div className="flex text-xs bg-background border-t-4 border-border">
+      {/* Fixed Totals Footer Row */}
+      <div className="flex-none px-6 pb-6">
+          <div className="flex text-xs bg-background border border-border">
+            <div className="p-2 text-center flex-1">
+              <span className="text-muted-foreground">
+                {filterMode === "month" 
+                  ? `Totals for ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                  : `Totals for ${formatDateToDDMMYY(startDate)} to ${formatDateToDDMMYY(endDate)}`
+                }
+              </span>
+            </div>
             <div className="p-2 text-center flex-1"></div>
             <div className="p-2 text-center flex-1"></div>
             <div className="p-2 text-center flex-1"></div>
@@ -911,8 +923,7 @@ export default function JobJournals() {
             <div className="p-2 text-center flex-1"></div>
             <div className="p-2 text-center flex-1"></div>
             <div className="p-2 text-center flex-1"></div>
-            <div className="p-2 text-center flex-1"></div>
-            <div className="p-2 text-center font-bold text-white bg-red-100 dark:bg-red-900 flex-1" data-testid="text-total-purchase">
+            <div className="p-2 text-center font-bold text-black dark:text-white bg-red-100 dark:bg-red-900 flex-1" data-testid="text-total-purchase">
               £{totalPurchaseAmount.toFixed(2)}
             </div>
             {showReserveColumns && (
@@ -921,13 +932,13 @@ export default function JobJournals() {
             <div className="p-2 text-center flex-1"></div>
             <div className="p-2 text-center flex-1"></div>
             <div className="p-2 text-center flex-1"></div>
-            <div className="p-2 text-center font-bold text-white bg-green-100 dark:bg-green-900 flex-1" data-testid="text-total-sales">
+            <div className="p-2 text-center font-bold text-black dark:text-white bg-green-100 dark:bg-green-900 flex-1" data-testid="text-total-sales">
               £{totalSalesAmount.toFixed(2)}
             </div>
             {showReserveColumns && (
               <div className="p-2 text-center flex-1"></div>
             )}
-            <div className="p-2 text-center font-bold bg-muted flex-1" data-testid="text-total-profit-loss">
+            <div className="p-2 text-center font-bold text-black dark:text-white bg-muted flex-1" data-testid="text-total-profit-loss">
               {(() => {
                 const profitLoss = totalSalesAmount - totalPurchaseAmount
                 const formatted = profitLoss.toLocaleString('en-GB', {
@@ -948,8 +959,9 @@ export default function JobJournals() {
               })()}
             </div>
           </div>
-        </div>
+      </div>
       
+      {/* Dialogs */}
         <InvoiceEditDialog
           invoice={selectedInvoice}
           open={invoiceDialogOpen}
@@ -967,6 +979,6 @@ export default function JobJournals() {
             }
           }}
         />
-      </div>
-    )
-  }
+    </div>
+  )
+}
