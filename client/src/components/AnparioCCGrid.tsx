@@ -98,7 +98,7 @@ export function AnparioCCGrid() {
   // Create entry mutation - save silently, add to local state
   const createEntryMutation = useMutation({
     mutationFn: async (data: Partial<AnparioCCEntry>) => {
-      return await apiRequest("POST", "/api/anpario-cc-entries", data)
+      return await apiRequest("POST", "/api/anpario-cc-entries", data) as Promise<AnparioCCEntry>
     },
     onSuccess: (newEntry: AnparioCCEntry) => {
       // Add new entry to local state
