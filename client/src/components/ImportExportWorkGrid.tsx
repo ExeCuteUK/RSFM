@@ -328,7 +328,7 @@ export function ImportExportWorkGrid() {
       const importJob = job as ImportShipment & { _jobType: 'import' }
       if (importJob.freightRateOut) mainParts.push(`Frt £${importJob.freightRateOut}`)
       if (importJob.exportCustomsClearanceCharge) mainParts.push(`Exp CC £${importJob.exportCustomsClearanceCharge}`)
-      if (importJob.clearanceCharge) mainParts.push(`Dest CC £${importJob.clearanceCharge}`)
+      if (importJob.clearanceCharge) mainParts.push(`Imp CC £${importJob.clearanceCharge}`)
       
       // Add expenses to charge out
       if (importJob.expensesToChargeOut && Array.isArray(importJob.expensesToChargeOut) && importJob.expensesToChargeOut.length > 0) {
@@ -370,7 +370,7 @@ export function ImportExportWorkGrid() {
       const exportJob = job as ExportShipment & { _jobType: 'export' }
       if (exportJob.haulierFreightRateIn) mainParts.push(`Frt £${exportJob.haulierFreightRateIn}`)
       if (exportJob.exportClearanceChargeIn) mainParts.push(`Exp CC £${exportJob.exportClearanceChargeIn}`)
-      if (exportJob.destinationClearanceCostIn) mainParts.push(`Dest CC £${exportJob.destinationClearanceCostIn}`)
+      if (exportJob.destinationClearanceCostIn) mainParts.push(`Imp CC £${exportJob.destinationClearanceCostIn}`)
       
       // Add additional expenses in
       if (exportJob.additionalExpensesIn && Array.isArray(exportJob.additionalExpensesIn) && exportJob.additionalExpensesIn.length > 0) {
@@ -807,13 +807,13 @@ export function ImportExportWorkGrid() {
                       <div className="min-h-[84px] flex items-center justify-center">
                         <div className="space-y-0.5 w-full">
                           <div className="pb-0.5 border-b border-black">
-                            <div>Quote: {quoteData.main}</div>
+                            <div>OUT: {quoteData.main}</div>
                             {quoteData.additional && (
                               <div className="text-xs">{quoteData.additional}</div>
                             )}
                           </div>
                           <div className="pt-0.5">
-                            <div>Net: {netData.main}</div>
+                            <div>IN: {netData.main}</div>
                             {netData.additional && (
                               <div className="text-xs">{netData.additional}</div>
                             )}
