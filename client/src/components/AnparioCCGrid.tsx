@@ -2,11 +2,10 @@ import { useState, useRef, useEffect } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
-import { Plus, FileText, FileBarChart } from "lucide-react"
+import { FileText, FileBarChart } from "lucide-react"
 import { type GeneralReference, type AnparioCCEntry, type ImportCustomer, type Settings } from "@shared/schema"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 
@@ -16,6 +15,8 @@ export function AnparioCCGrid() {
   const [selectedReferenceId, setSelectedReferenceId] = useState<string | null>(null)
   const [editingCell, setEditingCell] = useState<{ entryId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
+  const [columnWidths, setColumnWidths] = useState<number[]>([])
+  const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Fetch all general references with "Anpario EU CC" name
@@ -67,6 +68,13 @@ export function AnparioCCGrid() {
     },
   })
 
+  // Clear column widths when exiting edit mode
+  useEffect(() => {
+    if (!editingCell) {
+      setColumnWidths([])
+    }
+  }, [editingCell])
+
   // Focus input when entering edit mode
   useEffect(() => {
     if (editingCell && inputRef.current) {
@@ -79,12 +87,25 @@ export function AnparioCCGrid() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<AnparioCCEntry> }) => {
       return await apiRequest("PATCH", `/api/anpario-cc-entries/${id}`, data)
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
-      toast({
-        title: "Entry Updated",
-        description: "Clearance entry has been updated successfully",
-      })
+      
+      // Check if this was the last entry and auto-create a new row
+      const isLastEntry = entries.length > 0 && variables.id === entries[entries.length - 1].id
+      if (isLastEntry && selectedReferenceId) {
+        // Auto-create new row
+        createEntryMutation.mutate({
+          generalReferenceId: selectedReferenceId,
+          etaPort: null,
+          containerNumber: null,
+          entryNumber: null,
+          poNumber: null,
+          notes: null,
+        })
+      }
+      
+      setEditingCell(null)
+      setTempValue("")
     },
     onError: (error: Error) => {
       toast({
@@ -102,10 +123,6 @@ export function AnparioCCGrid() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
-      toast({
-        title: "Entry Created",
-        description: "New clearance entry has been added",
-      })
     },
     onError: (error: Error) => {
       toast({
@@ -173,71 +190,18 @@ export function AnparioCCGrid() {
     return `${fullYear}-${month}-${day}`
   }
 
-  // Handle cell click
-  const handleCellClick = (entryId: string, fieldName: string, currentValue: string) => {
-    setTempValue(currentValue || "")
-    setEditingCell({ entryId, fieldName })
-  }
-
-  // Handle save
-  const handleSave = async (entryId: string, fieldName: string, value: string) => {
-    try {
-      const updateData: Partial<AnparioCCEntry> = {}
-      
-      if (fieldName === "etaPort") {
-        const convertedDate = validateAndConvertDate(value)
-        ;(updateData as any)[fieldName] = convertedDate
-      } else {
-        ;(updateData as any)[fieldName] = value.trim() || null
-      }
-      
-      await updateEntryMutation.mutateAsync({ id: entryId, data: updateData })
-      setEditingCell(null)
-      setTempValue("")
-    } catch (error) {
-      toast({
-        title: "Validation Error",
-        description: error instanceof Error ? error.message : "Invalid input",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Handle cancel
-  const handleCancel = () => {
-    setEditingCell(null)
-    setTempValue("")
-  }
-
-  // Add new row
-  const handleAddRow = () => {
-    if (!selectedReferenceId) {
-      toast({
-        title: "Error",
-        description: "Please select a monthly reference first",
-        variant: "destructive",
-      })
-      return
-    }
-
-    createEntryMutation.mutate({
-      generalReferenceId: selectedReferenceId,
-      etaPort: null,
-      containerNumber: null,
-      entryNumber: null,
-      poNumber: null,
-      notes: null,
-    })
-  }
-
-  // Calculate clearance count (only actual data rows, exclude empty rows)
+  // Calculate clearance count (only actual data rows with content)
   const clearanceCount = entries.filter(entry => 
     entry.containerNumber || entry.etaPort || entry.entryNumber || entry.poNumber
   ).length
 
   // Generate display rows (minimum 25 rows)
-  const displayRows = [...entries]
+  const displayRows: (AnparioCCEntry & { isBlank?: boolean; isFirstBlank?: boolean })[] = [...entries]
   const blankRowsNeeded = Math.max(0, 25 - entries.length)
+  
+  // If there are no entries at all, we need at least one that's editable
+  const needsEditableRow = entries.length === 0
+  
   for (let i = 0; i < blankRowsNeeded; i++) {
     displayRows.push({
       id: `blank-${i}`,
@@ -248,16 +212,137 @@ export function AnparioCCGrid() {
       poNumber: null,
       notes: null,
       createdAt: new Date().toISOString(),
-    } as AnparioCCEntry)
+      isBlank: true,
+      isFirstBlank: i === 0 && needsEditableRow, // First blank row is editable when there are no entries
+    } as any)
   }
 
-  // Get last day of month
-  const getLastDayOfMonth = (month: number, year: number): string => {
-    const lastDay = new Date(year, month, 0).getDate()
-    const day = String(lastDay).padStart(2, '0')
-    const mon = String(month).padStart(2, '0')
-    const yr = String(year).slice(-2)
-    return `${day}/${mon}/${yr}`
+  // Handle cell click
+  const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean; isFirstBlank?: boolean }, fieldName: string, currentValue: string) => {
+    // Don't allow editing blank rows unless it's the first blank when there are no entries
+    if (entry.isBlank && !entry.isFirstBlank) return
+
+    // Capture column widths before entering edit mode
+    if (tableRef.current && !editingCell) {
+      const headers = tableRef.current.querySelectorAll('thead th')
+      const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
+      setColumnWidths(widths)
+    }
+
+    setEditingCell({ entryId: entry.id, fieldName })
+    setTempValue(currentValue || "")
+  }
+
+  // Handle save
+  const handleSave = async () => {
+    if (!editingCell || !selectedReferenceId) return
+
+    try {
+      // Check if we're editing a blank row (first blank when no entries exist)
+      const isEditingFirstBlank = editingCell.entryId.startsWith('blank-')
+      
+      if (isEditingFirstBlank) {
+        // Create a new entry
+        const newEntryData: Partial<AnparioCCEntry> = {
+          generalReferenceId: selectedReferenceId,
+          etaPort: null,
+          containerNumber: null,
+          entryNumber: null,
+          poNumber: null,
+          notes: null,
+        }
+        
+        if (editingCell.fieldName === "etaPort") {
+          const convertedDate = validateAndConvertDate(tempValue)
+          ;(newEntryData as any)[editingCell.fieldName] = convertedDate
+        } else {
+          ;(newEntryData as any)[editingCell.fieldName] = tempValue.trim() || null
+        }
+        
+        await createEntryMutation.mutateAsync(newEntryData)
+        setEditingCell(null)
+        setTempValue("")
+      } else {
+        // Update existing entry
+        const updateData: Partial<AnparioCCEntry> = {}
+        
+        if (editingCell.fieldName === "etaPort") {
+          const convertedDate = validateAndConvertDate(tempValue)
+          ;(updateData as any)[editingCell.fieldName] = convertedDate
+        } else {
+          ;(updateData as any)[editingCell.fieldName] = tempValue.trim() || null
+        }
+        
+        await updateEntryMutation.mutateAsync({ id: editingCell.entryId, data: updateData })
+      }
+    } catch (error) {
+      toast({
+        title: "Validation Error",
+        description: error instanceof Error ? error.message : "Invalid input",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Handle keydown
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleSave()
+    } else if (e.key === "Escape") {
+      setEditingCell(null)
+      setTempValue("")
+    }
+  }
+
+  // Render cell
+  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean; isFirstBlank?: boolean }, fieldName: string, index: number) => {
+    const isEditing = editingCell?.entryId === entry.id && editingCell.fieldName === fieldName
+    const width = columnWidths[index]
+    
+    let value = ""
+    if (fieldName === "etaPort") {
+      value = formatDateDDMMYY(entry.etaPort)
+    } else {
+      value = (entry as any)[fieldName] || ""
+    }
+
+    // Allow editing if: not blank, OR is the first blank when there are no entries
+    const isEditable = !entry.isBlank || entry.isFirstBlank
+
+    if (isEditing) {
+      return (
+        <td 
+          key={fieldName} 
+          className="border px-2 py-1"
+          style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleSave}
+            placeholder={fieldName === "etaPort" ? "DD/MM/YY" : ""}
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
+            data-testid={`input-${fieldName}-${entry.id}`}
+          />
+        </td>
+      )
+    }
+
+    return (
+      <td 
+        key={fieldName} 
+        className={`border px-2 py-1 text-center ${isEditable ? 'cursor-pointer hover-elevate' : ''}`}
+        style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+        onClick={() => isEditable && handleCellClick(entry, fieldName, value)}
+        data-testid={`cell-${fieldName}-${entry.id}`}
+      >
+        <span className="text-xs">{value}</span>
+      </td>
+    )
   }
 
   // Handle Create Invoice
@@ -426,7 +511,7 @@ export function AnparioCCGrid() {
       <Card className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
-            <label className="font-semibold whitespace-nowrap">Select Month:</label>
+            <label className="font-semibold whitespace-nowrap text-xs">Select Month:</label>
             <Select value={selectedReferenceId || ""} onValueChange={setSelectedReferenceId}>
               <SelectTrigger className="w-[250px]" data-testid="select-month-reference">
                 <SelectValue placeholder="Select a month" />
@@ -440,13 +525,13 @@ export function AnparioCCGrid() {
               </SelectContent>
             </Select>
             {selectedReference && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Monthly Ref: <span className="font-semibold">{selectedReference.jobRef}</span>
               </div>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-sm font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md">
+            <div className="text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md">
               {clearanceCount} Clearances
             </div>
             <Button variant="default" size="sm" onClick={handleCreateInvoice} data-testid="button-create-invoice">
@@ -457,10 +542,6 @@ export function AnparioCCGrid() {
               <FileBarChart className="h-4 w-4 mr-1" />
               Create Statement
             </Button>
-            <Button variant="outline" size="sm" onClick={handleAddRow} data-testid="button-add-row">
-              <Plus className="h-4 w-4 mr-1" />
-              Add Row
-            </Button>
           </div>
         </div>
       </Card>
@@ -469,156 +550,27 @@ export function AnparioCCGrid() {
       {selectedReferenceId ? (
         <Card className="p-4">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table ref={tableRef} className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th className="p-2 text-center font-semibold bg-muted text-xs">ETA Port</th>
-                  <th className="p-2 text-center font-semibold bg-muted text-xs">Container Number</th>
-                  <th className="p-2 text-center font-semibold bg-muted text-xs">Entry Number</th>
-                  <th className="p-2 text-center font-semibold bg-muted text-xs">PO Number</th>
-                  <th className="p-2 text-center font-semibold bg-muted text-xs">Notes</th>
-                  <th className="p-2 text-center font-semibold bg-muted text-xs w-20">Actions</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">ETA Port</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">Container Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">Entry Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">PO Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs">Notes</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-20">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {displayRows.map((entry, index) => {
-                  const isBlankRow = entry.id.startsWith('blank-')
-                  return (
+                {displayRows.map((entry) => (
                   <tr key={entry.id} className="border-b hover:bg-muted/50">
-                    {/* ETA Port */}
-                    <td className="p-2 text-center">
-                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "etaPort" ? (
-                        <Input
-                          ref={inputRef}
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleSave(entry.id, "etaPort", tempValue)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSave(entry.id, "etaPort", tempValue)
-                            if (e.key === "Escape") handleCancel()
-                          }}
-                          placeholder="DD/MM/YY"
-                          className="h-8 text-center text-xs"
-                          data-testid={`input-eta-port-${index}`}
-                        />
-                      ) : (
-                        <div
-                          onClick={() => !isBlankRow && handleCellClick(entry.id, "etaPort", formatDateDDMMYY(entry.etaPort))}
-                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
-                          data-testid={`cell-eta-port-${index}`}
-                        >
-                          {formatDateDDMMYY(entry.etaPort)}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Container Number */}
-                    <td className="p-2 text-center">
-                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "containerNumber" ? (
-                        <Input
-                          ref={inputRef}
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleSave(entry.id, "containerNumber", tempValue)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSave(entry.id, "containerNumber", tempValue)
-                            if (e.key === "Escape") handleCancel()
-                          }}
-                          className="h-8 text-center text-xs"
-                          data-testid={`input-container-number-${index}`}
-                        />
-                      ) : (
-                        <div
-                          onClick={() => !isBlankRow && handleCellClick(entry.id, "containerNumber", entry.containerNumber || "")}
-                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
-                          data-testid={`cell-container-number-${index}`}
-                        >
-                          {entry.containerNumber}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Entry Number */}
-                    <td className="p-2 text-center">
-                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "entryNumber" ? (
-                        <Input
-                          ref={inputRef}
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleSave(entry.id, "entryNumber", tempValue)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSave(entry.id, "entryNumber", tempValue)
-                            if (e.key === "Escape") handleCancel()
-                          }}
-                          className="h-8 text-center text-xs"
-                          data-testid={`input-entry-number-${index}`}
-                        />
-                      ) : (
-                        <div
-                          onClick={() => !isBlankRow && handleCellClick(entry.id, "entryNumber", entry.entryNumber || "")}
-                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
-                          data-testid={`cell-entry-number-${index}`}
-                        >
-                          {entry.entryNumber}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* PO Number */}
-                    <td className="p-2 text-center">
-                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "poNumber" ? (
-                        <Input
-                          ref={inputRef}
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleSave(entry.id, "poNumber", tempValue)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSave(entry.id, "poNumber", tempValue)
-                            if (e.key === "Escape") handleCancel()
-                          }}
-                          className="h-8 text-center text-xs"
-                          data-testid={`input-po-number-${index}`}
-                        />
-                      ) : (
-                        <div
-                          onClick={() => !isBlankRow && handleCellClick(entry.id, "poNumber", entry.poNumber || "")}
-                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
-                          data-testid={`cell-po-number-${index}`}
-                        >
-                          {entry.poNumber}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Notes */}
-                    <td className="p-2 text-center">
-                      {!isBlankRow && editingCell?.entryId === entry.id && editingCell.fieldName === "notes" ? (
-                        <Input
-                          ref={inputRef}
-                          value={tempValue}
-                          onChange={(e) => setTempValue(e.target.value)}
-                          onBlur={() => handleSave(entry.id, "notes", tempValue)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSave(entry.id, "notes", tempValue)
-                            if (e.key === "Escape") handleCancel()
-                          }}
-                          className="h-8 text-center text-xs"
-                          data-testid={`input-notes-${index}`}
-                        />
-                      ) : (
-                        <div
-                          onClick={() => !isBlankRow && handleCellClick(entry.id, "notes", entry.notes || "")}
-                          className={`${!isBlankRow ? 'cursor-pointer hover:bg-accent' : ''} p-1 rounded min-h-[32px] flex items-center justify-center text-xs`}
-                          data-testid={`cell-notes-${index}`}
-                        >
-                          {entry.notes}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="p-2 text-center">
-                      {!isBlankRow && (
+                    {renderCell(entry, "etaPort", 0)}
+                    {renderCell(entry, "containerNumber", 1)}
+                    {renderCell(entry, "entryNumber", 2)}
+                    {renderCell(entry, "poNumber", 3)}
+                    {renderCell(entry, "notes", 4)}
+                    <td className="border px-2 py-1 text-center" style={columnWidths[5] ? { width: `${columnWidths[5]}px`, minWidth: `${columnWidths[5]}px`, maxWidth: `${columnWidths[5]}px` } : {}}>
+                      {!entry.isBlank && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -627,23 +579,22 @@ export function AnparioCCGrid() {
                               deleteEntryMutation.mutate(entry.id)
                             }
                           }}
-                          data-testid={`button-delete-${index}`}
-                          className="h-8 px-2 text-xs"
+                          data-testid={`button-delete-${entry.id}`}
+                          className="h-auto min-h-6 px-2 py-0 text-xs"
                         >
                           Delete
                         </Button>
                       )}
                     </td>
                   </tr>
-                  )
-                })}
+                ))}
               </tbody>
             </table>
           </div>
         </Card>
       ) : (
         <Card className="p-8 text-center text-muted-foreground">
-          <p>No monthly references found. Create an "Anpario EU CC" general reference to get started.</p>
+          <p className="text-xs">No monthly references found. Create an "Anpario EU CC" general reference to get started.</p>
         </Card>
       )}
     </div>
