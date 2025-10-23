@@ -692,7 +692,7 @@ export default function JobJournals() {
       
       {/* Scrollable Table Section */}
       <div className="flex-1 overflow-auto px-6">
-        <div className="border border-black dark:border-border">
+        <div className="border border-border">
           <table className="w-full border-collapse">
             <thead className="text-xs sticky top-0 bg-background z-10">
                 <tr className="border-b-4">
@@ -931,7 +931,7 @@ export default function JobJournals() {
           
       {/* Fixed Totals Footer Row */}
       <div className="flex-none px-6 pb-6">
-          <div className="flex text-xs bg-background border border-black dark:border-border">
+          <div className="flex text-xs bg-background border border-border">
             {/* Merged label cell spanning first 6 columns (#, Job Ref, Date, Client Name, Destination, Identifier) */}
             <div className="p-2 text-left flex-[6]">
               <span className="text-muted-foreground font-medium">

@@ -11,7 +11,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiRequest, queryClient } from '@/lib/queryClient'
 import { useToast } from '@/hooks/use-toast'
 import { format, parse } from 'date-fns'
-import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer } from '@shared/schema'
+import type { ImportShipment, ExportShipment, CustomClearance, ImportCustomer, ExportCustomer, GeneralReference } from '@shared/schema'
 
 interface ExpenseInvoiceWindowProps {
   windowId: string
@@ -47,7 +47,7 @@ interface InvoiceRow {
 
 interface JobInfo {
   exists: boolean
-  type?: 'Import' | 'Export' | 'Clearance'
+  type?: 'Import' | 'Export' | 'Clearance' | 'General'
   identifier?: string
   bookingDate?: string
   customerName?: string
@@ -148,6 +148,10 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
     queryKey: ["/api/export-customers"],
   })
 
+  const { data: generalReferences = [] } = useQuery<GeneralReference[]>({
+    queryKey: ["/api/general-references"],
+  })
+
   // Focus the job ref input when a new row is added
   useEffect(() => {
     if (focusRowId && jobRefInputRefs.current[focusRowId]) {
@@ -173,7 +177,7 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
   // Validate pre-filled job references when data loads
   useEffect(() => {
     // Only run if we have job data loaded
-    if (importShipments.length === 0 && exportShipments.length === 0 && customClearances.length === 0) {
+    if (importShipments.length === 0 && exportShipments.length === 0 && customClearances.length === 0 && generalReferences.length === 0) {
       return
     }
 
@@ -195,7 +199,7 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
         ...newJobInfoMap
       }))
     }
-  }, [importShipments, exportShipments, customClearances, importCustomers, exportCustomers])
+  }, [importShipments, exportShipments, customClearances, generalReferences, importCustomers, exportCustomers])
 
   const createMutation = useMutation({
     mutationFn: async (data: { invoices: any[] }) => {
@@ -268,6 +272,18 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
         identifier: clearance.trailerOrContainerNumber || 'N/A',
         bookingDate: clearance.etaPort || 'N/A',
         customerName
+      }
+    }
+
+    // Check general references
+    const generalRef = generalReferences.find(r => r.jobRef === jobRefNum)
+    if (generalRef) {
+      return {
+        exists: true,
+        type: 'General',
+        identifier: 'N/A',
+        bookingDate: generalRef.date || 'N/A',
+        customerName: generalRef.referenceName || 'N/A'
       }
     }
 
