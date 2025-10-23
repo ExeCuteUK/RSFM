@@ -102,6 +102,26 @@ export const insertGeneralReferenceSchema = createInsertSchema(generalReferences
 export type InsertGeneralReference = z.infer<typeof insertGeneralReferenceSchema>;
 export type GeneralReference = typeof generalReferences.$inferSelect;
 
+// Anpario CC Entries Database (for monthly EU customs clearances)
+export const anparioCCEntries = pgTable("anpario_cc_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  generalReferenceId: varchar("general_reference_id").notNull(), // Links to general_references table
+  etaPort: text("eta_port"), // Date in YYYY-MM-DD format (displayed as DD/MM/YY)
+  containerNumber: text("container_number"),
+  entryNumber: text("entry_number"),
+  poNumber: text("po_number"),
+  notes: text("notes"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertAnparioCCEntrySchema = createInsertSchema(anparioCCEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAnparioCCEntry = z.infer<typeof insertAnparioCCEntrySchema>;
+export type AnparioCCEntry = typeof anparioCCEntries.$inferSelect;
+
 // Import Customers Database
 export const importCustomers = pgTable("import_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

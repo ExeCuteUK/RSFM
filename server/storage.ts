@@ -53,7 +53,10 @@ import {
   emailContacts,
   generalReferences,
   type GeneralReference,
-  type InsertGeneralReference
+  type InsertGeneralReference,
+  anparioCCEntries,
+  type AnparioCCEntry,
+  type InsertAnparioCCEntry
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db, pool } from "./db";
@@ -204,6 +207,14 @@ export interface IStorage {
   createGeneralReference(reference: InsertGeneralReference): Promise<GeneralReference>;
   updateGeneralReference(id: string, updates: Partial<InsertGeneralReference>): Promise<GeneralReference | undefined>;
   deleteGeneralReference(id: string): Promise<boolean>;
+
+  // Anpario CC Entry methods
+  getAllAnparioCCEntries(): Promise<AnparioCCEntry[]>;
+  getAnparioCCEntriesByGeneralReferenceId(generalReferenceId: string): Promise<AnparioCCEntry[]>;
+  getAnparioCCEntry(id: string): Promise<AnparioCCEntry | undefined>;
+  createAnparioCCEntry(entry: InsertAnparioCCEntry): Promise<AnparioCCEntry>;
+  updateAnparioCCEntry(id: string, entry: Partial<InsertAnparioCCEntry>): Promise<AnparioCCEntry | undefined>;
+  deleteAnparioCCEntry(id: string): Promise<boolean>;
 
   // Invoice Charge Template methods
   getAllInvoiceChargeTemplates(): Promise<InvoiceChargeTemplate[]>;
@@ -1161,6 +1172,31 @@ export class MemStorage implements IStorage {
 
   async deleteGeneralReference(id: string): Promise<boolean> {
     throw new Error("General references not supported in memory storage");
+  }
+
+  // Anpario CC Entry methods (stubs for MemStorage)
+  async getAllAnparioCCEntries(): Promise<AnparioCCEntry[]> {
+    return [];
+  }
+
+  async getAnparioCCEntriesByGeneralReferenceId(generalReferenceId: string): Promise<AnparioCCEntry[]> {
+    return [];
+  }
+
+  async getAnparioCCEntry(id: string): Promise<AnparioCCEntry | undefined> {
+    return undefined;
+  }
+
+  async createAnparioCCEntry(entry: InsertAnparioCCEntry): Promise<AnparioCCEntry> {
+    throw new Error("Anpario CC entries not supported in memory storage");
+  }
+
+  async updateAnparioCCEntry(id: string, entry: Partial<InsertAnparioCCEntry>): Promise<AnparioCCEntry | undefined> {
+    throw new Error("Anpario CC entries not supported in memory storage");
+  }
+
+  async deleteAnparioCCEntry(id: string): Promise<boolean> {
+    throw new Error("Anpario CC entries not supported in memory storage");
   }
 
   async getAllInvoiceChargeTemplates(): Promise<InvoiceChargeTemplate[]> {
@@ -2252,6 +2288,48 @@ export class DatabaseStorage implements IStorage {
   async deleteGeneralReference(id: string): Promise<boolean> {
     const result = await db.delete(generalReferences)
       .where(eq(generalReferences.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Anpario CC Entry methods
+  async getAllAnparioCCEntries(): Promise<AnparioCCEntry[]> {
+    return db.select()
+      .from(anparioCCEntries)
+      .orderBy(desc(anparioCCEntries.createdAt));
+  }
+
+  async getAnparioCCEntriesByGeneralReferenceId(generalReferenceId: string): Promise<AnparioCCEntry[]> {
+    return db.select()
+      .from(anparioCCEntries)
+      .where(eq(anparioCCEntries.generalReferenceId, generalReferenceId))
+      .orderBy(anparioCCEntries.etaPort);
+  }
+
+  async getAnparioCCEntry(id: string): Promise<AnparioCCEntry | undefined> {
+    const [entry] = await db.select()
+      .from(anparioCCEntries)
+      .where(eq(anparioCCEntries.id, id));
+    return entry;
+  }
+
+  async createAnparioCCEntry(entry: InsertAnparioCCEntry): Promise<AnparioCCEntry> {
+    const [created] = await db.insert(anparioCCEntries)
+      .values(entry)
+      .returning();
+    return created;
+  }
+
+  async updateAnparioCCEntry(id: string, entry: Partial<InsertAnparioCCEntry>): Promise<AnparioCCEntry | undefined> {
+    const [updated] = await db.update(anparioCCEntries)
+      .set(entry)
+      .where(eq(anparioCCEntries.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteAnparioCCEntry(id: string): Promise<boolean> {
+    const result = await db.delete(anparioCCEntries)
+      .where(eq(anparioCCEntries.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
