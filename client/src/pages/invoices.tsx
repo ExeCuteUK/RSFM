@@ -65,6 +65,7 @@ export default function Invoices() {
 
   const { data: allInvoices = [], isLoading } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const deleteMutation = useMutation({

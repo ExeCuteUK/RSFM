@@ -178,34 +178,42 @@ export default function JobJournals() {
 
   const { data: importShipments = [] } = useQuery<ImportShipment[]>({
     queryKey: ["/api/import-shipments"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const { data: exportShipments = [] } = useQuery<ExportShipment[]>({
     queryKey: ["/api/export-shipments"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const { data: customClearances = [] } = useQuery<CustomClearance[]>({
     queryKey: ["/api/custom-clearances"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
     queryKey: ["/api/import-customers"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const { data: exportCustomers = [] } = useQuery<ExportCustomer[]>({
     queryKey: ["/api/export-customers"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const { data: purchaseInvoices = [] } = useQuery<PurchaseInvoice[]>({
     queryKey: ["/api/purchase-invoices"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const { data: customerInvoices = [] } = useQuery<Invoice[]>({
     queryKey: ["/api/invoices"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const { data: generalReferences = [] } = useQuery<GeneralReference[]>({
     queryKey: ["/api/general-references"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   const getCustomerName = (

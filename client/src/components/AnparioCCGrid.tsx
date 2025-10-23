@@ -21,6 +21,7 @@ export function AnparioCCGrid() {
   // Fetch all general references with "Anpario EU CC" name
   const { data: allReferences = [] } = useQuery<GeneralReference[]>({
     queryKey: ["/api/general-references"],
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   // Filter to any references containing "Anpario" (case-insensitive) and sort by date descending
