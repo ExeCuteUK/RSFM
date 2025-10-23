@@ -206,8 +206,17 @@ export function AnparioCCGrid() {
     if (!editingCell || !selectedReferenceId) return
 
     const isEditingBlank = editingCell.entryId.startsWith('blank-')
+    const trimmedValue = tempValue.trim()
     
     if (isEditingBlank) {
+      // Only create entry if user actually entered something
+      if (!trimmedValue) {
+        // Cancel editing without creating empty row
+        setEditingCell(null)
+        setTempValue("")
+        return
+      }
+      
       // Create a new entry
       const newEntryData: Partial<AnparioCCEntry> = {
         generalReferenceId: selectedReferenceId,
@@ -216,14 +225,14 @@ export function AnparioCCGrid() {
         entryNumber: null,
         poNumber: null,
         notes: null,
-        [editingCell.fieldName]: tempValue.trim() || null
+        [editingCell.fieldName]: trimmedValue || null
       }
       
       createEntryMutation.mutate(newEntryData)
     } else {
-      // Update existing entry
+      // Update existing entry (even if value is empty - allow clearing fields)
       const updateData: Partial<AnparioCCEntry> = {
-        [editingCell.fieldName]: tempValue.trim() || null
+        [editingCell.fieldName]: trimmedValue || null
       }
       
       updateEntryMutation.mutate({ id: editingCell.entryId, data: updateData })
