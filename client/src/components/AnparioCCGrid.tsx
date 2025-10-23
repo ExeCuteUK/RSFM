@@ -15,13 +15,13 @@ export function AnparioCCGrid() {
   const [selectedReferenceId, setSelectedReferenceId] = useState<string | null>(null)
   const [editingCell, setEditingCell] = useState<{ entryId: string; fieldName: string } | null>(null)
   const [tempValue, setTempValue] = useState("")
+  const [columnWidths, setColumnWidths] = useState<number[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
-  const prevEditingCellRef = useRef<{ entryId: string; fieldName: string } | null>(null)
+  const tableRef = useRef<HTMLTableElement>(null)
 
   // Fetch all general references with "Anpario EU CC" name
   const { data: allReferences = [] } = useQuery<GeneralReference[]>({
     queryKey: ["/api/general-references"],
-    refetchInterval: 10000, // Poll every 10 seconds
   })
 
   // Filter to any references containing "Anpario" (case-insensitive) and sort by date descending
@@ -75,56 +75,27 @@ export function AnparioCCGrid() {
     }
   }, [editingCell])
 
-  // Refresh data when exiting edit mode to sync with server
+  // Clear column widths when exiting edit mode
   useEffect(() => {
-    // Only invalidate when truly exiting edit mode (going from editing to not editing)
-    // Don't invalidate when moving between cells (both prevEditingCellRef and editingCell are non-null)
-    const wasEditing = prevEditingCellRef.current !== null
-    const isEditing = editingCell !== null
-    
-    if (wasEditing && !isEditing && selectedReferenceId) {
-      // User has left editing mode completely - refresh to get server-normalized data
-      queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
+    if (!editingCell) {
+      setColumnWidths([])
     }
-    
-    // Update ref for next render
-    prevEditingCellRef.current = editingCell
-  }, [editingCell, selectedReferenceId])
+  }, [editingCell])
 
-  // Update entry mutation with optimistic updates
+  // Update entry mutation
   const updateEntryMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<AnparioCCEntry> }) => {
-      return await apiRequest("PATCH", `/api/anpario-cc-entries/${id}`, data)
-    },
-    onMutate: async ({ id, data }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
-      
-      // Snapshot the previous value
-      const previousEntries = queryClient.getQueryData<AnparioCCEntry[]>(["/api/anpario-cc-entries/by-reference", selectedReferenceId])
-      
-      // Optimistically update to the new value
-      queryClient.setQueryData<AnparioCCEntry[]>(
-        ["/api/anpario-cc-entries/by-reference", selectedReferenceId],
-        (old) => old ? old.map(entry => entry.id === id ? { ...entry, ...data } : entry) : []
-      )
-      
-      // Return context with the previous value
-      return { previousEntries }
+      await apiRequest("PATCH", `/api/anpario-cc-entries/${id}`, data)
     },
     onSuccess: () => {
-      // Don't invalidate queries immediately - rely on optimistic updates
-      // Only invalidate when we're done editing to avoid focus loss
-      // Don't clear editingCell here - let handleSave manage it to support tab navigation
+      queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
+      setEditingCell(null)
+      setTempValue("")
     },
-    onError: (error: Error, _, context) => {
-      // Rollback on error
-      if (context?.previousEntries) {
-        queryClient.setQueryData(["/api/anpario-cc-entries/by-reference", selectedReferenceId], context.previousEntries)
-      }
+    onError: () => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update entry",
+        description: "Failed to update entry",
         variant: "destructive",
       })
     },
@@ -203,168 +174,89 @@ export function AnparioCCGrid() {
     } as any)
   }
 
+  // Get cell color based on value
+  const getCellColor = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, value: any) => {
+    const greenBg = "bg-green-100 dark:bg-green-900 dark:text-white"
+    const yellowBg = "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black"
+
+    // Blank rows always yellow to indicate they're editable
+    if (entry.isBlank) {
+      return yellowBg
+    }
+
+    // Fields with values are green, empty fields are yellow
+    return (value && value.toString().trim()) ? greenBg : yellowBg
+  }
+
   // Handle cell click
   const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, currentValue: string) => {
+    // Capture column widths before entering edit mode
+    if (tableRef.current && !editingCell) {
+      const headers = tableRef.current.querySelectorAll('thead th')
+      const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
+      setColumnWidths(widths)
+    }
+
     setEditingCell({ entryId: entry.id, fieldName })
     setTempValue(currentValue || "")
   }
 
   // Handle save
-  const handleSave = async (options: { clearAfterSave?: boolean; cellId?: string; fieldName?: string } = {}) => {
-    const { clearAfterSave = true, cellId, fieldName } = options
-    
+  const handleSave = () => {
     if (!editingCell || !selectedReferenceId) return
 
-    // If cellId/fieldName provided, only save if we're still on that cell
-    if (cellId && fieldName) {
-      if (editingCell.entryId !== cellId || editingCell.fieldName !== fieldName) {
-        // We've moved to a different cell, don't save this one
-        return
+    const isEditingBlank = editingCell.entryId.startsWith('blank-')
+    
+    if (isEditingBlank) {
+      // Create a new entry
+      const newEntryData: Partial<AnparioCCEntry> = {
+        generalReferenceId: selectedReferenceId,
+        etaPort: null,
+        containerNumber: null,
+        entryNumber: null,
+        poNumber: null,
+        notes: null,
+        [editingCell.fieldName]: tempValue.trim() || null
       }
-    }
-
-    // Capture the cell we're saving so we can check if we've moved to another cell
-    const savingCell = editingCell
-    const savingValue = tempValue
-
-    try {
-      // Check if we're editing a blank row (first blank when no entries exist)
-      const isEditingFirstBlank = savingCell.entryId.startsWith('blank-')
       
-      if (isEditingFirstBlank) {
-        // Create a new entry
-        const newEntryData: Partial<AnparioCCEntry> = {
-          generalReferenceId: selectedReferenceId,
-          etaPort: null,
-          containerNumber: null,
-          entryNumber: null,
-          poNumber: null,
-          notes: null,
-          [savingCell.fieldName]: savingValue.trim() || null
-        }
-        
-        await createEntryMutation.mutateAsync(newEntryData)
-        
-        // Only clear if we're still on the same cell (haven't tabbed away)
-        if (clearAfterSave && editingCell?.entryId === savingCell.entryId && editingCell?.fieldName === savingCell.fieldName) {
-          setEditingCell(null)
-          setTempValue("")
-        }
-      } else {
-        // Update existing entry
-        const updateData: Partial<AnparioCCEntry> = {
-          [savingCell.fieldName]: savingValue.trim() || null
-        }
-        
-        await updateEntryMutation.mutateAsync({ id: savingCell.entryId, data: updateData })
-        
-        // Only clear if we're still on the same cell (haven't tabbed away)
-        if (clearAfterSave && editingCell?.entryId === savingCell.entryId && editingCell?.fieldName === savingCell.fieldName) {
-          setEditingCell(null)
-          setTempValue("")
-        }
+      createEntryMutation.mutate(newEntryData)
+    } else {
+      // Update existing entry
+      const updateData: Partial<AnparioCCEntry> = {
+        [editingCell.fieldName]: tempValue.trim() || null
       }
-    } catch (error) {
-      toast({
-        title: "Validation Error",
-        description: error instanceof Error ? error.message : "Invalid input",
-        variant: "destructive",
-      })
+      
+      updateEntryMutation.mutate({ id: editingCell.entryId, data: updateData })
     }
   }
 
+  const handleCancel = () => {
+    setEditingCell(null)
+    setTempValue("")
+  }
+
   // Handle keydown
-  const handleKeyDown = async (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      await handleSave()
+      handleSave()
     } else if (e.key === "Escape") {
-      setEditingCell(null)
-      setTempValue("")
-    } else if (e.key === "Tab" && editingCell) {
-      e.preventDefault()
-      
-      // Define field order for tab navigation (matches left-to-right column order)
-      const fieldOrder = ['etaPort', 'containerNumber', 'entryNumber', 'poNumber', 'notes']
-      const currentFieldIndex = fieldOrder.indexOf(editingCell.fieldName)
-      
-      // Don't tab from notes column (it's the last field)
-      if (editingCell.fieldName === 'notes') {
-        return
-      }
-      
-      // Check if we're on a blank row
-      const isBlankRow = editingCell.entryId.startsWith('blank-')
-      
-      if (isBlankRow) {
-        // For blank rows, we must await to get the new entry ID
-        try {
-          await handleSave({ clearAfterSave: false })
-          // After save, refetch to get the new entry
-          await queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
-          // Wait a moment for the refetch
-          await new Promise(resolve => setTimeout(resolve, 100))
-          
-          // Find the newly created entry (it will be the last one)
-          const updatedEntries = queryClient.getQueryData<AnparioCCEntry[]>(["/api/anpario-cc-entries/by-reference", selectedReferenceId])
-          if (updatedEntries && updatedEntries.length > 0) {
-            const newEntry = updatedEntries[updatedEntries.length - 1]
-            const nextField = fieldOrder[currentFieldIndex + 1]
-            const nextValue = (newEntry as any)[nextField] || ''
-            handleCellClick(newEntry, nextField, nextValue)
-          }
-        } catch (error) {
-          toast({
-            title: "Save Error",
-            description: error instanceof Error ? error.message : "Failed to save",
-            variant: "destructive",
-          })
-        }
-      } else {
-        // For existing rows, move immediately (optimistic updates handle UI)
-        if (currentFieldIndex < fieldOrder.length - 1) {
-          const nextField = fieldOrder[currentFieldIndex + 1]
-          const currentEntry = displayRows.find(r => r.id === editingCell.entryId)
-          if (currentEntry) {
-            const nextValue = (currentEntry as any)[nextField] || ''
-            
-            // Start save in background (won't clear editingCell since we're moving to new cell)
-            handleSave({ clearAfterSave: false }).catch(error => {
-              toast({
-                title: "Save Error",
-                description: error instanceof Error ? error.message : "Failed to save",
-                variant: "destructive",
-              })
-            })
-            
-            // Move focus immediately
-            handleCellClick(currentEntry, nextField, nextValue)
-          }
-        }
-      }
+      handleCancel()
     }
   }
 
   // Render cell
-  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string) => {
+  const renderCell = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, width?: number) => {
     const isEditing = editingCell?.entryId === entry.id && editingCell.fieldName === fieldName
-    
-    // Define fixed widths for each column
-    const widthClass = {
-      etaPort: 'w-28',
-      containerNumber: 'w-40',
-      entryNumber: 'w-32',
-      poNumber: 'w-32',
-      notes: 'w-64'
-    }[fieldName] || 'w-32'
-    
     const value = (entry as any)[fieldName] || ""
+    const cellColor = getCellColor(entry, fieldName, value)
 
     if (isEditing) {
       return (
         <td 
           key={fieldName} 
-          className={`border px-2 py-1 min-h-[42px] ${widthClass}`}
+          className={`border px-2 py-1 ${cellColor}`}
+          style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
           <input
             ref={inputRef}
@@ -372,8 +264,8 @@ export function AnparioCCGrid() {
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            onBlur={() => handleSave({ cellId: entry.id, fieldName })}
-            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none min-h-[26px]"
+            onBlur={handleSave}
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-center focus:outline-none"
             autoComplete="off"
             data-testid={`input-${fieldName}-${entry.id}`}
           />
@@ -384,11 +276,12 @@ export function AnparioCCGrid() {
     return (
       <td 
         key={fieldName} 
-        className={`border px-2 py-1 text-center cursor-pointer hover-elevate min-h-[42px] ${widthClass}`}
+        className={`border px-2 py-1 text-center cursor-pointer hover-elevate ${cellColor}`}
+        style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
       >
-        <span className="text-xs">{value}</span>
+        {value}
       </td>
     )
   }
@@ -599,31 +492,29 @@ export function AnparioCCGrid() {
       {selectedReferenceId ? (
         <Card className="p-4">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table ref={tableRef} className="w-full border-collapse">
               <thead>
-                <tr className="border-b">
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-28">ETA Port</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-40">Container Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-32">Entry Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-32">PO Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-64">Notes</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs w-24">Actions</th>
+                <tr className="border-b-2">
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted" style={columnWidths[0] ? { width: `${columnWidths[0]}px` } : {}}>ETA Port</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted" style={columnWidths[1] ? { width: `${columnWidths[1]}px` } : {}}>Container Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted" style={columnWidths[2] ? { width: `${columnWidths[2]}px` } : {}}>Entry Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted" style={columnWidths[3] ? { width: `${columnWidths[3]}px` } : {}}>PO Number</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted" style={columnWidths[4] ? { width: `${columnWidths[4]}px` } : {}}>Notes</th>
+                  <th className="border px-2 py-1 text-center font-semibold bg-muted" style={columnWidths[5] ? { width: `${columnWidths[5]}px` } : {}}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {displayRows.map((entry) => {
-                  const hasEntryNumber = !entry.isBlank && entry.entryNumber
-                  return (
-                  <tr 
-                    key={entry.id} 
-                    className={`border-b ${hasEntryNumber ? 'bg-green-100 dark:bg-green-950 hover:bg-green-200 dark:hover:bg-green-900' : 'hover:bg-muted/50'}`}
-                  >
-                    {renderCell(entry, "etaPort")}
-                    {renderCell(entry, "containerNumber")}
-                    {renderCell(entry, "entryNumber")}
-                    {renderCell(entry, "poNumber")}
-                    {renderCell(entry, "notes")}
-                    <td className="border px-2 py-1 text-center w-24 min-h-[42px]">
+                {displayRows.map((entry) => (
+                  <tr key={entry.id} className="border-b">
+                    {renderCell(entry, "etaPort", columnWidths[0])}
+                    {renderCell(entry, "containerNumber", columnWidths[1])}
+                    {renderCell(entry, "entryNumber", columnWidths[2])}
+                    {renderCell(entry, "poNumber", columnWidths[3])}
+                    {renderCell(entry, "notes", columnWidths[4])}
+                    <td 
+                      className="border px-2 py-1 text-center bg-green-100 dark:bg-green-900 dark:text-white"
+                      style={columnWidths[5] ? { width: `${columnWidths[5]}px`, minWidth: `${columnWidths[5]}px`, maxWidth: `${columnWidths[5]}px` } : {}}
+                    >
                       {!entry.isBlank && (
                         <Button
                           variant="ghost"
@@ -634,15 +525,14 @@ export function AnparioCCGrid() {
                             }
                           }}
                           data-testid={`button-delete-${entry.id}`}
-                          className="h-auto min-h-6 px-2 py-0 text-xs whitespace-nowrap"
+                          className="h-auto px-2 py-1"
                         >
                           Delete
                         </Button>
                       )}
                     </td>
                   </tr>
-                  )
-                })}
+                ))}
               </tbody>
             </table>
           </div>
