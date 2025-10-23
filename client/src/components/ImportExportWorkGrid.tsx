@@ -328,11 +328,23 @@ export function ImportExportWorkGrid() {
       if (importJob.freightRateOut) parts.push(`Frt £${importJob.freightRateOut}`)
       if (importJob.exportCustomsClearanceCharge) parts.push(`Exp CC £${importJob.exportCustomsClearanceCharge}`)
       if (importJob.clearanceCharge) parts.push(`Dest CC £${importJob.clearanceCharge}`)
+      
+      // Add expenses to charge out
+      if (importJob.expensesToChargeOut && Array.isArray(importJob.expensesToChargeOut) && importJob.expensesToChargeOut.length > 0) {
+        const amounts = importJob.expensesToChargeOut.map(exp => `£${exp.amount}`).join(', ')
+        parts.push(`Add : ${amounts}`)
+      }
     } else {
       const exportJob = job as ExportShipment & { _jobType: 'export' }
       if (exportJob.freightRateOut) parts.push(`Frt £${exportJob.freightRateOut}`)
       if (exportJob.clearanceCharge) parts.push(`Exp CC £${exportJob.clearanceCharge}`)
       if (exportJob.arrivalClearanceCost) parts.push(`Imp CC £${exportJob.arrivalClearanceCost}`)
+      
+      // Add expenses to charge out
+      if (exportJob.expensesToChargeOut && Array.isArray(exportJob.expensesToChargeOut) && exportJob.expensesToChargeOut.length > 0) {
+        const amounts = exportJob.expensesToChargeOut.map(exp => `£${exp.amount}`).join(', ')
+        parts.push(`Add : ${amounts}`)
+      }
     }
     
     return parts.join(' / ')
@@ -346,11 +358,23 @@ export function ImportExportWorkGrid() {
       if (importJob.haulierFreightRateIn) parts.push(`Frt £${importJob.haulierFreightRateIn}`)
       if (importJob.exportClearanceChargeIn) parts.push(`Exp CC £${importJob.exportClearanceChargeIn}`)
       if (importJob.destinationClearanceCostIn) parts.push(`Imp CC £${importJob.destinationClearanceCostIn}`)
+      
+      // Add additional expenses in
+      if (importJob.additionalExpensesIn && Array.isArray(importJob.additionalExpensesIn) && importJob.additionalExpensesIn.length > 0) {
+        const amounts = importJob.additionalExpensesIn.map(exp => `£${exp.amount}`).join(', ')
+        parts.push(`Add : ${amounts}`)
+      }
     } else {
       const exportJob = job as ExportShipment & { _jobType: 'export' }
       if (exportJob.haulierFreightRateIn) parts.push(`Frt £${exportJob.haulierFreightRateIn}`)
       if (exportJob.exportClearanceChargeIn) parts.push(`Exp CC £${exportJob.exportClearanceChargeIn}`)
       if (exportJob.destinationClearanceCostIn) parts.push(`Dest CC £${exportJob.destinationClearanceCostIn}`)
+      
+      // Add additional expenses in
+      if (exportJob.additionalExpensesIn && Array.isArray(exportJob.additionalExpensesIn) && exportJob.additionalExpensesIn.length > 0) {
+        const amounts = exportJob.additionalExpensesIn.map(exp => `£${exp.amount}`).join(', ')
+        parts.push(`Add : ${amounts}`)
+      }
     }
     
     return parts.join(' / ')
@@ -776,7 +800,7 @@ export function ImportExportWorkGrid() {
                     <td className={`p-1 text-center border-r border-border ${getQuoteColor(job)}`}>
                       <div className="min-h-[84px] flex items-center justify-center">
                         <div className="space-y-0.5">
-                          <div className="pb-0.5 border-b border-border">Quote: {getQuoteDisplay(job)}</div>
+                          <div className="pb-0.5 border-b border-black">Quote: {getQuoteDisplay(job)}</div>
                           <div className="pt-0.5">Net: {getNetDisplay(job)}</div>
                         </div>
                       </div>

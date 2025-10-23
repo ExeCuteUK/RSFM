@@ -571,7 +571,7 @@ export default function JobJournals() {
         
         {filterMode === "month" ? (
           <>
-            <div className="text-xl font-semibold flex-1">
+            <div className="text-xl font-semibold flex-1 text-center">
               Currently Viewing : {getFilterLabel()}
             </div>
 
@@ -609,7 +609,7 @@ export default function JobJournals() {
           </>
         ) : (
           <>
-            <div className="text-xl font-semibold flex-1">
+            <div className="text-xl font-semibold flex-1 text-center">
               Currently Viewing : {getFilterLabel()}
             </div>
 
