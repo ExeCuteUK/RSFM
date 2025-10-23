@@ -8,14 +8,20 @@ Key features include an integrated file upload system with Google Drive for shar
 
 ## Recent Changes
 
-**October 23, 2025 - Quotation/Rate Information Card Layout Improvements:**
-- **Import & Export Shipment Forms - Quotation Card Layouts:**
-  - Rate Out section: Uses 3-column grid (md:grid-cols-3) with Expenses To Charge Out spanning full width (col-span-3)
-  - Rate In section: **Changed to 6-column grid (md:grid-cols-6)** to accommodate all rate fields on one row
-  - Rate Currency: md:col-span-3 (50% width)
-  - Rate input fields (Haulier Freight Rate In, Import/Dest CC Charge In, Export CC Charge In): Each occupy 1 column (16.67% width)
-  - Additional Expenses In: col-span-6 (full width)
-  - **Result:** All rate fields now fit on a single row at md+ breakpoints regardless of conditional field visibility, improving space utilization and form compactness
+**October 23, 2025 - Form Layout & Field Updates:**
+- **Import & Export Shipment Forms - Quotation/Rate Information Card:**
+  - Rate Out section: 3-column grid with Expenses To Charge Out at full width (col-span-3)
+  - Rate In section: **3-column grid (md:grid-cols-3)** with 3 rate fields at 33.33% width each
+  - **Rate Currency field hidden** - no longer displayed on either form
+  - Renamed "Haulier Freight Rate In" → "Freight Rate In" on both forms
+  - Additional Expenses In: col-span-3 (full width)
+- **Export Form:**
+  - Swapped field order in Rate In section: "Export CC Charge In" now appears before "Destination CC In"
+  - Renamed "Destination Clearance Cost In" → "Destination CC In"
+- **Import Form - Customs Clearance Section:**
+  - "Customs Clearance Agent" text field permanently hidden
+  - "Clearance Agent" dropdown and "Clearance Type" dropdown now on same line at 50% width each (2-column grid)
+  - Field order: Clearance Agent first, then Clearance Type
 
 **October 23, 2025 - Truck Journals & Management Sheets UI Improvements:**
 - **Truck Journals:** Removed underlines from totals footer row, made totals row half-width with left alignment, added zebra striping for better readability, refined header and data row borders (border-b-2 for headers, border-b for data rows)
