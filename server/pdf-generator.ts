@@ -1,10 +1,23 @@
 import PDFDocument from 'pdfkit';
-import type { Invoice } from '@shared/schema';
+import type { Invoice, AnparioCCEntry } from '@shared/schema';
 import path from 'path';
 import fs from 'fs';
 
 interface GeneratePDFOptions {
   invoice: Invoice;
+}
+
+interface GenerateStatementPDFOptions {
+  generalRefNumber: string;
+  month: number;
+  year: number;
+  customerCompanyName: string;
+  customerAddress: string;
+  customerVatNumber: string;
+  entries: AnparioCCEntry[];
+  totalCharge: number;
+  vatAmount: number;
+  grandTotal: number;
 }
 
 export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promise<Buffer> {
@@ -393,6 +406,281 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
          .text('Sort Code: 20 00 20', 50, yPosition + 50)
          .text('Account No: 69103569', 50, yPosition + 60);
       doc.font('Helvetica'); // Reset to normal font
+
+      doc.font('Helvetica-Bold')
+         .text('Thank you for your custom', 400, yPosition + 60);
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+export async function generateStatementPDF(options: GenerateStatementPDFOptions): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ 
+        size: 'A4',
+        margins: { top: 27, bottom: 27, left: 50, right: 50 }
+      });
+      
+      const buffers: Buffer[] = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfBuffer = Buffer.concat(buffers);
+        resolve(pdfBuffer);
+      });
+      doc.on('error', reject);
+
+      // Header - RS Logo (drawn first, so STATEMENT text appears on top)
+      const logoPath = path.join(process.cwd(), 'attached_assets', 'RS-google-logo_1759913900735.jpg');
+      if (fs.existsSync(logoPath)) {
+        try {
+          doc.image(logoPath, 50, 40, { width: 140 });
+        } catch (e) {
+          console.error('Error loading logo:', e);
+        }
+      }
+
+      // Header - STATEMENT Title
+      doc.fontSize(18)
+         .font('Helvetica-Bold')
+         .text('STATEMENT', 50, 20, { width: 140, align: 'center' });
+
+      // Header - Company Details (right side)
+      doc.fontSize(9)
+         .font('Helvetica-Bold')
+         .text('R.S. International Freight Ltd', 400, 40);
+      
+      doc.fontSize(9)
+         .font('Helvetica')
+         .text('10b Hornsby Square', 400, 54)
+         .text('Landon', 400, 66)
+         .text('Essex, SS15 6SD', 400, 78)
+         .text('Tel: 01708 865000', 400, 94)
+         .text('Fax: 01708 865010', 400, 106);
+
+      // Statement Details (right side below company details)
+      const valueX = 490;
+      
+      // Calculate last day of month in DD/MM/YY format
+      const lastDay = new Date(options.year, options.month, 0).getDate();
+      const day = String(lastDay).padStart(2, '0');
+      const mon = String(options.month).padStart(2, '0');
+      const yr = String(options.year).slice(-2);
+      const dateStr = `${day}/${mon}/${yr}`;
+      
+      doc.fontSize(10)
+         .font('Helvetica-Bold')
+         .text('Statement No.', 400, 129);
+      doc.text(options.generalRefNumber, valueX, 129);
+
+      doc.fontSize(9)
+         .font('Helvetica')
+         .text('Date/Tax Point :', 400, 144);
+      doc.text(dateStr, valueX, 144);
+      
+      doc.text('Our Ref :', 400, 156);
+      doc.text(options.generalRefNumber, valueX, 156);
+
+      // BIFA Logo (top right)
+      const bifaPath = path.join(process.cwd(), 'attached_assets', 'bifa-logo.jpg');
+      if (fs.existsSync(bifaPath)) {
+        try {
+          doc.image(bifaPath, 480, 180, { width: 60 });
+        } catch (e) {
+          // BIFA logo not available
+        }
+      }
+
+      // Statement To Section
+      doc.fontSize(10)
+         .font('Helvetica-Bold')
+         .text('STATEMENT TO', 50, 190);
+
+      doc.fontSize(9);
+      
+      let statementToY = 210;
+      if (options.customerCompanyName) {
+        doc.font('Helvetica-Bold')
+           .text(options.customerCompanyName, 50, statementToY);
+        statementToY += 12;
+      }
+      
+      doc.font('Helvetica');
+      
+      if (options.customerAddress) {
+        const filteredAddress = options.customerAddress
+          .replace(/,?\s*(UK|United Kingdom)\s*$/im, '')
+          .replace(/\n\s*(UK|United Kingdom)\s*$/im, '');
+        
+        const addressLines = filteredAddress.split('\n').filter(line => line.trim());
+        addressLines.forEach(line => {
+          if (statementToY < 305) {
+            doc.text(line.trim(), 50, statementToY);
+            statementToY += 10;
+          }
+        });
+      }
+
+      // Clearance Entries Table
+      const entriesTableY = statementToY + 15;
+      
+      // Table header
+      doc.fontSize(8)
+         .font('Helvetica-Bold')
+         .text('Clearance Entries', 50, entriesTableY);
+      
+      const tableHeaderY = entriesTableY + 15;
+      doc.rect(50, tableHeaderY, 495, 18)
+         .fillAndStroke('#f0f0f0', '#000000');
+
+      doc.fillColor('#000000')
+         .fontSize(8)
+         .font('Helvetica-Bold')
+         .text('Container Number', 55, tableHeaderY + 6)
+         .text('ETA Port', 200, tableHeaderY + 6)
+         .text('Entry Number', 290, tableHeaderY + 6)
+         .text('PO Number', 420, tableHeaderY + 6);
+
+      // Table entries
+      let tableY = tableHeaderY + 23;
+      doc.font('Helvetica');
+      
+      // Helper to format date as DD/MM/YY
+      const formatDate = (dateStr: string | null): string => {
+        if (!dateStr) return '';
+        try {
+          const date = new Date(dateStr);
+          const d = String(date.getDate()).padStart(2, '0');
+          const m = String(date.getMonth() + 1).padStart(2, '0');
+          const y = String(date.getFullYear()).slice(-2);
+          return `${d}/${m}/${y}`;
+        } catch {
+          return '';
+        }
+      };
+      
+      options.entries.forEach((entry, index) => {
+        if (tableY > 650) {
+          doc.addPage();
+          tableY = 50;
+        }
+
+        const rowHeight = 11;
+
+        doc.fillColor('#000000')
+           .fontSize(8)
+           .text(entry.containerNumber || '', 55, tableY + 3, { width: 140 })
+           .text(formatDate(entry.etaPort), 200, tableY + 3)
+           .text(entry.entryNumber || '', 290, tableY + 3, { width: 120 })
+           .text(entry.poNumber || '', 420, tableY + 3, { width: 120 });
+
+        tableY += rowHeight;
+      });
+
+      // Description of Charges Table
+      const chargesTableY = tableY + 25;
+      doc.fontSize(9)
+         .font('Helvetica-Bold')
+         .text('DESCRIPTION OF CHARGES', 50, chargesTableY);
+
+      const chargesY = chargesTableY + 10;
+      
+      // Table header
+      doc.rect(50, chargesY, 495, 18)
+         .fillAndStroke('#f0f0f0', '#000000');
+
+      doc.fillColor('#000000')
+         .fontSize(8)
+         .font('Helvetica-Bold')
+         .text('Description', 55, chargesY + 6)
+         .text('CHARGE AMOUNT', 360, chargesY + 6)
+         .text('VAT AMOUNT', 450, chargesY + 6)
+         .text('CODE', 510, chargesY + 6);
+
+      // Charge line item
+      let yPosition = chargesY + 33;
+      doc.font('Helvetica');
+
+      const clearanceCount = options.entries.filter(entry => 
+        entry.containerNumber || entry.etaPort || entry.entryNumber || entry.poNumber
+      ).length;
+
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const description = `Monthly EU Customs Clearances x ${clearanceCount} - ${months[options.month - 1]} ${options.year}`;
+
+      doc.fillColor('#000000')
+         .fontSize(8)
+         .text(description, 55, yPosition + 3, { width: 290 })
+         .text(options.totalCharge.toFixed(2), 380, yPosition + 3)
+         .text(options.vatAmount.toFixed(2), 465, yPosition + 3)
+         .text('1', 520, yPosition + 3);
+
+      yPosition += 21;
+
+      // VAT CODE legend and totals
+      yPosition += 10;
+      doc.fontSize(8)
+         .font('Helvetica-Bold')
+         .text('Code', 50, yPosition, { underline: true })
+         .text('VAT RATE', 140, yPosition, { underline: true })
+         .text('STATEMENT TOTAL', 360, yPosition)
+         .text(options.totalCharge.toFixed(2), 465, yPosition);
+
+      yPosition += 12;
+      doc.fontSize(8)
+         .font('Helvetica')
+         .text('1', 50, yPosition)
+         .text('0.00% ZERO RATED', 140, yPosition);
+
+      yPosition += 10;
+      doc.text('2', 50, yPosition)
+         .text('20.00% STANDARD', 140, yPosition)
+         .text('VAT TOTAL', 360, yPosition)
+         .text(options.vatAmount.toFixed(2), 465, yPosition);
+
+      yPosition += 10;
+      doc.text('3', 50, yPosition)
+         .text('0.00% EXEMPT', 140, yPosition);
+
+      yPosition += 15;
+      doc.rect(350, yPosition, 195, 15)
+         .fillAndStroke('#f0f0f0', '#000000');
+
+      doc.fillColor('#000000')
+         .fontSize(9)
+         .font('Helvetica-Bold')
+         .text('GRAND TOTAL', 360, yPosition + 3)
+         .text(options.grandTotal.toFixed(2), 465, yPosition + 3)
+         .text('GBP', 515, yPosition + 3);
+
+      // Payment terms and bank details
+      yPosition += 45;
+      if (yPosition > 700) {
+        doc.addPage();
+        yPosition = 50;
+      }
+
+      doc.fontSize(8)
+         .font('Helvetica')
+         .text('PAYMENT - Due now, please remit to the above address', 50, yPosition, { width: 495 });
+
+      yPosition += 20;
+      doc.fontSize(7)
+         .text('VAT No. GB 656 7314 17', 50, yPosition);
+
+      yPosition += 12;
+      doc.text('Please direct all payments to R.S International Freight Ltd', 50, yPosition);
+      doc.text('Bankers:', 50, yPosition + 10);
+      doc.text('Barclays Bank PLC', 50, yPosition + 20);
+      doc.text('Holborn Circus Branch', 50, yPosition + 30);
+      doc.text('London EC1', 50, yPosition + 40);
+      doc.font('Helvetica-Bold')
+         .text('Sort Code: 20 00 20', 50, yPosition + 50)
+         .text('Account No: 69103569', 50, yPosition + 60);
+      doc.font('Helvetica');
 
       doc.font('Helvetica-Bold')
          .text('Thank you for your custom', 400, yPosition + 60);

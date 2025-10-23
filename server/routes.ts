@@ -3127,6 +3127,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate and download Anpario CC statement PDF
+  app.post("/api/anpario-cc-entries/generate-statement", async (req, res) => {
+    try {
+      const {
+        generalReferenceId,
+        customerCompanyName,
+        customerAddress,
+        customerVatNumber,
+        totalCharge,
+        vatAmount,
+      } = req.body;
+
+      // Validate required fields
+      if (!generalReferenceId || !customerCompanyName) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Get general reference
+      const reference = await storage.getGeneralReference(generalReferenceId);
+      if (!reference) {
+        return res.status(404).json({ error: "General reference not found" });
+      }
+
+      // Get entries for this reference
+      const entries = await storage.getAnparioCCEntriesByReference(generalReferenceId);
+
+      // Calculate grand total
+      const grandTotal = (parseFloat(totalCharge || '0') + parseFloat(vatAmount || '0')).toFixed(2);
+
+      // Generate PDF
+      const { generateStatementPDF } = await import("./pdf-generator");
+      const pdfBuffer = await generateStatementPDF({
+        generalRefNumber: reference.jobRef.toString(),
+        month: reference.month,
+        year: reference.year,
+        customerCompanyName,
+        customerAddress: customerAddress || '',
+        customerVatNumber: customerVatNumber || '',
+        entries,
+        totalCharge: parseFloat(totalCharge || '0'),
+        vatAmount: parseFloat(vatAmount || '0'),
+        grandTotal: parseFloat(grandTotal),
+      });
+
+      // Return PDF
+      const filename = `RS Statement - ${reference.jobRef}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating statement PDF:", error);
+      res.status(500).json({ error: "Failed to generate statement PDF" });
+    }
+  });
+
   // ========== Invoice Charge Templates Routes ==========
 
   // Get all invoice charge templates

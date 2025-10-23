@@ -324,7 +324,7 @@ export function AnparioCCGrid() {
   }
 
   // Handle Create Statement
-  const handleCreateStatement = () => {
+  const handleCreateStatement = async () => {
     if (!anparioCustomer) {
       toast({
         title: "Error",
@@ -352,16 +352,56 @@ export function AnparioCCGrid() {
       return
     }
 
-    // Calculate total charge
-    const importClearanceFee = parseFloat(settings.importClearanceFee)
-    const inventoryLinkedFee = parseFloat(settings.inventoryLinkedFee)
-    const totalCharge = clearanceCount * (importClearanceFee + inventoryLinkedFee)
+    try {
+      // Calculate total charge
+      const importClearanceFee = parseFloat(settings.importClearanceFee)
+      const inventoryLinkedFee = parseFloat(settings.inventoryLinkedFee)
+      const totalCharge = clearanceCount * (importClearanceFee + inventoryLinkedFee)
+      const vatAmount = 0 // Zero rated
 
-    // TODO: Implement statement PDF generation
-    toast({
-      title: "Statement Generation",
-      description: "Statement PDF generation will be implemented next",
-    })
+      // Call statement generation API
+      const response = await fetch('/api/anpario-cc-entries/generate-statement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          generalReferenceId: selectedReference.id,
+          customerCompanyName: anparioCustomer.companyName,
+          customerAddress: anparioCustomer.address || '',
+          customerVatNumber: anparioCustomer.vatNumber || '',
+          totalCharge: totalCharge.toFixed(2),
+          vatAmount: vatAmount.toFixed(2),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate statement PDF')
+      }
+
+      // Download the PDF
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `RS Statement - ${selectedReference.jobRef}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast({
+        title: "Statement Generated",
+        description: "Statement PDF has been downloaded successfully",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate statement",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
