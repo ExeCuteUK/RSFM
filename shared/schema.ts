@@ -106,7 +106,7 @@ export type GeneralReference = typeof generalReferences.$inferSelect;
 export const anparioCCEntries = pgTable("anpario_cc_entries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   generalReferenceId: varchar("general_reference_id").notNull(), // Links to general_references table
-  etaPort: text("eta_port"), // Date in YYYY-MM-DD format (displayed as DD/MM/YY)
+  etaPort: text("eta_port"), // Plain text field (e.g. dates, port names, or any text)
   containerNumber: text("container_number"),
   entryNumber: text("entry_number"),
   poNumber: text("po_number"),

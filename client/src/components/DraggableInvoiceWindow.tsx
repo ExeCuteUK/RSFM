@@ -80,9 +80,10 @@ export function DraggableInvoiceWindow() {
 
   if (!invoiceWindow) return null
 
-  const { job, jobType, existingInvoice, mode, generalReference, prePopulateData } = invoiceWindow.payload as {
+  const { job, jobType, jobRef, existingInvoice, mode, generalReference, prePopulateData } = invoiceWindow.payload as {
     job?: ImportShipment | ExportShipment | CustomClearance | null
     jobType: 'import' | 'export' | 'clearance' | 'general'
+    jobRef?: number
     existingInvoice?: Invoice | null
     mode?: 'create' | 'edit'
     generalReference?: any
@@ -140,6 +141,7 @@ export function DraggableInvoiceWindow() {
         <CustomerInvoiceForm
           job={job || null}
           jobType={jobType}
+          jobRef={jobRef}
           open={true}
           onOpenChange={(open) => {
             if (!open) handleClose()

@@ -474,10 +474,10 @@ export async function generateStatementPDF(options: GenerateStatementPDFOptions)
       // Format month name from the month number
       const monthNames = ["January", "February", "March", "April", "May", "June", 
                           "July", "August", "September", "October", "November", "December"];
-      const monthName = `${monthNames[options.month - 1]}, ${options.year}`;
+      const monthName = monthNames[options.month - 1];
       
       doc.fontSize(10)
-         .font('Helvetica-Bold')
+         .font('Helvetica')
          .text('Job Month :', 400, 129);
       doc.text(monthName, valueX, 129);
 

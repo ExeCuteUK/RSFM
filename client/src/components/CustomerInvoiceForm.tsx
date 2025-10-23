@@ -54,6 +54,7 @@ interface ShipmentLine {
 interface CustomerInvoiceFormProps {
   job: ImportShipment | ExportShipment | CustomClearance | null
   jobType: 'import' | 'export' | 'clearance' | 'general'
+  jobRef?: number
   open: boolean
   onOpenChange: (open: boolean) => void
   existingInvoice?: Invoice | null
@@ -62,7 +63,7 @@ interface CustomerInvoiceFormProps {
   prePopulateData?: any
 }
 
-export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existingInvoice, asWindow = false, generalReference, prePopulateData }: CustomerInvoiceFormProps) {
+export function CustomerInvoiceForm({ job, jobType, jobRef: providedJobRef, open, onOpenChange, existingInvoice, asWindow = false, generalReference, prePopulateData }: CustomerInvoiceFormProps) {
   const { toast } = useToast()
   
   // Fetch customer data based on job
@@ -915,7 +916,7 @@ export function CustomerInvoiceForm({ job, jobType, open, onOpenChange, existing
 
     const invoiceData = {
       type,
-      jobRef: job?.jobRef || existingInvoice?.jobRef,
+      jobRef: providedJobRef || job?.jobRef || existingInvoice?.jobRef,
       jobType: jobType,
       jobId: job?.id || existingInvoice?.jobId,
       invoiceDate: taxPointDate,

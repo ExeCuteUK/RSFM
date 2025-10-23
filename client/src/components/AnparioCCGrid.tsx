@@ -215,8 +215,18 @@ export function AnparioCCGrid() {
   }
 
   // Handle save
-  const handleSave = async (clearAfterSave = true) => {
+  const handleSave = async (options: { clearAfterSave?: boolean; cellId?: string; fieldName?: string } = {}) => {
+    const { clearAfterSave = true, cellId, fieldName } = options
+    
     if (!editingCell || !selectedReferenceId) return
+
+    // If cellId/fieldName provided, only save if we're still on that cell
+    if (cellId && fieldName) {
+      if (editingCell.entryId !== cellId || editingCell.fieldName !== fieldName) {
+        // We've moved to a different cell, don't save this one
+        return
+      }
+    }
 
     // Capture the cell we're saving so we can check if we've moved to another cell
     const savingCell = editingCell
@@ -294,7 +304,7 @@ export function AnparioCCGrid() {
       if (isBlankRow) {
         // For blank rows, we must await to get the new entry ID
         try {
-          await handleSave(false)
+          await handleSave({ clearAfterSave: false })
           // After save, refetch to get the new entry
           await queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
           // Wait a moment for the refetch
@@ -324,7 +334,7 @@ export function AnparioCCGrid() {
             const nextValue = (currentEntry as any)[nextField] || ''
             
             // Start save in background (won't clear editingCell since we're moving to new cell)
-            handleSave(false).catch(error => {
+            handleSave({ clearAfterSave: false }).catch(error => {
               toast({
                 title: "Save Error",
                 description: error instanceof Error ? error.message : "Failed to save",
@@ -360,7 +370,7 @@ export function AnparioCCGrid() {
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            onBlur={handleSave}
+            onBlur={() => handleSave({ cellId: entry.id, fieldName })}
             className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
             data-testid={`input-${fieldName}-${entry.id}`}
           />
@@ -428,6 +438,7 @@ export function AnparioCCGrid() {
       payload: {
         mode: 'create',
         jobType: 'general',
+        jobRef: selectedReference.jobRef,  // Pass jobRef explicitly for general references
         generalReference: selectedReference,
         prePopulateData: {
           taxPointDate: endOfMonthStr,
@@ -576,7 +587,7 @@ export function AnparioCCGrid() {
             </Button>
             <Button variant="default" size="sm" onClick={handleCreateStatement} data-testid="button-create-breakdown">
               <FileBarChart className="h-4 w-4 mr-1" />
-              Create Breakdown
+              Breakdown
             </Button>
           </div>
         </div>
