@@ -286,7 +286,7 @@ export function AnparioCCGrid() {
     // Open invoice window with pre-populated data
     openWindow({
       id: `invoice-anpario-${selectedReference.id}`,
-      type: 'customerInvoice',
+      type: 'customer-invoice',
       title: `Invoice - Anpario EU CC ${formatMonthYear(selectedReference.month, selectedReference.year)}`,
       payload: {
         mode: 'create',
