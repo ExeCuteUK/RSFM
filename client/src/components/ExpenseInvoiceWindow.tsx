@@ -386,13 +386,19 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
 
   const formatDateForDisplay = (dateString: string): string => {
     if (!dateString) return ''
-    try {
-      // Parse as local date to prevent timezone shifts
-      const date = parse(dateString, 'yyyy-MM-dd', new Date())
-      return format(date, 'dd/MM/yy')
-    } catch {
-      return ''
+    // Check if it's in yyyy-MM-dd format (stored date)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      try {
+        const date = parse(dateString, 'yyyy-MM-dd', new Date())
+        if (!isNaN(date.getTime())) {
+          return format(date, 'dd/MM/yy')
+        }
+      } catch {
+        return dateString
+      }
     }
+    // Otherwise return as-is (user is typing)
+    return dateString
   }
 
   const formatDateForStorage = (date: Date | undefined): string => {
@@ -691,23 +697,19 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
                           value={invoice.invoiceDate ? formatDateForDisplay(invoice.invoiceDate) : ''}
                           onChange={(e) => {
                             const value = e.target.value
-                            // Try to parse DD/MM/YY or DD/MM/YYYY format
+                            // Try to parse complete DD/MM/YY or DD/MM/YYYY format
                             if (value.length === 8 || value.length === 10) {
                               try {
-                                // Parse DD/MM/YY format
                                 const parsed = parse(value, value.length === 8 ? 'dd/MM/yy' : 'dd/MM/yyyy', new Date())
                                 if (!isNaN(parsed.getTime())) {
+                                  // Successfully parsed, store normalized yyyy-MM-dd
                                   updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(parsed))
                                   return
                                 }
                               } catch {}
                             }
-                            // Store the display value as-is while user is typing
-                            const current = invoice.invoiceDate ? formatDateForDisplay(invoice.invoiceDate) : ''
-                            if (value !== current) {
-                              // User is typing, store as-is for now
-                              updateInvoice(invoice.id, 'invoiceDate', value)
-                            }
+                            // Store raw input while user is typing (only if parsing failed or incomplete)
+                            updateInvoice(invoice.id, 'invoiceDate', value)
                           }}
                           onBlur={(e) => {
                             const value = e.target.value
@@ -753,7 +755,19 @@ export function ExpenseInvoiceWindow({ windowId, payload }: ExpenseInvoiceWindow
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={invoice.invoiceDate ? parse(invoice.invoiceDate, 'yyyy-MM-dd', new Date()) : undefined}
+                              selected={(() => {
+                                if (!invoice.invoiceDate) return undefined
+                                // Only parse if it's in yyyy-MM-dd format
+                                if (/^\d{4}-\d{2}-\d{2}$/.test(invoice.invoiceDate)) {
+                                  try {
+                                    const date = parse(invoice.invoiceDate, 'yyyy-MM-dd', new Date())
+                                    return !isNaN(date.getTime()) ? date : undefined
+                                  } catch {
+                                    return undefined
+                                  }
+                                }
+                                return undefined
+                              })()}
                               onSelect={(date) => {
                                 updateInvoice(invoice.id, 'invoiceDate', formatDateForStorage(date))
                                 setTimeout(() => invoiceAmountInputRefs.current[invoice.id]?.focus(), 100)

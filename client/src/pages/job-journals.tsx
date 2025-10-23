@@ -484,18 +484,41 @@ export default function JobJournals() {
     return month ? month.label : ""
   }
 
+  // Calculate the earliest date from all journal entries
+  // Uses the same date fallbacks as allJournalEntries construction
+  const getEarliestRecordDate = (): Date | null => {
+    const allDates = [
+      ...importShipments.map(s => s.bookingDate || s.importDateEtaPort).filter(Boolean),
+      ...exportShipments.map(s => s.bookingDate || s.dispatchDate).filter(Boolean),
+      ...customClearances
+        .filter(c => !c.createdFromType && !c.createdFromId)
+        .map(s => s.etaPort || s.createdAt).filter(Boolean),
+      ...generalReferences.map(s => s.date).filter(Boolean),
+    ].map(dateStr => new Date(dateStr as string))
+    
+    if (allDates.length === 0) return null
+    
+    return new Date(Math.min(...allDates.map(d => d.getTime())))
+  }
+
   const getFilterLabel = () => {
     if (filterMode === "month") {
       return `${getMonthLabel()}, ${selectedYear}`
     } else {
+      const earliestDate = getEarliestRecordDate()
+      
       if (startDate && endDate) {
-        return `${format(new Date(startDate), "dd/MM/yyyy")} - ${format(new Date(endDate), "dd/MM/yyyy")}`
-      } else if (startDate) {
-        return `From ${format(new Date(startDate), "dd/MM/yyyy")}`
-      } else if (endDate) {
-        return `Until ${format(new Date(endDate), "dd/MM/yyyy")}`
+        return `${formatDateToDDMMYY(startDate)} to ${formatDateToDDMMYY(endDate)}`
+      } else if (startDate && !endDate) {
+        return `${formatDateToDDMMYY(startDate)} to Today`
+      } else if (!startDate && endDate) {
+        if (earliestDate) {
+          return `${format(earliestDate, "dd/MM/yy")} to ${formatDateToDDMMYY(endDate)}`
+        } else {
+          return `All Time to ${formatDateToDDMMYY(endDate)}`
+        }
       } else {
-        return "All Dates"
+        return "All Time"
       }
     }
   }
@@ -669,6 +692,7 @@ export default function JobJournals() {
       
       {/* Scrollable Table Section */}
       <div className="flex-1 overflow-auto px-6">
+        <div className="border border-black dark:border-border">
           <table className="w-full border-collapse">
             <thead className="text-xs sticky top-0 bg-background z-10">
                 <tr className="border-b-4">
@@ -902,18 +926,36 @@ export default function JobJournals() {
                 ))}
               </tbody>
             </table>
+        </div>
       </div>
           
       {/* Fixed Totals Footer Row */}
       <div className="flex-none px-6 pb-6">
-          <div className="flex text-xs bg-background border border-border">
+          <div className="flex text-xs bg-background border border-black dark:border-border">
             {/* Merged label cell spanning first 6 columns (#, Job Ref, Date, Client Name, Destination, Identifier) */}
             <div className="p-2 text-left flex-[6]">
               <span className="text-muted-foreground font-medium">
-                {filterMode === "month" 
-                  ? `Totals for ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
-                  : `Totals for ${formatDateToDDMMYY(startDate)} to ${formatDateToDDMMYY(endDate)}`
-                }
+                {(() => {
+                  if (filterMode === "month") {
+                    return `Totals for ${MONTHS.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                  } else {
+                    const earliestDate = getEarliestRecordDate()
+                    
+                    if (startDate && endDate) {
+                      return `Totals for ${formatDateToDDMMYY(startDate)} to ${formatDateToDDMMYY(endDate)}`
+                    } else if (startDate && !endDate) {
+                      return `Totals for ${formatDateToDDMMYY(startDate)} to Today`
+                    } else if (!startDate && endDate) {
+                      if (earliestDate) {
+                        return `Totals for ${format(earliestDate, "dd/MM/yy")} to ${formatDateToDDMMYY(endDate)}`
+                      } else {
+                        return `Totals for All Time to ${formatDateToDDMMYY(endDate)}`
+                      }
+                    } else {
+                      return "Totals for All Time"
+                    }
+                  }
+                })()}
               </span>
             </div>
             {/* Merged empty cell spanning columns before totals: 
