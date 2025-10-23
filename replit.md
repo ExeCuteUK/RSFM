@@ -42,6 +42,8 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Row-Level Coloring:** Green background applied to entire row only when Entry Number has value (not cell-by-cell)
 - **Column Order:** Swapped PO Number and Entry Number positions - order is now: ETA Port → Container Number → PO Number → Entry Number → Notes → Actions
 - **Tab/Enter Navigation:** Move to next cell on Tab or Enter, wrap from Notes column to first cell of next row for continuous data entry flow
+- **Blank Row Height Fix:** Actions cell in blank row now has invisible placeholder to maintain proper row height, making it easy to click
+- **Compact Delete Button:** Delete button padding reduced (px-1, min-h-0) to minimize row height while maintaining functionality
 - **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, fixed layout, perfect for rapid data entry
 
 ## User Preferences
