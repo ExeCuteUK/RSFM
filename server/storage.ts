@@ -739,7 +739,7 @@ export class MemStorage implements IStorage {
         jobRef: shipment.jobRef,
         jobType: "import",
         createdAt: new Date().toISOString(),
-        status: "Awaiting Entry",
+        status: "Request CC",
         importCustomerId: shipment.importCustomerId,
         exportCustomerId: null,
         receiverId: null,

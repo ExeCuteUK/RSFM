@@ -702,9 +702,9 @@ export default function Dashboard() {
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
-  // Helper to get Rate In/Out color (green when Notify Customer of Arrival is completed)
-  const getRateInOutColor = (adviseStatusIndicator: number | null): string => {
-    if (adviseStatusIndicator === 3) return "bg-green-100 dark:bg-green-900 dark:text-white"
+  // Helper to get Rate In/Out color (green when Notify Customer of Arrival is completed or job is completed)
+  const getRateInOutColor = (adviseStatusIndicator: number | null, jobStatus: string | null): string => {
+    if (adviseStatusIndicator === 3 || jobStatus === "Completed") return "bg-green-100 dark:bg-green-900 dark:text-white"
     return "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-gray-900"
   }
 
@@ -938,7 +938,7 @@ export default function Dashboard() {
                         const releaseColor = getContainerReleaseColor(shipment.containerReleaseStatusIndicator)
                         const addressColor = getDeliveryAddressColor(shipment.deliveryAddress)
                         const invoiceColor = getInvoiceStatusColor(shipment.invoiceCustomerStatusIndicator)
-                        const rateInOutColor = getRateInOutColor(linkedClearance?.adviseAgentStatusIndicator || null)
+                        const rateInOutColor = getRateInOutColor(linkedClearance?.adviseAgentStatusIndicator || null, shipment.status)
                         const clearanceHasHoldStatus = linkedClearance && (linkedClearance.status === "P.H Hold" || linkedClearance.status === "Customs Issue")
                         const showHoldIcon = shipment.jobHold || clearanceHasHoldStatus
                         const holdBgColor = showHoldIcon ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900 dark:text-white"
