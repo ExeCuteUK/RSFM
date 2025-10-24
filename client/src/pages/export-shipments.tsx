@@ -890,23 +890,28 @@ export default function ExportShipments() {
       
       // Conditionally include "Your Ref" only if customerRef exists
       const yourRefPart = customerRef ? `Your Ref: ${customerRef} / ` : ""
-      const subject = `Export Delivery Update / ${yourRefPart}Our Ref: ${jobRef} / ${truckContainerFlight} / Delivery Date: ${deliveryDate}`
+      // Conditionally include "Delivery Date" only if deliveryDate exists
+      const deliveryDatePart = deliveryDate ? ` / Delivery Date: ${deliveryDate}` : ""
+      const subject = `Export Delivery Update / ${yourRefPart}Our Ref: ${jobRef} / ${truckContainerFlight}${deliveryDatePart}`
       
       // Build message body - conditionally include "your ref" only if customerRef exists
       // Handle multiple contact names (handle both array and legacy string formats)
       let greeting = "Hi there"
       const jobContactNameArray = Array.isArray(shipment.jobContactName)
-        ? shipment.jobContactName
+        ? shipment.jobContactName.filter(Boolean)
         : (shipment.jobContactName ? [shipment.jobContactName] : [])
       
-      if (jobContactNameArray.length > 0) {
-        if (jobContactNameArray.length === 1) {
-          greeting = `Hi ${jobContactNameArray[0]}`
-        } else if (jobContactNameArray.length === 2) {
-          greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
-        } else if (jobContactNameArray.length > 2) {
-          const allButLast = jobContactNameArray.slice(0, -1).join(', ')
-          greeting = `Hi ${allButLast}, and ${jobContactNameArray[jobContactNameArray.length - 1]}`
+      // Extract first names only
+      const firstNames = jobContactNameArray.map(name => name.split(' ')[0])
+      
+      if (firstNames.length > 0) {
+        if (firstNames.length === 1) {
+          greeting = `Hi ${firstNames[0]}`
+        } else if (firstNames.length === 2) {
+          greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+        } else if (firstNames.length > 2) {
+          const allButLast = firstNames.slice(0, -1).join(', ')
+          greeting = `Hi ${allButLast}, and ${firstNames[firstNames.length - 1]}`
         }
       }
       
