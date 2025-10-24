@@ -1418,57 +1418,57 @@ Hope all is OK.`
                         />
                       </div>
                     </div>
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleSendInvoiceToCustomerEmail(shipment)}
+                            className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                            data-testid={`button-send-invoice-email-${shipment.id}`}
+                            title="Send invoice email to customer"
+                          >
+                            <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-green-500 transition-colors" />
+                          </button>
+                          <p
+                            className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)} flex items-center gap-1`}
+                            data-testid={`text-invoice-customer-${shipment.id}`}
+                          >
+                            Send Invoice/Credit to Customer
+                            {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
+                          </p>
+                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.invoiceCustomerStatusIndicator}
+                          onToggle={() => handleInvoiceCustomerStatusToggle(shipment.id, shipment.invoiceCustomerStatusIndicator)}
+                          testId={`button-invoice-toggle-${shipment.id}`}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleSendPodToCustomerEmail(shipment)}
+                            className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
+                            data-testid={`button-send-pod-email-${shipment.id}`}
+                            title="Send POD email to customer"
+                          >
+                            <Mail className="h-4 w-4 text-muted-foreground hover:text-green-500 transition-colors" />
+                          </button>
+                          <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-${shipment.id}`}>
+                            Send POD To Customer
+                            {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
+                          </p>
+                        </div>
+                        <StatusToggleButton
+                          currentStatus={shipment.sendPodToCustomerStatusIndicator}
+                          onToggle={() => handleSendPodToCustomerStatusToggle(shipment.id, shipment.sendPodToCustomerStatusIndicator)}
+                          testId={`button-send-pod-toggle-${shipment.id}`}
+                        />
+                      </div>
+                    </div>
                   </div>
                   )}
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleSendInvoiceToCustomerEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                          data-testid={`button-send-invoice-email-${shipment.id}`}
-                          title="Send invoice email to customer"
-                        >
-                          <PoundSterling className="h-4 w-4 text-muted-foreground hover:text-green-500 transition-colors" />
-                        </button>
-                        <p
-                          className={`text-xs font-medium ${getStatusIndicatorColor(shipment.invoiceCustomerStatusIndicator)} flex items-center gap-1`}
-                          data-testid={`text-invoice-customer-${shipment.id}`}
-                        >
-                          Send Invoice/Credit to Customer
-                          {shipment.invoiceCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                        </p>
-                      </div>
-                      <StatusToggleButton
-                        currentStatus={shipment.invoiceCustomerStatusIndicator}
-                        onToggle={() => handleInvoiceCustomerStatusToggle(shipment.id, shipment.invoiceCustomerStatusIndicator)}
-                        testId={`button-invoice-toggle-${shipment.id}`}
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-1">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleSendPodToCustomerEmail(shipment)}
-                          className="hover-elevate active-elevate-2 p-0 rounded shrink-0"
-                          data-testid={`button-send-pod-email-${shipment.id}`}
-                          title="Send POD email to customer"
-                        >
-                          <Mail className="h-4 w-4 text-muted-foreground hover:text-green-500 transition-colors" />
-                        </button>
-                        <p className={`text-xs font-medium ${getStatusIndicatorColor(shipment.sendPodToCustomerStatusIndicator)} flex items-center gap-1`} data-testid={`text-send-pod-${shipment.id}`}>
-                          Send POD To Customer
-                          {shipment.sendPodToCustomerStatusIndicator === 3 && <Check className="h-3 w-3" />}
-                        </p>
-                      </div>
-                      <StatusToggleButton
-                        currentStatus={shipment.sendPodToCustomerStatusIndicator}
-                        onToggle={() => handleSendPodToCustomerStatusToggle(shipment.id, shipment.sendPodToCustomerStatusIndicator)}
-                        testId={`button-send-pod-toggle-${shipment.id}`}
-                      />
-                    </div>
-                  </div>
                   {(() => {
                     const attachmentFiles = shipment.attachments || []
                     const podFiles = shipment.proofOfDelivery || []
