@@ -302,13 +302,56 @@ export function ImportExportWorkGrid() {
     }
   }
 
+  // Validate date format (DD/MM/YY)
+  const isValidDateFormat = (dateStr: string): boolean => {
+    if (!dateStr || dateStr.trim() === "") return true // Empty is valid (clears the field)
+    
+    // Check format DD/MM/YY
+    const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/
+    const match = dateStr.match(dateRegex)
+    
+    if (!match) return false
+    
+    const day = parseInt(match[1], 10)
+    const month = parseInt(match[2], 10)
+    const year = parseInt(match[3], 10)
+    
+    // Basic validation
+    if (month < 1 || month > 12) return false
+    if (day < 1 || day > 31) return false
+    
+    // Check for valid day in month
+    const fullYear = year < 50 ? 2000 + year : 1900 + year
+    const testDate = new Date(fullYear, month - 1, day)
+    
+    return testDate.getMonth() === month - 1 && testDate.getDate() === day
+  }
+
   const handleBlur = (shipmentId: string, fieldName: string, jobType: 'import' | 'export') => {
+    // Validate date fields
+    const dateFields = ['collectionDate', 'dispatchDate', 'importDateEtaPort', 'etaPortDate', 'deliveryDate', 'sendPodToCustomerStatusIndicatorTimestamp']
+    
+    if (dateFields.includes(fieldName) && !isValidDateFormat(tempValue)) {
+      toast({
+        title: "Invalid Date",
+        description: "Please enter date in DD/MM/YY format (e.g., 25/12/24)",
+        variant: "destructive",
+      })
+      setEditingCell(null)
+      setTempValue("")
+      return
+    }
+    
     handleSave(shipmentId, fieldName, tempValue, jobType)
   }
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return ""
     const date = new Date(dateStr)
+    
+    // Check for invalid date
+    if (isNaN(date.getTime())) return ""
+    
     const day = String(date.getDate()).padStart(2, '0')
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const year = String(date.getFullYear()).slice(-2)
