@@ -823,8 +823,57 @@ export default function ExportShipments() {
       greeting = `Hi ${otherContacts}, and ${lastContact}`
     }
     
-    // Build simple body matching clearances format
-    const body = `${greeting},\n\nPlease find attached invoice for this customs clearance.\n\nAny issues please let me know,`
+    // Determine document type text
+    const hasInvoices = selectedInvoiceObjects.some(inv => inv.type === 'invoice')
+    const hasCredits = selectedInvoiceObjects.some(inv => inv.type === 'credit_note')
+    let documentText = "Invoice"
+    
+    if (hasInvoices && hasCredits) {
+      if (selectedInvoiceObjects.filter(inv => inv.type === 'invoice').length > 1 && selectedInvoiceObjects.filter(inv => inv.type === 'credit_note').length > 1) {
+        documentText = "Invoices and Credit Notes"
+      } else if (selectedInvoiceObjects.filter(inv => inv.type === 'invoice').length > 1) {
+        documentText = "Invoices and Credit Note"
+      } else if (selectedInvoiceObjects.filter(inv => inv.type === 'credit_note').length > 1) {
+        documentText = "Invoice and Credit Notes"
+      } else {
+        documentText = "Invoice and Credit Note"
+      }
+    } else if (hasCredits) {
+      documentText = selectedInvoiceObjects.length > 1 ? "Credit Notes" : "Credit Note"
+    } else {
+      documentText = selectedInvoiceObjects.length > 1 ? "Invoices" : "Invoice"
+    }
+    
+    // Build body with shipment details
+    const dispatchDate = formatDate(shipment.dispatchDate)
+    const exportReceiver = shipment.exportReceiver || "TBA"
+    const exportersReference = shipment.exportersReference
+    
+    let body = `${greeting},\n\n`
+    body += `Please find attached ${documentText} for this shipment that departed on ${dispatchDate || "TBA"} for ${exportReceiver}.`
+    
+    // Conditionally add exporters reference
+    if (exportersReference) {
+      body += ` Your Ref ${exportersReference}`
+    }
+    
+    // Add agent information if present and using agent contact
+    if (useAgentContact && customer) {
+      const agentContactNameArray = customer.agentContactName
+        ? (Array.isArray(customer.agentContactName)
+          ? customer.agentContactName.filter(Boolean)
+          : customer.agentContactName.split('/').map((n: string) => n.trim()).filter(Boolean))
+        : []
+      const agentEmailArray = customer.agentEmail
+        ? (Array.isArray(customer.agentEmail)
+          ? customer.agentEmail.filter(Boolean)
+          : customer.agentEmail.split(',').map((e: string) => e.trim()).filter(Boolean))
+        : []
+      
+      if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
+        body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
+      }
+    }
     
     // Get invoice PDF paths with proper filenames
     const invoiceFiles = selectedInvoiceObjects.map(invoice => ({
