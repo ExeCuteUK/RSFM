@@ -570,6 +570,7 @@ export function ImportExportWorkGrid() {
                 const deliveryDate = isImport ? importJob?.deliveryDate : exportJob?.deliveryDate
                 const deliveryAddress = isImport ? importJob?.deliveryAddress : exportJob?.deliveryAddress
                 const haulierName = isImport ? importJob?.haulierName : exportJob?.haulierName
+                const haulierReference = isImport ? importJob?.haulierReference : exportJob?.haulierReference
                 
                 // Get quote and net displays
                 const quoteData = getQuoteDisplay(job)
@@ -885,7 +886,12 @@ export function ImportExportWorkGrid() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          haulierName
+                          <div className="space-y-0.5">
+                            <div>{haulierName}</div>
+                            {haulierReference && (
+                              <div className="text-xs text-muted-foreground">{haulierReference}</div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>
