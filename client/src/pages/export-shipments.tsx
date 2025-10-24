@@ -639,14 +639,17 @@ export default function ExportShipments() {
         ? shipment.jobContactName.filter(Boolean)
         : (shipment.jobContactName ? shipment.jobContactName.split('/').map((n: string) => n.trim()).filter(Boolean) : [])
       
+      // Extract first names only
+      const firstNames = jobContactNameArray.map(name => name.split(' ')[0])
+      
       let greeting = "Hi there"
-      if (jobContactNameArray.length === 1) {
-        greeting = `Hi ${jobContactNameArray[0]}`
-      } else if (jobContactNameArray.length === 2) {
-        greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
-      } else if (jobContactNameArray.length >= 3) {
-        const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
-        const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+      if (firstNames.length === 1) {
+        greeting = `Hi ${firstNames[0]}`
+      } else if (firstNames.length === 2) {
+        greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+      } else if (firstNames.length >= 3) {
+        const lastContact = firstNames[firstNames.length - 1]
+        const otherContacts = firstNames.slice(0, -1).join(', ')
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
@@ -671,8 +674,18 @@ export default function ExportShipments() {
         documentText = shipmentInvoices.length > 1 ? "Invoices" : "Invoice"
       }
       
-      // Build body with agent information if present
-      let body = `${greeting},\n\nPlease find attached our ${documentText}.`
+      // Build body with shipment details
+      const departureDate = formatDate(shipment.exportDateDeparture)
+      const exportReceiver = shipment.exportReceiver || "TBA"
+      const exportersReference = shipment.exportersReference
+      
+      let body = `${greeting},\n\n`
+      body += `Please find attached ${documentText} for this shipment that departed on ${departureDate || "TBA"} for ${exportReceiver}.`
+      
+      // Conditionally add exporters reference
+      if (exportersReference) {
+        body += ` Your Ref ${exportersReference}`
+      }
       
       // Add agent information if present (get from customer, not shipment)
       const customer = exportCustomers.find(c => c.id === shipment.destinationCustomerId)
