@@ -20,6 +20,7 @@ export function AnparioCCGrid() {
   const inputRef = useRef<HTMLInputElement>(null)
   const tableRef = useRef<HTMLTableElement>(null)
   const pendingFocusRef = useRef<{ fieldName: string; isNewRow: boolean } | null>(null)
+  const isInitializedRef = useRef<string | null>(null)
 
   // Fetch all general references with "Anpario EU CC" name
   const { data: allReferences = [] } = useQuery<GeneralReference[]>({
@@ -53,10 +54,14 @@ export function AnparioCCGrid() {
     enabled: !!selectedReferenceId,
   })
 
-  // Sync server data to local state when it changes
+  // Sync server data to local state only on initial load or reference change
   useEffect(() => {
-    setLocalEntries(serverEntries)
-  }, [serverEntries])
+    // Only sync if this is a new reference or first load
+    if (isInitializedRef.current !== selectedReferenceId) {
+      setLocalEntries(serverEntries)
+      isInitializedRef.current = selectedReferenceId
+    }
+  }, [serverEntries, selectedReferenceId])
 
   // Fetch Anpario PLC customer
   const { data: importCustomers = [] } = useQuery<ImportCustomer[]>({
@@ -484,6 +489,11 @@ export function AnparioCCGrid() {
       const totalCharge = clearanceCount * (importClearanceFee + inventoryLinkedFee)
       const vatAmount = 0 // Zero rated
 
+      // Extract month and year from reference date
+      const referenceDate = new Date(selectedReference.date)
+      const month = referenceDate.getMonth() + 1 // 1-12
+      const year = referenceDate.getFullYear()
+
       // Call statement generation API
       const response = await fetch('/api/anpario-cc-entries/generate-statement', {
         method: 'POST',
@@ -498,6 +508,8 @@ export function AnparioCCGrid() {
           customerVatNumber: anparioCustomer.vatNumber || '',
           totalCharge: totalCharge.toFixed(2),
           vatAmount: vatAmount.toFixed(2),
+          month,
+          year,
         }),
       })
 

@@ -3183,6 +3183,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerVatNumber,
         totalCharge,
         vatAmount,
+        month,
+        year,
       } = req.body;
 
       // Validate required fields
@@ -3196,8 +3198,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "General reference not found" });
       }
 
-      // Get entries for this reference
-      const entries = await storage.getAnparioCCEntriesByGeneralReferenceId(generalReferenceId);
+      // Get ALL entries for this reference
+      const allEntries = await storage.getAnparioCCEntriesByGeneralReferenceId(generalReferenceId);
+
+      // Filter entries to only include those created in the specified month/year
+      const entries = month && year ? allEntries.filter(entry => {
+        const entryDate = new Date(entry.createdAt);
+        const entryMonth = entryDate.getMonth() + 1; // 1-12
+        const entryYear = entryDate.getFullYear();
+        return entryMonth === month && entryYear === year;
+      }) : allEntries;
 
       // Calculate grand total
       const grandTotal = (parseFloat(totalCharge || '0') + parseFloat(vatAmount || '0')).toFixed(2);
@@ -3206,8 +3216,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { generateStatementPDF } = await import("./pdf-generator");
       const pdfBuffer = await generateStatementPDF({
         generalRefNumber: reference.jobRef.toString(),
-        month: reference.month,
-        year: reference.year,
+        month: month || reference.month,
+        year: year || reference.year,
         customerCompanyName,
         customerAddress: customerAddress || '',
         customerVatNumber: customerVatNumber || '',
