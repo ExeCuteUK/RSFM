@@ -521,7 +521,7 @@ export function ImportExportWorkGrid() {
               <tr className="border-b-2">
                 <th className="p-1 text-center font-medium border-r border-border bg-muted" style={editingCell && columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Job Ref</th>
                 <th className="p-1 text-center font-medium border-r border-border bg-muted" style={editingCell && columnWidths[1] ? { width: `${columnWidths[1]}px` } : undefined}>Job Date</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={editingCell && columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Shipper Ref</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={editingCell && columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Client Ref</th>
                 <th className="p-1 text-center font-medium border-r border-border bg-muted" style={editingCell && columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Customer Name</th>
                 <th className="p-1 text-center font-medium border-r border-border bg-muted" style={editingCell && columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Departure Date</th>
                 <th className="p-1 text-center font-medium border-r border-border bg-muted" style={editingCell && columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Destination / Port of Arrival</th>
