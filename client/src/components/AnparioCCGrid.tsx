@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
-import { FileText, FileBarChart } from "lucide-react"
+import { FileText, FileBarChart, Plus } from "lucide-react"
 import { type GeneralReference, type AnparioCCEntry, type ImportCustomer, type Settings } from "@shared/schema"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
 
@@ -532,7 +532,7 @@ export function AnparioCCGrid() {
       {/* Header with month selector and buttons */}
       <Card className="p-4">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 flex-1">
+          <div className="flex items-center gap-2 flex-1">
             <label className="font-semibold whitespace-nowrap text-xs">Select Month:</label>
             <Select value={selectedReferenceId || ""} onValueChange={setSelectedReferenceId}>
               <SelectTrigger className="w-[250px]" data-testid="select-month-reference">
@@ -551,11 +551,21 @@ export function AnparioCCGrid() {
                 Monthly Ref: <span className="font-semibold">{selectedReference.jobRef}</span>
               </div>
             )}
-          </div>
-          <div className="flex items-center gap-2">
             <div className="text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md">
               {clearanceCount} Clearances
             </div>
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={handleCreateNewEntry}
+              disabled={!selectedReferenceId}
+              data-testid="button-new-entry"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              New Clearance Entry
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
             <Button variant="default" size="sm" onClick={handleCreateInvoice} data-testid="button-create-invoice">
               <FileText className="h-4 w-4 mr-1" />
               Create Invoice
