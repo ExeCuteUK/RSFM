@@ -1256,6 +1256,11 @@ Hope all is OK.`
                     <p className="text-lg font-semibold text-muted-foreground" data-testid={`text-receiver-${shipment.id}`}>
                       {getCustomerName(shipment.destinationCustomerId)}
                     </p>
+                    {shipment.customerReferenceNumber && (
+                      <p className="text-lg font-semibold text-foreground" data-testid={`text-customer-ref-${shipment.id}`}>
+                        Exporters Reference: {shipment.customerReferenceNumber}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-2">
                     <div className="flex items-center gap-2">
