@@ -334,7 +334,7 @@ export function AnparioCCGrid() {
       return (
         <td 
           key={fieldName} 
-          className="border px-2 py-0.5"
+          className="border px-2 py-0"
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
           <input
@@ -344,7 +344,7 @@ export function AnparioCCGrid() {
             onChange={(e) => setTempValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
-            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none"
+            className="w-full bg-transparent border-0 ring-0 ring-offset-0 px-0 py-0 text-xs text-center focus:outline-none leading-tight"
             autoComplete="off"
             data-testid={`input-${fieldName}-${entry.id}`}
           />
@@ -355,12 +355,12 @@ export function AnparioCCGrid() {
     return (
       <td 
         key={fieldName} 
-        className="border px-2 py-0.5 text-center cursor-pointer hover-elevate"
+        className="border px-2 py-0 text-center cursor-pointer hover-elevate"
         style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
       >
-        <span className="text-xs">{value}</span>
+        <span className="text-xs leading-tight">{value}</span>
       </td>
     )
   }
@@ -589,12 +589,12 @@ export function AnparioCCGrid() {
             <table ref={tableRef} className="w-full border-collapse">
               <thead>
                 <tr className="border-b-2">
-                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[0] ? { width: `${columnWidths[0]}px` } : {}}>ETA Port</th>
-                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[1] ? { width: `${columnWidths[1]}px` } : {}}>Container Number</th>
-                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[2] ? { width: `${columnWidths[2]}px` } : {}}>PO Number</th>
-                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[3] ? { width: `${columnWidths[3]}px` } : {}}>Entry Number</th>
-                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[4] ? { width: `${columnWidths[4]}px` } : {}}>Notes</th>
-                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[5] ? { width: `${columnWidths[5]}px` } : {}}>Actions</th>
+                  <th className="border px-2 py-0 text-center font-semibold bg-muted text-xs leading-tight" style={columnWidths[0] ? { width: `${columnWidths[0]}px` } : {}}>ETA Port</th>
+                  <th className="border px-2 py-0 text-center font-semibold bg-muted text-xs leading-tight" style={columnWidths[1] ? { width: `${columnWidths[1]}px` } : {}}>Container Number</th>
+                  <th className="border px-2 py-0 text-center font-semibold bg-muted text-xs leading-tight" style={columnWidths[2] ? { width: `${columnWidths[2]}px` } : {}}>PO Number</th>
+                  <th className="border px-2 py-0 text-center font-semibold bg-muted text-xs leading-tight" style={columnWidths[3] ? { width: `${columnWidths[3]}px` } : {}}>Entry Number</th>
+                  <th className="border px-2 py-0 text-center font-semibold bg-muted text-xs leading-tight" style={columnWidths[4] ? { width: `${columnWidths[4]}px` } : {}}>Notes</th>
+                  <th className="border px-2 py-0 text-center font-semibold bg-muted text-xs leading-tight" style={columnWidths[5] ? { width: `${columnWidths[5]}px` } : {}}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -606,25 +606,23 @@ export function AnparioCCGrid() {
                     {renderCell(entry, "entryNumber", columnWidths[3])}
                     {renderCell(entry, "notes", columnWidths[4])}
                     <td 
-                      className="border px-2 py-0.5 text-center"
+                      className="border px-2 py-0 text-center"
                       style={columnWidths[5] ? { width: `${columnWidths[5]}px`, minWidth: `${columnWidths[5]}px`, maxWidth: `${columnWidths[5]}px` } : {}}
                     >
                       {!entry.isBlank ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <button
                           onClick={() => {
                             if (confirm("Are you sure you want to delete this entry?")) {
                               deleteEntryMutation.mutate(entry.id)
                             }
                           }}
                           data-testid={`button-delete-${entry.id}`}
-                          className="h-auto px-1 py-0 text-xs min-h-0"
+                          className="text-xs leading-tight text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer underline"
                         >
                           Delete
-                        </Button>
+                        </button>
                       ) : (
-                        <span className="text-xs opacity-0">-</span>
+                        <span className="text-xs opacity-0 leading-tight">-</span>
                       )}
                     </td>
                   </tr>

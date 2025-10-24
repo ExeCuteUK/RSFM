@@ -3198,16 +3198,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "General reference not found" });
       }
 
-      // Get ALL entries for this reference
-      const allEntries = await storage.getAnparioCCEntriesByGeneralReferenceId(generalReferenceId);
-
-      // Filter entries to only include those created in the specified month/year
-      const entries = month && year ? allEntries.filter(entry => {
-        const entryDate = new Date(entry.createdAt);
-        const entryMonth = entryDate.getMonth() + 1; // 1-12
-        const entryYear = entryDate.getFullYear();
-        return entryMonth === month && entryYear === year;
-      }) : allEntries;
+      // Get all entries for this reference (no date filtering - show everything)
+      const entries = await storage.getAnparioCCEntriesByGeneralReferenceId(generalReferenceId);
 
       // Calculate grand total
       const grandTotal = (parseFloat(totalCharge || '0') + parseFloat(vatAmount || '0')).toFixed(2);
