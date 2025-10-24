@@ -329,13 +329,20 @@ export async function generateInvoicePDF({ invoice }: GeneratePDFOptions): Promi
         }
 
         const rowHeight = 11; // Increased for better readability
+        
+        // Check if charge amount exists and is not blank
+        const hasChargeAmount = item.chargeAmount && item.chargeAmount.toString().trim() !== '';
 
         doc.fillColor('#000000')
            .fontSize(8)
-           .text(item.description, 55, yPosition + 3, { width: 290 })
-           .text(`${parseFloat(item.chargeAmount || '0').toFixed(2)}`, 380, yPosition + 3)
-           .text(`${parseFloat(item.vatAmount || '0').toFixed(2)}`, 465, yPosition + 3)
-           .text(item.vatCode, 520, yPosition + 3);
+           .text(item.description, 55, yPosition + 3, { width: 290 });
+        
+        // Only display charge amount, VAT amount, and VAT code if charge amount is not blank
+        if (hasChargeAmount) {
+          doc.text(`${parseFloat(item.chargeAmount || '0').toFixed(2)}`, 380, yPosition + 3)
+             .text(`${parseFloat(item.vatAmount || '0').toFixed(2)}`, 465, yPosition + 3)
+             .text(item.vatCode, 520, yPosition + 3);
+        }
 
         yPosition += rowHeight;
       });
