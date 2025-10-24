@@ -841,15 +841,49 @@ export function CustomerInvoiceForm({ job, jobType, jobRef: providedJobRef, open
         return response.json()
       }
     },
-    onSuccess: async () => {
+    onSuccess: async (savedInvoice) => {
       await queryClient.invalidateQueries({ queryKey: ['/api/invoices'] })
       await queryClient.invalidateQueries({ queryKey: ['/api/import-shipments'] })
       await queryClient.invalidateQueries({ queryKey: ['/api/export-shipments'] })
       await queryClient.invalidateQueries({ queryKey: ['/api/custom-clearances'] })
-      toast({ 
-        title: 'Success', 
-        description: existingInvoice ? 'Invoice updated successfully' : 'Invoice created successfully' 
-      })
+      
+      // Automatically download the invoice PDF
+      try {
+        const response = await fetch(`/api/invoices/${savedInvoice.id}/pdf`, {
+          credentials: 'include'
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to generate PDF')
+        }
+        
+        // Download the PDF
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        const prefix = savedInvoice.type === 'credit_note' ? 'RS Credit' : 'RS Invoice'
+        a.download = `${prefix} - ${savedInvoice.invoiceNumber}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        
+        toast({ 
+          title: 'Success', 
+          description: existingInvoice ? 'Invoice updated and PDF downloaded' : 'Invoice created and PDF downloaded' 
+        })
+      } catch (pdfError) {
+        // Still show success for invoice save, but notify about PDF issue
+        toast({ 
+          title: 'Invoice Saved', 
+          description: existingInvoice 
+            ? 'Invoice updated successfully, but PDF download failed' 
+            : 'Invoice created successfully, but PDF download failed',
+          variant: 'default'
+        })
+      }
+      
       onOpenChange(false)
     },
     onError: (error: any) => {
