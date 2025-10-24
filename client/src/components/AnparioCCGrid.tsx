@@ -19,6 +19,7 @@ export function AnparioCCGrid() {
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const tableRef = useRef<HTMLTableElement>(null)
+  const pendingFocusRef = useRef<{ fieldName: string; isNewRow: boolean } | null>(null)
 
   // Fetch all general references with "Anpario EU CC" name
   const { data: allReferences = [] } = useQuery<GeneralReference[]>({
@@ -70,7 +71,7 @@ export function AnparioCCGrid() {
       const res = await fetch("/api/settings", { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to fetch settings')
       const data = await res.json()
-      return data[0] // Settings returns an array
+      return Array.isArray(data) ? data[0] : data
     },
   })
 
@@ -113,6 +114,16 @@ export function AnparioCCGrid() {
     onSuccess: (newEntry: AnparioCCEntry) => {
       // Add new entry to local state
       setLocalEntries(prev => [...prev, newEntry])
+      
+      // If there's a pending focus request, apply it to the newly created row
+      if (pendingFocusRef.current?.isNewRow) {
+        setEditingCell({ 
+          entryId: newEntry.id, 
+          fieldName: pendingFocusRef.current.fieldName 
+        })
+        setTempValue((newEntry as any)[pendingFocusRef.current.fieldName] || "")
+        pendingFocusRef.current = null
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -185,6 +196,12 @@ export function AnparioCCGrid() {
       const headers = tableRef.current.querySelectorAll('thead th')
       const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
       setColumnWidths(widths)
+    }
+
+    // If clicking a cell in the blank row while editing another cell in the blank row,
+    // mark this as a pending focus so we can restore it after the row is created
+    if (editingCell?.entryId.startsWith('blank-') && entry.id.startsWith('blank-')) {
+      pendingFocusRef.current = { fieldName, isNewRow: true }
     }
 
     setEditingCell({ entryId: entry.id, fieldName })
@@ -312,7 +329,7 @@ export function AnparioCCGrid() {
       return (
         <td 
           key={fieldName} 
-          className="border px-2 py-1"
+          className="border px-2 py-0.5"
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
           <input
@@ -333,7 +350,7 @@ export function AnparioCCGrid() {
     return (
       <td 
         key={fieldName} 
-        className="border px-2 py-1 text-center cursor-pointer hover-elevate"
+        className="border px-2 py-0.5 text-center cursor-pointer hover-elevate"
         style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
@@ -560,12 +577,12 @@ export function AnparioCCGrid() {
             <table ref={tableRef} className="w-full border-collapse">
               <thead>
                 <tr className="border-b-2">
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[0] ? { width: `${columnWidths[0]}px` } : {}}>ETA Port</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[1] ? { width: `${columnWidths[1]}px` } : {}}>Container Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[2] ? { width: `${columnWidths[2]}px` } : {}}>PO Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[3] ? { width: `${columnWidths[3]}px` } : {}}>Entry Number</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[4] ? { width: `${columnWidths[4]}px` } : {}}>Notes</th>
-                  <th className="border px-2 py-1 text-center font-semibold bg-muted text-xs" style={columnWidths[5] ? { width: `${columnWidths[5]}px` } : {}}>Actions</th>
+                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[0] ? { width: `${columnWidths[0]}px` } : {}}>ETA Port</th>
+                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[1] ? { width: `${columnWidths[1]}px` } : {}}>Container Number</th>
+                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[2] ? { width: `${columnWidths[2]}px` } : {}}>PO Number</th>
+                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[3] ? { width: `${columnWidths[3]}px` } : {}}>Entry Number</th>
+                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[4] ? { width: `${columnWidths[4]}px` } : {}}>Notes</th>
+                  <th className="border px-2 py-0.5 text-center font-semibold bg-muted text-xs" style={columnWidths[5] ? { width: `${columnWidths[5]}px` } : {}}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -577,7 +594,7 @@ export function AnparioCCGrid() {
                     {renderCell(entry, "entryNumber", columnWidths[3])}
                     {renderCell(entry, "notes", columnWidths[4])}
                     <td 
-                      className="border px-2 py-1 text-center"
+                      className="border px-2 py-0.5 text-center"
                       style={columnWidths[5] ? { width: `${columnWidths[5]}px`, minWidth: `${columnWidths[5]}px`, maxWidth: `${columnWidths[5]}px` } : {}}
                     >
                       {!entry.isBlank ? (

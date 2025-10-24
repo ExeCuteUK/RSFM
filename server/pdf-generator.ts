@@ -558,6 +558,8 @@ export async function generateStatementPDF(options: GenerateStatementPDFOptions)
         if (!dateStr) return '';
         try {
           const date = new Date(dateStr);
+          // Check if date is valid
+          if (isNaN(date.getTime())) return '';
           const d = String(date.getDate()).padStart(2, '0');
           const m = String(date.getMonth() + 1).padStart(2, '0');
           const y = String(date.getFullYear()).slice(-2);
