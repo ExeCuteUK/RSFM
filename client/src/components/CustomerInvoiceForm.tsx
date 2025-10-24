@@ -939,10 +939,10 @@ export function CustomerInvoiceForm({ job, jobType, jobRef: providedJobRef, open
       return
     }
 
-    if (lineItems.some(item => !item.description.trim() || !item.chargeAmount)) {
+    if (lineItems.some(item => !item.description.trim())) {
       toast({
         title: 'Validation Error',
-        description: 'All line items must have a description and charge amount',
+        description: 'All line items must have a description',
         variant: 'destructive'
       })
       return
