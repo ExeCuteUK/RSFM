@@ -553,22 +553,6 @@ export async function generateStatementPDF(options: GenerateStatementPDFOptions)
       let tableY = tableHeaderY + 23;
       doc.font('Helvetica');
       
-      // Helper to format date as DD/MM/YY
-      const formatDate = (dateStr: string | null): string => {
-        if (!dateStr) return '';
-        try {
-          const date = new Date(dateStr);
-          // Check if date is valid
-          if (isNaN(date.getTime())) return '';
-          const d = String(date.getDate()).padStart(2, '0');
-          const m = String(date.getMonth() + 1).padStart(2, '0');
-          const y = String(date.getFullYear()).slice(-2);
-          return `${d}/${m}/${y}`;
-        } catch {
-          return '';
-        }
-      };
-      
       options.entries.forEach((entry, index) => {
         if (tableY > 650) {
           doc.addPage();
@@ -580,7 +564,7 @@ export async function generateStatementPDF(options: GenerateStatementPDFOptions)
         doc.fillColor('#000000')
            .fontSize(8)
            .text(entry.containerNumber || '', 55, tableY + 3, { width: 140 })
-           .text(formatDate(entry.etaPort), 200, tableY + 3)
+           .text(entry.etaPort || '', 200, tableY + 3)
            .text(entry.entryNumber || '', 290, tableY + 3, { width: 120 })
            .text(entry.poNumber || '', 420, tableY + 3, { width: 120 });
 
