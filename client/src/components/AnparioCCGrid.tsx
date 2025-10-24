@@ -357,6 +357,13 @@ export function AnparioCCGrid() {
         key={fieldName} 
         className="border px-2 py-0 text-center cursor-pointer hover-elevate"
         style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+        onMouseDown={() => {
+          // Set pending focus BEFORE blur fires (don't prevent default so blur still fires)
+          // This ensures the ref is set before handleSave/createMutation runs
+          if (editingCell?.entryId.startsWith('blank-') && entry.id.startsWith('blank-')) {
+            pendingFocusRef.current = { fieldName, isNewRow: true }
+          }
+        }}
         onClick={() => handleCellClick(entry, fieldName, value)}
         data-testid={`cell-${fieldName}-${entry.id}`}
       >
@@ -617,7 +624,7 @@ export function AnparioCCGrid() {
                             }
                           }}
                           data-testid={`button-delete-${entry.id}`}
-                          className="text-xs leading-tight text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer underline"
+                          className="text-xs leading-tight text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 cursor-pointer"
                         >
                           Delete
                         </button>

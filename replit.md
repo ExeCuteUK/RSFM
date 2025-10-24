@@ -42,11 +42,12 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Row-Level Coloring:** Green background applied to entire row only when Entry Number has value (not cell-by-cell)
 - **Column Order:** Swapped PO Number and Entry Number positions - order is now: ETA Port → Container Number → PO Number → Entry Number → Notes → Actions
 - **Tab/Enter Navigation:** Move to next cell on Tab or Enter, wrap from Notes column to first cell of next row for continuous data entry flow
-- **Text-Only Delete Link:** Replaced Button component with native button element (text-xs, leading-tight) to eliminate min-height constraints and achieve true text-height rows
+- **Text-Only Delete Link:** Replaced Button component with native button element (text-xs, leading-tight, no underline) to eliminate min-height constraints and achieve true text-height rows
 - **Settings Query Fix:** Handles both array and object API responses for backward compatibility
 - **PDF Date Validation:** formatDate function includes isNaN check to prevent "NaN/NaN/NaN" output for invalid dates
 - **Cell Edit Persistence Fix:** isInitializedRef prevents background query refetches from overwriting in-progress local edits while still allowing fresh data on reference switch
 - **PDF Statement Fix:** Removed month/year filtering - statements now show ALL entries for the selected reference regardless of creation date
+- **Click Focus Fix:** onMouseDown sets pendingFocusRef before blur fires, ensuring focus moves correctly to next cell even when clicking from blank row to blank row during new entry creation
 - **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, fixed layout, minimal text-height rows, perfect for rapid data entry
 
 ## User Preferences
