@@ -675,12 +675,12 @@ export default function ExportShipments() {
       }
       
       // Build body with shipment details
-      const departureDate = formatDate(shipment.exportDateDeparture)
+      const dispatchDate = formatDate(shipment.dispatchDate)
       const exportReceiver = shipment.exportReceiver || "TBA"
       const exportersReference = shipment.exportersReference
       
       let body = `${greeting},\n\n`
-      body += `Please find attached ${documentText} for this shipment that departed on ${departureDate || "TBA"} for ${exportReceiver}.`
+      body += `Please find attached ${documentText} for this shipment that departed on ${dispatchDate || "TBA"} for ${exportReceiver}.`
       
       // Conditionally add exporters reference
       if (exportersReference) {
@@ -1317,9 +1317,9 @@ Hope all is OK.`
                         <p className="font-semibold text-lg" data-testid={`text-trailer-${shipment.id}`}>
                           {shipment.trailerNo}
                         </p>
-                        <p className="font-semibold text-lg" data-testid={`text-departure-date-${shipment.id}`}>
-                          <span>Departure Date:</span>{' '}
-                          {formatDate(shipment.exportDateDeparture) || (
+                        <p className="font-semibold text-lg" data-testid={`text-dispatched-${shipment.id}`}>
+                          <span>Dispatched:</span>{' '}
+                          {formatDate(shipment.dispatchDate) || (
                             <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                           )}
                         </p>
@@ -2032,9 +2032,9 @@ Hope all is OK.`
                       </div>
                     )}
                     <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                      <p className="text-xs text-muted-foreground mb-1">Departure Date</p>
+                      <p className="text-xs text-muted-foreground mb-1">Dispatched</p>
                       <p className="font-semibold text-sm">
-                        {formatDate(viewingShipment.exportDateDeparture) || (
+                        {formatDate(viewingShipment.dispatchDate) || (
                           <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                         )}
                       </p>
