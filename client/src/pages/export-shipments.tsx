@@ -1317,9 +1317,9 @@ Hope all is OK.`
                         <p className="font-semibold text-lg" data-testid={`text-trailer-${shipment.id}`}>
                           {shipment.trailerNo}
                         </p>
-                        <p className="font-semibold text-lg" data-testid={`text-eta-port-date-${shipment.id}`}>
-                          <span>{shipment.containerShipment === "Air Freight" ? "ETA Airport:" : "ETA Customs:"}</span>{' '}
-                          {formatDate(shipment.etaPortDate) || (
+                        <p className="font-semibold text-lg" data-testid={`text-departure-date-${shipment.id}`}>
+                          <span>Departure Date:</span>{' '}
+                          {formatDate(shipment.exportDateDeparture) || (
                             <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
                           )}
                         </p>
@@ -2031,12 +2031,14 @@ Hope all is OK.`
                         <p className="font-semibold text-sm">{formatDate(viewingShipment.deliveryDate)}</p>
                       </div>
                     )}
-                    {viewingShipment.etaPortDate && (
-                      <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                        <p className="text-xs text-muted-foreground mb-1">ETA Customs</p>
-                        <p className="font-semibold text-sm">{formatDate(viewingShipment.etaPortDate)}</p>
-                      </div>
-                    )}
+                    <div className="bg-white dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                      <p className="text-xs text-muted-foreground mb-1">Departure Date</p>
+                      <p className="font-semibold text-sm">
+                        {formatDate(viewingShipment.exportDateDeparture) || (
+                          <span className="text-yellow-700 dark:text-yellow-400">TBA</span>
+                        )}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
