@@ -1377,7 +1377,6 @@ Hope all is OK.`
                     )}
                   </div>
                   
-                  {shipment.exportClearanceAgent === "R.S" && (
                   <div className="pt-2 mt-2 border-t">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <h3 className="font-semibold text-lg" data-testid={`text-todo-title-${shipment.id}`}>
@@ -1396,6 +1395,7 @@ Hope all is OK.`
                         ) : null
                       })()}
                     </div>
+                    {shipment.exportClearanceAgent === "R.S" && (
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
@@ -1418,6 +1418,7 @@ Hope all is OK.`
                         />
                       </div>
                     </div>
+                    )}
                     <div className="mt-1">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
@@ -1468,7 +1469,6 @@ Hope all is OK.`
                       </div>
                     </div>
                   </div>
-                  )}
                   {(() => {
                     const attachmentFiles = shipment.attachments || []
                     const podFiles = shipment.proofOfDelivery || []
