@@ -33,9 +33,9 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Import/Export Work Sheet - Quote Out / Net In Column:** Changed dividing line from grey to black for better contrast, added display of expensesToChargeOut and additionalExpensesIn amounts on separate lines when present (format: "Additional : £amount1, £amount2"), updated labels: "OUT:" / "IN:" (formerly "Quote:" / "Net:"), "Imp CC" (formerly "Dest CC")
 
 **October 24, 2025 - Anpario CC Grid Complete Redesign for Fast Data Entry:**
-- **Local State Architecture:** Complete rebuild using local state management - all grid data maintained in component state, syncs from server only on mount/month change via isInitializedRef guard
+- **Local State Architecture:** Complete rebuild using local state management - all grid data maintained in component state, syncs from server on mount/reference change and via automatic polling
 - **Instant Updates:** All cell edits update local state immediately without any server refetching - zero lag during typing
-- **Silent Background Sync:** Mutations save to server without invalidating queries - no UI refreshes or focus loss
+- **10-Second Automatic Polling:** Grid polls server every 10 seconds to detect changes from other users or systems, mutations invalidate queries to ensure fresh data after saves, sync only triggers when serverEntries actually updates (not during active editing)
 - **Focus Stability:** Editing state cleared immediately after save, pendingFocusRef preserves next cell target during blank row creation, preventing focus loss during rapid data entry across new rows
 - **Text-Height Rows:** Ultra-compact py-0 padding on all cells with leading-tight line height - rows are now text-height only with zero vertical padding
 - **Fixed Column Widths:** Column widths captured before first edit and locked via inline styles to prevent any resizing during editing
