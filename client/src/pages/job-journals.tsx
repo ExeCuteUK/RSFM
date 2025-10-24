@@ -64,6 +64,12 @@ const formatDateToDDMMYY = (dateString: string | null | undefined): string => {
   return format(date, "dd/MM/yy")
 }
 
+const truncateText = (text: string, maxLength: number = 20): string => {
+  if (!text) return ""
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + ".."
+}
+
 const getJobTypeAbbreviation = (jobType: string): string => {
   const lowerType = jobType.toLowerCase()
   if (lowerType === "import") return "IMP"
@@ -770,7 +776,7 @@ export default function JobJournals() {
                         return (
                           <div className="text-xs space-y-0.5">
                             {invoices.map((inv) => (
-                              <div key={inv.id}>{inv.companyName}</div>
+                              <div key={inv.id} title={inv.companyName}>{truncateText(inv.companyName)}</div>
                             ))}
                           </div>
                         )
@@ -839,7 +845,7 @@ export default function JobJournals() {
                         return (
                           <div className="text-xs space-y-0.5">
                             {invoices.map((inv) => (
-                              <div key={inv.id}>{inv.customerCompanyName || ""}</div>
+                              <div key={inv.id} title={inv.customerCompanyName || ""}>{truncateText(inv.customerCompanyName || "")}</div>
                             ))}
                           </div>
                         )
