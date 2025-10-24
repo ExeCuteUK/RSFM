@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { PDFViewer } from "@/components/pdf-viewer"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { type CustomClearance, type ImportCustomer, type ExportCustomer, type ImportShipment, type ExportShipment, type ClearanceAgent } from "@shared/schema"
 import { Search, X, Link2, AlertCircle } from "lucide-react"
@@ -40,6 +42,7 @@ export function ClearanceWorkGrid() {
   const [columnWidths, setColumnWidths] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [recordsPerPage, setRecordsPerPage] = useState(prefs.recordsPerPage || 30)
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const tableRef = useRef<HTMLTableElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -202,7 +205,7 @@ export function ClearanceWorkGrid() {
   })
 
   const handleCellClick = (clearanceId: string, fieldName: string, currentValue: any) => {
-    if (fieldName === "jobRef" || fieldName === "customerName" || fieldName === "jobType" || fieldName === "clearanceType" || fieldName === "agentAdvised") {
+    if (fieldName === "jobRef" || fieldName === "customerName" || fieldName === "jobType" || fieldName === "clearanceType" || fieldName === "agentAdvised" || fieldName === "jobDate" || fieldName === "mrn") {
       return
     }
 
@@ -307,12 +310,57 @@ export function ClearanceWorkGrid() {
     return clearance.adviseAgentStatusIndicatorTimestamp
   }
 
+  // Helper functions for file object handling
+  const getFileName = (file: any): string => {
+    if (typeof file === 'string') return file.split('/').pop() || file;
+    return file?.filename || 'Unknown';
+  };
+
+  const getFilePath = (file: any): string => {
+    if (typeof file === 'string') return file;
+    return file?.path || file;
+  };
+
+  const handleMrnClick = (clearance: CustomClearance) => {
+    if (!clearance.mrn) return;
+    
+    const clearanceDocs = clearance.clearanceDocuments || []
+    if (clearanceDocs.length === 0) {
+      toast({
+        title: "No Documents",
+        description: "No clearance documents are attached to this job.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Get first clearance document
+    const firstDoc = clearanceDocs[0]
+    const filePath = getFilePath(firstDoc)
+    const fileName = getFileName(firstDoc)
+    
+    // Build URL - preserve absolute URLs, normalize object storage paths
+    let url: string
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      // Absolute URL (Google Drive, etc.) - use as is
+      url = filePath
+    } else {
+      // Object storage path - normalize it
+      // Strip leading slash and "objects/" prefix, then rebuild
+      let normalizedPath = filePath.startsWith('/') ? filePath.substring(1) : filePath
+      normalizedPath = normalizedPath.startsWith('objects/') ? normalizedPath.substring(8) : normalizedPath
+      url = `/objects/${normalizedPath}${normalizedPath.includes('?') ? '&' : '?'}filename=${encodeURIComponent(fileName)}`
+    }
+    
+    setViewingPdf({ url, name: fileName })
+  }
+
   const getCellColor = (clearance: CustomClearance, fieldName: string, value: any) => {
     const greenBg = "bg-green-100 dark:bg-green-900 dark:text-white"
     const yellowBg = "bg-yellow-200 dark:bg-yellow-500 text-gray-900 dark:text-black"
     
-    // Link column, Job Ref, and Notes always green
-    if (fieldName === "link" || fieldName === "jobRef" || fieldName === "additionalNotes") {
+    // Link column, Job Ref, Job Date, and Notes always green
+    if (fieldName === "link" || fieldName === "jobRef" || fieldName === "jobDate" || fieldName === "additionalNotes") {
       return greenBg
     }
 
@@ -438,6 +486,40 @@ export function ClearanceWorkGrid() {
           style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
         >
           {displayValue}
+        </td>
+      )
+    }
+
+    if (fieldName === "jobDate") {
+      return (
+        <td 
+          key={fieldName} 
+          className={`border px-2 py-1 text-center ${cellColor}`}
+          style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+          data-testid={`cell-job-date-${clearance.id}`}
+        >
+          {formatDate(clearance.createdAt)}
+        </td>
+      )
+    }
+
+    if (fieldName === "mrn") {
+      const hasMrn = value && value.toString().trim()
+      const hasDocuments = clearance.clearanceDocuments && clearance.clearanceDocuments.length > 0
+      
+      return (
+        <td 
+          key={fieldName} 
+          className={`border px-2 py-1 text-center ${hasMrn && hasDocuments ? 'cursor-pointer hover-elevate' : ''} ${cellColor}`}
+          style={width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}}
+          onClick={() => hasMrn && hasDocuments && handleMrnClick(clearance)}
+          data-testid={`cell-mrn-${clearance.id}`}
+        >
+          {hasMrn && hasDocuments ? (
+            <span className="text-blue-600 dark:text-blue-400 underline">{value}</span>
+          ) : (
+            value || ""
+          )}
         </td>
       )
     }
@@ -638,6 +720,7 @@ export function ClearanceWorkGrid() {
                   <th className="border px-2 py-1 text-center font-medium">Customer</th>
                   <th className="border px-2 py-1 text-center font-medium">ETA Port</th>
                   <th className="border px-2 py-1 text-center font-medium">Trailer/Container</th>
+                  <th className="border px-2 py-1 text-center font-medium w-24">Job Date</th>
                   <th className="border px-2 py-1 text-center font-medium w-40">MRN Number</th>
                   <th className="border px-2 py-1 text-center font-medium w-44">Clearance Agent</th>
                   <th className="border px-2 py-1 text-center font-medium">Agent & Haulier Advised</th>
@@ -687,10 +770,11 @@ export function ClearanceWorkGrid() {
                       {renderCell(clearance, "customerName", customerName, columnWidths[5])}
                       {renderCell(clearance, "etaPort", formatDate(clearance.etaPort), columnWidths[6])}
                       {renderCell(clearance, "trailerOrContainerNumber", clearance.trailerOrContainerNumber, columnWidths[7])}
-                      {renderCell(clearance, "mrn", clearance.mrn, columnWidths[8])}
-                      {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[9])}
-                      {renderCell(clearance, "agentAdvised", formatDate(getAgentAdvisedTimestamp(clearance)), columnWidths[10])}
-                      {renderCell(clearance, "additionalNotes", clearance.additionalNotes, columnWidths[11])}
+                      {renderCell(clearance, "jobDate", clearance.createdAt, columnWidths[8])}
+                      {renderCell(clearance, "mrn", clearance.mrn, columnWidths[9])}
+                      {renderCell(clearance, "clearanceAgent", clearance.clearanceAgent, columnWidths[10])}
+                      {renderCell(clearance, "agentAdvised", formatDate(getAgentAdvisedTimestamp(clearance)), columnWidths[11])}
+                      {renderCell(clearance, "additionalNotes", clearance.additionalNotes, columnWidths[12])}
                     </tr>
                   )
                 })}
@@ -752,6 +836,19 @@ export function ClearanceWorkGrid() {
           )}
         </CardContent>
       </Card>
+
+      {/* PDF Viewer Dialog */}
+      {viewingPdf && (
+        <Dialog open={!!viewingPdf} onOpenChange={() => setViewingPdf(null)}>
+          <DialogContent className="max-w-4xl h-[90vh]">
+            <PDFViewer
+              url={viewingPdf.url}
+              filename={viewingPdf.name}
+              onClose={() => setViewingPdf(null)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
