@@ -187,41 +187,16 @@ export function AnparioCCGrid() {
     entry.containerNumber || entry.etaPort || entry.entryNumber || entry.poNumber
   ).length
 
-  // Generate display rows - show actual entries plus one editable blank row for new data entry
+  // Display rows - just show actual entries from database
   const displayRows: (AnparioCCEntry & { isBlank?: boolean })[] = [...localEntries]
-  
-  // Only add blank row if there are no entries OR if all entries have some data
-  const shouldShowBlankRow = localEntries.length === 0 || localEntries.every(e => 
-    e.containerNumber || e.etaPort || e.entryNumber || e.poNumber || e.notes
-  )
-  
-  if (shouldShowBlankRow) {
-    displayRows.push({
-      id: `blank-new`,
-      generalReferenceId: selectedReferenceId || '',
-      containerNumber: null,
-      etaPort: null,
-      entryNumber: null,
-      poNumber: null,
-      notes: null,
-      createdAt: new Date().toISOString(),
-      isBlank: true,
-    } as any)
-  }
 
   // Handle cell click
-  const handleCellClick = (entry: AnparioCCEntry & { isBlank?: boolean }, fieldName: string, currentValue: string) => {
+  const handleCellClick = (entry: AnparioCCEntry, fieldName: string, currentValue: string) => {
     // Capture column widths before entering edit mode
     if (tableRef.current && !editingCell) {
       const headers = tableRef.current.querySelectorAll('thead th')
       const widths = Array.from(headers).map(th => th.getBoundingClientRect().width)
       setColumnWidths(widths)
-    }
-
-    // If clicking a cell in the blank row while editing another cell in the blank row,
-    // mark this as a pending focus so we can restore it after the row is created
-    if (editingCell?.entryId.startsWith('blank-') && entry.id.startsWith('blank-')) {
-      pendingFocusRef.current = { fieldName, isNewRow: true }
     }
 
     setEditingCell({ entryId: entry.id, fieldName })
@@ -232,53 +207,24 @@ export function AnparioCCGrid() {
   const handleSave = async () => {
     if (!editingCell || !selectedReferenceId) return
 
-    const isEditingBlank = editingCell.entryId.startsWith('blank-')
     const trimmedValue = tempValue.trim()
     
-    if (isEditingBlank) {
-      // Only create entry if user actually entered something
-      if (!trimmedValue) {
-        // Cancel editing without creating empty row
-        setEditingCell(null)
-        setTempValue("")
-        return
-      }
-      
-      // Create a new entry
-      const newEntryData: Partial<AnparioCCEntry> = {
-        generalReferenceId: selectedReferenceId,
-        etaPort: null,
-        containerNumber: null,
-        entryNumber: null,
-        poNumber: null,
-        notes: null,
-        [editingCell.fieldName]: trimmedValue || null
-      }
-      
-      // Clear editing state immediately
-      setEditingCell(null)
-      setTempValue("")
-      
-      // Save to server in background
-      await createEntryMutation.mutateAsync(newEntryData)
-    } else {
-      // Update existing entry in local state immediately
-      setLocalEntries(prev => prev.map(entry => 
-        entry.id === editingCell.entryId 
-          ? { ...entry, [editingCell.fieldName]: trimmedValue || null }
-          : entry
-      ))
-      
-      // Clear editing state immediately
-      setEditingCell(null)
-      setTempValue("")
-      
-      // Save to server in background
-      const updateData: Partial<AnparioCCEntry> = {
-        [editingCell.fieldName]: trimmedValue || null
-      }
-      updateEntryMutation.mutate({ id: editingCell.entryId, data: updateData })
+    // Update existing entry in local state immediately
+    setLocalEntries(prev => prev.map(entry => 
+      entry.id === editingCell.entryId 
+        ? { ...entry, [editingCell.fieldName]: trimmedValue || null }
+        : entry
+    ))
+    
+    // Clear editing state immediately
+    setEditingCell(null)
+    setTempValue("")
+    
+    // Save to server in background
+    const updateData: Partial<AnparioCCEntry> = {
+      [editingCell.fieldName]: trimmedValue || null
     }
+    updateEntryMutation.mutate({ id: editingCell.entryId, data: updateData })
   }
 
   const handleCancel = () => {
