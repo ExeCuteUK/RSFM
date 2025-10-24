@@ -42,7 +42,7 @@ export function AnparioCCGrid() {
   // Get selected reference
   const selectedReference = anparioReferences.find(ref => ref.id === selectedReferenceId)
 
-  // Fetch entries for selected reference
+  // Fetch entries for selected reference with 10-second polling
   const { data: serverEntries = [] } = useQuery<AnparioCCEntry[]>({
     queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId],
     queryFn: async () => {
@@ -52,14 +52,18 @@ export function AnparioCCGrid() {
       return res.json()
     },
     enabled: !!selectedReferenceId,
+    refetchInterval: 10000, // Poll every 10 seconds
   })
 
-  // Sync server data to local state only on initial load or reference change
+  // Sync server data to local state when reference changes or server data updates
   useEffect(() => {
-    // Only sync if this is a new reference or first load
+    // Always sync when reference changes or when server data is refreshed
     if (isInitializedRef.current !== selectedReferenceId) {
       setLocalEntries(serverEntries)
       isInitializedRef.current = selectedReferenceId
+    } else {
+      // For polling updates, sync the fresh server data
+      setLocalEntries(serverEntries)
     }
   }, [serverEntries, selectedReferenceId])
 
@@ -94,10 +98,14 @@ export function AnparioCCGrid() {
     }
   }, [editingCell])
 
-  // Update entry mutation - save silently without refetching
+  // Update entry mutation - save and invalidate query for polling sync
   const updateEntryMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<AnparioCCEntry> }) => {
       await apiRequest("PATCH", `/api/anpario-cc-entries/${id}`, data)
+    },
+    onSuccess: () => {
+      // Invalidate query so next poll gets fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
     },
     onError: () => {
       toast({
@@ -110,7 +118,7 @@ export function AnparioCCGrid() {
     },
   })
 
-  // Create entry mutation - save silently, add to local state
+  // Create entry mutation - save, add to local state, and invalidate for polling
   const createEntryMutation = useMutation({
     mutationFn: async (data: Partial<AnparioCCEntry>) => {
       const response = await apiRequest("POST", "/api/anpario-cc-entries", data)
@@ -119,6 +127,9 @@ export function AnparioCCGrid() {
     onSuccess: (newEntry: AnparioCCEntry) => {
       // Add new entry to local state
       setLocalEntries(prev => [...prev, newEntry])
+      
+      // Invalidate query so next poll gets fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
       
       // If there's a pending focus request, apply it to the newly created row
       if (pendingFocusRef.current?.isNewRow) {
@@ -139,7 +150,7 @@ export function AnparioCCGrid() {
     },
   })
 
-  // Delete entry mutation - remove from local state
+  // Delete entry mutation - remove from local state and invalidate for polling
   const deleteEntryMutation = useMutation({
     mutationFn: async (id: string) => {
       return await apiRequest("DELETE", `/api/anpario-cc-entries/${id}`)
@@ -147,6 +158,10 @@ export function AnparioCCGrid() {
     onSuccess: (_, deletedId) => {
       // Remove from local state
       setLocalEntries(prev => prev.filter(e => e.id !== deletedId))
+      
+      // Invalidate query so next poll gets fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
+      
       toast({
         title: "Entry Deleted",
         description: "Clearance entry has been removed",
