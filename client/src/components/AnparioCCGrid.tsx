@@ -551,7 +551,7 @@ export function AnparioCCGrid() {
                 Monthly Ref: <span className="font-semibold">{selectedReference.jobRef}</span>
               </div>
             )}
-            <div className="text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md">
+            <div className="text-xs font-semibold bg-purple-100 text-purple-900 dark:bg-purple-950/30 dark:text-purple-100 px-3 py-1.5 rounded-md">
               {clearanceCount} Clearances
             </div>
             <Button 
