@@ -37,18 +37,17 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Instant Updates:** All cell edits update local state immediately without any server refetching - zero lag during typing
 - **Silent Background Sync:** Mutations save to server without invalidating queries - no UI refreshes or focus loss
 - **Focus Stability:** Editing state cleared immediately after save, pendingFocusRef preserves next cell target during blank row creation, preventing focus loss during rapid data entry across new rows
-- **Compact Row Heights:** Ultra-compact py-0.5 padding on all cells (headers, data, Actions) for maximum data density - half the height of standard grids
+- **Text-Height Rows:** Ultra-compact py-0 padding on all cells with leading-tight line height - rows are now text-height only with zero vertical padding
 - **Fixed Column Widths:** Column widths captured before first edit and locked via inline styles to prevent any resizing during editing
 - **Row-Level Coloring:** Green background applied to entire row only when Entry Number has value (not cell-by-cell)
 - **Column Order:** Swapped PO Number and Entry Number positions - order is now: ETA Port → Container Number → PO Number → Entry Number → Notes → Actions
 - **Tab/Enter Navigation:** Move to next cell on Tab or Enter, wrap from Notes column to first cell of next row for continuous data entry flow
-- **Blank Row Height Fix:** Actions cell in blank row now has invisible placeholder to maintain proper row height, making it easy to click
-- **Compact Delete Button:** Delete button padding reduced (px-1, min-h-0) to minimize row height while maintaining functionality
+- **Text-Only Delete Link:** Replaced Button component with native button element (text-xs, leading-tight) to eliminate min-height constraints and achieve true text-height rows
 - **Settings Query Fix:** Handles both array and object API responses for backward compatibility
 - **PDF Date Validation:** formatDate function includes isNaN check to prevent "NaN/NaN/NaN" output for invalid dates
 - **Cell Edit Persistence Fix:** isInitializedRef prevents background query refetches from overwriting in-progress local edits while still allowing fresh data on reference switch
-- **PDF Month Filtering:** Statement generation now filters entries by createdAt month/year to show only current month's data, eliminating cross-month duplicates
-- **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, fixed layout, perfect for rapid data entry
+- **PDF Statement Fix:** Removed month/year filtering - statements now show ALL entries for the selected reference regardless of creation date
+- **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, fixed layout, minimal text-height rows, perfect for rapid data entry
 
 ## User Preferences
 
