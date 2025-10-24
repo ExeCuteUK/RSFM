@@ -3,11 +3,13 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { queryClient, apiRequest } from "@/lib/queryClient"
 import { FileText, FileBarChart, Plus } from "lucide-react"
-import { type GeneralReference, type AnparioCCEntry, type ImportCustomer, type Settings } from "@shared/schema"
+import { type GeneralReference, type AnparioCCEntry, type ImportCustomer, type Settings, type Invoice } from "@shared/schema"
 import { useWindowManager } from "@/contexts/WindowManagerContext"
+import { PDFViewer } from "@/components/pdf-viewer"
 
 export function AnparioCCGrid() {
   const { toast } = useToast()
@@ -17,6 +19,7 @@ export function AnparioCCGrid() {
   const [tempValue, setTempValue] = useState("")
   const [localEntries, setLocalEntries] = useState<AnparioCCEntry[]>([])
   const [columnWidths, setColumnWidths] = useState<number[]>([])
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const tableRef = useRef<HTMLTableElement>(null)
   const pendingFocusRef = useRef<{ fieldName: string; isNewRow: boolean } | null>(null)
@@ -83,6 +86,17 @@ export function AnparioCCGrid() {
       return Array.isArray(data) ? (data[0] || undefined) : data
     },
   })
+
+  // Fetch all invoices with 10-second polling
+  const { data: allInvoices = [] } = useQuery<Invoice[]>({
+    queryKey: ["/api/invoices"],
+    refetchInterval: 10000, // Poll every 10 seconds
+  })
+
+  // Find invoice for selected reference (matching ourRef to jobRef)
+  const referenceInvoice = selectedReference 
+    ? allInvoices.find(inv => inv.ourRef === selectedReference.jobRef.toString())
+    : null
 
   // Focus input when entering edit mode
   useEffect(() => {
@@ -566,7 +580,28 @@ export function AnparioCCGrid() {
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="default" size="sm" onClick={handleCreateInvoice} data-testid="button-create-invoice">
+            {referenceInvoice && (
+              <button
+                onClick={() => {
+                  setViewingPdf({
+                    url: `/api/invoices/${referenceInvoice.id}/pdf`,
+                    name: `RS Invoice - ${referenceInvoice.invoiceNumber}.pdf`
+                  })
+                }}
+                className="text-sm font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1"
+                data-testid="link-view-invoice"
+              >
+                <FileText className="h-4 w-4" />
+                Invoice #{referenceInvoice.invoiceNumber}
+              </button>
+            )}
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={handleCreateInvoice} 
+              disabled={!!referenceInvoice}
+              data-testid="button-create-invoice"
+            >
               <FileText className="h-4 w-4 mr-1" />
               Create Invoice
             </Button>
@@ -632,6 +667,20 @@ export function AnparioCCGrid() {
           <p className="text-xs">No monthly references found. Create an "Anpario EU CC" general reference to get started.</p>
         </Card>
       )}
+
+      {/* PDF Viewer Dialog */}
+      <Dialog open={!!viewingPdf} onOpenChange={() => setViewingPdf(null)}>
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-0">
+            <DialogTitle className="text-lg font-semibold">
+              {viewingPdf?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 px-6 pb-6 overflow-hidden">
+            {viewingPdf && <PDFViewer url={viewingPdf.url} filename={viewingPdf.name} onClose={() => setViewingPdf(null)} />}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
