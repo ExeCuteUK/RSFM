@@ -200,7 +200,7 @@ function AppContent() {
   }, [unreadCount, user, toast]);
 
   const style = {
-    "--sidebar-width": "18rem",       // 288px for freight management
+    "--sidebar-width": "16.2rem",     // 259px for freight management (10% reduction)
     "--sidebar-width-icon": "3rem",   // default icon width
   };
 

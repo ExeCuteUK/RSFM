@@ -52,7 +52,7 @@ export default function CustomClearances() {
   const { setPageTitle, setActionButtons } = usePageHeader()
   const [deletingClearanceId, setDeletingClearanceId] = useState<string | null>(null)
   const [clearanceAgentDialog, setClearanceAgentDialog] = useState<{ show: boolean; clearanceId: string } | null>(null)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue"])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["Request CC", "Awaiting Entry", "Awaiting Arrival", "P.H Hold", "Customs Issue", "Completed"])
   const [selectedShipmentTypes, setSelectedShipmentTypes] = useState<string[]>(["Container Shipment", "Road Shipment", "Air Freight"])
   const [searchText, setSearchText] = useState("")
   const [notesClearanceId, setNotesClearanceId] = useState<string | null>(null)
