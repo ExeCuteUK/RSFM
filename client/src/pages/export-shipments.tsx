@@ -831,7 +831,7 @@ export default function ExportShipments() {
     
     // Build body with shipment details
     const dispatchDate = formatDate(shipment.dispatchDate)
-    const exportReceiver = shipment.exportReceiver || "TBA"
+    const exportReceiver = getReceiverName(shipment.receiverId)
     const exportersReference = shipment.exportersReference
     
     let body = `${greeting},\n\n`
@@ -842,23 +842,7 @@ export default function ExportShipments() {
       body += ` Your Ref ${exportersReference}`
     }
     
-    // Add agent information if present and using agent contact
-    if (useAgentContact && customer) {
-      const agentContactNameArray = customer.agentContactName
-        ? (Array.isArray(customer.agentContactName)
-          ? customer.agentContactName.filter(Boolean)
-          : customer.agentContactName.split('/').map((n: string) => n.trim()).filter(Boolean))
-        : []
-      const agentEmailArray = customer.agentEmail
-        ? (Array.isArray(customer.agentEmail)
-          ? customer.agentEmail.filter(Boolean)
-          : customer.agentEmail.split(',').map((e: string) => e.trim()).filter(Boolean))
-        : []
-      
-      if (agentContactNameArray.length > 0 && agentEmailArray.length > 0) {
-        body += `\n\nFor any queries, please contact:\n${agentContactNameArray[0]} - ${agentEmailArray[0]}`
-      }
-    }
+    body += `\n\nWe appreciate your business and if there are any issues then please let me know.`
     
     // Get invoice PDF paths with proper filenames
     const invoiceFiles = selectedInvoiceObjects.map(invoice => ({
