@@ -32,18 +32,20 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Import Containers Filter:** Filtered out LCL containers from Import Containers management sheet (already shown in Import & Export Work sheet)
 - **Import/Export Work Sheet - Quote Out / Net In Column:** Changed dividing line from grey to black for better contrast, added display of expensesToChargeOut and additionalExpensesIn amounts on separate lines when present (format: "Additional : £amount1, £amount2"), updated labels: "OUT:" / "IN:" (formerly "Quote:" / "Net:"), "Imp CC" (formerly "Dest CC")
 
-**October 23, 2025 - Anpario CC Grid Complete Redesign for Fast Data Entry:**
+**October 24, 2025 - Anpario CC Grid Complete Redesign for Fast Data Entry:**
 - **Local State Architecture:** Complete rebuild using local state management - all grid data maintained in component state, syncs from server only on mount/month change
 - **Instant Updates:** All cell edits update local state immediately without any server refetching - zero lag during typing
 - **Silent Background Sync:** Mutations save to server without invalidating queries - no UI refreshes or focus loss
-- **Focus Stability:** Editing state cleared immediately after save, focus never jumps between cells during rapid data entry
-- **Styling Match:** Exact match with ClearanceWorkGrid - text-xs font, py-1 padding for all cells including blank row
+- **Focus Stability:** Editing state cleared immediately after save, pendingFocusRef preserves next cell target during blank row creation, preventing focus loss during rapid data entry across new rows
+- **Compact Row Heights:** Ultra-compact py-0.5 padding on all cells (headers, data, Actions) for maximum data density - half the height of standard grids
 - **Fixed Column Widths:** Column widths captured before first edit and locked via inline styles to prevent any resizing during editing
 - **Row-Level Coloring:** Green background applied to entire row only when Entry Number has value (not cell-by-cell)
 - **Column Order:** Swapped PO Number and Entry Number positions - order is now: ETA Port → Container Number → PO Number → Entry Number → Notes → Actions
 - **Tab/Enter Navigation:** Move to next cell on Tab or Enter, wrap from Notes column to first cell of next row for continuous data entry flow
 - **Blank Row Height Fix:** Actions cell in blank row now has invisible placeholder to maintain proper row height, making it easy to click
 - **Compact Delete Button:** Delete button padding reduced (px-1, min-h-0) to minimize row height while maintaining functionality
+- **Settings Query Fix:** Handles both array and object API responses for backward compatibility
+- **PDF Date Validation:** formatDate function includes isNaN check to prevent "NaN/NaN/NaN" output for invalid dates
 - **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, fixed layout, perfect for rapid data entry
 
 ## User Preferences

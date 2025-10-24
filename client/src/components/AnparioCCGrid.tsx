@@ -65,13 +65,13 @@ export function AnparioCCGrid() {
   const anparioCustomer = importCustomers.find(c => c.companyName === "Anpario PLC")
 
   // Fetch settings for fees
-  const { data: settings } = useQuery<Settings>({
+  const { data: settings } = useQuery<Settings | undefined>({
     queryKey: ["/api/settings"],
     queryFn: async () => {
       const res = await fetch("/api/settings", { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to fetch settings')
       const data = await res.json()
-      return Array.isArray(data) ? data[0] : data
+      return Array.isArray(data) ? (data[0] || undefined) : data
     },
   })
 
