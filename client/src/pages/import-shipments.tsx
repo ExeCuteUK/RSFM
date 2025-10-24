@@ -1213,14 +1213,17 @@ export default function ImportShipments() {
         ? shipment.jobContactName.filter(Boolean)
         : (shipment.jobContactName ? shipment.jobContactName.split('/').map(n => n.trim()).filter(Boolean) : [])
       
+      // Extract first names only
+      const firstNames = jobContactNameArray.map(name => name.split(' ')[0])
+      
       let greeting = "Hi there"
-      if (jobContactNameArray.length === 1) {
-        greeting = `Hi ${jobContactNameArray[0]}`
-      } else if (jobContactNameArray.length === 2) {
-        greeting = `Hi ${jobContactNameArray[0]} and ${jobContactNameArray[1]}`
-      } else if (jobContactNameArray.length >= 3) {
-        const lastContact = jobContactNameArray[jobContactNameArray.length - 1]
-        const otherContacts = jobContactNameArray.slice(0, -1).join(', ')
+      if (firstNames.length === 1) {
+        greeting = `Hi ${firstNames[0]}`
+      } else if (firstNames.length === 2) {
+        greeting = `Hi ${firstNames[0]} and ${firstNames[1]}`
+      } else if (firstNames.length >= 3) {
+        const lastContact = firstNames[firstNames.length - 1]
+        const otherContacts = firstNames.slice(0, -1).join(', ')
         greeting = `Hi ${otherContacts}, and ${lastContact}`
       }
       
@@ -1246,11 +1249,16 @@ export default function ImportShipments() {
       }
       
       // Build body with shipment details
-      const etaCustoms = formatDate(shipment.importDateEtaCustoms) || "TBA"
+      const etaPort = formatDate(shipment.importDateEtaPort)
       const containerOrTrailer = shipment.trailerOrContainerNumber || "TBA"
       
       let body = `${greeting},\n\n`
-      body += `Please find attached ${documentText} for this shipment that arrived on ${etaCustoms} on ${containerOrTrailer}.`
+      // Use ETA Port date if available, otherwise say "this month"
+      if (etaPort) {
+        body += `Please find attached ${documentText} for this shipment that arrived on ${etaPort} on ${containerOrTrailer}.`
+      } else {
+        body += `Please find attached ${documentText} for this shipment that arrived this month on ${containerOrTrailer}.`
+      }
       
       // Conditionally add customer reference
       if (customerRef) {
