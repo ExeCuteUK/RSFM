@@ -131,15 +131,10 @@ export function AnparioCCGrid() {
       // Invalidate query so next poll gets fresh data
       queryClient.invalidateQueries({ queryKey: ["/api/anpario-cc-entries/by-reference", selectedReferenceId] })
       
-      // If there's a pending focus request, apply it to the newly created row
-      if (pendingFocusRef.current?.isNewRow) {
-        setEditingCell({ 
-          entryId: newEntry.id, 
-          fieldName: pendingFocusRef.current.fieldName 
-        })
-        setTempValue((newEntry as any)[pendingFocusRef.current.fieldName] || "")
-        pendingFocusRef.current = null
-      }
+      toast({
+        title: "Entry Created",
+        description: "New clearance entry added successfully",
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -149,6 +144,29 @@ export function AnparioCCGrid() {
       })
     },
   })
+  
+  // Handle creating a new entry
+  const handleCreateNewEntry = () => {
+    if (!selectedReferenceId) {
+      toast({
+        title: "Error",
+        description: "Please select a monthly reference first",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    const newEntryData: Partial<AnparioCCEntry> = {
+      generalReferenceId: selectedReferenceId,
+      etaPort: null,
+      containerNumber: null,
+      entryNumber: null,
+      poNumber: null,
+      notes: null,
+    }
+    
+    createEntryMutation.mutate(newEntryData)
+  }
 
   // Delete entry mutation - remove from local state and invalidate for polling
   const deleteEntryMutation = useMutation({
