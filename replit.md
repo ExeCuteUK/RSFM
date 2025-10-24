@@ -33,7 +33,7 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Import/Export Work Sheet - Quote Out / Net In Column:** Changed dividing line from grey to black for better contrast, added display of expensesToChargeOut and additionalExpensesIn amounts on separate lines when present (format: "Additional : £amount1, £amount2"), updated labels: "OUT:" / "IN:" (formerly "Quote:" / "Net:"), "Imp CC" (formerly "Dest CC")
 
 **October 24, 2025 - Anpario CC Grid Complete Redesign for Fast Data Entry:**
-- **Local State Architecture:** Complete rebuild using local state management - all grid data maintained in component state, syncs from server only on mount/month change
+- **Local State Architecture:** Complete rebuild using local state management - all grid data maintained in component state, syncs from server only on mount/month change via isInitializedRef guard
 - **Instant Updates:** All cell edits update local state immediately without any server refetching - zero lag during typing
 - **Silent Background Sync:** Mutations save to server without invalidating queries - no UI refreshes or focus loss
 - **Focus Stability:** Editing state cleared immediately after save, pendingFocusRef preserves next cell target during blank row creation, preventing focus loss during rapid data entry across new rows
@@ -46,6 +46,8 @@ Key features include an integrated file upload system with Google Drive for shar
 - **Compact Delete Button:** Delete button padding reduced (px-1, min-h-0) to minimize row height while maintaining functionality
 - **Settings Query Fix:** Handles both array and object API responses for backward compatibility
 - **PDF Date Validation:** formatDate function includes isNaN check to prevent "NaN/NaN/NaN" output for invalid dates
+- **Cell Edit Persistence Fix:** isInitializedRef prevents background query refetches from overwriting in-progress local edits while still allowing fresh data on reference switch
+- **PDF Month Filtering:** Statement generation now filters entries by createdAt month/year to show only current month's data, eliminating cross-month duplicates
 - **Result:** Grid works like a proper spreadsheet - instant updates, stable focus, fixed layout, perfect for rapid data entry
 
 ## User Preferences
