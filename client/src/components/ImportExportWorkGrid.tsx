@@ -34,7 +34,6 @@ export function ImportExportWorkGrid() {
   const [jobTypeFilter, setJobTypeFilter] = useState<("import" | "export")[]>(prefs.jobTypeFilter || ["import", "export"])
   const [editingCell, setEditingCell] = useState<{ shipmentId: string; fieldName: string; jobType: 'import' | 'export' } | null>(null)
   const [tempValue, setTempValue] = useState("")
-  const [columnWidths, setColumnWidths] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [recordsPerPage, setRecordsPerPage] = useState(prefs.recordsPerPage || 30)
   const tableRef = useRef<HTMLTableElement>(null)
@@ -54,34 +53,6 @@ export function ImportExportWorkGrid() {
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
   }, [searchText, jobStatusFilter, jobTypeFilter, recordsPerPage])
-
-  // Capture column widths once on mount and lock them
-  useEffect(() => {
-    if (tableRef.current && columnWidths.length === 0) {
-      // Wait for table to render, then capture widths
-      const timer = setTimeout(() => {
-        if (tableRef.current) {
-          const headers = tableRef.current.querySelectorAll('thead th')
-          const widths = Array.from(headers).map((th, index) => {
-            const width = th.getBoundingClientRect().width
-            // Job Ref (index 0): Minimal width (60px to fit "Job Ref")
-            if (index === 0) return 60
-            // Qty (index 7): Reduce by 75%
-            if (index === 7) return width * 0.25
-            // Weight (index 8): Reduce by 50%
-            if (index === 8) return width * 0.5
-            // CBM (index 9): Reduce by 75%
-            if (index === 9) return width * 0.25
-            // Haulier (index 14): Increase by 50%
-            if (index === 14) return width * 1.5
-            return width
-          })
-          setColumnWidths(widths)
-        }
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [columnWidths.length])
 
   useEffect(() => {
     if (editingCell) {
@@ -574,26 +545,26 @@ export function ImportExportWorkGrid() {
         </div>
 
         <div className="overflow-auto">
-          <table ref={tableRef} className="w-full border-collapse text-xs table-fixed">
+          <table ref={tableRef} className="w-full border-collapse text-xs">
             <thead className="sticky top-0 bg-muted z-10">
               <tr className="border-b-2">
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[0] ? { width: `${columnWidths[0]}px` } : undefined}>Job Ref</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[1] ? { width: `${columnWidths[1]}px` } : undefined}>Job Date</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[2] ? { width: `${columnWidths[2]}px` } : undefined}>Client Ref</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[3] ? { width: `${columnWidths[3]}px` } : undefined}>Customer Name</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[4] ? { width: `${columnWidths[4]}px` } : undefined}>Departure Date</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[5] ? { width: `${columnWidths[5]}px` } : undefined}>Destination / Port of Arrival</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[6] ? { width: `${columnWidths[6]}px` } : undefined}>Identifier</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[7] ? { width: `${columnWidths[7]}px` } : undefined}>Qty</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[8] ? { width: `${columnWidths[8]}px` } : undefined}>Weight</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[9] ? { width: `${columnWidths[9]}px` } : undefined}>CBM</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[10] ? { width: `${columnWidths[10]}px` } : undefined}>ETA Port</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[11] ? { width: `${columnWidths[11]}px` } : undefined}>Delivery Date</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[12] ? { width: `${columnWidths[12]}px` } : undefined}>Delivery Address</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[13] ? { width: `${columnWidths[13]}px` } : undefined}>Quote Out / Net In</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[14] ? { width: `${columnWidths[14]}px` } : undefined}>Haulier</th>
-                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={columnWidths[15] ? { width: `${columnWidths[15]}px` } : undefined}>POD Sent</th>
-                <th className="p-1 text-center font-medium bg-muted" style={columnWidths[16] ? { width: `${columnWidths[16]}px` } : undefined}>Booker</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '7ch' }}>Job Ref</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '8ch' }}>Job Date</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '10ch' }}>Client Ref</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '14ch' }}>Customer Name</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '8ch' }}>Departure Date</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '12ch' }}>Destination / Port of Arrival</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '12ch' }}>Identifier</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '4ch' }}>Qty</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '8ch' }}>Weight</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '5ch' }}>CBM</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '8ch' }}>ETA Port</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '8ch' }}>Delivery Date</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '14ch' }}>Delivery Address</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '14ch' }}>Quote Out / Net In</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '14ch' }}>Haulier</th>
+                <th className="p-1 text-center font-medium border-r border-border bg-muted" style={{ minWidth: '8ch' }}>POD Sent</th>
+                <th className="p-1 text-center font-medium bg-muted" style={{ minWidth: '6ch' }}>Booker</th>
               </tr>
             </thead>
             <tbody>
