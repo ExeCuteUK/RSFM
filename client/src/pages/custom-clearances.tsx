@@ -1861,6 +1861,11 @@ export default function CustomClearances() {
                       <p className="text-lg font-semibold text-muted-foreground" data-testid={`text-customer-${clearance.id}`}>
                         {getCustomerName(clearance)}
                       </p>
+                      {clearance.customerReferenceNumber && (
+                        <p className="text-lg font-semibold text-foreground" data-testid={`text-customer-ref-${clearance.id}`}>
+                          Customer Reference Number: {clearance.customerReferenceNumber}
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <div className="flex items-center gap-2">
