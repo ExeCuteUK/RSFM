@@ -64,8 +64,17 @@ export function ImportExportWorkGrid() {
           const headers = tableRef.current.querySelectorAll('thead th')
           const widths = Array.from(headers).map((th, index) => {
             const width = th.getBoundingClientRect().width
-            // Increase haulier column (index 14) by 50%
-            return index === 14 ? width * 1.5 : width
+            // Job Ref (index 0): Minimal width (60px to fit "Job Ref")
+            if (index === 0) return 60
+            // Qty (index 7): Reduce by 75%
+            if (index === 7) return width * 0.25
+            // Weight (index 8): Reduce by 50%
+            if (index === 8) return width * 0.5
+            // CBM (index 9): Reduce by 75%
+            if (index === 9) return width * 0.25
+            // Haulier (index 14): Increase by 50%
+            if (index === 14) return width * 1.5
+            return width
           })
           setColumnWidths(widths)
         }
