@@ -1257,8 +1257,8 @@ Hope all is OK.`
                       {getCustomerName(shipment.destinationCustomerId)}
                     </p>
                     {shipment.customerReferenceNumber && (
-                      <p className="text-lg font-semibold text-foreground" data-testid={`text-customer-ref-${shipment.id}`}>
-                        Exporters Reference: {shipment.customerReferenceNumber}
+                      <p className="text-xs text-foreground" data-testid={`text-customer-ref-${shipment.id}`}>
+                        {shipment.customerReferenceNumber}
                       </p>
                     )}
                   </div>

@@ -1862,8 +1862,8 @@ export default function CustomClearances() {
                         {getCustomerName(clearance)}
                       </p>
                       {clearance.customerReferenceNumber && (
-                        <p className="text-lg font-semibold text-foreground" data-testid={`text-customer-ref-${clearance.id}`}>
-                          Customer Reference Number: {clearance.customerReferenceNumber}
+                        <p className="text-xs text-foreground" data-testid={`text-customer-ref-${clearance.id}`}>
+                          {clearance.customerReferenceNumber}
                         </p>
                       )}
                     </div>
