@@ -1,0 +1,30 @@
+/home/executeuk/.pm2/logs/rsfm-error-0.log last 50 lines:
+0|rsfm     | 10:46:52 AM [express] Initializing session store...
+0|rsfm     | 10:46:52 AM [express] GET /api/users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm     | 10:46:52 AM [express] GET /api/messages/unread-count 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm     | 10:46:52 AM [express] GET /api/presence/online-users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:02 AM [express] GET /api/users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:02 AM [express] GET /api/messages/unread-count 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:02 AM [express] GET /api/presence/online-users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:12 AM [express] GET /api/users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:12 AM [express] GET /api/messages/unread-count 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:12 AM [express] GET /api/presence/online-users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:21 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:22 AM [express] GET /api/users 401 in 2ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:22 AM [express] GET /api/messages/unread-count 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:22 AM [express] GET /api/presence/online-users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:31 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:32 AM [express] GET /api/users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:32 AM [express] GET /api/messages/unread-count 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:33 AM [express] GET /api/presence/online-users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:43 AM [express] GET /api/users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:43 AM [express] GET /api/messages/unread-count 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:43 AM [express] GET /api/presence/online-users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:47 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:51 AM [express] POST /api/presence/heartbeat 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:53 AM [express] GET /api/users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:53 AM [express] GET /api/messages/unread-count 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:47:53 AM [express] GET /api/presence/online-users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:48:03 AM [express] GET /api/users 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:48:03 AM [express] GET /api/messages/unread-count 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm  | 10:48:03 AM [express] GET /api/presence/online-users 401 in 0ms :: {"error":"Authentication required"}

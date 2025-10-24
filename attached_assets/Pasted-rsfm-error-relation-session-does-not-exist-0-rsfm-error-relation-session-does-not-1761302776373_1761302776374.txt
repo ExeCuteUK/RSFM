@@ -1,0 +1,51 @@
+rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | error: relation "session" does not exist
+0|rsfm     | 10:39:31 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:39:47 AM [express] POST /api/presence/heartbeat 401 in 2ms :: {"error":"Authentication required"}
+0|rsfm     | 10:40:31 AM [express] POST /api/presence/heartbeat 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm     | 10:40:47 AM [express] POST /api/presence/heartbeat 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm     | 10:41:31 AM [express] POST /api/presence/heartbeat 401 in 0ms :: {"error":"Authentication required"}
+0|rsfm     | 10:41:47 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:42:31 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:42:47 AM [express] POST /api/presence/heartbeat 401 in 2ms :: {"error":"Authentication required"}
+0|rsfm     | 10:43:47 AM [express] POST /api/presence/heartbeat 401 in 4ms :: {"error":"Authentication required"}
+0|rsfm     | 10:43:50 AM [express] GET /api/messages/unread-count 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:43:50 AM [express] GET /api/users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:43:50 AM [express] GET /api/presence/online-users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:43:50 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:44:31 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm     | 10:44:47 AM [express] POST /api/presence/heartbeat 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:46:12 AM [express] GET /api/users 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:46:12 AM [express] GET /api/messages/unread-count 401 in 1ms :: {"error":"Authentication required"}
+0|rsfm  | 10:46:12 AM [express] GET /api/presence/online-users 401 in 1ms :: {"error":"Authentication required"}
