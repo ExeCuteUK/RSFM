@@ -2030,11 +2030,10 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
             </CardContent>
           </Card>
 
-          {form.watch("containerShipment") !== "Container Shipment" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Haulier Information</CardTitle>
-              </CardHeader>
+          <Card>
+            <CardHeader>
+              <CardTitle>Haulier Information</CardTitle>
+            </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField
@@ -2211,7 +2210,6 @@ export function ImportShipmentForm({ onSubmit, onCancel, defaultValues, scrollTo
               </div>
             </CardContent>
           </Card>
-          )}
 
           <Card>
             <CardHeader>
